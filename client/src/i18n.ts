@@ -12,7 +12,15 @@ const resources = {
       aboutUs: 'Over Ons',
       aboutUsTitle: 'Over Ons',
       aboutUsDescription: 'Spectra AutoArt is uw premium partner voor auto detailing en styling. Met jarenlange ervaring en passie voor perfectie, bieden wij hoogwaardige diensten die uw voertuig transformeren tot een ware showstopper. Ons team van gespecialiseerde professionals gebruikt alleen de beste producten en technieken om uitzonderlijke resultaten te leveren. We geloven in kwaliteit, aandacht voor detail en klanttevredenheid die uw verwachtingen overtreft.',
-      gallery: 'Galerij',
+      gallery: {
+        title: 'Galerij',
+        fallback: {
+          ceramicCoating: 'Keramische Coating',
+          paintProtection: 'Lak Bescherming',
+          engineBay: 'Motorruimte',
+          engineDetailing: 'Motor Detailing'
+        }
+      },
       testimonials: 'Testimonials',
       contact: 'Contact',
       selectLanguage: 'Taal selecteren',
@@ -144,14 +152,6 @@ const resources = {
           interiorCleaning: 'Interieur Reiniging',
           exteriorPolish: 'Exterieur Poetsen',
           paintCorrection: 'Lak Correctie'
-        }
-      },
-      gallery: {
-        fallback: {
-          ceramicCoating: 'Keramische Coating',
-          paintProtection: 'Lak Bescherming',
-          engineBay: 'Motorruimte',
-          engineDetailing: 'Motor Detailing'
         }
       },
       loadingBookings: 'Laden van afspraken...',
