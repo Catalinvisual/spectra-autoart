@@ -4,7 +4,7 @@ startCommand = "node server/src/index.js"
 dockerfilePath = "Dockerfile.production"
 
 [deploy]
-healthcheckPath = "/api/health"
+healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
