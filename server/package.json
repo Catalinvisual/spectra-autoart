@@ -1,0 +1,29 @@
+{
+  "name": "spectraautoart-server",
+  "version": "1.0.0",
+  "description": "Backend API pentru Spectra AutoArt",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node src/index.js",
+    "start": "node src/index.js"
+  },
+  "keywords": [
+    "auto",
+    "detailing",
+    "booking"
+  ],
+  "author": "Spectra AutoArt",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "google-spreadsheet": "^5.0.2",
+    "googleapis": "^137.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "twilio": "^4.23.0"
+  }
+}

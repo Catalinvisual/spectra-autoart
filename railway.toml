@@ -1,0 +1,16 @@
+# Railway Configuration
+
+# Build settings
+RAILWAY_DOCKERFILE_PATH=Dockerfile.production
+
+# Health check
+RAILWAY_HEALTHCHECK_TIMEOUT=300
+RAILWAY_HEALTHCHECK_PATH=/api/health
+
+# Restart policy
+RAILWAY_RESTART_POLICY_TYPE=on_failure
+RAILWAY_RESTART_POLICY_MAX_RETRIES=3
+
+# Resource limits
+RAILWAY_MEMORY_LIMIT=512
+RAILWAY_CPU_LIMIT=0.5

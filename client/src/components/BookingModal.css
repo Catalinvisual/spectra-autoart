@@ -1,0 +1,192 @@
+.booking-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8); /* Mai închis pentru a preveni flash-ul */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  /* Eliminat backdrop-filter pentru performanță maximă */
+  /* backdrop-filter: blur(5px); */
+  /* Tranziție rapidă pentru a preveni flicker */
+  transition: opacity 0.01s ease, visibility 0.01s ease;
+}
+
+/* Stări pentru afișare/ascundere fără flash */
+.booking-modal-hidden {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+.booking-modal-open {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.booking-modal {
+  background: #1a1a1a; /* Fundal închis pentru a preveni flash-ul alb */
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  max-width: 800px;
+  width: 95%;
+  animation: modalSlideIn 0.3s ease-out;
+  /* Eliminat max-height și overflow pentru a preveni dublul scrollbar */
+}
+
+/* Modal instant - fără animație pentru deschidere instantă */
+.booking-modal-instant {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+
+.booking-modal-content {
+  padding: 0;
+  overflow-y: auto;
+  max-height: 90vh;
+  scrollbar-width: 4px;
+  scrollbar-color: #333 #1a1a1a;
+}
+
+/* Custom scrollbar for Webkit browsers - very thin dark theme */
+.booking-modal-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.booking-modal-content::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 2px;
+}
+
+.booking-modal-content::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 2px;
+}
+
+.booking-modal-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Step 6 content styling - use default scrollbar */
+/* Eliminat regula pentru .step-6-content deoarece nu mai este necesară */
+
+/* Progress indicator styles */
+.wizard-progress-circles {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  background: #12161d;
+  border-bottom: 1px solid #4a5568;
+}
+
+.progress-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.progress-circle.completed {
+  background-color: #28a745;
+  color: white;
+  border: 3px solid #28a745;
+}
+
+.progress-circle.active {
+  background-color: #00bcd4;
+  color: white;
+  border: 3px solid #00bcd4;
+  box-shadow: 0 0 0 4px rgba(0, 188, 212, 0.3);
+  transform: scale(1.1);
+}
+
+.progress-circle.pending {
+  background-color: #4a5568;
+  color: #a0aec0;
+  border: 3px solid #718096;
+}
+
+.progress-circle:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 2px;
+  background-color: #718096;
+  transition: background-color 0.3s ease;
+}
+
+.progress-circle.completed:not(:last-child)::after {
+  background-color: #28a745;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 24px 0;
+  font-size: 12px;
+  color: #a0aec0;
+  background: #12161d;
+}
+
+.progress-label {
+  text-align: center;
+  flex: 1;
+}
+
+.progress-label.active {
+  color: #00bcd4;
+  font-weight: 600;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .booking-modal {
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .wizard-progress-circles {
+    gap: 15px;
+    padding: 16px;
+  }
+  
+  .progress-circle {
+    width: 35px;
+    height: 35px;
+    font-size: 14px;
+  }
+  
+  .progress-circle:not(:last-child)::after {
+    right: -15px;
+    width: 15px;
+  }
+}

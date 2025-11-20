@@ -1,0 +1,122 @@
+/* Home Page */
+.home-page {
+  min-height: 100vh;
+  background: #0b0f14;
+  position: relative;
+}
+
+.main-content {
+  padding-top: 0;
+}
+
+/* Booking Wizard Overlay */
+.booking-wizard-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(11, 15, 20, 0.95);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+.booking-wizard-modal {
+  position: relative;
+  background: #12161d;
+  border: 2px solid #00e5ff;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 229, 255, 0.3);
+  animation: slideIn 0.3s ease;
+}
+
+.close-wizard-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid #00e5ff;
+  color: #00e5ff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.close-wizard-btn:hover {
+  background: #00e5ff;
+  color: #0b0f14;
+  transform: scale(1.1);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .booking-wizard-modal {
+    padding: 30px 20px;
+    margin: 10px;
+  }
+  
+  .close-wizard-btn {
+    top: 15px;
+    right: 15px;
+    width: 35px;
+    height: 35px;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-wizard-overlay {
+    padding: 10px;
+  }
+  
+  .booking-wizard-modal {
+    padding: 20px 15px;
+    border-radius: 15px;
+  }
+  
+  .close-wizard-btn {
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+}
