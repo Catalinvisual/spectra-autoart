@@ -1,6 +1,8 @@
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import publicRouter from './routes/public.js'
 import adminRouter from './routes/admin.js'
 import vehicleRouter from './routes/vehicles.js'
@@ -15,6 +17,10 @@ import VehiclesAPIService from './services/vehiclesAPIService.js'
 import { vehicleServicesService } from './services/vehicleServicesService.js'
 
 const app = express()
+
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
@@ -36,6 +42,15 @@ app.use('/api/translate', translateRouter)
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
+// Serve static files from React build
+const clientBuildPath = path.join(__dirname, '../../client/dist')
+app.use(express.static(clientBuildPath))
+
+// Handle React routing, return all requests to React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(clientBuildPath, 'index.html'))
 })
 
 // Initialize Google Sheets Service
@@ -86,5 +101,10 @@ async function initializeServices() {
 const port = process.env.PORT || 8080
 app.listen(port, async () => {
   console.log(`🚀 Server Spectra AutoArt rulează pe portul ${port}`)
-  await initializeServices();
+  // Initialize services after server starts to avoid blocking
+  setTimeout(() => {
+    initializeServices().catch(error => {
+      console.error('❌ Failed to initialize services:', error.message)
+    })
+  }, 1000)
 })
