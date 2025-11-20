@@ -1,16 +1,14 @@
-# Railway Configuration
+[build]
+buildCommand = ""
+startCommand = "node server/src/index.js"
+dockerfilePath = "Dockerfile.production"
 
-# Build settings
-RAILWAY_DOCKERFILE_PATH=Dockerfile.production
+[deploy]
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
 
-# Health check
-RAILWAY_HEALTHCHECK_TIMEOUT=300
-RAILWAY_HEALTHCHECK_PATH=/api/health
-
-# Restart policy
-RAILWAY_RESTART_POLICY_TYPE=on_failure
-RAILWAY_RESTART_POLICY_MAX_RETRIES=3
-
-# Resource limits
-RAILWAY_MEMORY_LIMIT=512
-RAILWAY_CPU_LIMIT=0.5
+[resources]
+memoryLimit = 512
+cpuLimit = 0.5
