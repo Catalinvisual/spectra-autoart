@@ -6,6 +6,7 @@ const resources = {
     translation: {
       title: 'Spectra AutoArt',
       subtitle: 'Premium Auto Detailing & Styling',
+      heroSecondaryText: 'Wij transformeren auto\'s tot kunstwerken met premium detailing en styling diensten!',
       bookNow: 'Maak een afspraak',
       ourServices: 'Onze Diensten',
       aboutUs: 'Over Ons',
@@ -131,6 +132,28 @@ const resources = {
       pendingBookings: 'In Afwachting Afspraken',
       totalServices: 'Totaal Diensten',
       unknownService: 'Onbekende Service',
+      
+      // Gallery fallback translations
+      galleryPage: {
+        fallback: {
+          premiumDetailing: 'Premium Detailing',
+          completeDetailing: 'Complete Detailing',
+          chromeDelete: 'Chrome Delete',
+          chromeTransformation: 'Chrome Transformatie',
+          interiorDetail: 'Interieur Detail',
+          interiorCleaning: 'Interieur Reiniging',
+          exteriorPolish: 'Exterieur Poetsen',
+          paintCorrection: 'Lak Correctie'
+        }
+      },
+      gallery: {
+        fallback: {
+          ceramicCoating: 'Keramische Coating',
+          paintProtection: 'Lak Bescherming',
+          engineBay: 'Motorruimte',
+          engineDetailing: 'Motor Detailing'
+        }
+      },
       loadingBookings: 'Laden van afspraken...',
       bookingsManagement: 'Afspraken Beheer',
       areYouSureDeleteBooking: 'Weet u zeker dat u deze afspraak wilt verwijderen?',
