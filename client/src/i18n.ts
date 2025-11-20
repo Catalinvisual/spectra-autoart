@@ -141,8 +141,17 @@ const resources = {
       totalServices: 'Totaal Diensten',
       unknownService: 'Onbekende Service',
       
-      // Gallery fallback translations
+      // Gallery translations
       galleryPage: {
+        title: 'Galerij',
+        subtitle: 'Bekijk onze premium auto detailing werkzaamheden',
+        categories: {
+          all: 'Alles',
+          exterior: 'Exterieur',
+          interior: 'Interieur',
+          detailing: 'Detailing',
+          'chrome-delete': 'Chrome Delete'
+        },
         fallback: {
           premiumDetailing: 'Premium Detailing',
           completeDetailing: 'Complete Detailing',
@@ -328,6 +337,28 @@ const resources = {
       aboutUsTitle: 'About Us',
       aboutUsDescription: 'Spectra AutoArt is your premium partner for auto detailing and styling. With years of experience and passion for perfection, we offer high-quality services that transform your vehicle into a true showstopper. Our team of specialized professionals uses only the best products and techniques to deliver exceptional results. We believe in quality, attention to detail and customer satisfaction that exceeds your expectations.',
       gallery: 'Gallery',
+      // Gallery translations
+      galleryPage: {
+        title: 'Gallery',
+        subtitle: 'View our premium auto detailing work',
+        categories: {
+          all: 'All',
+          exterior: 'Exterior',
+          interior: 'Interior',
+          detailing: 'Detailing',
+          'chrome-delete': 'Chrome Delete'
+        },
+        fallback: {
+          premiumDetailing: 'Premium Detailing',
+          completeDetailing: 'Complete Detailing',
+          chromeDelete: 'Chrome Delete',
+          chromeTransformation: 'Chrome Transformation',
+          interiorDetail: 'Interior Detail',
+          interiorCleaning: 'Interior Cleaning',
+          exteriorPolish: 'Exterior Polish',
+          paintCorrection: 'Paint Correction'
+        }
+      },
       testimonials: 'Testimonials',
       contact: 'Contact',
       selectLanguage: 'Select Language',
@@ -492,6 +523,28 @@ const resources = {
       aboutUsTitle: 'Sobre Nosotros',
       aboutUsDescription: 'Spectra AutoArt es su socio premium para el detallado y estilizado de autos. Con años de experiencia y pasión por la perfección, ofrecemos servicios de alta calidad que transforman su vehículo en un verdadero espectáculo. Nuestro equipo de profesionales especializados utiliza solo los mejores productos y técnicas para ofrecer resultados excepcionales. Creemos en la calidad, la atención al detalle y la satisfacción del cliente que supera sus expectativas.',
       gallery: 'Galería',
+      // Gallery translations
+      galleryPage: {
+        title: 'Galería',
+        subtitle: 'Vea nuestro trabajo premium de detailing de autos',
+        categories: {
+          all: 'Todo',
+          exterior: 'Exterior',
+          interior: 'Interior',
+          detailing: 'Detailing',
+          'chrome-delete': 'Chrome Delete'
+        },
+        fallback: {
+          premiumDetailing: 'Detailing Premium',
+          completeDetailing: 'Detailing Completo',
+          chromeDelete: 'Chrome Delete',
+          chromeTransformation: 'Transformación Chrome',
+          interiorDetail: 'Detalle Interior',
+          interiorCleaning: 'Limpieza Interior',
+          exteriorPolish: 'Pulido Exterior',
+          paintCorrection: 'Corrección de Pintura'
+        }
+      },
       testimonials: 'Testimonios',
       contact: 'Contacto',
       selectLanguage: 'Seleccionar Idioma',
@@ -654,6 +707,28 @@ const resources = {
       aboutUsTitle: 'O Nas',
       aboutUsDescription: 'Spectra AutoArt to Twój premium partner w dziedzinie auto detailingu i stylizacji. Z wieloletnim doświadczeniem i pasją do perfekcji oferujemy wysokiej jakości usługi, które przekształcą Twój pojazd w prawdziwe dzieło sztuki. Nasz zespół wyspecjalizowanych profesjonalistów używa tylko najlepszych produktów i technik, aby dostarczyć wyjątkowe rezultaty. Wierzymy w jakość, dbałość o szczegóły i zadowolenie klienta, które przekracza Twoje oczekiwania.',
       gallery: 'Galeria',
+      // Gallery translations
+      galleryPage: {
+        title: 'Galeria',
+        subtitle: 'Zobacz naszą premium pracę detailingu samochodów',
+        categories: {
+          all: 'Wszystko',
+          exterior: 'Zewnętrzne',
+          interior: 'Wewnętrzne',
+          detailing: 'Detailing',
+          'chrome-delete': 'Chrome Delete'
+        },
+        fallback: {
+          premiumDetailing: 'Premium Detailing',
+          completeDetailing: 'Kompletny Detailing',
+          chromeDelete: 'Chrome Delete',
+          chromeTransformation: 'Transformacja Chrome',
+          interiorDetail: 'Detal Wewnętrzny',
+          interiorCleaning: 'Czyszczenie Wewnętrzne',
+          exteriorPolish: 'Polerowanie Zewnętrzne',
+          paintCorrection: 'Korekta Lakieru'
+        }
+      },
       testimonials: 'Opinie',
       contact: 'Kontakt',
       selectLanguage: 'Wybierz Język',
@@ -816,6 +891,28 @@ const resources = {
       aboutUsTitle: 'Despre Noi',
       aboutUsDescription: 'Spectra AutoArt este partenerul tău premium pentru detailing și styling auto. Cu ani de experiență și pasiune pentru perfecțiune, oferim servicii de înaltă calitate care transformă vehiculul tău într-un adevărat spectacol. Echipa noastră de profesioniști specializați folosește doar cele mai bune produse și tehnici pentru a oferi rezultate excepționale. Credem în calitate, atenție la detalii și satisfacția clienților care depășește așteptările tale.',
       gallery: 'Galerie',
+      // Gallery translations
+      galleryPage: {
+        title: 'Galerie',
+        subtitle: 'Vezi lucrările noastre premium de detailing auto',
+        categories: {
+          all: 'Tot',
+          exterior: 'Exterior',
+          interior: 'Interior',
+          detailing: 'Detailing',
+          'chrome-delete': 'Chrome Delete'
+        },
+        fallback: {
+          premiumDetailing: 'Premium Detailing',
+          completeDetailing: 'Detailing Complet',
+          chromeDelete: 'Chrome Delete',
+          chromeTransformation: 'Transformare Chrome',
+          interiorDetail: 'Detaliu Interior',
+          interiorCleaning: 'Curățare Interior',
+          exteriorPolish: 'Polish Exterior',
+          paintCorrection: 'Corecție Vopsea'
+        }
+      },
       testimonials: 'Testimoniale',
       contact: 'Contact',
       selectLanguage: 'Selectează Limba',
