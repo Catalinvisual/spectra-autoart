@@ -95,7 +95,20 @@ class VehiclesAPIService {
       return vehicles
     } catch (error) {
       console.error('Error getting all vehicles:', error.message)
-      throw error
+      console.log('⚠️  Using fallback vehicles data')
+      // Return fallback vehicles data
+      return [
+        { id: 'vehicle-bmw-1', make: 'BMW', model: 'Seria 3', type: 'Car', body: 'Sedan' },
+        { id: 'vehicle-bmw-2', make: 'BMW', model: 'X5', type: 'SUV', body: 'SUV' },
+        { id: 'vehicle-audi-1', make: 'Audi', model: 'A4', type: 'Car', body: 'Sedan' },
+        { id: 'vehicle-audi-2', make: 'Audi', model: 'Q7', type: 'SUV', body: 'SUV' },
+        { id: 'vehicle-mercedes-1', make: 'Mercedes-Benz', model: 'C-Class', type: 'Car', body: 'Sedan' },
+        { id: 'vehicle-mercedes-2', make: 'Mercedes-Benz', model: 'GLE', type: 'SUV', body: 'SUV' },
+        { id: 'vehicle-vw-1', make: 'Volkswagen', model: 'Golf', type: 'Car', body: 'Hatchback' },
+        { id: 'vehicle-vw-2', make: 'Volkswagen', model: 'Touareg', type: 'SUV', body: 'SUV' },
+        { id: 'vehicle-toyota-1', make: 'Toyota', model: 'Corolla', type: 'Car', body: 'Sedan' },
+        { id: 'vehicle-toyota-2', make: 'Toyota', model: 'RAV4', type: 'SUV', body: 'SUV' }
+      ]
     }
   }
 
@@ -120,8 +133,28 @@ class VehiclesAPIService {
     return type || 'Sedan'
   }
 
-  getBrands() {
-    return this.brands || []
+ async getBrands() {
+    try {
+      if (!this.brands) {
+        await this.fetchBrands()
+      }
+      return this.brands || []
+    } catch (error) {
+      console.warn('⚠️  Using fallback brands due to API error:', error.message)
+      // Return fallback brands if API fails
+      return [
+        { id: 'bmw', brand: 'BMW' },
+        { id: 'audi', brand: 'Audi' },
+        { id: 'mercedes', brand: 'Mercedes-Benz' },
+        { id: 'volkswagen', brand: 'Volkswagen' },
+        { id: 'toyota', brand: 'Toyota' },
+        { id: 'honda', brand: 'Honda' },
+        { id: 'ford', brand: 'Ford' },
+        { id: 'renault', brand: 'Renault' },
+        { id: 'peugeot', brand: 'Peugeot' },
+        { id: 'citroen', brand: 'Citroen' }
+      ]
+    }
   }
 
   getTypes() {
