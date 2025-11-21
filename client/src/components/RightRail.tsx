@@ -36,7 +36,7 @@ const RightRail = () => {
         try {
           const [translatedWelcome, ...translatedReplies] = await Promise.all([
             translateText(welcomeMessage),
-            ...quickReplies.map(reply => translateText(reply))
+            ...(Array.isArray(quickReplies) ? quickReplies.map(reply => translateText(reply)) : [])
           ])
           
           setMessages([{ type: 'bot', text: translatedWelcome }])
@@ -123,14 +123,14 @@ const RightRail = () => {
           </button>
         </div>
         <div className="chatbot-messages">
-          {messages.map((message, index) => (
+          {Array.isArray(messages) && messages.map((message, index) => (
             <div key={index} className={`chatbot-message ${message.type}`}>
               {message.text}
             </div>
           ))}
         </div>
         <div className="chatbot-quick-replies">
-          {translatedQuickReplies.map((option, index) => (
+          {Array.isArray(translatedQuickReplies) && translatedQuickReplies.map((option, index) => (
             <button
               key={index}
               className="quick-reply-btn"

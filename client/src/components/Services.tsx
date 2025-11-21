@@ -132,7 +132,7 @@ const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
         <h2 className="section-title">{t('ourServices')}</h2>
         
         <div className="services-grid">
-          {services.map((service, index) => {
+          {Array.isArray(services) && services.map((service, index) => {
             // Temporarily commented out to avoid warnings
             // const currentPrice = getServicePrice(service, selectedBodyType)
             const minPrice = getMinPriceForService(service)

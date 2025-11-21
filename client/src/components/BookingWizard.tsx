@@ -243,7 +243,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       return isValid
     })
     
-    return validServices
+    return validServices || []
   }
 
   const handleNext = () => {
@@ -606,7 +606,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                   <div className="summary-item">
                     <span className="summary-label">{t('service')}:</span>
                     <span className="summary-value services-list">
-                      {bookingData.services.length > 0 ? bookingData.services.map(serviceId => {
+                      {Array.isArray(bookingData.services) && bookingData.services.length > 0 ? bookingData.services.map(serviceId => {
                         const service = services.find(s => s.id === serviceId)
                         const serviceName = service ? (i18n.language === 'en' && service.name_en ? service.name_en : service.name) : ''
                         return serviceName

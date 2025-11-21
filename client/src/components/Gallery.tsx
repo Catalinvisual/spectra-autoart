@@ -108,7 +108,7 @@ const Gallery: React.FC = () => {
         </div>
 
         <div className="gallery-filters">
-          {categories.map(category => (
+          {Array.isArray(categories) && categories.map(category => (
             <button
               key={category}
               className={`filter-btn ${selectedCategory === category ? 'active' : ''}`}
@@ -120,7 +120,7 @@ const Gallery: React.FC = () => {
         </div>
 
         <div className="gallery-grid">
-          {filteredImages.map((image, index) => (
+          {Array.isArray(filteredImages) && filteredImages.map((image, index) => (
             <div 
               key={image.id} 
               className="gallery-item"

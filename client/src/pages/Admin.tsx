@@ -426,20 +426,25 @@ const BookingsManagement: React.FC = () => {
     <div className="bookings-management">
       <h2>{t('admin.bookingsManagement')}</h2>
       <div className="bookings-list">
-        {bookings.map((booking: any) => (
+        {Array.isArray(bookings) && bookings.map((booking: any) => (
           <div key={booking.id} className="booking-item">
             <div className="booking-info">
               <h4>{booking.user.name}</h4>
               <p>{booking.user.email}</p>
               <p>{booking.user.phone}</p>
               <p><strong>{t('admin.date')}:</strong> {new Date(booking.date).toLocaleDateString()}</p>
-              <p><strong>{t('services')}:</strong> {Array.isArray(booking.services) ? booking.services.map((s: any) => {
-                // Try to get translated service name from available data
-                if (typeof s.name === 'object') {
-                  return s.name[i18n.language] || s.name.nl || s.name.en || s.name
+              <p><strong>{t('services')}:</strong> 
+                {Array.isArray(booking.services) 
+                  ? booking.services.map((s: any) => {
+                      // Try to get translated service name from available data
+                      if (typeof s.name === 'object') {
+                        return s.name[i18n.language] || s.name.nl || s.name.en || s.name
+                      }
+                      return s.name
+                    }).join(', ') 
+                  : t('admin.noServices')
                 }
-                return s.name
-              }).join(', ') : 'Geen services'}</p>
+              </p>
               <p><strong>{t('admin.total')}:</strong> €{booking.total}</p>
             </div>
             <div className="booking-actions">
@@ -613,7 +618,7 @@ const ServicesManagement: React.FC = () => {
       )}
 
       <div className="services-list">
-        {services.map((service: any) => {
+        {Array.isArray(services) && services.map((service: any) => {
           // Handle multilingual service data
           console.log('🔍 Processing service:', service)
           console.log('🔍 Service name type:', typeof service.name)
@@ -995,7 +1000,7 @@ const VehicleServicesManagement: React.FC = () => {
               <div className="form-section">
                 <h4>{t('admin.pricingPerBodyType')}</h4>
                 <div className="body-type-prices">
-                  {bodyTypes.map((bodyType) => {
+                  {Array.isArray(bodyTypes) && bodyTypes.map((bodyType) => {
                     const existingPrice = formData.prices?.find(p => p.body_type_key === bodyType.key);
                     
                     // Car icons for different body types
@@ -1191,7 +1196,7 @@ const VehicleServicesManagement: React.FC = () => {
 
       {/* Vehicle Services List */}
       <div className="services-list">
-        {vehicleServices.map((service) => (
+        {Array.isArray(vehicleServices) && vehicleServices.map((service) => (
           <div key={service.id} className="service-item">
             <div className="service-info">
               <h4>{getVehicleServiceName(service)}</h4>
@@ -1200,7 +1205,7 @@ const VehicleServicesManagement: React.FC = () => {
 
               <div className="prices-info">
                 <h5>{t('admin.prices')}:</h5>
-                {service.prices.map((price) => (
+                {Array.isArray(service.prices) && service.prices.map((price) => (
                   <div key={price.id} className="price-item">
                     <span>{getBodyTypeName(price.body_type_key)}: €{price.price_min}</span>
                     {price.price_max && <span> - €{price.price_max}</span>}
@@ -1231,7 +1236,7 @@ const VehicleServicesManagement: React.FC = () => {
       <div className="body-types-section">
         <h3>{t('admin.bodyTypes')}</h3>
         <div className="body-types-list">
-          {bodyTypes.map((bodyType) => (
+          {Array.isArray(bodyTypes) && bodyTypes.map((bodyType) => (
             <div key={bodyType.id} className="body-type-item">
               <div className="body-type-info">
                 <h4>{getBodyTypeName(bodyType.key)}</h4>
@@ -1522,7 +1527,7 @@ const GalleryManagement: React.FC = () => {
           <div className="no-images">{t('admin.noImages')}</div>
         ) : (
           <div className="images-grid">
-            {images.map((image) => (
+            {Array.isArray(images) && images.map((image) => (
               <div key={image.id} className="image-item">
                 <img 
                   src={image.url} 
@@ -1664,7 +1669,7 @@ const NewsletterManagement: React.FC = () => {
       <div className="subscribers-section">
         <h3>{t('admin.subscribersCount', { count: subscribers.length })}</h3>
         <div className="subscribers-list">
-          {subscribers.map((subscriber: any) => (
+          {Array.isArray(subscribers) && subscribers.map((subscriber: any) => (
             <div key={subscriber.email} className="subscriber-item">
               <span>{subscriber.email}</span>
               <span>{new Date(subscriber.subscribedAt).toLocaleDateString()}</span>

@@ -11,7 +11,7 @@ const ModernToastContainer: React.FC = () => {
 
   return (
     <div className="modern-toast-container">
-      {toasts.map(toast => (
+      {Array.isArray(toasts) && toasts.map(toast => (
         <ModernToastNotification
           key={toast.id}
           toast={toast}

@@ -200,7 +200,7 @@ const Testimonials: React.FC = () => {
           </button>
           
           <div className="testimonials-container">
-            {translatedTestimonials.map((testimonial, index) => (
+            {Array.isArray(translatedTestimonials) && translatedTestimonials.map((testimonial, index) => (
               <div
                 key={testimonial.id}
                 className={`testimonial-card ${
@@ -237,7 +237,7 @@ const Testimonials: React.FC = () => {
         </div>
 
         <div className="slider-dots">
-          {translatedTestimonials.map((_, index) => (
+          {Array.isArray(translatedTestimonials) && translatedTestimonials.map((_, index) => (
             <button
               key={index}
               className={`dot ${index === currentSlide ? 'active' : ''}`}

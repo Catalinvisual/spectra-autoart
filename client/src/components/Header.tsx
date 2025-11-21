@@ -124,7 +124,7 @@ const Header = () => {
           
           {isMenuOpen && (
             <div className="language-dropdown">
-              {languages.map((lang) => (
+              {Array.isArray(languages) && languages.map((lang) => (
                 <button
                   key={lang.code}
                   className="language-option"
