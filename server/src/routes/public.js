@@ -292,21 +292,17 @@ router.get('/vehicles/makes/:make/models', async (req, res) => {
     }
     
     // Get unique models for the specified make
-    const modelsMap = new Map();
+    const modelsSet = new Set();
     data.slice(1).forEach(row => {
       const vehicleMake = row[makeIndex];
       const vehicleModel = row[modelIndex];
       
       if (vehicleMake && vehicleModel && vehicleMake.toLowerCase() === make.toLowerCase()) {
-        modelsMap.set(vehicleModel, {
-          id: row[idIndex] || `${vehicleMake}_${vehicleModel}`,
-          name: vehicleModel,
-          make: vehicleMake
-        });
+        modelsSet.add(vehicleModel);
       }
     });
     
-    const models = Array.from(modelsMap.values());
+    const models = Array.from(modelsSet).sort();
     console.log(`✅ Found ${models.length} unique models for make ${make}`);
     
     res.json({
