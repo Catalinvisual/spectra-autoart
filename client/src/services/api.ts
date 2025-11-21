@@ -77,7 +77,7 @@ export const publicAPI = {
     if (lang) params.append('lang', lang);
     if (bodyType) params.append('bodyType', bodyType);
     const queryString = params.toString();
-    return api.get<ServiceWithPrices[]>(`/services-with-prices${queryString ? `?${queryString}` : ''}`);
+    return api.get<ServiceWithPrices[]>(`/public/vehicle-services${queryString ? `?${queryString}` : ''}`);
   },
   getBodyTypes: (lang?: string) => api.get<BodyType[]>(`/public/body-types${lang ? `?lang=${lang}` : ''}`),
   getGallery: (lang?: string) => api.get('/public/gallery' + (lang ? `?lang=${lang}` : '')),
