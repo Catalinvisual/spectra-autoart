@@ -5,6 +5,7 @@ import VehicleService from '../services/vehicleService.js'
 import GoogleSheetsService from '../services/googleSheetsService.js'
 import NotificationService from '../services/notificationService.js'
 import { translateMultipleWithCache } from '../services/translationCacheService.js'
+import { getActiveBodyTypes } from '../config/bodyTypesConfig.js'
 
 const router = Router()
 
@@ -494,6 +495,23 @@ router.get('/vehicle-services', async (req, res) => {
       success: false, 
       error: 'Failed to get vehicle services'
     })
+  }
+})
+
+// GET /public/body-types - Obține toate tipurile de caroserie active
+router.get('/body-types', async (req, res) => {
+  try {
+    const bodyTypes = getActiveBodyTypes();
+    res.json({
+      success: true,
+      data: bodyTypes
+    });
+  } catch (error) {
+    console.error('Error fetching body types:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch body types'
+    });
   }
 })
 
