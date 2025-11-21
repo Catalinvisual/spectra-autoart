@@ -3,6 +3,7 @@
   border-radius: 8px;
   padding: 0;
   position: relative;
+  width: auto;
 }
 
 /* Info message for body type selection */
@@ -63,7 +64,7 @@
     border-radius: 0;
     background: #12161d;
     width: auto!important;
-    padding: 30px 20px;
+    padding: 50px 20px 30px 20px;
     margin: auto;
     position: fixed;
     top: 50%;
@@ -113,7 +114,7 @@
 
 @media (max-width: 480px) {
   .booking-wizard-modal {
-    padding: 20px 15px;
+    padding: 45px 15px 20px 15px;
     border-radius: 15px;
     width: auto!important;
     position: fixed;
