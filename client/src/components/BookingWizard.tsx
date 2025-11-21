@@ -160,6 +160,15 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       console.log('🔧 Services response:', servicesRes)
       console.log('🚙 Body types response:', bodyTypesRes)
       
+      // Validate services data structure
+      if (servicesRes.data && Array.isArray(servicesRes.data)) {
+        console.log('🔧 Services data is array, length:', servicesRes.data.length)
+        if (servicesRes.data.length > 0) {
+          console.log('🔧 First service structure:', servicesRes.data[0])
+          console.log('🔧 First service prices:', servicesRes.data[0]?.prices)
+        }
+      }
+      
       setMakes(Array.isArray(makesRes.data) ? makesRes.data : [])
       setServices(Array.isArray(servicesRes.data) ? servicesRes.data : [])
       setBodyTypes(Array.isArray(bodyTypesRes.data) ? bodyTypesRes.data : [])
@@ -220,7 +229,21 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
 
   const getFilteredServices = () => {
     // Show all services regardless of whether they have prices for the selected body type
-    return Array.isArray(services) ? services : []
+    if (!Array.isArray(services)) {
+      console.log('⚠️ Services is not an array:', services)
+      return []
+    }
+    
+    // Validate each service has required properties
+    const validServices = services.filter(service => {
+      const isValid = service && service.id && service.name && Array.isArray(service.prices)
+      if (!isValid) {
+        console.log('⚠️ Invalid service structure:', service)
+      }
+      return isValid
+    })
+    
+    return validServices
   }
 
   const handleNext = () => {
@@ -454,6 +477,11 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
             )}
             <div className="service-grid">
               {getFilteredServices().map(service => {
+                if (!service || !service.id) {
+                  console.log('⚠️ Invalid service in map:', service)
+                  return null
+                }
+                
                 const servicePrice = bookingData.body ? getServicePriceForBodyType(service, bookingData.body) : null
                 const serviceName = i18n.language === 'en' && service.name_en ? service.name_en : service.name
                 const serviceDesc = i18n.language === 'en' && service.description_en ? service.description_en : service.description
