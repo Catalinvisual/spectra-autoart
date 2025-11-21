@@ -601,11 +601,10 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
   // Eliminat blocarea cu loading - afișăm conținutul instant
   return (
     <div className={`booking-wizard-modal ${currentStep === 5 ? 'no-scroll' : ''}`}>
-      {onCancel && (
-        <button className="modal-close-btn" onClick={onCancel}>
-          ×
-        </button>
-      )}
+      {/* Afișează întotdeauna butonul de închidere pe ecrane mici */}
+      <button className="modal-close-btn" onClick={onCancel || (() => window.history.back())}>
+        ×
+      </button>
       {renderProgressCircles()}
       
       <div className={`booking-wizard-content ${currentStep === 5 ? 'step-6-content' : ''}`}>
