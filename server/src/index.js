@@ -94,8 +94,16 @@ async function initializeServices() {
     // Initialize Vehicle Services
     try {
       if (process.env.NODE_ENV === 'production' && sheetsInitialized) {
-        // In production with Google Sheets configured, services will be loaded from Google Sheets
-        console.log('✅ Vehicle services will be loaded from Google Sheets in production');
+        // In production with Google Sheets configured, load services from Google Sheets
+        console.log('📥 Loading vehicle services from Google Sheets in production...');
+        const loadedFromSheets = await vehicleServicesService.loadFromGoogleSheets();
+        if (loadedFromSheets) {
+          console.log('✅ Vehicle services loaded from Google Sheets in production');
+          console.log(`📋 ${vehicleServicesService.services.length} services loaded`);
+          console.log(`💰 ${vehicleServicesService.servicePrices.length} price configurations loaded`);
+        } else {
+          console.log('⚠️  Failed to load vehicle services from Google Sheets, using fallback');
+        }
       } else if (process.env.NODE_ENV !== 'production') {
         // Only initialize demo data in development
         const demoData = await vehicleServicesService.initializeDemoData();

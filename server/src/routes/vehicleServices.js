@@ -1,6 +1,7 @@
 import express from 'express';
 import { vehicleServicesService } from '../services/vehicleServicesService.js';
 import { getActiveBodyTypes } from '../config/bodyTypesConfig.js';
+import GoogleSheetsService from '../services/googleSheetsService.js';
 import auth from '../middleware/auth.js';
 
 const router = express.Router();
@@ -27,6 +28,59 @@ router.get('/services-with-prices', async (req, res) => {
   try {
     const { include, bodyType, lang } = req.query;
     
+    // Always use Google Sheets directly for real-time data (both production and development)
+    try {
+      console.log('📥 Fetching services with prices from Google Sheets...');
+      console.log('📋 Query params:', { include, bodyType, lang });
+      
+      const services = await GoogleSheetsService.getServicesWithPrices();
+      console.log(`✅ Found ${services.length} services from Google Sheets`);
+      if (services.length > 0) {
+        console.log(`📋 First service:`, JSON.stringify(services[0], null, 2));
+      }
+      
+      // Filter by body type if requested
+      if (bodyType) {
+        console.log(`🔍 Filtering by body type: ${bodyType}`);
+        const filteredServices = services.filter(service => {
+          const hasMatchingPrice = service.prices && service.prices.some(price => {
+            console.log(`🔍 Checking service ${service.id} price body_type_key: ${price.body_type_key} vs ${bodyType}`);
+            return price.body_type_key === bodyType;
+          });
+          console.log(`🔍 Service ${service.id} has matching price: ${hasMatchingPrice}`);
+          return hasMatchingPrice;
+        }).map(service => {
+          const filteredPrices = service.prices.filter(price => {
+            console.log(`🔍 Filtering price ${price.id}: ${price.body_type_key} === ${bodyType} = ${price.body_type_key === bodyType}`);
+            return price.body_type_key === bodyType;
+          });
+          console.log(`🔍 Service ${service.id} filtered prices count: ${filteredPrices.length}`);
+          return {
+            ...service,
+            prices: filteredPrices
+          };
+        });
+        console.log(`🔍 Filtered ${filteredServices.length} services for body type ${bodyType}`);
+        console.log(`🔍 First filtered service prices count: ${filteredServices[0]?.prices?.length || 0}`);
+        return res.json({
+          success: true,
+          data: filteredServices
+        });
+      }
+      
+      console.log(`📤 Returning ${services.length} services`);
+      return res.json({
+        success: true,
+        data: services
+      });
+    } catch (sheetsError) {
+      console.error('❌ Failed to fetch from Google Sheets, falling back to local service:', sheetsError);
+      console.error('❌ Error details:', sheetsError.message);
+      console.error('❌ Error stack:', sheetsError.stack);
+      // Fall back to local service if Google Sheets fails
+    }
+    
+    // Original implementation for development or fallback
     // Dacă se cere filtrare după tipul de caroserie
     if (bodyType) {
       const services = vehicleServicesService.getServicesByBodyType(bodyType);

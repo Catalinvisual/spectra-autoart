@@ -64,11 +64,11 @@ api.interceptors.response.use(
 
 // Public API endpoints
 export const publicAPI = {
-  getVehicles: () => api.get<VehicleData[]>('/vehicles'),
-  getVehicleMakes: () => api.get<string[]>('/vehicles/makes'),
-  getVehicleTypes: () => api.get<string[]>('/vehicles/types'),
-  getVehicleModels: (make: string) => api.get<string[]>(`/vehicles/models/${make}`),
-  getServices: (lang?: string) => api.get<Service[]>(`/services${lang ? `?lang=${lang}` : ''}`),
+  getVehicles: () => api.get<VehicleData[]>('/public/vehicles'),
+  getVehicleMakes: () => api.get<string[]>('/public/vehicles/makes'),
+  getVehicleTypes: () => api.get<string[]>('/public/vehicles/types'),
+  getVehicleModels: (make: string) => api.get<string[]>(`/public/vehicles/makes/${make}/models`),
+  getServices: (lang?: string) => api.get<Service[]>(`/public/services${lang ? `?lang=${lang}` : ''}`),
   getServicesWithPrices: (lang?: string, bodyType?: string) => {
     const params = new URLSearchParams();
     if (lang) params.append('lang', lang);
@@ -76,14 +76,14 @@ export const publicAPI = {
     const queryString = params.toString();
     return api.get<ServiceWithPrices[]>(`/services-with-prices${queryString ? `?${queryString}` : ''}`);
   },
-  getBodyTypes: (lang?: string) => api.get<BodyType[]>(`/body-types${lang ? `?lang=${lang}` : ''}`),
-  getGallery: (lang?: string) => api.get('/gallery' + (lang ? `?lang=${lang}` : '')),
-  getTestimonials: (lang?: string) => api.get('/testimonials' + (lang ? `?lang=${lang}` : '')),
-  submitTestimonial: (data: { name: string; rating: number; comment: string }) => api.post('/testimonials', data),
+  getBodyTypes: (lang?: string) => api.get<BodyType[]>(`/public/body-types${lang ? `?lang=${lang}` : ''}`),
+  getGallery: (lang?: string) => api.get('/public/gallery' + (lang ? `?lang=${lang}` : '')),
+  getTestimonials: (lang?: string) => api.get('/public/testimonials' + (lang ? `?lang=${lang}` : '')),
+  submitTestimonial: (data: { name: string; rating: number; comment: string }) => api.post('/public/testimonials', data),
   createBooking: (data: BookingData) => api.post('/public/bookings', data),
-  subscribeNewsletter: (data: { email: string }) => api.post('/newsletter', data),
-  translateText: (data: { text: string; target: string; source?: string }) => api.post('/translate', data),
-  translateBatch: (data: { texts: string[]; target: string; source?: string }) => api.post('/translate/batch', data)
+  subscribeNewsletter: (data: { email: string }) => api.post('/public/newsletter', data),
+  translateText: (data: { text: string; target: string; source?: string }) => api.post('/public/translate', data),
+  translateBatch: (data: { texts: string[]; target: string; source?: string }) => api.post('/public/translate/batch', data)
 }
 
 // Admin API endpoints

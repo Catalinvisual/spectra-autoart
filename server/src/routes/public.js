@@ -42,46 +42,66 @@ router.get('/vehicles', async (req, res) => {
           const nlBodyIndex = headers.indexOf('Body_NL')
           
           if (nlMakeIndex === -1 || nlModelIndex === -1 || nlTypeIndex === -1 || nlBodyIndex === -1) {
-            console.log('❌ Missing required NL columns, throwing error')
-            throw new Error('Missing required columns in Google Sheets')
-          }
-          
-          // Use NL columns and translate if needed
-          vehicles = data.slice(1).map(row => ({
-            id: row[idIndex] || '',
-            make: row[nlMakeIndex] || '',
-            model: row[nlModelIndex] || '',
-            type: row[nlTypeIndex] || '',
-            body: row[nlBodyIndex] || ''
-          })).filter(vehicle => vehicle.make && vehicle.model) // Filter out empty rows
-          
-          // Translate to requested language if not NL
-          if (lang !== 'nl') {
-            try {
-              const makesToTranslate = vehicles.map(vehicle => vehicle.make)
-              const modelsToTranslate = vehicles.map(vehicle => vehicle.model)
-              const typesToTranslate = vehicles.map(vehicle => vehicle.type)
-              const bodiesToTranslate = vehicles.map(vehicle => vehicle.body)
-              
-              const [translatedMakes, translatedModels, translatedTypes, translatedBodies] = await Promise.all([
-                translateMultipleWithCache(makesToTranslate, lang),
-                translateMultipleWithCache(modelsToTranslate, lang),
-                translateMultipleWithCache(typesToTranslate, lang),
-                translateMultipleWithCache(bodiesToTranslate, lang)
-              ])
-              
-              vehicles = vehicles.map((vehicle, index) => ({
-                ...vehicle,
-                make: translatedMakes[index] || vehicle.make,
-                model: translatedModels[index] || vehicle.model,
-                type: translatedTypes[index] || vehicle.type,
-                body: translatedBodies[index] || vehicle.body
-              }))
-              
-              console.log(`🔄 Translated ${vehicles.length} vehicles from NL to ${lang}`)
-            } catch (translationError) {
-              console.error('Translation error:', translationError)
-              // Keep original vehicles data if translation fails
+            console.log('❌ Missing required NL columns, trying any available columns')
+            // Try to find any make/model columns
+            const anyMakeIndex = headers.findIndex(h => h.toLowerCase().includes('make'))
+            const anyModelIndex = headers.findIndex(h => h.toLowerCase().includes('model'))
+            const anyTypeIndex = headers.findIndex(h => h.toLowerCase().includes('type'))
+            const anyBodyIndex = headers.findIndex(h => h.toLowerCase().includes('body'))
+            
+            if (anyMakeIndex === -1 || anyModelIndex === -1) {
+              console.log('❌ No make/model columns found at all')
+              throw new Error('Missing required columns in Google Sheets')
+            }
+            
+            // Use any available columns
+            vehicles = data.slice(1).map(row => ({
+              id: row[idIndex] || '',
+              make: row[anyMakeIndex] || '',
+              model: row[anyModelIndex] || '',
+              type: anyTypeIndex !== -1 ? row[anyTypeIndex] || '' : '',
+              body: anyBodyIndex !== -1 ? row[anyBodyIndex] || '' : ''
+            }))// Remove strict filtering - show all vehicles with any make data
+            .filter(vehicle => vehicle.make && vehicle.make.trim() !== '')
+          } else {
+            // Use NL columns and translate if needed
+            vehicles = data.slice(1).map(row => ({
+              id: row[idIndex] || '',
+              make: row[nlMakeIndex] || '',
+              model: row[nlModelIndex] || '',
+              type: row[nlTypeIndex] || '',
+              body: row[nlBodyIndex] || ''
+            }))// Remove strict filtering - show all vehicles with any make data
+            .filter(vehicle => vehicle.make && vehicle.make.trim() !== '')
+            
+            // Translate to requested language if not NL
+            if (lang !== 'nl') {
+              try {
+                const makesToTranslate = vehicles.map(vehicle => vehicle.make)
+                const modelsToTranslate = vehicles.map(vehicle => vehicle.model)
+                const typesToTranslate = vehicles.map(vehicle => vehicle.type)
+                const bodiesToTranslate = vehicles.map(vehicle => vehicle.body)
+                
+                const [translatedMakes, translatedModels, translatedTypes, translatedBodies] = await Promise.all([
+                  translateMultipleWithCache(makesToTranslate, lang),
+                  translateMultipleWithCache(modelsToTranslate, lang),
+                  translateMultipleWithCache(typesToTranslate, lang),
+                  translateMultipleWithCache(bodiesToTranslate, lang)
+                ])
+                
+                vehicles = vehicles.map((vehicle, index) => ({
+                  ...vehicle,
+                  make: translatedMakes[index] || vehicle.make,
+                  model: translatedModels[index] || vehicle.model,
+                  type: translatedTypes[index] || vehicle.type,
+                  body: translatedBodies[index] || vehicle.body
+                }))
+                
+                console.log(`🔄 Translated ${vehicles.length} vehicles from NL to ${lang}`)
+              } catch (translationError) {
+                console.error('Translation error:', translationError)
+                // Keep original vehicles data if translation fails
+              }
             }
           }
         } else {
@@ -92,7 +112,8 @@ router.get('/vehicles', async (req, res) => {
             model: row[modelIndex] || '',
             type: row[typeIndex] || '',
             body: row[bodyIndex] || ''
-          })).filter(vehicle => vehicle.make && vehicle.model) // Filter out empty rows
+          }))// Remove strict filtering - show all vehicles with any make data
+          .filter(vehicle => vehicle.make && vehicle.make.trim() !== '')
         }
         
         console.log(`✅ Parsed ${vehicles.length} vehicles from Google Sheets`)
@@ -127,10 +148,165 @@ router.get('/vehicles', async (req, res) => {
   }
 })
 
+router.get('/vehicles/makes', async (req, res) => {
+  try {
+    const { lang = 'nl' } = req.query;
+    
+    // Get all vehicles from Google Sheets and extract unique makes
+    const data = await GoogleSheetsService.getData('Vehicles')
+    console.log(`📊 Getting vehicle makes, lang: ${lang}`)
+    
+    if (data.length <= 1) {
+      return res.json({
+        success: true,
+        data: []
+      });
+    }
+    
+    const headers = data[0];
+    const langSuffix = lang.toUpperCase();
+    
+    // Find column indices
+    const makeIndex = headers.indexOf(`Make_${langSuffix}`) !== -1 ? headers.indexOf(`Make_${langSuffix}`) : headers.indexOf('Make_NL');
+    
+    if (makeIndex === -1) {
+      console.log('❌ Missing make column');
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Missing required columns in Google Sheets'
+      });
+    }
+    
+    // Get unique makes
+    const makesSet = new Set();
+    data.slice(1).forEach(row => {
+      const vehicleMake = row[makeIndex];
+      if (vehicleMake && vehicleMake.trim() !== '') {
+        makesSet.add(vehicleMake.trim());
+      }
+    });
+    
+    const makes = Array.from(makesSet).sort();
+    console.log(`✅ Found ${makes.length} unique makes`);
+    
+    res.json({
+      success: true,
+      data: makes
+    });
+  } catch (error) {
+    console.error('Error getting vehicle makes:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to get vehicle makes',
+      demo: true 
+    });
+  }
+})
+
+router.get('/vehicles/types', async (req, res) => {
+  try {
+    const { lang = 'nl' } = req.query;
+    
+    // Get all vehicles from Google Sheets and extract unique types
+    const data = await GoogleSheetsService.getData('Vehicles')
+    console.log(`📊 Getting vehicle types, lang: ${lang}`)
+    
+    if (data.length <= 1) {
+      return res.json({
+        success: true,
+        data: []
+      });
+    }
+    
+    const headers = data[0];
+    const langSuffix = lang.toUpperCase();
+    
+    // Find column indices
+    const typeIndex = headers.indexOf(`Type_${langSuffix}`) !== -1 ? headers.indexOf(`Type_${langSuffix}`) : headers.indexOf('Type_NL');
+    
+    if (typeIndex === -1) {
+      console.log('❌ Missing type column');
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Missing required columns in Google Sheets'
+      });
+    }
+    
+    // Get unique types
+    const typesSet = new Set();
+    data.slice(1).forEach(row => {
+      const vehicleType = row[typeIndex];
+      if (vehicleType && vehicleType.trim() !== '') {
+        typesSet.add(vehicleType.trim());
+      }
+    });
+    
+    const types = Array.from(typesSet).sort();
+    console.log(`✅ Found ${types.length} unique types`);
+    
+    res.json({
+      success: true,
+      data: types
+    });
+  } catch (error) {
+    console.error('Error getting vehicle types:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to get vehicle types',
+      demo: true 
+    });
+  }
+})
+
 router.get('/vehicles/makes/:make/models', async (req, res) => {
   try {
     const { make } = req.params;
-    const models = await VehicleService.getModelsByMake(make);
+    const { lang = 'nl' } = req.query;
+    
+    // Get all vehicles from Google Sheets and filter by make
+    const data = await GoogleSheetsService.getData('Vehicles')
+    console.log(`📊 Getting models for make: ${make}, lang: ${lang}`)
+    
+    if (data.length <= 1) {
+      return res.json({
+        success: true,
+        data: []
+      });
+    }
+    
+    const headers = data[0];
+    const langSuffix = lang.toUpperCase();
+    
+    // Find column indices
+    const idIndex = headers.indexOf('ID');
+    const makeIndex = headers.indexOf(`Make_${langSuffix}`) !== -1 ? headers.indexOf(`Make_${langSuffix}`) : headers.indexOf('Make_NL');
+    const modelIndex = headers.indexOf(`Model_${langSuffix}`) !== -1 ? headers.indexOf(`Model_${langSuffix}`) : headers.indexOf('Model_NL');
+    
+    if (idIndex === -1 || makeIndex === -1 || modelIndex === -1) {
+      console.log('❌ Missing required columns for models');
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Missing required columns in Google Sheets'
+      });
+    }
+    
+    // Get unique models for the specified make
+    const modelsMap = new Map();
+    data.slice(1).forEach(row => {
+      const vehicleMake = row[makeIndex];
+      const vehicleModel = row[modelIndex];
+      
+      if (vehicleMake && vehicleModel && vehicleMake.toLowerCase() === make.toLowerCase()) {
+        modelsMap.set(vehicleModel, {
+          id: row[idIndex] || `${vehicleMake}_${vehicleModel}`,
+          name: vehicleModel,
+          make: vehicleMake
+        });
+      }
+    });
+    
+    const models = Array.from(modelsMap.values());
+    console.log(`✅ Found ${models.length} unique models for make ${make}`);
     
     res.json({
       success: true,
@@ -262,6 +438,61 @@ router.get('/services', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       error: 'Failed to get services'
+    })
+  }
+})
+
+// Vehicle services with pricing
+router.get('/vehicle-services', async (req, res) => {
+  try {
+    const { lang = 'nl' } = req.query
+    let vehicleServices = []
+    
+    try {
+      // Use the dedicated method from GoogleSheetsService
+      vehicleServices = await GoogleSheetsService.getServicesWithPrices()
+      console.log(`📊 Vehicle services with prices:`, vehicleServices.length, 'services')
+      console.log(`📋 First 3 vehicle services:`, vehicleServices.slice(0, 3))
+      
+      // Translate if needed (services already have English names by default)
+      if (lang !== 'en' && lang !== 'nl') {
+        try {
+          const namesToTranslate = vehicleServices.map(service => service.name)
+          const descsToTranslate = vehicleServices.map(service => service.description)
+          
+          const [translatedNames, translatedDescs] = await Promise.all([
+            translateMultipleWithCache(namesToTranslate, lang),
+            translateMultipleWithCache(descsToTranslate, lang)
+          ])
+          
+          vehicleServices = vehicleServices.map((service, index) => ({
+            ...service,
+            name: translatedNames[index] || service.name,
+            description: translatedDescs[index] || service.description
+          }))
+          
+          console.log(`🔄 Translated ${vehicleServices.length} vehicle services to ${lang}`)
+        } catch (translationError) {
+          console.error('Vehicle services translation error:', translationError)
+          // Keep original vehicle services data if translation fails
+        }
+      }
+      
+    } catch (error) {
+      console.error('❌ Error getting vehicle services:', error)
+      // Return empty array instead of error to allow booking modal to work
+      vehicleServices = []
+    }
+    
+    return res.json({ 
+      success: true, 
+      data: vehicleServices 
+    })
+  } catch (error) {
+    console.error('Error getting vehicle services:', error)
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to get vehicle services'
     })
   }
 })
