@@ -91,16 +91,20 @@ async function initializeServices() {
       console.log('⚠️  Google Sheets not configured - using demo data');
     }
 
-    // Initialize Vehicle Services with demo data
-    if (process.env.NODE_ENV !== 'production') {
-      try {
+    // Initialize Vehicle Services
+    try {
+      if (process.env.NODE_ENV === 'production' && sheetsInitialized) {
+        // In production with Google Sheets configured, services will be loaded from Google Sheets
+        console.log('✅ Vehicle services will be loaded from Google Sheets in production');
+      } else if (process.env.NODE_ENV !== 'production') {
+        // Only initialize demo data in development
         const demoData = await vehicleServicesService.initializeDemoData();
         console.log('✅ Vehicle services demo data initialized');
         console.log(`📋 ${demoData.services.length} services created`);
         console.log(`💰 ${demoData.servicePrices.length} price configurations created`);
-      } catch (error) {
-        console.log('⚠️  Vehicle services initialization failed:', error.message);
       }
+    } catch (error) {
+      console.log('⚠️  Vehicle services initialization failed:', error.message);
     }
   } catch (error) {
     console.error('❌ Failed to initialize services:', error.message);

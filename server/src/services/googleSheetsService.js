@@ -16,6 +16,7 @@ class GoogleSheetsService {
       console.log('📊 SPREADSHEET_ID:', process.env.GOOGLE_SHEETS_SPREADSHEET_ID)
       console.log('📧 SERVICE_ACCOUNT_EMAIL:', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)
       console.log('🔑 PRIVATE_KEY exists:', !!process.env.GOOGLE_PRIVATE_KEY)
+      console.log('🌍 NODE_ENV:', process.env.NODE_ENV)
       
       if (!process.env.GOOGLE_SHEETS_SPREADSHEET_ID || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
         console.log('⚠️  Google Sheets credentials not configured - switching to demo mode');
@@ -120,12 +121,14 @@ class GoogleSheetsService {
     try {
       // Return demo data if in demo mode
       if (this.isDemoMode) {
+        console.log(`🔄 Returning demo data for ${sheetName} (demo mode active)`);
         return this.getDemoData(sheetName);
       }
 
       // Check if service is initialized
       if (!this.isInitialized || !this.doc) {
         console.log(`⚠️  Google Sheets service not initialized, using demo data for ${sheetName}`);
+        console.log(`🔍 isInitialized: ${this.isInitialized}, doc exists: ${!!this.doc}`);
         return this.getDemoData(sheetName);
       }
 

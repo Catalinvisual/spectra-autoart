@@ -1125,6 +1125,94 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
+/* Image input options styling */
+.image-input-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.input-option {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-option label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #00e5ff;
+  font-weight: 500;
+}
+
+.input-option input[type="radio"] {
+  width: auto;
+  margin: 0;
+}
+
+.file-input,
+.url-input {
+  margin-left: 24px;
+  margin-top: 5px;
+}
+
+.file-input {
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(0, 229, 255, 0.5);
+}
+
+.file-input::-webkit-file-upload-button {
+  background: linear-gradient(45deg, #00e5ff, #0099cc);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.file-input::-webkit-file-upload-button:hover {
+  background: linear-gradient(45deg, #00c4e6, #0088bb);
+}
+
+.input-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 15px;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px dashed rgba(0, 229, 255, 0.3);
+  border-radius: 8px;
+}
+
+.prompt-button {
+  background: linear-gradient(45deg, #00e5ff, #0099cc);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.prompt-button:hover {
+  background: linear-gradient(45deg, #00c4e6, #0088bb);
+  transform: translateY(-1px);
+}
+
+.or-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
 .existing-images {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(0, 229, 255, 0.3);

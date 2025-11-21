@@ -17,6 +17,7 @@ router.get('/vehicles', async (req, res) => {
     try {
       const data = await GoogleSheetsService.getData('Vehicles')
       console.log(`📊 Raw vehicles data from Google Sheets:`, data.length, 'rows')
+        console.log(`📊 First few rows:`, data.slice(0, 3))
       
       if (data.length > 1) { // Has headers and data
         const headers = data[0]

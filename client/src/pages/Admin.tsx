@@ -1277,6 +1277,7 @@ const GalleryManagement: React.FC = () => {
     category: 'general',
     active: true
   })
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   useEffect(() => {
     loadImages()
@@ -1294,23 +1295,55 @@ const GalleryManagement: React.FC = () => {
     }
   }
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      setNewImage({ ...newImage, url: '' }) // Clear URL when file is selected
+    }
+  }
+
+  const handleChooseFile = () => {
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) fileInput.click();
+  }
+
+  const handleChooseUrl = () => {
+    setNewImage({ ...newImage, url: ' ' })
+    setSelectedFile(null)
+  }
+
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewImage({ ...newImage, url: e.target.value })
+    setSelectedFile(null) // Clear file selection when URL is entered
+  }
+
   const handleAddImage = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!newImage.url) {
-      showWarning(t('admin.imageUrl') + ' ' + t('admin.pleaseEnter'))
+    if (!newImage.url.trim() && !selectedFile) {
+      showWarning(t('admin.pleaseSelectImageOrEnterUrl'))
       return
     }
 
     try {
       setLoading(true)
       const formData = new FormData()
-      formData.append('url', newImage.url)
+      
+      // Add file if selected
+      if (selectedFile) {
+        formData.append('image', selectedFile)
+      } else if (newImage.url.trim()) {
+        formData.append('url', newImage.url.trim())
+      }
+      
       formData.append('alt_text', newImage.alt_text)
       formData.append('category', newImage.category)
       formData.append('active', String(newImage.active))
+      
       await adminAPI.uploadImage(formData)
       setNewImage({ url: '', alt_text: '', category: 'general', active: true })
+      setSelectedFile(null)
       await loadImages()
       showSuccess(t('admin.imageAdded'))
     } catch (error) {
@@ -1372,14 +1405,69 @@ const GalleryManagement: React.FC = () => {
         <h3>{t('admin.addNewImage')}</h3>
         <form onSubmit={handleAddImage}>
           <div className="form-group">
-            <label>{t('admin.imageUrl')} *</label>
-            <input
-              type="url"
-              value={newImage.url}
-              onChange={(e) => setNewImage({ ...newImage, url: e.target.value })}
-              placeholder={t('admin.imageUrlPlaceholder')}
-              required
-            />
+            <label>{t('admin.selectImage')} *</label>
+            <div className="image-input-options">
+              <div className="input-option">
+                <label>
+                  <input
+                    type="radio"
+                    name="imageSource"
+                    value="file"
+                    checked={selectedFile !== null}
+                    onChange={() => setNewImage({ ...newImage, url: '' })}
+                  />
+                  {t('admin.uploadFile')}
+                </label>
+                {selectedFile !== null && (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="file-input"
+                  />
+                )}
+              </div>
+              <div className="input-option">
+                <label>
+                  <input
+                    type="radio"
+                    name="imageSource"
+                    value="url"
+                    checked={newImage.url !== ''}
+                    onChange={() => setSelectedFile(null)}
+                  />
+                  {t('admin.useUrl')}
+                </label>
+                {newImage.url !== '' && (
+                  <input
+                    type="url"
+                    value={newImage.url}
+                    onChange={handleUrlChange}
+                    placeholder={t('admin.imageUrlPlaceholder')}
+                    className="url-input"
+                  />
+                )}
+              </div>
+            </div>
+            {(selectedFile === null && newImage.url === '') && (
+              <div className="input-prompt">
+                <button
+                  type="button"
+                  onClick={handleChooseFile}
+                  className="prompt-button"
+                >
+                  {t('admin.chooseImageFile')}
+                </button>
+                <span className="or-text"> {t('admin.or')} </span>
+                <button
+                  type="button"
+                  onClick={handleChooseUrl}
+                  className="prompt-button"
+                >
+                  {t('admin.enterImageUrl')}
+                </button>
+              </div>
+            )}
           </div>
           
           <div className="form-group">

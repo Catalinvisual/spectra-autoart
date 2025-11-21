@@ -1,9 +1,48 @@
 import { Router } from 'express'
+import multer from 'multer'
+import path from 'path'
+import fs from 'fs'
 import auth from '../middleware/auth.js'
 import GoogleSheetsService from '../services/googleSheetsService.js'
 import { translateMultipleWithCache } from '../services/translationCacheService.js'
 
 const router = Router()
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = 'uploads/gallery'
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true })
+    }
+    cb(null, uploadDir)
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    const ext = path.extname(file.originalname)
+    cb(null, `gallery-${uniqueSuffix}${ext}`)
+  }
+})
+
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png|gif|webp/
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase())
+  const mimetype = allowedTypes.test(file.mimetype)
+
+  if (mimetype && extname) {
+    return cb(null, true)
+  } else {
+    cb(new Error('Only image files are allowed (JPEG, JPG, PNG, GIF, WebP)'))
+  }
+}
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: fileFilter
+})
 
 // Get all gallery images
 router.get('/', async (req, res) => {
@@ -73,21 +112,31 @@ router.get('/', async (req, res) => {
   }
 })
 
-// Add new gallery image (admin only)
-router.post('/', auth, async (req, res) => {
+// Add new gallery image (admin only) - supports both file upload and URL
+router.post('/', auth, upload.single('image'), async (req, res) => {
   try {
-    const { url, alt_text, category, active } = req.body
+    let imageUrl = ''
     
-    if (!url) {
+    // Handle file upload
+    if (req.file) {
+      // File was uploaded, use the file path
+      imageUrl = `/uploads/gallery/${req.file.filename}`
+      console.log(`📁 File uploaded: ${req.file.filename}`)
+    } else if (req.body.url) {
+      // URL was provided
+      imageUrl = req.body.url
+    } else {
       return res.status(400).json({ 
         success: false,
-        error: 'Image URL is required' 
+        error: 'Either image file or URL is required' 
       })
     }
 
+    const { alt_text, category, active } = req.body
+
     const imageData = [
       Date.now().toString(), // ID
-      url,
+      imageUrl,
       alt_text || '',
       category || 'general',
       active !== undefined ? active.toString() : 'true',
@@ -98,6 +147,10 @@ router.post('/', auth, async (req, res) => {
     const success = await GoogleSheetsService.appendData('Gallery', imageData)
     
     if (!success) {
+      // If failed, delete the uploaded file
+      if (req.file) {
+        fs.unlinkSync(req.file.path)
+      }
       return res.status(500).json({ 
         success: false,
         error: 'Failed to add gallery image',
@@ -107,10 +160,19 @@ router.post('/', auth, async (req, res) => {
 
     res.json({ 
       success: true, 
-      message: 'Gallery image added successfully' 
+      message: 'Gallery image added successfully',
+      data: { url: imageUrl }
     })
   } catch (error) {
     console.error('Error adding gallery image:', error)
+    // Clean up uploaded file on error
+    if (req.file) {
+      try {
+        fs.unlinkSync(req.file.path)
+      } catch (unlinkError) {
+        console.error('Error deleting file:', unlinkError)
+      }
+    }
     res.status(500).json({ 
       success: false, 
       error: 'Failed to add gallery image',

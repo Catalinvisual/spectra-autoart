@@ -223,6 +223,13 @@ const resources = {
         addNewImage: 'Nieuwe Afbeelding Toevoegen',
         imageUrl: 'Afbeelding URL',
         imageUrlPlaceholder: 'https://voorbeeld.nl/afbeelding.jpg',
+        selectImage: 'Selecteer Afbeelding',
+        uploadFile: 'Upload Bestand',
+        useUrl: 'Gebruik URL',
+        chooseImageFile: 'Kies Afbeeldingsbestand',
+        chooseImageSource: 'Kies afbeeldingsbron',
+        or: 'of',
+        enterImageUrl: 'Voer Afbeeldings-URL in',
         altText: 'Alt Tekst',
         descriptionOfImage: 'Beschrijving van afbeelding',
         category: 'Categorie',
@@ -305,7 +312,8 @@ const resources = {
         activate: 'Activeren',
         unknownService: 'Onbekende Service',
         passwordResetInstructions: 'Als je je wachtwoord bent vergeten, neem dan contact op met de systeembeheerder.',
-        passwordResetFailed: 'Wachtwoord reset mislukt.'
+        passwordResetFailed: 'Wachtwoord reset mislukt.',
+        pleaseSelectImageOrEnterUrl: 'Selecteer een afbeelding of voer een URL in'
       },
       
       // Chatbot translations
@@ -529,6 +537,13 @@ const resources = {
         addNewImage: 'Add New Image',
         imageUrl: 'Image URL',
         imageUrlPlaceholder: 'https://example.com/image.jpg',
+        selectImage: 'Select Image',
+        uploadFile: 'Upload File',
+        useUrl: 'Use URL',
+        chooseImageFile: 'Choose Image File',
+        chooseImageSource: 'Choose Image Source',
+        or: 'or',
+        enterImageUrl: 'Enter Image URL',
         altText: 'Alt Text',
         descriptionOfImage: 'Description of image',
         category: 'Category',
@@ -611,7 +626,8 @@ const resources = {
         activate: 'Activate',
         unknownService: 'Unknown Service',
         passwordResetInstructions: 'If you forgot your password, please contact the system administrator.',
-        passwordResetFailed: 'Password reset failed.'
+        passwordResetFailed: 'Password reset failed.',
+        pleaseSelectImageOrEnterUrl: 'Please select an image or enter a URL'
       }
     }
   },
