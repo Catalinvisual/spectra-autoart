@@ -80,6 +80,30 @@ class GoogleSheetsService {
             ['test-001', 'Test Client', '5', 'Excelent serviciu! Mașina mea arată ca nouă după detalierea premium.', 'Excellent service! My car looks brand new after premium detailing.', '¡Excelente servicio! Mi auto se ve como nuevo después del detallado premium.', 'Doskonała obsługa! Moje auto wygląda jak nowe po premium detailingu.', 'Serviciu excelent! Mașina mea arată ca nouă după detailing premium.', 'true', '2025-11-20'],
             ['testimonial-1', 'Alex Johnson', '5', 'Excellent service! My car looks brand new.', 'Excellent service! My car looks brand new after premium detailing.', '¡Excelente servicio! Mi auto se ve como nuevo después del detallado premium.', 'Doskonała obsługa! Moje auto wygląda jak nowe po premium detailingu.', 'Serviciu excelent! Mașina mea arată ca nouă după detailing premium.', 'true', '2024-01-05']
           ];
+      case 'Vehicles':
+        return [
+          ['ID', 'Make_NL', 'Make_EN', 'Model_NL', 'Model_EN', 'Type_NL', 'Type_EN', 'Body_NL', 'Body_EN'],
+          ['1', 'BMW', 'BMW', 'Seria 3', 'Series 3', 'Sedan', 'Sedan', 'Sedan', 'Sedan'],
+          ['2', 'BMW', 'BMW', 'Seria 5', 'Series 5', 'Sedan', 'Sedan', 'Sedan', 'Sedan'],
+          ['3', 'Audi', 'Audi', 'A4', 'A4', 'Sedan', 'Sedan', 'Sedan', 'Sedan'],
+          ['4', 'Audi', 'Audi', 'Q5', 'Q5', 'SUV', 'SUV', 'SUV', 'SUV'],
+          ['5', 'Mercedes', 'Mercedes', 'C-Klasse', 'C-Class', 'Sedan', 'Sedan', 'Sedan', 'Sedan'],
+          ['6', 'Mercedes', 'Mercedes', 'GLE', 'GLE', 'SUV', 'SUV', 'SUV', 'SUV']
+        ];
+      case 'Vehicle_Services':
+        return [
+          ['ID', 'Name', 'Name_EN', 'Name_NL', 'Description', 'Description_EN', 'Description_NL', 'Category', 'Category_EN', 'Category_NL', 'Duration_Minutes', 'Is_Active'],
+          ['1', 'Premium Wash', 'Premium Wash', 'Premium Was', 'Complete exterior cleaning with premium products', 'Complete exterior cleaning with premium products', 'Complete exterieur reiniging met premium producten', 'exterior', 'exterior', 'exterieur', '45', 'true'],
+          ['2', 'Interior Detail', 'Interior Detail', 'Interieur Detail', 'Deep interior cleaning with extraction and deodorizing', 'Deep interior cleaning with extraction and deodorizing', 'Diep interieur reiniging met extractie en deodoriseren', 'interior', 'interior', 'interieur', '120', 'true']
+        ];
+      case 'Vehicle_Service_Prices':
+        return [
+          ['ID', 'Service_ID', 'Body_Type_ID', 'Price_Min', 'Price_Max', 'Currency', 'Duration_Minutes', 'Is_Active'],
+          ['1', '1', 'sedan', '25', '35', 'EUR', '45', 'true'],
+          ['2', '1', 'suv', '35', '45', 'EUR', '45', 'true'],
+          ['3', '2', 'sedan', '100', '130', 'EUR', '120', 'true'],
+          ['4', '2', 'suv', '120', '150', 'EUR', '120', 'true']
+        ];
       default:
         return [['Demo header'], ['Demo data']];
     }
