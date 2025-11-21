@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node src/index.js",
     "start": "node src/index.js",
-    "build": "cd ../client && npm install && npm run build && cd ../server && echo 'Build complete'"
+    "build": "rm -rf ../client/dist && rm -rf ../client/build && cd ../client && npm ci && npm run build && cd ../server && echo 'Build complete'"
   },
   "keywords": [
     "auto",
