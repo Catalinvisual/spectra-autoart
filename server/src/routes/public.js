@@ -4,61 +4,125 @@ import { translateText } from '../services/translator.js'
 import VehicleService from '../services/vehicleService.js'
 import GoogleSheetsService from '../services/googleSheetsService.js'
 import NotificationService from '../services/notificationService.js'
+import { translateMultipleWithCache } from '../services/translationCacheService.js'
 
 const router = Router()
 
 router.get('/vehicles', async (req, res) => {
   try {
-    // Return demo vehicle data that matches client expectations
-    const demoVehicles = [
-      {
-        id: '1',
-        make: 'BMW',
-        model: 'Seria 3',
-        type: 'Sedan',
-        body: 'Sedan'
-      },
-      {
-        id: '2',
-        make: 'BMW',
-        model: 'Seria 5',
-        type: 'Sedan',
-        body: 'Sedan'
-      },
-      {
-        id: '3',
-        make: 'Audi',
-        model: 'A4',
-        type: 'Sedan',
-        body: 'Sedan'
-      },
-      {
-        id: '4',
-        make: 'Audi',
-        model: 'A6',
-        type: 'Sedan',
-        body: 'Sedan'
-      },
-      {
-        id: '5',
-        make: 'Mercedes',
-        model: 'C-Class',
-        type: 'Sedan',
-        body: 'Sedan'
-      }
-    ];
+    const { lang = 'nl' } = req.query
+    // Try to fetch vehicles from Google Sheets first
+    let vehicles = []
     
-    res.json({
-      success: true,
-      data: demoVehicles
-    });
+    try {
+      const data = await GoogleSheetsService.getData('Vehicles')
+      console.log(`📊 Raw vehicles data from Google Sheets:`, data.length, 'rows')
+      
+      if (data.length > 1) { // Has headers and data
+        const headers = data[0]
+        console.log(`📋 Headers found:`, headers)
+        
+        // Use multilingual columns based on the requested language
+        const langSuffix = lang.toUpperCase()
+        const idIndex = headers.indexOf('ID')
+        const makeIndex = headers.indexOf(`Make_${langSuffix}`)
+        const modelIndex = headers.indexOf(`Model_${langSuffix}`)
+        const typeIndex = headers.indexOf(`Type_${langSuffix}`)
+        const bodyIndex = headers.indexOf(`Body_${langSuffix}`)
+        
+        console.log(`🔍 Column indices - ID:${idIndex}, Make_${langSuffix}:${makeIndex}, Model_${langSuffix}:${modelIndex}, Type_${langSuffix}:${typeIndex}, Body_${langSuffix}:${bodyIndex}`)
+        
+        if (idIndex === -1 || makeIndex === -1 || modelIndex === -1 || typeIndex === -1 || bodyIndex === -1) {
+          console.log('❌ Missing required multilingual columns, trying fallback to NL columns')
+          // Fallback to Dutch (NL) if requested language columns don't exist
+          const nlMakeIndex = headers.indexOf('Make_NL')
+          const nlModelIndex = headers.indexOf('Model_NL')
+          const nlTypeIndex = headers.indexOf('Type_NL')
+          const nlBodyIndex = headers.indexOf('Body_NL')
+          
+          if (nlMakeIndex === -1 || nlModelIndex === -1 || nlTypeIndex === -1 || nlBodyIndex === -1) {
+            console.log('❌ Missing required NL columns, throwing error')
+            throw new Error('Missing required columns in Google Sheets')
+          }
+          
+          // Use NL columns and translate if needed
+          vehicles = data.slice(1).map(row => ({
+            id: row[idIndex] || '',
+            make: row[nlMakeIndex] || '',
+            model: row[nlModelIndex] || '',
+            type: row[nlTypeIndex] || '',
+            body: row[nlBodyIndex] || ''
+          })).filter(vehicle => vehicle.make && vehicle.model) // Filter out empty rows
+          
+          // Translate to requested language if not NL
+          if (lang !== 'nl') {
+            try {
+              const makesToTranslate = vehicles.map(vehicle => vehicle.make)
+              const modelsToTranslate = vehicles.map(vehicle => vehicle.model)
+              const typesToTranslate = vehicles.map(vehicle => vehicle.type)
+              const bodiesToTranslate = vehicles.map(vehicle => vehicle.body)
+              
+              const [translatedMakes, translatedModels, translatedTypes, translatedBodies] = await Promise.all([
+                translateMultipleWithCache(makesToTranslate, lang),
+                translateMultipleWithCache(modelsToTranslate, lang),
+                translateMultipleWithCache(typesToTranslate, lang),
+                translateMultipleWithCache(bodiesToTranslate, lang)
+              ])
+              
+              vehicles = vehicles.map((vehicle, index) => ({
+                ...vehicle,
+                make: translatedMakes[index] || vehicle.make,
+                model: translatedModels[index] || vehicle.model,
+                type: translatedTypes[index] || vehicle.type,
+                body: translatedBodies[index] || vehicle.body
+              }))
+              
+              console.log(`🔄 Translated ${vehicles.length} vehicles from NL to ${lang}`)
+            } catch (translationError) {
+              console.error('Translation error:', translationError)
+              // Keep original vehicles data if translation fails
+            }
+          }
+        } else {
+          // Use requested language columns directly
+          vehicles = data.slice(1).map(row => ({
+            id: row[idIndex] || '',
+            make: row[makeIndex] || '',
+            model: row[modelIndex] || '',
+            type: row[typeIndex] || '',
+            body: row[bodyIndex] || ''
+          })).filter(vehicle => vehicle.make && vehicle.model) // Filter out empty rows
+        }
+        
+        console.log(`✅ Parsed ${vehicles.length} vehicles from Google Sheets`)
+        console.log(`📋 First 3 vehicles:`, vehicles.slice(0, 3))
+      } else {
+        console.log('⚠️  No vehicles data in Google Sheets, trying Vehicles API')
+        throw new Error('No vehicles data in Google Sheets')
+      }
+    } catch (sheetsError) {
+      console.warn('⚠️  Google Sheets failed, trying Vehicles API:', sheetsError.message)
+      
+      // Return error with demo data as fallback
+      console.error('❌ Both Google Sheets and Vehicles API failed, returning error')
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to get vehicles from data sources',
+        demo: false 
+      })
+      return
+    }
+    
+    return res.json({ 
+      success: true, 
+      data: vehicles 
+    })
   } catch (error) {
-    console.error('Error getting vehicles:', error);
+    console.error('Error getting vehicles:', error)
     res.status(500).json({ 
       success: false, 
-      error: 'Failed to get vehicles',
-      demo: true 
-    });
+      error: 'Failed to get vehicles'
+    })
   }
 })
 
@@ -83,52 +147,120 @@ router.get('/vehicles/makes/:make/models', async (req, res) => {
 
 router.get('/services', async (req, res) => {
   try {
-    // Return demo data for services
-    const demoServices = [
-      {
-        id: 'service-1',
-        name: 'Premium Detailing',
-        description: 'Complete exterior and interior detailing service',
-        price: 150,
-        duration: '3-4 hours',
-        category: 'detailing'
-      },
-      {
-        id: 'service-2',
-        name: 'Interior Cleaning',
-        description: 'Deep interior cleaning and protection',
-        price: 80,
-        duration: '2 hours',
-        category: 'interior'
-      },
-      {
-        id: 'service-3',
-        name: 'Exterior Wash',
-        description: 'Professional exterior washing and waxing',
-        price: 45,
-        duration: '1 hour',
-        category: 'exterior'
-      },
-      {
-        id: 'service-4',
-        name: 'Engine Cleaning',
-        description: 'Engine bay cleaning and degreasing',
-        price: 120,
-        duration: '2-3 hours',
-        category: 'engine'
-      }
-    ]
+    const { lang = 'nl' } = req.query
+    let services = []
     
-    res.json({
-      success: true,
-      data: demoServices
+    // Try to fetch services from Google Sheets first
+    try {
+      const servicesData = await GoogleSheetsService.getData('Services')
+      console.log(`📊 Raw services data from Google Sheets:`, servicesData.length, 'rows')
+      
+      if (servicesData.length > 1) { // Has headers and data
+        const headers = servicesData[0]
+        console.log(`📋 Services headers found:`, headers)
+        
+        // Use multilingual columns based on the requested language
+        const langSuffix = lang.toUpperCase()
+        const idIndex = headers.indexOf('ID')
+        const nameIndex = headers.indexOf(`Name_${langSuffix}`)
+        const descIndex = headers.indexOf(`Description_${langSuffix}`)
+        const priceIndex = headers.indexOf('Price')
+        const categoryIndex = headers.indexOf('Category')
+        const durationIndex = headers.indexOf('Duration_Minutes')
+        const isActiveIndex = headers.indexOf('Is_Active')
+        
+        console.log(`🔍 Services column indices - ID:${idIndex}, Name_${langSuffix}:${nameIndex}, Description_${langSuffix}:${descIndex}`)
+        
+        if (idIndex === -1 || nameIndex === -1 || descIndex === -1) {
+          console.log('❌ Missing required multilingual columns, trying fallback to NL columns')
+          // Fallback to Dutch (NL) if requested language columns don't exist
+          const nlNameIndex = headers.indexOf('Name_NL')
+          const nlDescIndex = headers.indexOf('Description_NL')
+          
+          if (nlNameIndex === -1 || nlDescIndex === -1) {
+            console.log('❌ Missing required NL columns, throwing error')
+            throw new Error('Missing required columns in Google Sheets Services')
+          }
+          
+          // Use NL columns and translate if needed
+          services = servicesData.slice(1)
+            .filter(row => row[isActiveIndex] === 'true') // Only active services
+            .map(row => ({
+              id: row[idIndex] || '',
+              name: row[nlNameIndex] || '',
+              description: row[nlDescIndex] || '',
+              price: parseFloat(row[priceIndex]) || 0,
+              duration: row[durationIndex] ? `${row[durationIndex]} minutes` : '',
+              category: row[categoryIndex] || 'general'
+            }))
+            .filter(service => service.name && service.description) // Filter out empty services
+          
+          // Translate to requested language if not NL
+          if (lang !== 'nl') {
+            try {
+              const namesToTranslate = services.map(service => service.name)
+              const descsToTranslate = services.map(service => service.description)
+              
+              const [translatedNames, translatedDescs] = await Promise.all([
+                translateMultipleWithCache(namesToTranslate, lang),
+                translateMultipleWithCache(descsToTranslate, lang)
+              ])
+              
+              services = services.map((service, index) => ({
+                ...service,
+                name: translatedNames[index] || service.name,
+                description: translatedDescs[index] || service.description
+              }))
+              
+              console.log(`🔄 Translated ${services.length} services from NL to ${lang}`)
+            } catch (translationError) {
+              console.error('Services translation error:', translationError)
+              // Keep original services data if translation fails
+            }
+          }
+        } else {
+          // Use requested language columns directly
+          services = servicesData.slice(1)
+            .filter(row => row[isActiveIndex] === 'true') // Only active services
+            .map(row => ({
+              id: row[idIndex] || '',
+              name: row[nameIndex] || '',
+              description: row[descIndex] || '',
+              price: parseFloat(row[priceIndex]) || 0,
+              duration: row[durationIndex] ? `${row[durationIndex]} minutes` : '',
+              category: row[categoryIndex] || 'general'
+            }))
+            .filter(service => service.name && service.description) // Filter out empty services
+        }
+        
+        console.log(`✅ Parsed ${services.length} services from Google Sheets`)
+        console.log(`📋 First 3 services:`, services.slice(0, 3))
+      } else {
+        console.log('⚠️  No services data in Google Sheets')
+        throw new Error('No services data in Google Sheets')
+      }
+    } catch (sheetsError) {
+      console.warn('⚠️  Google Sheets services failed:', sheetsError.message)
+      
+      // Return error with demo data as fallback
+      console.error('❌ Failed to get services from Google Sheets, returning error')
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to get services from data sources',
+        demo: false 
+      })
+      return
+    }
+    
+    return res.json({ 
+      success: true, 
+      data: services 
     })
   } catch (error) {
     console.error('Error getting services:', error)
     res.status(500).json({ 
       success: false, 
-      error: 'Failed to get services',
-      demo: true 
+      error: 'Failed to get services'
     })
   }
 })
