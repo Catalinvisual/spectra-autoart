@@ -18,7 +18,10 @@ const Hero: React.FC<HeroProps> = ({ onBookNow }) => {
   return (
     <section id="hero" className="hero" ref={setHeroElement}>
       <div className="hero-content">
-
+        <h1 className="hero-title">
+          <span className="title-main">Spectra</span>
+          <span className="title-accent">AutoArt</span>
+        </h1>
         <p className="hero-subtitle" ref={setElement}>
           {displayText}
           <span className="cursor">|</span>

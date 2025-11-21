@@ -97,6 +97,8 @@ const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
+  const [showResetForm, setShowResetForm] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
 
 
   // Force Dutch or Romanian for admin panel
@@ -147,7 +149,30 @@ const Admin: React.FC = () => {
   }
 
   const handleForgotPassword = () => {
-    showInfo(t('admin.defaultAdminCredentials'))
+    setShowResetForm(true)
+  }
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      // În producție, acesta ar trebui să trimită un email de resetare
+      // Pentru moment, afișăm instrucțiuni de recuperare
+      showInfo(t('passwordResetInstructions') || t('admin.passwordResetInstructions') || 'Dacă ai uitat parola, contactează administratorul sistemului.')
+      setShowResetForm(false)
+      setResetEmail('')
+    } catch (error) {
+      console.error('Password reset error:', error)
+      showError(t('passwordResetFailed') || t('admin.passwordResetFailed') || 'Resetarea parolei a eșuat.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleBackToLogin = () => {
+    setShowResetForm(false)
+    setResetEmail('')
   }
 
   if (!isAuthenticated) {
@@ -160,34 +185,62 @@ const Admin: React.FC = () => {
               ← Home
             </button>
           </div>
-          <form onSubmit={handleLogin}>
-            <div className="form-group">
-              <label>{t('login')}</label>
-              <input
-                type="text"
-                value={loginForm.email}
-                onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>{t('password')}</label>
-              <input
-                type="password"
-                value={loginForm.password}
-                onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
-                required
-              />
-            </div>
-            <button type="submit" disabled={loading} className="btn-primary">
-              {loading ? 'Logging in...' : t('login')}
-            </button>
-          </form>
-          <div className="login-footer">
-            <button onClick={handleForgotPassword} className="forgot-password-btn">
-              Forgot Password?
-            </button>
-          </div>
+          
+          {!showResetForm ? (
+            <>
+              <form onSubmit={handleLogin}>
+                <div className="form-group">
+                  <label>{t('login')}</label>
+                  <input
+                    type="text"
+                    value={loginForm.email}
+                    onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>{t('password')}</label>
+                  <input
+                    type="password"
+                    value={loginForm.password}
+                    onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
+                    required
+                  />
+                </div>
+                <button type="submit" disabled={loading} className="btn-primary">
+                  {loading ? 'Logging in...' : t('login')}
+                </button>
+              </form>
+              <div className="login-footer">
+                <button onClick={handleForgotPassword} className="forgot-password-btn">
+                  Forgot Password?
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <form onSubmit={handleResetPassword}>
+                <div className="form-group">
+                  <label>{t('email')}</label>
+                  <input
+                    type="email"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    placeholder={t('pleaseEnter') + ' ' + t('email')}
+                    required
+                  />
+                </div>
+                <button type="submit" disabled={loading} className="btn-primary">
+                  {loading ? t('sendingDots') : t('send')}
+                </button>
+              </form>
+              <div className="login-footer">
+                <button onClick={handleBackToLogin} className="back-to-login-btn">
+                  ← {t('back')}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     )

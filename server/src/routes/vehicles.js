@@ -3,10 +3,124 @@ import auth from '../middleware/auth.js'
 import VehiclesAPIService from '../services/vehiclesAPIService.js'
 import GoogleSheetsService from '../services/googleSheetsService.js'
 import { translateMultipleWithCache } from '../services/translationCacheService.js'
+import { fallbackModels } from '../data/vehicleData.js'
 
 const router = Router()
 
 // Public routes (no auth required)
+// Debug endpoint to check Google Sheets Vehicles data
+router.get('/debug', async (req, res) => {
+  try {
+    console.log('🔍 Debug: Checking Google Sheets Vehicles data...')
+    
+    const data = await GoogleSheetsService.getData('Vehicles')
+    console.log(`📊 Total rows: ${data.length}`)
+    
+    if (data.length === 0) {
+      return res.json({ 
+        success: true, 
+        message: 'No data in Vehicles sheet',
+        data: []
+      })
+    }
+    
+    const headers = data[0]
+    console.log('📋 Headers:', headers)
+    
+    // Check column indices for all languages
+    const idIndex = headers.indexOf('ID')
+    const makeNlIndex = headers.indexOf('Make_NL')
+    const makeEnIndex = headers.indexOf('Make_EN')
+    const makeEsIndex = headers.indexOf('Make_ES')
+    const makePlIndex = headers.indexOf('Make_PL')
+    const makeRoIndex = headers.indexOf('Make_RO')
+    
+    const modelNlIndex = headers.indexOf('Model_NL')
+    const modelEnIndex = headers.indexOf('Model_EN')
+    const modelEsIndex = headers.indexOf('Model_ES')
+    const modelPlIndex = headers.indexOf('Model_PL')
+    const modelRoIndex = headers.indexOf('Model_RO')
+    
+    console.log(`🔍 Multilingual column indices:`)
+    console.log(`   ID:${idIndex}`)
+    console.log(`   Make - NL:${makeNlIndex}, EN:${makeEnIndex}, ES:${makeEsIndex}, PL:${makePlIndex}, RO:${makeRoIndex}`)
+    console.log(`   Model - NL:${modelNlIndex}, EN:${modelEnIndex}, ES:${modelEsIndex}, PL:${modelPlIndex}, RO:${modelRoIndex}`)
+    
+    // Check first 5 data rows with multilingual data
+    const sampleData = data.slice(1, 6).map((row, index) => ({
+      rowNumber: index + 2,
+      id: row[idIndex] || '',
+      make: {
+        nl: row[makeNlIndex] || '',
+        en: row[makeEnIndex] || '',
+        es: row[makeEsIndex] || '',
+        pl: row[makePlIndex] || '',
+        ro: row[makeRoIndex] || ''
+      },
+      model: {
+        nl: row[modelNlIndex] || '',
+        en: row[modelEnIndex] || '',
+        es: row[modelEsIndex] || '',
+        pl: row[modelPlIndex] || '',
+        ro: row[modelRoIndex] || ''
+      }
+    }))
+    
+    console.log('📋 Sample data:', sampleData)
+    
+    // Count valid vehicles using NL data as reference
+    let validVehicles = 0
+    let invalidRows = []
+    
+    data.slice(1).forEach((row, index) => {
+      const makeNl = row[makeNlIndex]
+      const modelNl = row[modelNlIndex]
+      if (makeNl && modelNl && makeNl.trim() && modelNl.trim()) {
+        validVehicles++
+      } else {
+        invalidRows.push(index + 2)
+      }
+    })
+    
+    console.log(`✅ Found ${validVehicles} valid vehicles out of ${data.length - 1} total rows`)
+    if (invalidRows.length > 0) {
+      console.log(`⚠️  Invalid rows: ${invalidRows.slice(0, 10).join(', ')}${invalidRows.length > 10 ? '...' : ''}`)
+    }
+    
+    return res.json({ 
+      success: true, 
+      totalRows: data.length,
+      headers: headers,
+      multilingualColumnIndices: {
+        id: idIndex,
+        make: {
+          nl: makeNlIndex,
+          en: makeEnIndex,
+          es: makeEsIndex,
+          pl: makePlIndex,
+          ro: makeRoIndex
+        },
+        model: {
+          nl: modelNlIndex,
+          en: modelEnIndex,
+          es: modelEsIndex,
+          pl: modelPlIndex,
+          ro: modelRoIndex
+        }
+      },
+      validVehicles: validVehicles,
+      sampleData: sampleData
+    })
+    
+  } catch (error) {
+    console.error('❌ Debug error:', error)
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    })
+  }
+})
+
 router.get('/', async (req, res) => {
   try {
     const { lang = 'nl' } = req.query
@@ -19,51 +133,82 @@ router.get('/', async (req, res) => {
       
       if (data.length > 1) { // Has headers and data
         const headers = data[0]
-        const idIndex = headers.indexOf('ID')
-        const makeIndex = headers.indexOf('Make')
-        const modelIndex = headers.indexOf('Model')
-        const typeIndex = headers.indexOf('Type')
-        const bodyIndex = headers.indexOf('Body')
+        console.log(`📋 Headers found:`, headers)
         
-        vehicles = data.slice(1).map(row => ({
-          id: row[idIndex] || '',
-          make: row[makeIndex] || '',
-          model: row[modelIndex] || '',
-          type: row[typeIndex] || '',
-          body: row[bodyIndex] || ''
-        })).filter(vehicle => vehicle.make && vehicle.model) // Filter out empty rows
+        // Use multilingual columns based on the requested language
+        const langSuffix = lang.toUpperCase()
+        const idIndex = headers.indexOf('ID')
+        const makeIndex = headers.indexOf(`Make_${langSuffix}`)
+        const modelIndex = headers.indexOf(`Model_${langSuffix}`)
+        const typeIndex = headers.indexOf(`Type_${langSuffix}`)
+        const bodyIndex = headers.indexOf(`Body_${langSuffix}`)
+        
+        console.log(`🔍 Column indices - ID:${idIndex}, Make_${langSuffix}:${makeIndex}, Model_${langSuffix}:${modelIndex}, Type_${langSuffix}:${typeIndex}, Body_${langSuffix}:${bodyIndex}`)
+        
+        if (idIndex === -1 || makeIndex === -1 || modelIndex === -1 || typeIndex === -1 || bodyIndex === -1) {
+          console.log('❌ Missing required multilingual columns, trying fallback to NL columns')
+          // Fallback to Dutch (NL) if requested language columns don't exist
+          const nlMakeIndex = headers.indexOf('Make_NL')
+          const nlModelIndex = headers.indexOf('Model_NL')
+          const nlTypeIndex = headers.indexOf('Type_NL')
+          const nlBodyIndex = headers.indexOf('Body_NL')
+          
+          if (nlMakeIndex === -1 || nlModelIndex === -1 || nlTypeIndex === -1 || nlBodyIndex === -1) {
+            console.log('❌ Missing required NL columns, throwing error')
+            throw new Error('Missing required columns in Google Sheets')
+          }
+          
+          // Use NL columns and translate if needed
+          vehicles = data.slice(1).map(row => ({
+            id: row[idIndex] || '',
+            make: row[nlMakeIndex] || '',
+            model: row[nlModelIndex] || '',
+            type: row[nlTypeIndex] || '',
+            body: row[nlBodyIndex] || ''
+          })).filter(vehicle => vehicle.make && vehicle.model) // Filter out empty rows
+          
+          // Translate to requested language if not NL
+          if (lang !== 'nl') {
+            try {
+              const makesToTranslate = vehicles.map(vehicle => vehicle.make)
+              const modelsToTranslate = vehicles.map(vehicle => vehicle.model)
+              const typesToTranslate = vehicles.map(vehicle => vehicle.type)
+              const bodiesToTranslate = vehicles.map(vehicle => vehicle.body)
+              
+              const [translatedMakes, translatedModels, translatedTypes, translatedBodies] = await Promise.all([
+                translateMultipleWithCache(makesToTranslate, lang),
+                translateMultipleWithCache(modelsToTranslate, lang),
+                translateMultipleWithCache(typesToTranslate, lang),
+                translateMultipleWithCache(bodiesToTranslate, lang)
+              ])
+              
+              vehicles = vehicles.map((vehicle, index) => ({
+                ...vehicle,
+                make: translatedMakes[index] || vehicle.make,
+                model: translatedModels[index] || vehicle.model,
+                type: translatedTypes[index] || vehicle.type,
+                body: translatedBodies[index] || vehicle.body
+              }))
+              
+              console.log(`🔄 Translated ${vehicles.length} vehicles from NL to ${lang}`)
+            } catch (translationError) {
+              console.error('Translation error:', translationError)
+              // Keep original vehicles data if translation fails
+            }
+          }
+        } else {
+          // Use requested language columns directly
+          vehicles = data.slice(1).map(row => ({
+            id: row[idIndex] || '',
+            make: row[makeIndex] || '',
+            model: row[modelIndex] || '',
+            type: row[typeIndex] || '',
+            body: row[bodyIndex] || ''
+          })).filter(vehicle => vehicle.make && vehicle.model) // Filter out empty rows
+        }
         
         console.log(`✅ Parsed ${vehicles.length} vehicles from Google Sheets`)
-        
-        // Translate vehicle data if language is not Dutch
-        if (lang !== 'nl') {
-          try {
-            const makesToTranslate = vehicles.map(vehicle => vehicle.make)
-            const modelsToTranslate = vehicles.map(vehicle => vehicle.model)
-            const typesToTranslate = vehicles.map(vehicle => vehicle.type)
-            const bodiesToTranslate = vehicles.map(vehicle => vehicle.body)
-            
-            const [translatedMakes, translatedModels, translatedTypes, translatedBodies] = await Promise.all([
-              translateMultipleWithCache(makesToTranslate, lang),
-              translateMultipleWithCache(modelsToTranslate, lang),
-              translateMultipleWithCache(typesToTranslate, lang),
-              translateMultipleWithCache(bodiesToTranslate, lang)
-            ])
-            
-            vehicles = vehicles.map((vehicle, index) => ({
-              ...vehicle,
-              make: translatedMakes[index] || vehicle.make,
-              model: translatedModels[index] || vehicle.model,
-              type: translatedTypes[index] || vehicle.type,
-              body: translatedBodies[index] || vehicle.body
-            }))
-            
-            console.log(`🔄 Translated ${vehicles.length} vehicles to ${lang}`)
-          } catch (translationError) {
-            console.error('Translation error:', translationError)
-            // Keep original vehicles data if translation fails
-          }
-        }
+        console.log(`📋 First 3 vehicles:`, vehicles.slice(0, 3))
       } else {
         console.log('⚠️  No vehicles data in Google Sheets, trying Vehicles API')
         throw new Error('No vehicles data in Google Sheets')
@@ -192,101 +337,6 @@ router.get('/models/:make', async (req, res) => {
       console.warn(`⚠️  Vehicles API failed for models of ${make}, using fallback:`, apiError.message)
       
       // Fallback to comprehensive model list by make
-      const fallbackModels = {
-        'BMW': ['Seria 1', 'Seria 2', 'Seria 3', 'Seria 4', 'Seria 5', 'Seria 6', 'Seria 7', 'Seria 8', 'X1', 'X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'Z4', 'i3', 'i4', 'iX', 'M2', 'M3', 'M4', 'M5', 'X5 M', 'X6 M'],
-        'Audi': ['A1', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'Q2', 'Q3', 'Q4', 'Q5', 'Q7', 'Q8', 'TT', 'R8', 'e-tron', 'e-tron GT', 'RS3', 'RS4', 'RS5', 'RS6', 'RS7', 'SQ5', 'SQ7', 'SQ8'],
-        'Mercedes-Benz': ['A-Class', 'B-Class', 'C-Class', 'E-Class', 'S-Class', 'CLA', 'CLS', 'GLA', 'GLB', 'GLC', 'GLE', 'GLS', 'G-Class', 'SL', 'SLC', 'AMG GT', 'EQA', 'EQB', 'EQC', 'EQE', 'EQS', 'C 63 AMG', 'E 63 AMG', 'S 63 AMG', 'G 63 AMG'],
-        'Volkswagen': ['Golf', 'Passat', 'Polo', 'Tiguan', 'Touareg', 'T-Roc', 'T-Cross', 'Arteon', 'CC', 'Scirocco', 'Jetta', 'Beetle', 'Transporter', 'Caddy', 'Amarok', 'ID.3', 'ID.4', 'ID.5', 'Golf GTI', 'Golf R', 'Tiguan R'],
-        'Toyota': ['Corolla', 'Camry', 'RAV4', 'Highlander', 'C-HR', 'Yaris', 'Auris', 'Avensis', 'Verso', 'Prius', 'Land Cruiser', 'Hilux', 'Proace', 'Supra', 'GT86', 'Mirai', 'bZ4X'],
-        'Honda': ['Civic', 'Accord', 'CR-V', 'HR-V', 'Jazz', 'Insight', 'CR-Z', 'Pilot', 'Passport', 'Ridgeline', 'Odyssey', 'Stream', 'Legend', 'NSX', 'e', 'Clarity'],
-        'Ford': ['Focus', 'Fiesta', 'Mondeo', 'Kuga', 'Puma', 'EcoSport', 'Edge', 'Explorer', 'Mustang', 'GT', 'Ranger', 'Transit', 'Tourneo', 'Galaxy', 'S-MAX', 'C-MAX', 'B-MAX', 'Ka+', 'F-150', 'Bronco'],
-        'Renault': ['Clio', 'Megane', 'Scenic', 'Captur', 'Kadjar', 'Koleos', 'Talisman', 'Espace', 'Twingo', 'Zoe', 'Kangoo', 'Trafic', 'Master', 'Alpine', 'R.S.'],
-        'Peugeot': ['208', '308', '508', '2008', '3008', '5008', 'Partner', 'Expert', 'Boxer', 'RCZ', '308 R', '508 PSE'],
-        'Citroen': ['C1', 'C3', 'C4', 'C5', 'C3 Aircross', 'C4 Cactus', 'C5 Aircross', 'Berlingo', 'Jumpy', 'Jumper', 'DS3', 'DS4', 'DS5'],
-        'Volvo': ['V40', 'V60', 'V90', 'S40', 'S60', 'S90', 'XC40', 'XC60', 'XC90', 'C30', 'C40', 'V50', 'C70', 'S80', 'V70', 'XC70', 'Polestar'],
-        'Fiat': ['500', 'Panda', 'Tipo', 'Punto', 'Doblo', 'Fiorino', 'Qubo', 'Talento', 'Ducato', '124 Spider', 'Abarth', 'Panda 4x4'],
-        'Opel': ['Corsa', 'Astra', 'Insignia', 'Crossland', 'Mokka', 'Grandland', 'Combo', 'Vivaro', 'Movano', 'Zafira', 'Meriva', 'Adam', 'Ampera', 'GT'],
-        'Skoda': ['Fabia', 'Scala', 'Octavia', 'Superb', 'Kamiq', 'Karoq', 'Kodiaq', 'Enyaq', 'Citigo', 'Roomster', 'Yeti', 'Rapid', 'Klement'],
-        'Seat': ['Ibiza', 'Leon', 'Arona', 'Ateca', 'Tarraco', 'Alhambra', 'Mii', 'Toledo', 'Altea', 'Exeo', 'Cupra'],
-        'Mazda': ['2', '3', '6', 'CX-3', 'CX-30', 'CX-5', 'CX-60', 'CX-8', 'CX-9', 'MX-30', 'MX-5', 'RX-8', 'BT-50'],
-        'Nissan': ['Micra', 'Note', 'Pulsar', 'Leaf', 'Qashqai', 'Juke', 'X-Trail', 'Pathfinder', 'Patrol', 'Navara', 'NV200', 'NV300', 'NV400', 'GT-R', '370Z', '400Z'],
-        'Hyundai': ['i10', 'i20', 'i30', 'i40', 'Ioniq', 'Kona', 'Tucson', 'Santa Fe', 'Palisade', 'Veloster', 'Genesis', 'Nexo', 'iLoad', 'H-1', 'H-100'],
-        'Kia': ['Picanto', 'Rio', 'Ceed', 'XCeed', 'Stonic', 'Niro', 'Sportage', 'Sorento', 'Carnival', 'Stinger', 'EV6', 'EV9', 'Soul', 'Venga', 'Opirus'],
-        'Subaru': ['Impreza', 'XV', 'Forester', 'Outback', 'Legacy', 'WRX', 'WRX STI', 'BRZ', 'Levorg', 'Ascent', 'Crosstrek'],
-        'Mitsubishi': ['Mirage', 'Space Star', 'Lancer', 'ASX', 'Eclipse Cross', 'Outlander', 'Pajero', 'L200', 'Fuso', 'i-MiEV'],
-        'Suzuki': ['Swift', 'Ignis', 'Baleno', 'Celerio', 'SX4', 'Vitara', 'Jimny', 'Jimny Sierra', 'Carry', 'Every'],
-        'Dacia': ['Sandero', 'Logan', 'Duster', 'Lodgy', 'Dokker', 'Spring', 'Bigster'],
-        'Lada': ['Granta', 'Vesta', 'XRAY', 'Largus', 'Niva', '4x4'],
-        'Tesla': ['Model S', 'Model 3', 'Model X', 'Model Y', 'Cybertruck', 'Roadster', 'Semi'],
-        'Porsche': ['911', '718 Boxster', '718 Cayman', 'Panamera', 'Macan', 'Cayenne', 'Taycan', '918 Spyder'],
-        'Jaguar': ['XE', 'XF', 'XJ', 'E-PACE', 'F-PACE', 'I-PACE', 'F-TYPE', 'XKR', 'XFR'],
-        'Land Rover': ['Discovery', 'Discovery Sport', 'Range Rover', 'Range Rover Sport', 'Range Rover Velar', 'Range Rover Evoque', 'Defender'],
-        'Mini': ['Cooper', 'Cooper S', 'John Cooper Works', 'Clubman', 'Countryman', 'Paceman', 'Convertible'],
-        'Smart': ['Fortwo', 'Forfour', 'EQ Fortwo', 'EQ Forfour'],
-        'Alfa Romeo': ['Giulia', 'Stelvio', 'Tonale', 'MiTo', 'Giulietta', '4C', '8C'],
-        'Lancia': ['Ypsilon', 'Musa', 'Delta', 'Thema', 'Voyager', 'Stratos'],
-        'Ferrari': ['488', 'F8', 'SF90', '296 GTB', '812 Superfast', 'Portofino', 'Roma', 'Daytona SP3'],
-        'Lamborghini': ['Huracan', 'Aventador', 'Urus', 'Sian', 'Countach', 'Gallardo', 'Murcielago'],
-        'Maserati': ['Ghibli', 'Quattroporte', 'Levante', 'MC20', 'GranTurismo', 'GranCabrio'],
-        'Aston Martin': ['Vantage', 'DB11', 'DBS', 'Rapide', 'Vanquish', 'Valhalla', 'Valkyrie'],
-        'Lotus': ['Elise', 'Exige', 'Evora', 'Emira', 'Evija', '3-Eleven'],
-        'Bentley': ['Continental', 'Flying Spur', 'Bentayga', 'Mulsanne', 'Arnage'],
-        'Rolls-Royce': ['Ghost', 'Phantom', 'Wraith', 'Dawn', 'Cullinan', 'Spectre'],
-        'Maybach': ['S 580', 'S 680', 'GLS 600', '57', '62'],
-        'McLaren': ['540C', '570S', '570GT', '600LT', '650S', '675LT', '720S', '765LT', 'Artura', 'P1', 'Speedtail', 'Elva'],
-        'Bugatti': ['Chiron', 'Divo', 'Centodieci', 'La Voiture Noire', 'Veyron', 'EB110'],
-        'Geely': ['Emgrand', 'Vision', 'Boyue', 'Binyue', 'Jiaji', 'Haoyue', 'Geometry'],
-        'Tata': ['Tiago', 'Tigor', 'Altroz', 'Nexon', 'Harrier', 'Safari', 'Hexa', 'Bolt', 'Zest'],
-        'Daewoo': ['Matiz', 'Nexia', 'Lanos', 'Leganza', 'Nubira', 'Tacuma', 'Kalos'],
-        'SsangYong': ['Tivoli', 'Korando', 'Rexton', 'Actyon', 'Kyron', 'Rodius', 'Musso'],
-        'Isuzu': ['D-Max', 'MU-X', 'Trooper', 'Rodeo', 'Gemini', 'Piazza', 'TF'],
-        'Hummer': ['H1', 'H2', 'H3'],
-        'Infiniti': ['Q30', 'Q50', 'Q60', 'Q70', 'QX30', 'QX50', 'QX60', 'QX70', 'QX80'],
-        'Lexus': ['IS', 'ES', 'GS', 'LS', 'UX', 'NX', 'RX', 'GX', 'LX', 'RC', 'LC', 'SC', 'LFA'],
-        'Acura': ['ILX', 'TLX', 'RLX', 'RDX', 'MDX', 'ZDX', 'NSX', 'Integra'],
-        'Cadillac': ['CT4', 'CT5', 'CT6', 'Escalade', 'XT4', 'XT5', 'XT6', 'Lyriq', 'Celestiq'],
-        'Lincoln': ['MKZ', 'Continental', 'Corsair', 'Nautilus', 'Aviator', 'Navigator'],
-        'Chrysler': ['300', 'Pacifica', 'Voyager', 'Aspen', 'PT Cruiser', 'Sebring'],
-        'Dodge': ['Charger', 'Challenger', 'Durango', 'Journey', 'Grand Caravan', 'Nitro', 'Caliber', 'Viper'],
-        'Jeep': ['Wrangler', 'Cherokee', 'Grand Cherokee', 'Compass', 'Renegade', 'Gladiator', 'Patriot'],
-        'Ram': ['1500', '2500', '3500', 'ProMaster', 'Dakota'],
-        'Buick': ['Encore', 'Envision', 'Enclave', 'Regal', 'LaCrosse', 'Verano', 'Cascada'],
-        'GMC': ['Sierra', 'Canyon', 'Terrain', 'Acadia', 'Yukon', 'Savana', 'Envoy'],
-        'Chevrolet': ['Spark', 'Sonic', 'Cruze', 'Malibu', 'Impala', 'Camaro', 'Corvette', 'Trax', 'Equinox', 'Blazer', 'Traverse', 'Tahoe', 'Suburban', 'Colorado', 'Silverado'],
-        'Pontiac': ['G3', 'G5', 'G6', 'G8', 'Solstice', 'Torrent', 'Vibe'],
-        'Saturn': ['Aura', 'Outlook', 'Sky', 'Vue', 'Ion'],
-        'Oldsmobile': ['Alero', 'Intrigue', 'Silhouette', 'Bravada'],
-        'Saab': ['9-3', '9-5', '9-7X', '900', '9000'],
-        'Rover': ['75', '45', '25', 'CityRover', 'Streetwise'],
-        'MG': ['3', '5', '6', 'GS', 'ZS', 'HS', 'TF', 'MGF'],
-        'Rivian': ['R1T', 'R1S', 'EDV'],
-        'Lucid': ['Air', 'Gravity'],
-        'Fisker': ['Ocean', 'Karma', 'Emotion'],
-        'Byton': ['M-Byte', 'K-Byte'],
-        'NIO': ['ES8', 'ES6', 'EC6', 'ET7', 'ET5', 'EP9'],
-        'XPeng': ['G3', 'P7', 'P5', 'G9'],
-        'Li Auto': ['ONE', 'L9', 'L8', 'L7'],
-        'Haval': ['H1', 'H2', 'H4', 'H6', 'H7', 'H8', 'H9', 'Jolion', 'Dargo'],
-        'Chery': ['Arrizo', 'Tiggo', 'QQ', 'A1', 'A3', 'E3', 'Fulwin'],
-        'BYD': ['Han', 'Tang', 'Song', 'Qin', 'Yuan', 'Dolphin', 'Seal', 'Atto 3'],
-        'Great Wall': ['Poer', 'Wingle', 'Steed', 'Voleex', 'Florid'],
-        'Changan': ['CS35', 'CS55', 'CS75', 'Eado', 'Alsvin', 'BenBen'],
-        'Haima': ['2', '3', '7X', '8S', 'Family', 'Fstar'],
-        'JAC': ['Refine', 'T6', 'T8', 'iEV', 'Yiwei'],
-        'Lifan': ['X50', 'X60', 'Myway', '620', '520', '320'],
-        'Brilliance': ['H330', 'H530', 'V3', 'V5', 'V7', 'M8'],
-        'Dongfeng': ['Fengshen', 'Fengxing', 'Forthing', 'Aeolus', 'Venucia'],
-        'Foton': ['Midi', 'View', 'Toano', 'Gratour', 'Sauvan'],
-        'JMC': ['Yusheng', 'Vigus', 'Carry', 'Baodian'],
-        'Maxus': ['D60', 'G50', 'G10', 'V80', 'T60', 'T70', 'T90'],
-        'Roewe': ['RX3', 'RX5', 'RX8', 'i5', 'i6', 'MARVEL X'],
-        'Trumpchi': ['GS3', 'GS4', 'GS5', 'GS7', 'GS8', 'GA4', 'GA6', 'GA8', 'GM6', 'GM8'],
-        'Venucia': ['T60', 'T70', 'T90', 'D60', 'R30', 'R50', 'R60'],
-        'Wey': ['VV5', 'VV6', 'VV7', 'Tank 300', 'Mocha', 'Latte', 'Macchiato'],
-        'Zeekr': ['001', '009', 'X', '007'],
-        'HiPhi': ['HiPhi X', 'HiPhi Z', 'HiPhi Y'],
-        'Human Horizons': ['HiPhi X', 'HiPhi Z', 'HiPhi Y']
-      }
       
       const makeLower = make.toLowerCase()
       const fallbackMake = Object.keys(fallbackModels).find(key => key.toLowerCase() === makeLower)

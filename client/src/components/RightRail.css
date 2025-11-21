@@ -80,19 +80,23 @@
 }
 
 .chatbot-modal {
-  position: fixed;
-  bottom: 100px;
-  right: 2rem;
-  width: 350px;
-  height: 500px;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-  z-index: 1001;
-  animation: slideIn 0.3s ease-out;
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 2rem !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  width: 350px !important;
+  height: 500px !important;
+  background: rgba(26, 26, 26, 0.95) !important;
+  border: 2px solid rgba(0, 229, 255, 0.6) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  z-index: 1001 !important;
+  animation: slideIn 0.3s ease-out !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 @keyframes slideIn {
@@ -272,17 +276,34 @@
   animation: pulse 0.6s ease-in-out;
 }
 
+/* Portal container for chatbot */
+#chatbot-portal {
+  position: relative;
+}
+
+#chatbot-portal .chatbot-modal {
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 2rem !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .right-rail {
     right: 1rem;
   }
   
-  .chatbot-modal {
-    width: calc(100vw - 2rem);
-    right: 1rem;
-    left: 1rem;
-    bottom: 80px;
+  #chatbot-portal .chatbot-modal {
+    width: calc(100vw - 2rem) !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    bottom: 20px !important;
+    top: auto !important;
+    max-width: 400px !important;
   }
   
   .rail-button {
@@ -293,7 +314,14 @@
 }
 
 @media (max-width: 480px) {
-  .chatbot-modal {
-    height: 400px;
+  #chatbot-portal .chatbot-modal {
+    width: calc(100vw - 2rem) !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    bottom: 20px !important;
+    top: auto !important;
+    max-width: 380px !important;
+    height: 400px !important;
   }
 }

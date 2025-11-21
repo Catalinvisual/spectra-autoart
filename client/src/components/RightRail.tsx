@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useLanguage } from '../contexts/LanguageContext'
 import whatsappLogo from '../assets/whatsaap.svg'
@@ -105,67 +106,78 @@ const RightRail = () => {
     }, 1000)
   }
 
-  return (
-    <div className="right-rail">
-      <button 
-        className="rail-button whatsapp" 
-        onClick={handleWhatsAppClick}
-        title="WhatsApp"
-      >
-        <img src={whatsappLogo} alt="WhatsApp" style={{ width: '28px', height: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
-      </button>
-      
-      <button 
-        className="rail-button instagram" 
-        onClick={handleInstagramClick}
-        title="Instagram"
-      >
-        <img src={instagramLogo} alt="Instagram" style={{ width: '28px', height: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
-      </button>
-      
-      <button 
-        className="rail-button chat" 
-        onClick={toggleChatbot}
-        title="Chat"
-      >
-        <img src={chatbotIcon} alt="Chat" style={{ width: '28px', height: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
-      </button>
+  // ChatModal Component with Portal
+  const ChatModal = () => {
+    const portalRoot = document.getElementById('chatbot-portal')
+    if (!portalRoot) return null
 
-      {chatbotOpen && (
-        <div className="chatbot-modal">
-          <div className="chatbot-header">
-            <h3>{t('chatbot.title')}</h3>
-            <button 
-              className="chatbot-close"
-              onClick={() => setChatbotOpen(false)}
-            >
-              ×
-            </button>
-          </div>
-          <div className="chatbot-messages">
-            {messages.map((message, index) => (
-              <div key={index} className={`chatbot-message ${message.type}`}>
-                {message.text}
-              </div>
-            ))}
-          </div>
-          <div className="chatbot-quick-replies">
-            {translatedQuickReplies.map((option, index) => (
-              <button
-                key={index}
-                className="quick-reply-btn"
-                onClick={() => handleQuickReply(option)}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-          <div className="chatbot-footer">
-            <p>Chatbot-ul este în curs de dezvoltare!</p>
-          </div>
+    return createPortal(
+      <div className="chatbot-modal">
+        <div className="chatbot-header">
+          <h3>{t('chatbot.title')}</h3>
+          <button 
+            className="chatbot-close"
+            onClick={() => setChatbotOpen(false)}
+          >
+            ×
+          </button>
         </div>
-      )}
-    </div>
+        <div className="chatbot-messages">
+          {messages.map((message, index) => (
+            <div key={index} className={`chatbot-message ${message.type}`}>
+              {message.text}
+            </div>
+          ))}
+        </div>
+        <div className="chatbot-quick-replies">
+          {translatedQuickReplies.map((option, index) => (
+            <button
+              key={index}
+              className="quick-reply-btn"
+              onClick={() => handleQuickReply(option)}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+        <div className="chatbot-footer">
+          <p>Chatbot-ul este în curs de dezvoltare!</p>
+        </div>
+      </div>,
+      portalRoot
+    )
+  }
+
+  return (
+    <>
+      <div className="right-rail">
+        <button 
+          className="rail-button whatsapp" 
+          onClick={handleWhatsAppClick}
+          title="WhatsApp"
+        >
+          <img src={whatsappLogo} alt="WhatsApp" style={{ width: '28px', height: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
+        </button>
+        
+        <button 
+          className="rail-button instagram" 
+          onClick={handleInstagramClick}
+          title="Instagram"
+        >
+          <img src={instagramLogo} alt="Instagram" style={{ width: '28px', height: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
+        </button>
+        
+        <button 
+          className="rail-button chat" 
+          onClick={toggleChatbot}
+          title="Chat"
+        >
+          <img src={chatbotIcon} alt="Chat" style={{ width: '28px', height: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
+        </button>
+      </div>
+      
+      {chatbotOpen && <ChatModal />}
+    </>
   )
 }
 

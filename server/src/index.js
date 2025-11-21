@@ -12,6 +12,7 @@ import bookingsRouter from './routes/bookings.js'
 import galleryRouter from './routes/gallery.js'
 import testimonialsRouter from './routes/testimonials.js'
 import translateRouter from './routes/translate.js'
+import debugVehiclesRouter from './routes/debugVehicles.js'
 import GoogleSheetsService from './services/googleSheetsService.js'
 import VehiclesAPIService from './services/vehiclesAPIService.js'
 import { vehicleServicesService } from './services/vehicleServicesService.js'
@@ -46,6 +47,7 @@ app.use('/api/bookings', bookingsRouter)
 app.use('/api/gallery', galleryRouter)
 app.use('/api/testimonials', testimonialsRouter)
 app.use('/api/translate', translateRouter)
+app.use('/api/debug', debugVehiclesRouter)
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })

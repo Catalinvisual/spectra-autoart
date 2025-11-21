@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../contexts/LanguageContext'
+import languageIcon from '../assets/language.svg'
+import spectraHeader from '../assets/spectra-header.svg'
 import './Header.css'
 
 const Header = () => {
   const { t } = useTranslation()
-  const { setLanguage, currentLanguage } = useLanguage()
+  const { setLanguage } = useLanguage()
   const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -42,11 +44,13 @@ const Header = () => {
   return (
     <header className="header">
       <nav className="nav">
-        <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-          <h1 className="logo-text">
-            <span className="logo-main">Spectra</span>
-            <span className="logo-accent">AutoArt</span>
-          </h1>
+        <div className="logo" onClick={() => scrollToSection('hero')} style={{ cursor: 'pointer' }}>
+          <img 
+            src={spectraHeader} 
+            alt="Spectra AutoArt" 
+            className="logo-image"
+            style={{ height: '40px', width: 'auto' }}
+          />
         </div>
         
         {/* Hamburger menu button */}
@@ -106,8 +110,15 @@ const Header = () => {
           <button 
             className="language-selector-button"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Select language"
           >
-            {languages.find(lang => lang.code === currentLanguage)?.name || 'Nederlands'}
+            <img 
+              src={languageIcon} 
+              alt="Language" 
+              className="language-icon"
+              width="24"
+              height="24"
+            />
             <span className={`arrow ${isMenuOpen ? 'up' : 'down'}`}></span>
           </button>
           
