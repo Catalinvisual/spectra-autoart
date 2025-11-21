@@ -1,6 +1,6 @@
 {
   "build": {
-    "buildCommand": "cd client && npm install && npm run build && cd ../server && npm install",
+    "buildCommand": "npm install && cd client && npm install && npm run build && cd ../server && npm install",
     "startCommand": "cd server && npm start",
     "healthcheckPath": "/",
     "healthcheckTimeout": 300,
