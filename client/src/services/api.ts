@@ -38,8 +38,11 @@ api.interceptors.response.use(
     }
     
     // Unwrap the response data if it has the standard API format
-    if (response.data && response.data.success && response.data.data !== undefined) {
+    if (response.data && response.data.success === true && response.data.data !== undefined) {
       response.data = response.data.data
+    } else if (response.data && response.data.success === false) {
+      // Handle error responses - keep the error structure
+      console.error('API Error Response:', response.data)
     }
     
     // Debug logging for admin services after processing

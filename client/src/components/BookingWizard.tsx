@@ -139,9 +139,11 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
   const loadServicesForBodyType = async () => {
     try {
       const servicesRes = await publicAPI.getServicesWithPrices(i18n.language, bookingData.body);
-      setServices(servicesRes.data);
+      console.log('🔧 Services with prices response:', servicesRes)
+      setServices(Array.isArray(servicesRes.data) ? servicesRes.data : []);
     } catch (error) {
       console.error('Error loading services for body type:', error);
+      setServices([]);
     }
   }
 
@@ -154,9 +156,13 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
         publicAPI.getBodyTypes(i18n.language)
       ])
       
-      setMakes(makesRes.data)
-      setServices(servicesRes.data)
-      setBodyTypes(bodyTypesRes.data)
+      console.log('🚗 Makes response:', makesRes)
+      console.log('🔧 Services response:', servicesRes)
+      console.log('🚙 Body types response:', bodyTypesRes)
+      
+      setMakes(Array.isArray(makesRes.data) ? makesRes.data : [])
+      setServices(Array.isArray(servicesRes.data) ? servicesRes.data : [])
+      setBodyTypes(Array.isArray(bodyTypesRes.data) ? bodyTypesRes.data : [])
       
       // Setăm tipurile direct deoarece nu mai avem pasul 3
 
@@ -192,20 +198,20 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
   }
 
   const getUniqueMakes = () => {
-    return makes
+    return Array.isArray(makes) ? makes : []
   }
 
   const getModelsForMake = () => {
-    return models
+    return Array.isArray(models) ? models : []
   }
 
 
 
   const getBodiesForType = () => {
-    return bodyTypes.filter(bt => bt.is_active).map(bt => ({
+    return Array.isArray(bodyTypes) ? bodyTypes.filter(bt => bt.is_active).map(bt => ({
       key: bt.key,
       name: i18n.language === 'en' && bt.name_en ? bt.name_en : bt.name
-    }))
+    })) : []
   }
 
   const getServicePriceForBodyType = (service: ServiceWithPrices, bodyTypeKey: string) => {
@@ -214,7 +220,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
 
   const getFilteredServices = () => {
     // Show all services regardless of whether they have prices for the selected body type
-    return services
+    return Array.isArray(services) ? services : []
   }
 
   const handleNext = () => {
