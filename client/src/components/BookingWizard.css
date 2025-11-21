@@ -125,6 +125,19 @@
     overflow-y: auto;
   }
   
+  /* Reguli suplimentare pentru form-select pe ecrane foarte mici */
+  .form-input,
+  .form-select {
+    font-size: 16px; /* Importânt pentru iOS */
+    padding-right: 1.8rem; /* Mai mult spațiu pentru iconiță */
+  }
+  
+  .form-select {
+    background-position: right 0.2rem center;
+    background-size: 0.8rem;
+    padding-right: 1.8rem; /* Spațiu pentru iconiță */
+  }
+  
   .modal-close-btn {
     top: 8px;
     right: 8px;
@@ -372,6 +385,9 @@
   background-position: right 0.5rem center;
   background-size: 1rem;
   padding-right: 2.5rem;
+  overflow: hidden; /* Previnte overflow-ul textului */
+  text-overflow: ellipsis; /* Adaugă ... dacă textul este prea lung */
+  white-space: nowrap; /* Impiedică wrap-ul textului */
 }
 
 /* Date input optimization for instant selection */
@@ -610,6 +626,8 @@
   font-size: 1rem;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   height: 2.5rem; /* Înălțime fixă pentru consistență */
+  box-sizing: border-box; /* Include padding și border în width */
+  max-width: 100%; /* Asigură că nu depășește containerul */
 }
 
 .form-input:focus,
@@ -776,5 +794,17 @@
   
   .btn {
     width: 100%;
+  }
+  
+  /* Asigură că form-select nu depășește containerul */
+  .form-input,
+  .form-select {
+    font-size: 16px; /* Previnte zoom pe iOS */
+    padding-right: 2rem; /* Reduce padding-ul pe mobil */
+  }
+  
+  .form-select {
+    background-position: right 0.3rem center; /* Ajustează poziția iconiței */
+    background-size: 0.9rem; /* Reduce dimensiunea iconiței */
   }
 }
