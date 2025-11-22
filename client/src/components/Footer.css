@@ -67,17 +67,22 @@
   display: flex;
   gap: 0.5rem;
   margin-top: 1rem;
+  justify-content: center; /* centru pe orizontală */
+  align-items: center; 
+  flex-direction: column;    /* centru pe verticală */
 }
 
 .newsletter-form input {
   flex: 1;
-  background: var(--bg);
+  /* background: var(--bg); */
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--text);
   padding: 0.75rem;
   font-size: 0.9rem;
   transition: border-color 0.3s ease;
+  text-align: center;
+  width: 14rem;
 }
 
 .newsletter-form input:focus {
@@ -90,7 +95,7 @@
 }
 
 .newsletter-form button {
-  background: var(--gradient);
+  background: linear-gradient(45deg, #00e5ff, #0099cc);
   color: var(--bg);
   border: none;
   border-radius: 8px;
@@ -99,6 +104,7 @@
   font-weight: 500;
   transition: all 0.3s ease;
   white-space: nowrap;
+  width: 150px!important;
 }
 
 .newsletter-form button:hover:not(:disabled) {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useTestimonialTranslations } from '../hooks/useGoogleTranslation'
 import { publicAPI } from '../services/api'
+import { useToast } from '../contexts/ToastContext'
 import './TestimonialModal.css'
 
 interface TestimonialModalProps {
@@ -11,6 +12,7 @@ interface TestimonialModalProps {
 
 const TestimonialModal: React.FC<TestimonialModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const { t, isTranslating } = useTestimonialTranslations()
+  const { showSuccess, showError } = useToast()
   const [formData, setFormData] = useState({
     name: '',
     rating: 5,
@@ -34,11 +36,25 @@ const TestimonialModal: React.FC<TestimonialModalProps> = ({ isOpen, onClose, on
 
     try {
       await publicAPI.submitTestimonial(formData)
+      
+      // Show success notification
+      showSuccess(t('reviewSubmittedSuccessfully') || 'Recenzia a fost trimisă cu succes!')
+      
+      // Call the success callback to reload testimonials
       onSuccess()
+      
+      // Reset form
       setFormData({ name: '', rating: 5, comment: '' })
-      onClose()
+      
+      // Close modal after a short delay to let user see the success message
+      setTimeout(() => {
+        onClose()
+      }, 2000)
+      
     } catch (err) {
-      setError(t('errorSubmit') || 'Error submitting testimonial')
+      const errorMessage = t('errorSubmit') || 'Error submitting testimonial'
+      setError(errorMessage)
+      showError(errorMessage)
       console.error('Error submitting testimonial:', err)
     } finally {
       setIsSubmitting(false)

@@ -240,11 +240,11 @@
 
 /* Slider Dots */
 .slider-dots {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 40px;
-}
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 30px; /* Reduced margin for mobile */
+  }
 
 .dot {
   width: 12px;
@@ -374,7 +374,8 @@
 
 @media (max-width: 480px) {
   .testimonials-section {
-    padding: 40px 0;
+    padding: 60px 0; /* Increased padding for better spacing */
+    min-height: 600px; /* Minimum height to prevent overlap */
   }
   
   .section-title {
@@ -383,41 +384,95 @@
   
   .testimonials-slider {
     flex-direction: column;
+    gap: 30px; /* Increased gap */
+    position: relative;
+    padding: 20px 0; /* Added padding */
+  }
+  
+  .slider-controls {
+    display: flex;
+    justify-content: center;
     gap: 20px;
+    margin-top: 20px;
   }
   
   .slider-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
+    position: static; /* Remove absolute positioning */
+    transform: none;
     z-index: 3;
     width: 40px;
     height: 40px;
     font-size: 1.3rem;
     padding: 0;
+    pointer-events: auto;
+    margin: 0; /* Remove margin since container handles spacing */
   }
   
-  .prev-btn {
-    left: 10px;
-    margin-right: 0;
+  .prev-btn, .next-btn {
+    left: auto;
+    right: auto;
+    margin: 0;
   }
   
-  .next-btn {
-    right: 10px;
-    margin-left: 0;
+  /* Additional safety for very small screens */
+  @media (max-width: 360px) {
+    .prev-btn {
+      left: 5px;
+    }
+    
+    .next-btn {
+      right: 5px;
+    }
+    
+    .testimonial-content {
+      padding: 25px 15px;
+      width: 90%;
+    }
   }
   
   .testimonials-container {
-    height: 450px;
+    height: auto; /* Auto height for mobile */
+    min-height: 350px; /* Minimum height */
     width: 100%;
+    overflow: visible; /* Allow content to be visible */
+    margin-bottom: 20px; /* Space before controls */
+  }
+  
+  .testimonial-card {
+    z-index: 1; /* Ensure cards are above background but below buttons */
+    transform: translateX(100%); /* Ensure proper positioning */
+    opacity: 0; /* Hidden by default */
+    position: absolute; /* Keep absolute for desktop behavior */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+  
+  .testimonial-card.prev {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  
+  .testimonial-card.active {
+    z-index: 2; /* Active card should be visible above others */
+    opacity: 1; /* Make sure active card is visible */
+    transform: translateX(0); /* Center position */
+  }
+  
+  .testimonial-card.next {
+    transform: translateX(100%);
+    opacity: 0;
   }
   
   .testimonial-content {
     padding: 30px 20px;
-    min-height: 280px;
+    min-height: 250px; /* Reduced for mobile */
     width: 95%;
     max-width: 700px;
     margin: 0 auto;
+    position: relative; /* Ensure content is properly positioned */
+    z-index: 1; /* Ensure content is above background */
   }
   
   .comment {
@@ -443,6 +498,12 @@
   display: flex;
   justify-content: center;
   margin-top: 40px;
+}
+
+@media (max-width: 480px) {
+  .testimonial-actions {
+    margin-top: 30px; /* Reduced margin for mobile */
+  }
 }
 
 .write-review-btn {

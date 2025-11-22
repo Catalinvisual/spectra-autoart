@@ -62,15 +62,17 @@ app.use('/api/testimonials', testimonialsRouter)
 app.use('/api/translate', translateRouter)
 app.use('/api/debug', debugVehiclesRouter)
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() })
-})
-
 // Serve static files from React build
 const clientBuildPath = path.join(__dirname, '../../client/dist')
 app.use(express.static(clientBuildPath))
 
+// API health check - must be before catch-all route
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
 // Handle React routing, return all requests to React app
+// This should be the LAST route to catch any unmatched requests
 app.get('*', (req, res) => {
   res.sendFile(path.join(clientBuildPath, 'index.html'))
 })

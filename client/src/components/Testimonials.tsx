@@ -195,10 +195,6 @@ const Testimonials: React.FC = () => {
         </div>
 
         <div className="testimonials-slider">
-          <button className="slider-btn prev-btn" onClick={prevSlide}>
-            ‹
-          </button>
-          
           <div className="testimonials-container">
             {Array.isArray(translatedTestimonials) && translatedTestimonials.map((testimonial, index) => (
               <div
@@ -231,9 +227,15 @@ const Testimonials: React.FC = () => {
             ))}
           </div>
 
-          <button className="slider-btn next-btn" onClick={nextSlide}>
-            ›
-          </button>
+          <div className="slider-controls">
+            <button className="slider-btn prev-btn" onClick={prevSlide}>
+              ‹
+            </button>
+            
+            <button className="slider-btn next-btn" onClick={nextSlide}>
+              ›
+            </button>
+          </div>
         </div>
 
         <div className="slider-dots">

@@ -25,15 +25,32 @@ class GoogleSheetsService {
         return true;
       }
 
-      // Clean private key - remove surrounding quotes if present
+      // Clean private key - remove surrounding quotes if present and handle formatting
       let privateKey = process.env.GOOGLE_PRIVATE_KEY;
-      if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+      console.log('🔑 Raw private key length:', privateKey.length);
+      console.log('🔑 Raw private key first 50 chars:', JSON.stringify(privateKey.substring(0, 50)));
+      console.log('🔑 Raw private key last 50 chars:', JSON.stringify(privateKey.substring(privateKey.length - 50)));
+      
+      // Remove surrounding quotes if present (handles both single and double quotes)
+      if ((privateKey.startsWith('"') && privateKey.endsWith('"')) || 
+          (privateKey.startsWith("'") && privateKey.endsWith("'"))) {
         privateKey = privateKey.slice(1, -1);
+        console.log('🔑 Removed surrounding quotes');
       }
+      
+      // Replace escaped newlines with actual newlines (for cases where \n is used)
+      privateKey = privateKey.replace(/\\n/g, '\n');
+      
+      // Ensure proper line endings - replace any remaining \r or mixed line endings
+      privateKey = privateKey.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      
+      console.log('🔑 Cleaned private key length:', privateKey.length);
+      console.log('🔑 Cleaned private key first 50 chars:', JSON.stringify(privateKey.substring(0, 50)));
+      console.log('🔑 Cleaned private key last 50 chars:', JSON.stringify(privateKey.substring(privateKey.length - 50)));
       
       const serviceAccountAuth = new JWT({
         email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        key: privateKey.replace(/\\n/g, '\n'),
+        key: privateKey,
         scopes: ['https://www.googleapis.com/auth/spreadsheets'],
       });
 

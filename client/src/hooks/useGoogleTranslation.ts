@@ -137,7 +137,8 @@ export const useTestimonialTranslations = () => {
     submitReview: 'Recensie versturen',
     errorSubmit: 'Fout bij het versturen van de recensie',
     submitting: 'Bezig met versturen...',
-    cancel: 'Annuleren'
+    cancel: 'Annuleren',
+    reviewSubmittedSuccessfully: 'Recensie succesvol verzonden!'
   }
 
   const textsArray = Object.values(testimonialTexts)

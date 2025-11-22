@@ -791,4 +791,211 @@ function generateConfirmationEmail(name, date, make, model, services, total, loc
   `
 }
 
+// GET /public/testimonials - Get testimonials from Google Sheets
+router.get('/testimonials', async (req, res) => {
+  try {
+    const { lang = 'nl' } = req.query
+    
+    // Get testimonials from Google Sheets
+    const data = await GoogleSheetsService.getData('Testimonials')
+    
+    console.log('📊 Raw testimonials data from Google Sheets:', data)
+    
+    if (data.length <= 1) {
+      console.log('⚠️ No testimonials data found or only header row exists')
+      return res.json({
+        success: true,
+        data: []
+      })
+    }
+
+    const headers = data[0]
+    console.log('📋 Headers:', headers)
+    
+    // Create a mapping of headers to indices for easier access
+    const headerMap = {};
+    headers.forEach((header, index) => {
+      if (typeof header === 'string') {
+        headerMap[header.toLowerCase().replace(/ /g, '_')] = index;
+      } else {
+        // For non-string headers (like numbers), convert to string first
+        headerMap[String(header).toLowerCase().replace(/ /g, '_')] = index;
+      }
+    });
+    
+    console.log('🗺️ Header map:', headerMap);
+    
+    const testimonials = data.slice(1).map(row => {
+      // Get the appropriate comment based on language with fallback logic
+      let comment = '';
+      
+      // Try to find comment in requested language
+      const commentLangKey = headerMap[`comment_${lang}`];
+      if (commentLangKey !== undefined && row[commentLangKey] && typeof row[commentLangKey] === 'string' && row[commentLangKey].trim() !== '') {
+        comment = row[commentLangKey];
+      } else if (headerMap.comment_nl !== undefined && row[headerMap.comment_nl] && typeof row[headerMap.comment_nl] === 'string' && row[headerMap.comment_nl].trim() !== '') {
+        // Fallback to Dutch
+        comment = row[headerMap.comment_nl];
+      } else if (headerMap.comment !== undefined && row[headerMap.comment] && typeof row[headerMap.comment] === 'string' && row[headerMap.comment].trim() !== '') {
+        // Fallback to generic comment
+        comment = row[headerMap.comment];
+      }
+      
+      // Get date from created_date or created_at with proper priority
+      let dateValue = '';
+      
+      // Priority order for date sources:
+      // 1. created_date (preferred - new structure)
+      // 2. created_at (fallback)
+      // 3. date (legacy fallback)
+      
+      if (headerMap.created_date !== undefined && row[headerMap.created_date] && row[headerMap.created_date] !== '') {
+        dateValue = row[headerMap.created_date];
+        console.log(`📅 Using created_date: ${dateValue}`)
+      } else if (headerMap.created_at !== undefined && row[headerMap.created_at] && row[headerMap.created_at] !== '') {
+        dateValue = row[headerMap.created_at];
+        console.log(`📅 Using created_at: ${dateValue}`)
+      } else if (headerMap.date !== undefined && row[headerMap.date] && row[headerMap.date] !== '') {
+        dateValue = row[headerMap.date];
+        console.log(`📅 Using date: ${dateValue}`)
+      }
+      
+      // Extract other values
+      const name = (headerMap.name !== undefined && row[headerMap.name]) ? row[headerMap.name] : 'Unknown Client';
+      const rating = (headerMap.rating !== undefined && row[headerMap.rating]) ? parseInt(row[headerMap.rating]) : 5;
+      const id = (headerMap.id !== undefined && row[headerMap.id]) ? row[headerMap.id] : `test-${Date.now()}`;
+      const service = (headerMap.service !== undefined && row[headerMap.service]) ? row[headerMap.service] : '';
+      
+      return {
+        id: id,
+        name: name,
+        rating: rating,
+        comment: comment,
+        date: dateValue,
+        service: service
+      }
+    }).filter(testimonial => testimonial.name && testimonial.comment && typeof testimonial.comment === 'string' && testimonial.comment.trim() !== '')
+    
+    // Convert Excel serial dates to ISO dates
+    testimonials.forEach(testimonial => {
+      console.log(`📅 Processing testimonial date:`, testimonial.date, `type:`, typeof testimonial.date);
+      
+      if (testimonial.date && typeof testimonial.date === 'number') {
+        // Excel serial date: days since January 1, 1900
+        // Convert to JavaScript date (milliseconds since January 1, 1970)
+        const excelEpoch = new Date(1900, 0, 1); // January 1, 1900
+        const jsDate = new Date(excelEpoch.getTime() + (testimonial.date - 2) * 24 * 60 * 60 * 1000);
+        const formattedDate = jsDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+        console.log(`📅 Converted Excel date ${testimonial.date} to ${formattedDate}`);
+        testimonial.date = formattedDate;
+      } else if (testimonial.date && typeof testimonial.date === 'string' && testimonial.date.includes('/')) {
+        // Handle MM/DD/YYYY format from Google Sheets
+        const parts = testimonial.date.split('/');
+        if (parts.length === 3) {
+          const jsDate = new Date(parts[0], parts[1] - 1, parts[2]);
+          const formattedDate = jsDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+          console.log(`📅 Converted MM/DD/YYYY date ${testimonial.date} to ${formattedDate}`);
+          testimonial.date = formattedDate;
+        }
+      }
+    })
+
+    console.log('✅ Processed testimonials:', testimonials)
+    console.log('🔍 Filtered testimonials count:', testimonials.length)
+    
+    res.json({
+      success: true,
+      data: testimonials
+    })
+  } catch (error) {
+    console.error('Error getting testimonials:', error)
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to get testimonials'
+    })
+  }
+})
+
+// POST /public/testimonials - Submit a new testimonial
+router.post('/testimonials', async (req, res) => {
+  try {
+    const { name, rating, comment } = req.body
+    
+    // Validate input
+    if (!name || !comment || !rating) {
+      return res.status(400).json({
+        success: false,
+        error: 'Name, rating, and comment are required'
+      })
+    }
+    
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({
+        success: false,
+        error: 'Rating must be between 1 and 5'
+      })
+    }
+    
+    if (name.length > 100 || comment.length > 1000) {
+      return res.status(400).json({
+        success: false,
+        error: 'Name too long (max 100) or comment too long (max 1000)'
+      })
+    }
+    
+    console.log('📝 New testimonial submission:', { name, rating, comment: comment.substring(0, 50) + '...' })
+    
+    // Get current date in ISO format
+    const currentDate = new Date().toISOString();
+    const currentDateOnly = currentDate.split('T')[0]; // YYYY-MM-DD format
+    
+    // Create new testimonial data with proper structure for Google Sheets
+    // ID, Name, Rating, Comment_NL, Comment_EN, Comment_ES, Comment_PL, Comment_RO, Active, Created_Date
+    const newTestimonial = [
+      `test-${Date.now()}`,    // ID
+      name,                    // Name
+      rating.toString(),       // Rating
+      comment,                 // Comment_NL (comentariul original în olandeză)
+      '',                      // Comment_EN (gol pentru moment)
+      '',                      // Comment_ES (gol)
+      '',                      // Comment_PL (gol)
+      '',                      // Comment_RO (gol)
+      'true',                  // Active
+      currentDateOnly          // Created_Date (format YYYY-MM-DD)
+    ]
+    
+    try {
+      // Append to Google Sheets
+      await GoogleSheetsService.appendData('Testimonials', newTestimonial)
+      
+      console.log('✅ New testimonial submitted successfully:', { name, rating, comment, date: currentDateOnly })
+      
+      res.json({
+        success: true,
+        message: 'Testimonial submitted successfully',
+        testimonial: {
+          id: newTestimonial[0],
+          name,
+          rating,
+          comment,
+          date: currentDateOnly,
+          service: ''
+        }
+      })
+    } catch (sheetsError) {
+      console.error('❌ Error saving to Google Sheets:', sheetsError)
+      res.status(500).json({
+        success: false,
+        error: 'Failed to save testimonial to database'
+      })
+    }
+  } catch (error) {
+    console.error('Error submitting testimonial:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to submit testimonial'
+    })
+  }
+})
+
 export default router
