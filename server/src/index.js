@@ -1,8 +1,24 @@
-import 'dotenv/config'
+import dotenv from 'dotenv'
 import express from 'express'
 import cors from 'cors'
 import path from 'path'
 import { fileURLToPath } from 'url'
+
+// Configurare dotenv să încarce fișierul .env din directorul server
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const envPath = path.join(__dirname, '..', '.env')
+
+dotenv.config({ path: envPath })
+
+// Debug logging pentru verificare variabile Google Sheets
+console.log('🔍 Server index.js - Verificare încărcare variabile din dotenv:')
+console.log('📁 .env path:', envPath)
+console.log('📊 GOOGLE_SHEETS_SPREADSHEET_ID:', process.env.GOOGLE_SHEETS_SPREADSHEET_ID)
+console.log('📧 GOOGLE_SERVICE_ACCOUNT_EMAIL:', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)
+console.log('🔑 GOOGLE_PRIVATE_KEY exists:', !!process.env.GOOGLE_PRIVATE_KEY)
+console.log('🔑 GOOGLE_PRIVATE_KEY length:', process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.length : 'undefined')
+
 import publicRouter from './routes/public.js'
 import adminRouter from './routes/admin.js'
 import vehicleRouter from './routes/vehicles.js'
@@ -18,10 +34,6 @@ import VehiclesAPIService from './services/vehiclesAPIService.js'
 import { vehicleServicesService } from './services/vehicleServicesService.js'
 
 const app = express()
-
-// Get __dirname equivalent for ES modules
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 app.use(cors({
   origin: [

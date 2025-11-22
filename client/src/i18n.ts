@@ -201,7 +201,12 @@ const resources = {
         messagePlaceholder: 'Typ uw bericht hier...',
         successTitle: 'Bericht Verzonden!',
         successMessage: 'Bedankt voor uw bericht. We nemen zo snel mogelijk contact met u op.',
-        errorSending: 'Fout bij het versturen van het bericht. Probeer het opnieuw.'
+        errorSending: 'Fout bij het versturen van het bericht. Probeer het opnieuw.',
+        mapBlockedTitle: 'Kaart Geblokkeerd',
+        mapBlockedMessage: 'De kaart kon niet worden geladen. Dit kan komen door een ad blocker. Schakel uw ad blocker uit voor deze site of vind onze locatie hieronder.',
+        ourLocation: 'Onze Locatie',
+        addressText: 'Tilburg Stadscentrum',
+        openInGoogleMaps: 'Openen in Google Maps'
       },
       
       // Admin translations
@@ -501,7 +506,12 @@ const resources = {
         messagePlaceholder: 'Type your message here...',
         successTitle: 'Message Sent!',
         successMessage: 'Thank you for your message. We will get back to you as soon as possible.',
-        errorSending: 'Error sending message. Please try again.'
+        errorSending: 'Error sending message. Please try again.',
+        mapBlockedTitle: 'Map Blocked',
+        mapBlockedMessage: 'The map could not be loaded. This might be due to an ad blocker. Please disable your ad blocker for this site or find our location below.',
+        ourLocation: 'Our Location',
+        addressText: 'Tilburg City Center',
+        openInGoogleMaps: 'Open in Google Maps'
       },
       
       // Chatbot translations
@@ -797,7 +807,12 @@ const resources = {
         messagePlaceholder: 'Escribe tu mensaje aquí...',
         successTitle: '¡Mensaje Enviado!',
         successMessage: 'Gracias por tu mensaje. Nos pondremos en contacto contigo lo antes posible.',
-        errorSending: 'Error al enviar el mensaje. Por favor intenta nuevamente.'
+        errorSending: 'Error al enviar el mensaje. Por favor intenta nuevamente.',
+        mapBlockedTitle: 'Mapa Bloqueado',
+        mapBlockedMessage: 'El mapa no se pudo cargar. Esto puede deberse a un bloqueador de anuncios. Desactiva tu bloqueador de anuncios para este sitio o encuentra nuestra ubicación a continuación.',
+        ourLocation: 'Nuestra Ubicación',
+        addressText: 'Centro de la Ciudad de Tilburg',
+        openInGoogleMaps: 'Abrir en Google Maps'
       },
       
       // Chatbot translations
@@ -981,7 +996,12 @@ const resources = {
         messagePlaceholder: 'Wpisz swoją wiadomość tutaj...',
         successTitle: 'Wiadomość Wysłana!',
         successMessage: 'Dziękujemy za Twoją wiadomość. Skontaktujemy się z Tobą tak szybko, jak to możliwe.',
-        errorSending: 'Błąd podczas wysyłania wiadomości. Spróbuj ponownie.'
+        errorSending: 'Błąd podczas wysyłania wiadomości. Spróbuj ponownie.',
+        mapBlockedTitle: 'Mapa Zablokowana',
+        mapBlockedMessage: 'Mapa nie mogła zostać załadowana. Może to być spowodowane blokadą reklam. Wyłącz blokadę reklam dla tej strony lub znajdź naszą lokalizację poniżej.',
+        ourLocation: 'Nasza Lokalizacja',
+        addressText: 'Centrum Miasta Tilburg',
+        openInGoogleMaps: 'Otwórz w Google Maps'
       },
       
       // Chatbot translations
@@ -1261,7 +1281,12 @@ const resources = {
         messagePlaceholder: 'Tastați mesajul dvs. aici...',
         successTitle: 'Mesaj Trimis!',
         successMessage: 'Vă mulțumim pentru mesaj. Vă vom contacta cât mai curând posibil.',
-        errorSending: 'Eroare la trimiterea mesajului. Vă rugăm încercați din nou.'
+        errorSending: 'Eroare la trimiterea mesajului. Vă rugăm încercați din nou.',
+        mapBlockedTitle: 'Hartă Blocată',
+        mapBlockedMessage: 'Harta nu a putut fi încărcată. Acest lucru se poate datora unui blocant de reclame. Dezactivați blocantul de reclame pentru acest site sau găsiți locația noastră mai jos.',
+        ourLocation: 'Locația Noastră',
+        addressText: 'Centrul Orașului Tilburg',
+        openInGoogleMaps: 'Deschide în Google Maps'
       },
       
       // Chatbot translations

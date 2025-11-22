@@ -1,7 +1,39 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import './InteractiveMap.css'
 
 const InteractiveMap: React.FC = () => {
+  const { t } = useTranslation()
+  const [mapError, setMapError] = useState(false)
+
+  const handleMapError = () => {
+    setMapError(true)
+  }
+
+  if (mapError) {
+    return (
+      <div className="interactive-map full-map map-error">
+        <div className="map-error-content">
+          <h3>{t('contact.mapBlockedTitle', 'Map Blocked')}</h3>
+          <p>{t('contact.mapBlockedMessage', 'The map could not be loaded. This might be due to an ad blocker. Please disable your ad blocker for this site or find our location below.')}</p>
+          <div className="map-error-address">
+            <h4>{t('contact.ourLocation', 'Our Location')}</h4>
+            <p>Tilburg, Netherlands</p>
+            <p>{t('contact.address', 'Address')}: {t('contact.addressText', 'Tilburg City Center')}</p>
+            <a 
+              href="https://maps.google.com/maps?q=Tilburg,Netherlands" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="map-error-link"
+            >
+              {t('contact.openInGoogleMaps', 'Open in Google Maps')}
+            </a>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="interactive-map full-map">
       <iframe
@@ -13,6 +45,7 @@ const InteractiveMap: React.FC = () => {
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
         title="Tilburg, Netherlands Location Map"
+        onError={handleMapError}
       />
     </div>
   )

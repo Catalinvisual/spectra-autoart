@@ -283,7 +283,7 @@ router.get('/vehicles/makes/:make/models', async (req, res) => {
     const makeIndex = headers.indexOf(`Make_${langSuffix}`) !== -1 ? headers.indexOf(`Make_${langSuffix}`) : headers.indexOf('Make_NL');
     const modelIndex = headers.indexOf(`Model_${langSuffix}`) !== -1 ? headers.indexOf(`Model_${langSuffix}`) : headers.indexOf('Model_NL');
     
-    if (idIndex === -1 || makeIndex === -1 || modelIndex === -1) {
+    if (makeIndex === -1 || modelIndex === -1) {
       console.log('❌ Missing required columns for models');
       return res.status(500).json({ 
         success: false, 

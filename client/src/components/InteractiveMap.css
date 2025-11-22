@@ -33,3 +33,66 @@
   border-color: transparent;
   box-shadow: none;
 }
+
+/* Map error fallback styles */
+.map-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  color: #ffffff;
+  text-align: center;
+  padding: 2rem;
+}
+
+.map-error-content {
+  max-width: 400px;
+}
+
+.map-error-content h3 {
+  color: #00e5ff;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.map-error-content p {
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.map-error-address {
+  background: rgba(0, 229, 255, 0.1);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+}
+
+.map-error-address h4 {
+  color: #00e5ff;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.map-error-address p {
+  margin: 0.25rem 0;
+  font-size: 0.95rem;
+}
+
+.map-error-link {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #00e5ff;
+  color: #1a1a1a;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.map-error-link:hover {
+  background: #00c4e0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 229, 255, 0.3);
+}
