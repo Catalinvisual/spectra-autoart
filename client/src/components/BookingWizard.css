@@ -545,6 +545,32 @@
   margin-left: auto;
 }
 
+/* Summary total section styling */
+.booking-summary-card .summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  margin-top: 1rem;
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.booking-summary-card .total-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.booking-summary-card .total-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #00e5ff;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
 
 
 /* Keep existing wizard styles */

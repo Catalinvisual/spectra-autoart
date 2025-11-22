@@ -1308,26 +1308,13 @@ const GalleryManagement: React.FC = () => {
     }
   }
 
-  const handleChooseFile = () => {
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    if (fileInput) fileInput.click();
-  }
 
-  const handleChooseUrl = () => {
-    setNewImage({ ...newImage, url: ' ' })
-    setSelectedFile(null)
-  }
-
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewImage({ ...newImage, url: e.target.value })
-    setSelectedFile(null) // Clear file selection when URL is entered
-  }
 
   const handleAddImage = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!newImage.url.trim() && !selectedFile) {
-      showWarning(t('admin.pleaseSelectImageOrEnterUrl'))
+    if (!selectedFile) {
+      showWarning(t('admin.pleaseSelectImage'))
       return
     }
 
@@ -1335,13 +1322,8 @@ const GalleryManagement: React.FC = () => {
       setLoading(true)
       const formData = new FormData()
       
-      // Add file if selected
-      if (selectedFile) {
-        formData.append('image', selectedFile)
-      } else if (newImage.url.trim()) {
-        formData.append('url', newImage.url.trim())
-      }
-      
+      // Add file
+      formData.append('image', selectedFile)
       formData.append('alt_text', newImage.alt_text)
       formData.append('category', newImage.category)
       formData.append('active', String(newImage.active))
@@ -1411,68 +1393,27 @@ const GalleryManagement: React.FC = () => {
         <form onSubmit={handleAddImage}>
           <div className="form-group">
             <label>{t('admin.selectImage')} *</label>
-            <div className="image-input-options">
-              <div className="input-option">
-                <label>
-                  <input
-                    type="radio"
-                    name="imageSource"
-                    value="file"
-                    checked={selectedFile !== null}
-                    onChange={() => setNewImage({ ...newImage, url: '' })}
-                  />
-                  {t('admin.uploadFile')}
-                </label>
-                {selectedFile !== null && (
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="file-input"
-                  />
-                )}
-              </div>
-              <div className="input-option">
-                <label>
-                  <input
-                    type="radio"
-                    name="imageSource"
-                    value="url"
-                    checked={newImage.url !== ''}
-                    onChange={() => setSelectedFile(null)}
-                  />
-                  {t('admin.useUrl')}
-                </label>
-                {newImage.url !== '' && (
-                  <input
-                    type="url"
-                    value={newImage.url}
-                    onChange={handleUrlChange}
-                    placeholder={t('admin.imageUrlPlaceholder')}
-                    className="url-input"
-                  />
-                )}
-              </div>
+            <div className="image-upload-section">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="file-input"
+                id="imageFileInput"
+              />
+              <button
+                type="button"
+                onClick={() => document.getElementById('imageFileInput')?.click()}
+                className="upload-button"
+              >
+                {t('admin.chooseImageFile')}
+              </button>
+              {selectedFile && (
+                <div className="selected-file-info">
+                  {selectedFile.name}
+                </div>
+              )}
             </div>
-            {(selectedFile === null && newImage.url === '') && (
-              <div className="input-prompt">
-                <button
-                  type="button"
-                  onClick={handleChooseFile}
-                  className="prompt-button"
-                >
-                  {t('admin.chooseImageFile')}
-                </button>
-                <span className="or-text"> {t('admin.or')} </span>
-                <button
-                  type="button"
-                  onClick={handleChooseUrl}
-                  className="prompt-button"
-                >
-                  {t('admin.enterImageUrl')}
-                </button>
-              </div>
-            )}
           </div>
           
           <div className="form-group">
