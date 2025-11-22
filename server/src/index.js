@@ -28,6 +28,7 @@ import bookingsRouter from './routes/bookings.js'
 import galleryRouter from './routes/gallery.js'
 import testimonialsRouter from './routes/testimonials.js'
 import translateRouter from './routes/translate.js'
+import argosTranslateRouter from './routes/argosTranslate.js'
 import debugVehiclesRouter from './routes/debugVehicles.js'
 import GoogleSheetsService from './services/googleSheetsService.js'
 import VehiclesAPIService from './services/vehiclesAPIService.js'
@@ -60,6 +61,7 @@ app.use('/api/bookings', bookingsRouter)
 app.use('/api/gallery', galleryRouter)
 app.use('/api/testimonials', testimonialsRouter)
 app.use('/api/translate', translateRouter)
+app.use('/api/argos-translate', argosTranslateRouter)
 app.use('/api/debug', debugVehiclesRouter)
 
 // Serve static files from React build

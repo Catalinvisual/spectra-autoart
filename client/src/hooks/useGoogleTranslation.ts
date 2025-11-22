@@ -15,7 +15,7 @@ interface UseGoogleTranslationReturn {
 }
 
 /**
- * Custom hook for Google Translate API translations
+ * Custom hook for Argos Translate API translations
  * Replaces i18n for dynamic content translation
  */
 export const useGoogleTranslation = (text: string, dependencies: any[] = []): UseGoogleTranslationReturn => {
@@ -118,12 +118,12 @@ export const useGoogleTranslations = (texts: string[], dependencies: any[] = [])
 }
 
 /**
- * Hook for translating testimonial-specific content using Google API
+ * Hook for translating testimonial-specific content using Argos Translate API
  */
 export const useTestimonialTranslations = () => {
   const { currentLanguage } = useLanguage()
   
-  // Base Dutch texts for testimonials - these will be translated via Google API
+  // Base Dutch texts for testimonials - these will be translated via Argos Translate API
   const testimonialTexts = {
     title: 'Wat klanten zeggen',
     subtitle: 'De ervaringen van onze tevreden klanten',

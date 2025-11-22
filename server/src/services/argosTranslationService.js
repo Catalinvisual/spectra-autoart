@@ -10,6 +10,16 @@ const __dirname = dirname(__filename);
 const I18N_PATH = join(__dirname, '../../../client/src');
 
 /**
+ * Configuration for translation services
+ */
+const TRANSLATION_CONFIG = {
+  primaryService: 'argos', // Use only Argos Translate
+  cacheEnabled: process.env.TRANSLATION_CACHE !== 'false',
+  argosApiUrl: process.env.LIBRETRANSLATE_API_URL || 'https://translate.argosopentech.com/translate',
+  argosApiKey: process.env.LIBRETRANSLATE_API_KEY || ''
+};
+
+/**
  * Încarcă traducerile din fișierul i18n.ts
  * @param {string} language - Limba dorită (ex: 'en', 'es', 'pl', 'ro')
  * @returns {Object} Obiectul cu traduceri sau null dacă fișierul nu există
@@ -96,8 +106,6 @@ function extractTranslationObject(str) {
   return obj;
 }
 
-
-
 /**
  * Verifică dacă un text există deja în traducerile i18n
  * @param {string} text - Textul de căutat
@@ -132,18 +140,41 @@ function findExistingTranslation(text, targetLanguage) {
 }
 
 /**
- * Traduce textul folosind i18n dacă există, altfel folosește Argos Translate
- * @param {string} text - Textul de tradus
- * @param {string} targetLanguage - Limba țintă
- * @param {string} sourceLanguage - Limba sursă (opțional)
- * @returns {Promise<string>} Textul tradus
+ * Cache pentru traduceri deja efectuate în această sesiune
  */
-export async function translateWithI18nFallback(text, targetLanguage, sourceLanguage = 'auto') {
+const translationCache = new Map();
+
+/**
+ * Translate text with Argos Translate (primary) or Google Translate (fallback)
+ * @param {string} text - Text to translate
+ * @param {string} targetLanguage - Target language code
+ * @param {string} sourceLanguage - Source language code (optional)
+ * @returns {Promise<string>} Translated text
+ */
+async function translateWithService(text, targetLanguage, sourceLanguage = 'auto') {
   // Pentru limba olandeză (nl), returnăm textul original
   if (targetLanguage === 'nl') {
     return text;
   }
   
+  try {
+    // Use only Argos Translate
+    return await translateWithArgos(text, targetLanguage, sourceLanguage);
+  } catch (error) {
+    console.error('Argos Translate failed:', error);
+    // Return original text on error
+    return text;
+  }
+}
+
+/**
+ * Traduce textul folosind i18n dacă există, altfel folosește serviciul de traducere selectat
+ * @param {string} text - Textul de tradus
+ * @param {string} targetLanguage - Limba țintă
+ * @param {string} sourceLanguage - Limba sursă (opțional)
+ * @returns {Promise<string>} Textul tradus
+ */
+export async function translateWithI18nAndArgos(text, targetLanguage, sourceLanguage = 'auto') {
   // Verificăm dacă textul există deja în i18n
   const existingTranslation = findExistingTranslation(text, targetLanguage);
   if (existingTranslation) {
@@ -151,19 +182,19 @@ export async function translateWithI18nFallback(text, targetLanguage, sourceLang
     return existingTranslation;
   }
   
-  // Dacă nu există, folosim Argos Translate
-  console.log(`🔄 Textul "${text}" nu există în i18n pentru ${targetLanguage}, folosim Argos Translate`);
-  return await translateWithArgos(text, targetLanguage, sourceLanguage);
+  // Dacă nu există, folosim serviciul de traducere selectat
+  console.log(`🔄 Textul "${text}" nu există în i18n pentru ${targetLanguage}, folosim ${TRANSLATION_CONFIG.primaryService}`);
+  return await translateWithService(text, targetLanguage, sourceLanguage);
 }
 
 /**
- * Traduce mai multe texte folosind i18n dacă există, altfel folosește Argos Translate
+ * Traduce mai multe texte folosind i18n dacă există, altfel folosește serviciul de traducere selectat
  * @param {string[]} texts - Array de texte de tradus
  * @param {string} targetLanguage - Limba țintă
  * @param {string} sourceLanguage - Limba sursă (opțional)
  * @returns {Promise<string[]>} Array de texte traduse
  */
-export async function translateMultipleWithI18nFallback(texts, targetLanguage, sourceLanguage = 'auto') {
+export async function translateMultipleWithI18nAndArgos(texts, targetLanguage, sourceLanguage = 'auto') {
   const results = [];
   const textsToTranslate = [];
   const indicesToTranslate = [];
@@ -184,7 +215,7 @@ export async function translateMultipleWithI18nFallback(texts, targetLanguage, s
       results[i] = existingTranslation;
       console.log(`🎯 Traducere găsită în i18n pentru textul ${i}: "${text}" → "${existingTranslation}"`);
     } else {
-      // Dacă nu există, îl adăugăm la lista pentru Argos Translate
+      // Dacă nu există, îl adăugăm la lista pentru traducere
       textsToTranslate.push(text);
       indicesToTranslate.push(i);
       console.log(`🔄 Textul ${i} nu există în i18n: "${text}"`);
@@ -193,12 +224,22 @@ export async function translateMultipleWithI18nFallback(texts, targetLanguage, s
   
   // Traducem textele care nu există în i18n
   if (textsToTranslate.length > 0) {
-    console.log(`🌐 Traducem ${textsToTranslate.length} texte cu Argos Translate`);
-    const translatedTexts = await translateMultipleWithArgos(textsToTranslate, targetLanguage, sourceLanguage);
+    console.log(`🌐 Traducem ${textsToTranslate.length} texte cu ${TRANSLATION_CONFIG.primaryService}`);
     
-    // Completăm rezultatele
-    for (let j = 0; j < indicesToTranslate.length; j++) {
-      results[indicesToTranslate[j]] = translatedTexts[j];
+    try {
+      // Use only Argos Translate for batch translation
+      const translatedTexts = await translateMultipleWithArgos(textsToTranslate, targetLanguage, sourceLanguage);
+      
+      // Completăm rezultatele
+      for (let j = 0; j < indicesToTranslate.length; j++) {
+        results[indicesToTranslate[j]] = translatedTexts[j];
+      }
+    } catch (error) {
+      console.error('Batch translation error:', error);
+      // Return original texts on error
+      for (let j = 0; j < indicesToTranslate.length; j++) {
+        results[indicesToTranslate[j]] = textsToTranslate[j];
+      }
     }
   }
   
@@ -206,50 +247,96 @@ export async function translateMultipleWithI18nFallback(texts, targetLanguage, s
 }
 
 /**
- * Cache pentru traduceri deja efectuate în această sesiune
- */
-const translationCache = new Map();
-
-/**
- * Traduce textul cu cache și i18n fallback
+ * Traduce textul cu cache, i18n fallback și Argos/Google Translate
  * @param {string} text - Textul de tradus
  * @param {string} targetLanguage - Limba țintă
  * @param {string} sourceLanguage - Limba sursă (opțional)
  * @returns {Promise<string>} Textul tradus
  */
-export async function translateWithCacheAndI18n(text, targetLanguage, sourceLanguage = 'auto') {
+export async function translateWithArgosCacheAndI18n(text, targetLanguage, sourceLanguage = 'auto') {
   const cacheKey = `${text}:${targetLanguage}:${sourceLanguage}`;
   
   // Verificăm cache-ul
-  if (translationCache.has(cacheKey)) {
+  if (TRANSLATION_CONFIG.cacheEnabled && translationCache.has(cacheKey)) {
     console.log(`💾 Traducere găsită în cache: "${text}" → "${translationCache.get(cacheKey)}"`);
     return translationCache.get(cacheKey);
   }
   
   // Dacă nu este în cache, traducem
-  const translated = await translateWithI18nFallback(text, targetLanguage, sourceLanguage);
+  const translated = await translateWithI18nAndArgos(text, targetLanguage, sourceLanguage);
   
   // Salvăm în cache
-  translationCache.set(cacheKey, translated);
+  if (TRANSLATION_CONFIG.cacheEnabled) {
+    translationCache.set(cacheKey, translated);
+  }
   
   return translated;
 }
 
 /**
- * Traduce mai multe texte cu cache și i18n fallback
+ * Traduce mai multe texte cu cache, i18n fallback și Argos/Google Translate
  * @param {string[]} texts - Array de texte de tradus
  * @param {string} targetLanguage - Limba țintă
  * @param {string} sourceLanguage - Limba sursă (opțional)
  * @returns {Promise<string[]>} Array de texte traduse
  */
-export async function translateMultipleWithCacheAndI18n(texts, targetLanguage, sourceLanguage = 'auto') {
-  const results = await translateMultipleWithI18nFallback(texts, targetLanguage, sourceLanguage);
+export async function translateMultipleWithArgosCacheAndI18n(texts, targetLanguage, sourceLanguage = 'auto') {
+  const results = await translateMultipleWithI18nAndArgos(texts, targetLanguage, sourceLanguage);
   
   // Salvăm în cache
-  for (let i = 0; i < texts.length; i++) {
-    const cacheKey = `${texts[i]}:${targetLanguage}:${sourceLanguage}`;
-    translationCache.set(cacheKey, results[i]);
+  if (TRANSLATION_CONFIG.cacheEnabled) {
+    for (let i = 0; i < texts.length; i++) {
+      const cacheKey = `${texts[i]}:${targetLanguage}:${sourceLanguage}`;
+      translationCache.set(cacheKey, results[i]);
+    }
   }
   
   return results;
 }
+
+/**
+ * Get translation service configuration
+ * @returns {Object} Current translation configuration
+ */
+export function getTranslationConfig() {
+  return { ...TRANSLATION_CONFIG };
+}
+
+/**
+ * Update translation service configuration
+ * @param {Object} newConfig - New configuration values
+ */
+export function updateTranslationConfig(newConfig) {
+  Object.assign(TRANSLATION_CONFIG, newConfig);
+  console.log('Translation configuration updated:', TRANSLATION_CONFIG);
+}
+
+/**
+ * Clear translation cache
+ */
+export function clearTranslationCache() {
+  translationCache.clear();
+  console.log('Translation cache cleared');
+}
+
+/**
+ * Get translation cache statistics
+ * @returns {Object} Cache statistics
+ */
+export function getCacheStats() {
+  return {
+    size: translationCache.size,
+    entries: Array.from(translationCache.keys())
+  };
+}
+
+export default {
+  translateWithArgosCacheAndI18n,
+  translateMultipleWithArgosCacheAndI18n,
+  translateWithI18nAndArgos,
+  translateMultipleWithI18nAndArgos,
+  getTranslationConfig,
+  updateTranslationConfig,
+  clearTranslationCache,
+  getCacheStats
+};

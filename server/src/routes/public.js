@@ -324,95 +324,75 @@ router.get('/services', async (req, res) => {
     const { lang = 'nl' } = req.query
     let services = []
     
-    // Try to fetch services from Google Sheets first
+    // Try to fetch services from Google Sheets first with Argos Translate integration
     try {
-      const servicesData = await GoogleSheetsService.getData('Services')
-      console.log(`📊 Raw services data from Google Sheets:`, servicesData.length, 'rows')
-      
-      if (servicesData.length > 1) { // Has headers and data
-        const headers = servicesData[0]
-        console.log(`📋 Services headers found:`, headers)
-        
-        // Use multilingual columns based on the requested language
-        const langSuffix = lang.toUpperCase()
-        const idIndex = headers.indexOf('ID')
-        const nameIndex = headers.indexOf(`Name_${langSuffix}`)
-        const descIndex = headers.indexOf(`Description_${langSuffix}`)
-        const priceIndex = headers.indexOf('Price')
-        const categoryIndex = headers.indexOf('Category')
-        const durationIndex = headers.indexOf('Duration_Minutes')
-        const isActiveIndex = headers.indexOf('Is_Active')
-        
-        console.log(`🔍 Services column indices - ID:${idIndex}, Name_${langSuffix}:${nameIndex}, Description_${langSuffix}:${descIndex}`)
-        
-        if (idIndex === -1 || nameIndex === -1 || descIndex === -1) {
-          console.log('❌ Missing required multilingual columns, trying fallback to NL columns')
-          // Fallback to Dutch (NL) if requested language columns don't exist
-          const nlNameIndex = headers.indexOf('Name_NL')
-          const nlDescIndex = headers.indexOf('Description_NL')
-          
-          if (nlNameIndex === -1 || nlDescIndex === -1) {
-            console.log('❌ Missing required NL columns, throwing error')
-            throw new Error('Missing required columns in Google Sheets Services')
-          }
-          
-          // Use NL columns and translate if needed
-          services = servicesData.slice(1)
-            .filter(row => row[isActiveIndex] === 'true') // Only active services
-            .map(row => ({
-              id: row[idIndex] || '',
-              name: row[nlNameIndex] || '',
-              description: row[nlDescIndex] || '',
-              price: parseFloat(row[priceIndex]) || 0,
-              duration: row[durationIndex] ? `${row[durationIndex]} minutes` : '',
-              category: row[categoryIndex] || 'general'
-            }))
-            .filter(service => service.name && service.description) // Filter out empty services
-          
-          // Translate to requested language if not NL
-          if (lang !== 'nl') {
-            try {
-              const namesToTranslate = services.map(service => service.name)
-              const descsToTranslate = services.map(service => service.description)
-              
-              const [translatedNames, translatedDescs] = await Promise.all([
-                translateMultipleWithCache(namesToTranslate, lang),
-                translateMultipleWithCache(descsToTranslate, lang)
-              ])
-              
-              services = services.map((service, index) => ({
-                ...service,
-                name: translatedNames[index] || service.name,
-                description: translatedDescs[index] || service.description
-              }))
-              
-              console.log(`🔄 Translated ${services.length} services from NL to ${lang}`)
-            } catch (translationError) {
-              console.error('Services translation error:', translationError)
-              // Keep original services data if translation fails
-            }
-          }
-        } else {
-          // Use requested language columns directly
-          services = servicesData.slice(1)
-            .filter(row => row[isActiveIndex] === 'true') // Only active services
-            .map(row => ({
-              id: row[idIndex] || '',
-              name: row[nameIndex] || '',
-              description: row[descIndex] || '',
-              price: parseFloat(row[priceIndex]) || 0,
-              duration: row[durationIndex] ? `${row[durationIndex]} minutes` : '',
-              category: row[categoryIndex] || 'general'
-            }))
-            .filter(service => service.name && service.description) // Filter out empty services
-        }
-        
-        console.log(`✅ Parsed ${services.length} services from Google Sheets`)
-        console.log(`📋 First 3 services:`, services.slice(0, 3))
+      // Use the new Argos Translate method for services
+      if (lang !== 'nl') {
+        console.log(`🔄 Using Argos Translate for services in language: ${lang}`)
+        services = await GoogleSheetsService.getServicesWithArgosTranslation(lang, true, true)
       } else {
-        console.log('⚠️  No services data in Google Sheets')
-        throw new Error('No services data in Google Sheets')
+        // For Dutch, use the standard method
+        const servicesData = await GoogleSheetsService.getData('Services')
+        console.log(`📊 Raw services data from Google Sheets:`, servicesData.length, 'rows')
+        
+        if (servicesData.length > 1) { // Has headers and data
+          const headers = servicesData[0]
+          console.log(`📋 Services headers found:`, headers)
+          
+          // Use multilingual columns based on the requested language
+          const langSuffix = lang.toUpperCase()
+          const idIndex = headers.indexOf('ID')
+          const nameIndex = headers.indexOf(`Name_${langSuffix}`)
+          const descIndex = headers.indexOf(`Description_${langSuffix}`)
+          const priceIndex = headers.indexOf('Price')
+          const categoryIndex = headers.indexOf('Category')
+          const durationIndex = headers.indexOf('Duration_Minutes')
+          const isActiveIndex = headers.indexOf('Is_Active')
+          
+          console.log(`🔍 Services column indices - ID:${idIndex}, Name_${langSuffix}:${nameIndex}, Description_${langSuffix}:${descIndex}`)
+          
+          if (idIndex === -1 || nameIndex === -1 || descIndex === -1) {
+            console.log('❌ Missing required multilingual columns, trying fallback to NL columns')
+            // Fallback to Dutch (NL) if requested language columns don't exist
+            const nlNameIndex = headers.indexOf('Name_NL')
+            const nlDescIndex = headers.indexOf('Description_NL')
+            
+            if (nlNameIndex === -1 || nlDescIndex === -1) {
+              console.log('❌ Missing required NL columns, throwing error')
+              throw new Error('Missing required columns in Google Sheets Services')
+            }
+            
+            // Use NL columns and translate if needed
+            services = servicesData.slice(1)
+              .filter(row => row[isActiveIndex] === 'true') // Only active services
+              .map(row => ({
+                id: row[idIndex] || '',
+                name: row[nlNameIndex] || '',
+                description: row[nlDescIndex] || '',
+                price: parseFloat(row[priceIndex]) || 0,
+                duration: row[durationIndex] ? `${row[durationIndex]} minutes` : '',
+                category: row[categoryIndex] || 'general'
+              }))
+              .filter(service => service.name && service.description) // Filter out empty services
+          } else {
+            // Use requested language columns directly
+            services = servicesData.slice(1)
+              .filter(row => row[isActiveIndex] === 'true') // Only active services
+              .map(row => ({
+                id: row[idIndex] || '',
+                name: row[nameIndex] || '',
+                description: row[descIndex] || '',
+                price: parseFloat(row[priceIndex]) || 0,
+                duration: row[durationIndex] ? `${row[durationIndex]} minutes` : '',
+                category: row[categoryIndex] || 'general'
+              }))
+              .filter(service => service.name && service.description) // Filter out empty services
+          }
+        }
       }
+      
+      console.log(`✅ Parsed ${services.length} services from Google Sheets`)
+      console.log(`📋 First 3 services:`, services.slice(0, 3))
     } catch (sheetsError) {
       console.warn('⚠️  Google Sheets services failed:', sheetsError.message)
       
@@ -796,52 +776,60 @@ router.get('/testimonials', async (req, res) => {
   try {
     const { lang = 'nl' } = req.query
     
-    // Get testimonials from Google Sheets
-    const data = await GoogleSheetsService.getData('Testimonials')
+    // Use Argos Translate for testimonials if language is not Dutch
+    let testimonials = [];
     
-    console.log('📊 Raw testimonials data from Google Sheets:', data)
-    
-    if (data.length <= 1) {
-      console.log('⚠️ No testimonials data found or only header row exists')
-      return res.json({
-        success: true,
-        data: []
-      })
-    }
+    if (lang !== 'nl') {
+      console.log(`🔄 Using Argos Translate for testimonials in language: ${lang}`)
+      testimonials = await GoogleSheetsService.getTestimonialsWithArgosTranslation(lang, true, true)
+    } else {
+      // For Dutch, use the standard method
+      // Get testimonials from Google Sheets
+      const data = await GoogleSheetsService.getData('Testimonials')
+      
+      console.log('📊 Raw testimonials data from Google Sheets:', data)
+      
+      if (data.length <= 1) {
+        console.log('⚠️ No testimonials data found or only header row exists')
+        return res.json({
+          success: true,
+          data: []
+        })
+      }
 
-    const headers = data[0]
-    console.log('📋 Headers:', headers)
-    
-    // Create a mapping of headers to indices for easier access
-    const headerMap = {};
-    headers.forEach((header, index) => {
-      if (typeof header === 'string') {
-        headerMap[header.toLowerCase().replace(/ /g, '_')] = index;
-      } else {
-        // For non-string headers (like numbers), convert to string first
-        headerMap[String(header).toLowerCase().replace(/ /g, '_')] = index;
-      }
-    });
-    
-    console.log('🗺️ Header map:', headerMap);
-    
-    const testimonials = data.slice(1).map(row => {
-      // Get the appropriate comment based on language with fallback logic
-      let comment = '';
+      const headers = data[0]
+      console.log('📋 Headers:', headers)
       
-      // Try to find comment in requested language
-      const commentLangKey = headerMap[`comment_${lang}`];
-      if (commentLangKey !== undefined && row[commentLangKey] && typeof row[commentLangKey] === 'string' && row[commentLangKey].trim() !== '') {
-        comment = row[commentLangKey];
-      } else if (headerMap.comment_nl !== undefined && row[headerMap.comment_nl] && typeof row[headerMap.comment_nl] === 'string' && row[headerMap.comment_nl].trim() !== '') {
-        // Fallback to Dutch
-        comment = row[headerMap.comment_nl];
-      } else if (headerMap.comment !== undefined && row[headerMap.comment] && typeof row[headerMap.comment] === 'string' && row[headerMap.comment].trim() !== '') {
-        // Fallback to generic comment
-        comment = row[headerMap.comment];
-      }
+      // Create a mapping of headers to indices for easier access
+      const headerMap = {};
+      headers.forEach((header, index) => {
+        if (typeof header === 'string') {
+          headerMap[header.toLowerCase().replace(/ /g, '_')] = index;
+        } else {
+          // For non-string headers (like numbers), convert to string first
+          headerMap[String(header).toLowerCase().replace(/ /g, '_')] = index;
+        }
+      });
       
-      // Get date from created_date or created_at with proper priority
+      console.log('🗺️ Header map:', headerMap);
+      
+      testimonials = data.slice(1).map(row => {
+        // Get the appropriate comment based on language with fallback logic
+        let comment = '';
+        
+        // Try to find comment in requested language
+        const commentLangKey = headerMap[`comment_${lang}`];
+        if (commentLangKey !== undefined && row[commentLangKey] && typeof row[commentLangKey] === 'string' && row[commentLangKey].trim() !== '') {
+          comment = row[commentLangKey];
+        } else if (headerMap.comment_nl !== undefined && row[headerMap.comment_nl] && typeof row[headerMap.comment_nl] === 'string' && row[headerMap.comment_nl].trim() !== '') {
+          // Fallback to Dutch
+          comment = row[headerMap.comment_nl];
+        } else if (headerMap.comment !== undefined && row[headerMap.comment] && typeof row[headerMap.comment] === 'string' && row[headerMap.comment].trim() !== '') {
+          // Fallback to generic comment
+          comment = row[headerMap.comment];
+        }
+        
+        // Get date from created_date or created_at with proper priority
       let dateValue = '';
       
       // Priority order for date sources:
@@ -907,7 +895,8 @@ router.get('/testimonials', async (req, res) => {
       success: true,
       data: testimonials
     })
-  } catch (error) {
+  }
+} catch (error) {
     console.error('Error getting testimonials:', error)
     res.status(500).json({ 
       success: false, 

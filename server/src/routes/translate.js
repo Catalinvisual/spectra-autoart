@@ -1,5 +1,5 @@
 import express from 'express';
-import { translateWithCache } from '../services/translationCacheService.js';
+import { translateWithArgosCacheAndI18n } from '../services/argosTranslationService.js';
 
 const router = express.Router();
 
@@ -26,7 +26,7 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const translatedText = await translateWithCache(text, target, source);
+    const translatedText = await translateWithArgosCacheAndI18n(text, target, source);
 
     res.json({
       success: true,
@@ -73,7 +73,7 @@ router.post('/batch', async (req, res) => {
     const translatedTexts = [];
     
     for (const text of texts) {
-      const translated = await translateWithCache(text, target, source);
+      const translated = await translateWithArgosCacheAndI18n(text, target, source);
       translatedTexts.push(translated);
     }
 

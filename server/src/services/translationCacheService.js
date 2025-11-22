@@ -1,7 +1,7 @@
-import { translateWithCacheAndI18n, translateMultipleWithCacheAndI18n } from './i18nTranslationService.js';
+import { translateWithArgosCacheAndI18n, translateMultipleWithArgosCacheAndI18n } from './argosTranslationService.js';
 
 /**
- * Translate text with caching and i18n fallback
+ * Translate text with caching, i18n fallback, and Argos Translate integration
  * @param {string} text - Text to translate
  * @param {string} targetLanguage - Target language code (e.g., 'en', 'es', 'fr')
  * @param {string} sourceLanguage - Source language code (optional, defaults to 'auto')
@@ -9,8 +9,8 @@ import { translateWithCacheAndI18n, translateMultipleWithCacheAndI18n } from './
  */
 export async function translateWithCache(text, targetLanguage, sourceLanguage = 'auto') {
   try {
-    // Folosește noul serviciu cu i18n fallback
-    return await translateWithCacheAndI18n(text, targetLanguage, sourceLanguage);
+    // Use the new Argos Translate service with i18n fallback
+    return await translateWithArgosCacheAndI18n(text, targetLanguage, sourceLanguage);
   } catch (error) {
     console.error('Translation cache error:', error);
     // Fallback to original text on error
@@ -19,7 +19,7 @@ export async function translateWithCache(text, targetLanguage, sourceLanguage = 
 }
 
 /**
- * Translate multiple texts with caching and i18n fallback
+ * Translate multiple texts with caching, i18n fallback, and Argos Translate integration
  * @param {string[]} texts - Array of texts to translate
  * @param {string} targetLanguage - Target language code
  * @param {string} sourceLanguage - Source language code (optional, defaults to 'auto')
@@ -27,8 +27,8 @@ export async function translateWithCache(text, targetLanguage, sourceLanguage = 
  */
 export async function translateMultipleWithCache(texts, targetLanguage, sourceLanguage = 'auto') {
   try {
-    // Folosește noul serviciu cu i18n fallback
-    return await translateMultipleWithCacheAndI18n(texts, targetLanguage, sourceLanguage);
+    // Use the new Argos Translate service with i18n fallback
+    return await translateMultipleWithArgosCacheAndI18n(texts, targetLanguage, sourceLanguage);
   } catch (error) {
     console.error('Multiple translation cache error:', error);
     // Fallback to original texts on error

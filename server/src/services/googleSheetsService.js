@@ -1,6 +1,7 @@
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 import { GOOGLE_SHEETS_STRUCTURE } from '../config/googleSheetsStructure.js';
+import { translateWithI18nAndArgos, translateMultipleWithI18nAndArgos } from './argosTranslationService.js';
 
 class GoogleSheetsService {
   constructor() {
@@ -737,6 +738,155 @@ class GoogleSheetsService {
       console.error('❌ Error with incremental service prices update:', error);
       throw error;
     }
+  }
+
+  /**
+   * Translate Google Sheets data using Argos Translate with i18n fallback
+   * @param {Array} data - Google Sheets data array (headers + rows)
+   * @param {string} targetLanguage - Target language code (e.g., 'en', 'es', 'pl', 'ro')
+   * @param {string} sourceLanguage - Source language code (optional, defaults to 'auto')
+   * @returns {Promise<Array>} - Translated Google Sheets data
+   */
+  async translateSheetData(data, targetLanguage, sourceLanguage = 'auto') {
+    if (!data || data.length <= 1) {
+      return data;
+    }
+
+    try {
+      const headers = data[0];
+      const rows = data.slice(1);
+      
+      // Identify translatable columns (Name and Description columns)
+      const translatableColumns = [];
+      headers.forEach((header, index) => {
+        if (header && (header.toLowerCase().includes('name') || header.toLowerCase().includes('description') || header.toLowerCase().includes('comment'))) {
+          translatableColumns.push(index);
+        }
+      });
+
+      if (translatableColumns.length === 0) {
+        console.log(`ℹ️  No translatable columns found in sheet for language ${targetLanguage}`);
+        return data;
+      }
+
+      console.log(`🔄 Translating sheet data to ${targetLanguage} using Argos Translate...`);
+      console.log(`📊 Found ${translatableColumns.length} translatable columns:`, translatableColumns.map(i => headers[i]));
+
+      // Collect all texts to translate
+      const textsToTranslate = [];
+      const textLocations = [];
+      
+      rows.forEach((row, rowIndex) => {
+        translatableColumns.forEach(colIndex => {
+          const text = row[colIndex];
+          if (text && text.trim() !== '') {
+            textsToTranslate.push(text);
+            textLocations.push({ rowIndex: rowIndex + 1, colIndex }); // +1 because we sliced the header
+          }
+        });
+      });
+
+      if (textsToTranslate.length === 0) {
+        console.log(`ℹ️  No texts to translate in sheet for language ${targetLanguage}`);
+        return data;
+      }
+
+      console.log(`📝 Found ${textsToTranslate.length} texts to translate`);
+
+      // Translate all texts using Argos Translate with i18n fallback
+      const translatedTexts = await translateMultipleWithI18nAndArgos(textsToTranslate, targetLanguage, sourceLanguage);
+
+      // Create new data array with translated texts
+      const translatedData = [headers];
+      
+      // Copy all rows
+      rows.forEach(row => translatedData.push([...row]));
+      
+      // Replace texts with translations
+      textLocations.forEach((location, index) => {
+        const translatedText = translatedTexts[index];
+        if (translatedText && translatedText !== textsToTranslate[index]) {
+          translatedData[location.rowIndex][location.colIndex] = translatedText;
+        }
+      });
+
+      console.log(`✅ Successfully translated ${translatedTexts.length} texts to ${targetLanguage}`);
+      return translatedData;
+
+    } catch (error) {
+      console.error(`❌ Error translating sheet data to ${targetLanguage}:`, error);
+      // Return original data on error
+      return data;
+    }
+  }
+
+  /**
+   * Get services with Argos Translate integration
+   * @param {string} locale - Target language code (e.g., 'en', 'es', 'pl', 'ro')
+   * @param {boolean} activeOnly - Return only active services
+   * @param {boolean} useArgosTranslate - Use Argos Translate for dynamic translation
+   * @returns {Promise<Array>} - Services array with translated content
+   */
+  async getServicesWithArgosTranslation(locale = 'nl', activeOnly = true, useArgosTranslate = true) {
+    let data = await this.getData('Services');
+    
+    // If Argos Translate is enabled and locale is not Dutch, translate the data
+    if (useArgosTranslate && locale !== 'nl' && data.length > 1) {
+      console.log(`🔄 Using Argos Translate to translate services to ${locale}...`);
+      data = await this.translateSheetData(data, locale);
+    }
+
+    if (data.length <= 1) return [];
+
+    const headers = data[0];
+    const nameIndex = headers.indexOf(`Name_${locale.toUpperCase()}`);
+    const descIndex = headers.indexOf(`Description_${locale.toUpperCase()}`);
+    const priceIndex = headers.indexOf('Price');
+    const activeIndex = headers.indexOf('Active');
+
+    return data.slice(1)
+      .filter(row => !activeOnly || row[activeIndex] === 'true')
+      .map(row => ({
+        id: row[0],
+        name: row[nameIndex] || row[headers.indexOf('Name_NL')],
+        description: row[descIndex] || row[headers.indexOf('Description_NL')],
+        price: parseFloat(row[priceIndex]) || 0,
+        active: row[activeIndex] === 'true'
+      }));
+  }
+
+  /**
+   * Get testimonials with Argos Translate integration
+   * @param {string} locale - Target language code (e.g., 'en', 'es', 'pl', 'ro')
+   * @param {boolean} activeOnly - Return only active testimonials
+   * @param {boolean} useArgosTranslate - Use Argos Translate for dynamic translation
+   * @returns {Promise<Array>} - Testimonials array with translated content
+   */
+  async getTestimonialsWithArgosTranslation(locale = 'nl', activeOnly = true, useArgosTranslate = true) {
+    let data = await this.getData('Testimonials');
+    
+    // If Argos Translate is enabled and locale is not Dutch, translate the data
+    if (useArgosTranslate && locale !== 'nl' && data.length > 1) {
+      console.log(`🔄 Using Argos Translate to translate testimonials to ${locale}...`);
+      data = await this.translateSheetData(data, locale);
+    }
+
+    if (data.length <= 1) return [];
+
+    const headers = data[0];
+    const commentIndex = headers.indexOf(`Comment_${locale.toUpperCase()}`);
+    const activeIndex = headers.indexOf('Active');
+
+    return data.slice(1)
+      .filter(row => !activeOnly || row[activeIndex] === 'true')
+      .map(row => ({
+        id: row[0],
+        name: row[headers.indexOf('Name')],
+        rating: parseInt(row[headers.indexOf('Rating')]) || 5,
+        comment: row[commentIndex] || row[headers.indexOf('Comment_NL')],
+        active: row[activeIndex] === 'true',
+        created_date: row[headers.indexOf('Created_Date')]
+      }));
   }
 }
 

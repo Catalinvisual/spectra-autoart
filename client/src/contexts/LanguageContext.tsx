@@ -48,15 +48,17 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
 
     try {
+      // Use Argos Translate service via the existing translateText endpoint
+      // The server will handle routing to Argos Translate internally
       const response = await publicAPI.translateText({
         text: text,
         target: currentLanguage,
-        source: 'ro'
+        source: 'auto'
       });
       
       return response.data?.translatedText || text;
     } catch (error) {
-      console.error('Error translating text:', error);
+      console.error('Error translating text with Argos:', error);
       return text; // Return original text on error
     }
   };
@@ -67,15 +69,17 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
 
     try {
+      // Use Argos Translate service via the existing translateBatch endpoint
+      // The server will handle routing to Argos Translate internally
       const response = await publicAPI.translateBatch({
         texts: texts,
         target: currentLanguage,
-        source: 'nl'
+        source: 'auto'
       });
       
       return response.data?.translatedTexts || texts;
     } catch (error) {
-      console.error('Error translating multiple texts:', error);
+      console.error('Error translating multiple texts with Argos:', error);
       return texts; // Return original texts on error
     }
   };
