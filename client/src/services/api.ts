@@ -3,6 +3,9 @@ import type { VehicleData, Service, BookingData, BodyType, ServiceWithPrices } f
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 
+console.log('🔍 API Base URL:', API_BASE_URL)
+console.log('🔍 VITE_API_URL env:', import.meta.env.VITE_API_URL)
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
@@ -37,6 +40,12 @@ api.interceptors.response.use(
       console.log('📦 Response data before unwrap:', response.data)
     }
     
+    // Debug logging for admin bookings
+    if (response.config.url?.includes('/admin/bookings')) {
+      console.log('🌐 Bookings API Response before processing:', response)
+      console.log('📦 Bookings data before unwrap:', response.data)
+    }
+    
     // Unwrap the response data if it has the standard API format
     if (response.data && response.data.success === true && response.data.data !== undefined) {
       response.data = response.data.data
@@ -49,6 +58,12 @@ api.interceptors.response.use(
     if (response.config.url?.includes('/admin/services')) {
       console.log('✅ API Response after processing:', response)
       console.log('📋 Response data after unwrap:', response.data)
+    }
+    
+    // Debug logging for admin bookings after processing
+    if (response.config.url?.includes('/admin/bookings')) {
+      console.log('✅ Bookings API Response after processing:', response)
+      console.log('📋 Bookings data after unwrap:', response.data)
     }
     
     return response

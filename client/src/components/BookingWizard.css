@@ -64,7 +64,7 @@
     border-radius: 0;
     background: #12161d;
     width: auto!important;
-    padding: 50px 20px 30px 20px;
+    padding: 0 20px 30px 20px;
     margin: auto;
     position: fixed;
     top: 50%;
@@ -75,11 +75,30 @@
   }
   
   .modal-close-btn {
-    top: 12px;
-    right: 12px;
-    font-size: 28px;
-    width: 36px;
-    height: 36px;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 24px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    opacity: 1;
+    visibility: visible;
+    padding: 0;
+    line-height: 1;
+  }
+  
+  /* Reduce distance between wizard progress and modal border for 768px */
+  .wizard-progress-circles {
+    padding: 8px 16px;
+    border-radius: 8px 8px 0 0;
   }
   
   .info-message {
@@ -114,8 +133,8 @@
 
 @media (max-width: 480px) {
   .booking-wizard-modal {
-    padding: 45px 15px 20px 15px;
-    border-radius: 15px;
+    padding: 0 15px 20px 15px;
+    border-radius: 12px;
     width: auto!important;
     position: fixed;
     top: 50%;
@@ -123,6 +142,34 @@
     transform: translate(-50%, -50%);
     max-height: 90vh;
     overflow-y: auto;
+  }
+  
+  /* Position close button directly on wizard-progress-circles */
+  .modal-close-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 20px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    opacity: 1;
+    visibility: visible;
+    padding: 0;
+    line-height: 1;
+  }
+  
+  /* Reduce distance between wizard progress and modal border */
+  .wizard-progress-circles {
+    padding: 8px 16px;
+    border-radius: 12px 12px 0 0;
   }
   
   /* Reguli suplimentare pentru form-select pe ecrane foarte mici */
@@ -136,24 +183,6 @@
     background-position: right 0.2rem center;
     background-size: 0.8rem;
     padding-right: 1.8rem; /* Spațiu pentru iconiță */
-  }
-  
-  .modal-close-btn {
-    top: 12px;
-    right: 12px;
-    font-size: 24px;
-    width: 32px;
-    height: 32px;
-    display: flex; /* Asigură că butonul este vizibil */
-    align-items: center;
-    justify-content: center;
-    z-index: 1000; /* Asigură că butonul este deasupra tuturor elementelor */
-    color: #ffffff; /* Culoare albă pentru contrast */
-    /* background: rgba(255, 254, 254, 0.1); Fundal semi-transparent */
-    /* border: 1px solid rgba(255, 255, 255, 0.2); Border subtil */
-    position: absolute; /* Asigură poziționarea absolută */
-    opacity: 1; /* Asigură vizibilitatea completă */
-    visibility: visible; /* Asigură că este vizibil */
   }
   
   .info-message {

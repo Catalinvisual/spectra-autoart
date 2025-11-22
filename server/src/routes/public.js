@@ -546,14 +546,14 @@ router.get('/bookings/availability', async (req, res) => {
 
 router.post('/bookings', async (req, res) => {
   try {
-    const { date, make, model, type, body, services, user, locale } = req.body
+    const { date, time, make, model, type, body, services, user, locale } = req.body
     
-    if (!date || !make || !model || !user?.name || !user?.email || !user?.phone) {
+    if (!date || !time || !make || !model || !user?.name || !user?.email || !user?.phone) {
       return res.status(400).json({ 
         success: false,
         error: 'Toate câmpurile sunt obligatorii' 
       })
-    }
+   }
     
     // For demo purposes, allow all dates (remove weekend restriction)
     // const bookingDate = new Date(date);
@@ -567,47 +567,117 @@ router.post('/bookings', async (req, res) => {
     // }
     
     const bookingId = Date.now().toString()
-    const total = calculateTotal(services)
+    
+    // Get services data to calculate total and names
+    let servicesData = [];
+    let servicesList = '';
+    let total = 0;
+    
+    try {
+      // Get services names from Services sheet
+      const servicesFromSheets = await GoogleSheetsService.getData('Services');
+      // Get service prices from Service_Prices sheet
+      const servicePricesFromSheets = await GoogleSheetsService.getData('Service_Prices');
+      
+      if (servicesFromSheets.length > 1) {
+        // Parse Services headers
+        const servicesHeaders = servicesFromSheets[0];
+        const servicesIdIndex = servicesHeaders.indexOf('ID');
+        const servicesNameIndex = servicesHeaders.indexOf('Name_NL'); // Default to Dutch
+        const servicesPriceIndex = servicesHeaders.indexOf('Price'); // Fallback price from Services sheet
+        
+        // Parse Service_Prices headers (if available)
+        const pricesHeaders = servicePricesFromSheets.length > 1 ? servicePricesFromSheets[0] : [];
+        const pricesServiceIdIndex = pricesHeaders.indexOf('Service_ID');
+        const pricesBodyTypeIndex = pricesHeaders.indexOf('Body_Type_ID');
+        const pricesPriceMinIndex = pricesHeaders.indexOf('Price_Min');
+        
+        if (servicesIdIndex !== -1 && servicesNameIndex !== -1) {
+          
+          // Get service names and prices for the selected service IDs
+          const serviceNames = [];
+          
+          console.log('🔍 DEBUG: Looking for services:', services);
+          console.log('🔍 DEBUG: Available services in sheet:', servicesFromSheets.slice(1).map(row => ({id: row[servicesIdIndex], name: row[servicesNameIndex]})));
+          
+          services.forEach(serviceId => {
+            console.log('🔍 DEBUG: Processing service ID:', serviceId, 'type:', typeof serviceId);
+            // Find service name
+            const serviceRow = servicesFromSheets.slice(1).find(row => {
+              const rowId = row[servicesIdIndex];
+              console.log('🔍 DEBUG: Comparing:', serviceId, '===', rowId, 'type:', typeof rowId);
+              return rowId === serviceId;
+            });
+            
+            console.log('🔍 DEBUG: Found service row:', serviceRow);
+            
+            if (serviceRow) {
+              const serviceName = serviceRow[servicesNameIndex] || serviceRow[servicesIdIndex];
+              console.log('🔍 DEBUG: Service name:', serviceName);
+              serviceNames.push(serviceName);
+              
+              let servicePrice = 0;
+              
+              // First try to find price in Service_Prices sheet (if available)
+              if (pricesServiceIdIndex !== -1 && pricesBodyTypeIndex !== -1 && pricesPriceMinIndex !== -1) {
+                const priceRow = servicePricesFromSheets.slice(1).find(row => 
+                  row[pricesServiceIdIndex] === serviceId && row[pricesBodyTypeIndex] === body
+                );
+                
+                if (priceRow) {
+                  servicePrice = parseFloat(priceRow[pricesPriceMinIndex]) || 0;
+                }
+              }
+              
+              // If no price found in Service_Prices, try to use Price from Services sheet
+              if (servicePrice === 0 && servicesPriceIndex !== -1) {
+                servicePrice = parseFloat(serviceRow[servicesPriceIndex]) || 0;
+              }
+              
+              console.log('🔍 DEBUG: Service price:', servicePrice);
+              total += servicePrice;
+            }
+          });
+          servicesList = serviceNames.join(', ');
+          console.log('🔍 DEBUG: Final services list:', servicesList, 'Total:', total);
+        }
+      }
+    } catch (servicesError) {
+      console.error('❌ Error fetching services for calculation:', servicesError);
+      // Fallback: use services as-is
+      servicesList = Array.isArray(services) ? services.join(', ') : services;
+      total = 0; // Set to 0 if we can't calculate
+    }
     
     // Save booking to Google Sheets
     try {
-      const servicesList = Array.isArray(services) ? services.join(', ') : services;
-      // Since the frontend only provides date, we'll set a default time (09:00)
-      // or extract time if it's included in the date string
-      let bookingDate, bookingTime;
       
-      if (date.includes('T')) {
-        // If date includes time (ISO format)
-        const dateTime = new Date(date);
-        bookingDate = dateTime.toISOString().split('T')[0]; // YYYY-MM-DD
-        bookingTime = dateTime.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
-      } else {
-        // If only date is provided, use default time 09:00
-        bookingDate = date; // Already in YYYY-MM-DD format from date input
-        bookingTime = '09:00'; // Default time
-      }
+      // Format date and time for display
+      const formattedDateTime = `${date} ${time}`;
+      
+      // Format date and time to prevent Google Sheets auto-conversion
+      // Use single quote prefix to force text format (hidden in Google Sheets)
+      const formattedDate = `'${date}`;  // '2025-11-30 (appears as 2025-11-30)
+      const formattedTime = `'${time}`;  // '14:30 (appears as 14:30)
       
       const bookingData = [
-        bookingId,                    // ID
-        bookingDate,                  // Date
-        bookingTime,                  // Time
-        user.name,                    // Customer_Name
-        user.email,                   // Email
-        user.phone,                   // Phone
-        make,                         // Make
-        model,                        // Model
-        type,                         // Type
-        body,                         // Body
-        servicesList,                 // Services
-        total.toString(),             // Total
-        'confirmed',                  // Status
-        '',                           // Notes (empty for now)
-        new Date().toISOString(),     // Created_Date
-        new Date().toISOString()      // Updated_Date
+        bookingId,                    // ID (column 0)
+        user.name,                    // Name (column 1)
+        user.email,                   // Email (column 2)
+        user.phone,                   // Phone (column 3)
+        formattedDate,                // Date (column 4) - text format
+        formattedTime,              // Time (column 5) - text format
+        servicesList,                 // Services (column 6)
+        total.toString(),             // Total (column 7)
+        'confirmed',                  // Status (column 8)
+        new Date().toISOString()      // Created At (column 9)
       ];
       
       console.log('💾 Saving booking to Google Sheets:', bookingData);
-      const saved = await GoogleSheetsService.appendData('Bookings', bookingData);
+      const saved = await GoogleSheetsService.appendDataWithFormats('Bookings', bookingData, {
+        4: 'TEXT', // Date column - force text format
+        5: 'TEXT'  // Time column - force text format
+      });
       
       if (saved) {
         console.log('✅ Booking saved successfully to Google Sheets');

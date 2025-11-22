@@ -38,13 +38,14 @@ const app = express()
 app.use(cors({
   origin: [
     'http://localhost:5173',
+    'http://localhost:5174',
     'https://spectra-autoart-production.up.railway.app',
     'https://spectra-autoart-production.up.railway.app:8080',
     process.env.CLIENT_ORIGIN
   ].filter(Boolean),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma', 'Expires', 'X-Requested-With']
 }))
 
 app.use(express.json({ limit: '1mb' }))
@@ -111,8 +112,8 @@ async function initializeServices() {
         const loadedFromSheets = await vehicleServicesService.loadFromGoogleSheets();
         if (loadedFromSheets) {
           console.log('✅ Vehicle services loaded from Google Sheets in production');
-          console.log(`📋 ${vehicleServicesService.services.length} services loaded`);
-          console.log(`💰 ${vehicleServicesService.servicePrices.length} price configurations loaded`);
+          console.log(`📋 ${vehicleServicesService.services?.length || 0} services loaded`);
+          console.log(`💰 ${vehicleServicesService.servicePrices?.length || 0} price configurations loaded`);
         } else {
           console.log('⚠️  Failed to load vehicle services from Google Sheets, using fallback');
         }
@@ -120,8 +121,8 @@ async function initializeServices() {
         // Only initialize demo data in development
         const demoData = await vehicleServicesService.initializeDemoData();
         console.log('✅ Vehicle services demo data initialized');
-        console.log(`📋 ${demoData.services.length} services created`);
-        console.log(`💰 ${demoData.servicePrices.length} price configurations created`);
+        console.log(`📋 ${demoData?.services || 0} services created`);
+        console.log(`💰 ${demoData?.prices || 0} price configurations created`);
       }
     } catch (error) {
       console.log('⚠️  Vehicle services initialization failed:', error.message);

@@ -30,6 +30,7 @@ export interface BookingData {
     phone: string
   }
   date: string
+  time: string
   newsletter: boolean
   locale: string
 }
@@ -95,6 +96,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       phone: ''
     },
     date: '',
+    time: '',
     newsletter: false,
     locale: i18n.language
   })
@@ -316,7 +318,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 2: return !!bookingData.model
       case 3: return !!bookingData.body
       case 4: return bookingData.services.length > 0
-      case 5: return !!bookingData.user.name && !!bookingData.user.email && !!bookingData.user.phone && !!bookingData.date
+      case 5: return !!bookingData.user.name && !!bookingData.user.email && !!bookingData.user.phone && !!bookingData.date && !!bookingData.time
       default: return false
     }
   }
@@ -329,7 +331,8 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
            !!bookingData.user.name && 
            !!bookingData.user.email && 
            !!bookingData.user.phone && 
-           !!bookingData.date
+           !!bookingData.date && 
+           !!bookingData.time
   }
 
   const handleSubmit = async () => {
@@ -355,6 +358,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
             services: [],
             user: { name: '', email: '', phone: '' },
             date: '',
+            time: '',
             newsletter: false,
             locale: i18n.language
           })
@@ -581,6 +585,17 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                   onChange={(e) => handleInputChange('date', e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
                   onClick={(e) => e.currentTarget.showPicker?.()}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">{t('selectTime') || 'Ora programării'}</label>
+                <input
+                  type="time"
+                  className="form-input time-input-instant"
+                  value={bookingData.time}
+                  onChange={(e) => handleInputChange('time', e.target.value)}
+                  min="09:00"
+                  max="18:00"
                 />
               </div>
               

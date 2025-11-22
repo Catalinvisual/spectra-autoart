@@ -43,31 +43,76 @@ router.get('/bookings', requireAuth, async (req, res) => {
       return res.json([])
     }
 
-    const headers = data[0]
     const bookings = data.slice(1).map(row => {
-      const booking = {}
-      headers.forEach((header, index) => {
-        booking[header.toLowerCase().replace(/ /g, '_')] = row[index] || ''
-      })
+      // New correct mapping for updated Google Sheets structure:
+      // ID, Name, Email, Phone, Date, Time, Services, Total, Status, Created At
+      const id = row[0] ? row[0].toString() : Date.now().toString();
+      const name = row[1] || '';
+      const email = row[2] || '';
+      const phone = row[3] || '';
+      const dateRaw = row[4] || '';
+      const timeRaw = row[5] || '';
+      const servicesRaw = row[6]; // Services as comma-separated string
+      const totalRaw = row[7];
+      const status = row[8] || 'pending';
+      const createdAt = row[9] || '';
+      
+      // Clean date and time - remove single quote prefix if present
+      const date = dateRaw.toString().replace(/^'/, '');
+      const time = timeRaw.toString().replace(/^'/, '');
+      
+      // Parse services from comma-separated string
+      let services = []
+      if (servicesRaw) {
+        if (typeof servicesRaw === 'string') {
+          services = servicesRaw.split(',').map(service => ({
+            name: service.trim(),
+            price: 0
+          }))
+        } else {
+          // Handle case where servicesRaw is not a string (single service)
+          services = [{
+            name: servicesRaw.toString().trim(),
+            price: 0
+          }]
+        }
+      }
+      
+      // Parse total
+      let total = 0
+      if (totalRaw) {
+        if (typeof totalRaw === 'number') {
+          total = totalRaw
+        } else if (typeof totalRaw === 'string') {
+          total = parseFloat(totalRaw) || 0
+        }
+      }
+      
+      // Extract make/model from services or use defaults
+      const make = '';
+      const model = '';
+      const type = '';
+      const body = '';
       
       return {
-        id: booking.id || '',
-        date: booking.date || '',
-        make: booking.make || '',
-        model: booking.model || '',
-        type: booking.type || '',
-        body: booking.body || '',
-        services: booking.services ? JSON.parse(booking.services) : [],
-        total: parseFloat(booking.total) || 0,
+        id: id,
+        date: date,
+        time: time,
+        make: make,
+        model: model,
+        type: type,
+        body: body,
+        services: services,
+        total: total,
         user: {
-          name: booking.client_name || '',
-          email: booking.client_email || '',
-          phone: booking.client_phone || ''
+          name: name,
+          email: email,
+          phone: phone
         },
-        newsletter: booking.newsletter === 'true',
-        locale: booking.locale || '',
-        status: booking.status || 'pending',
-        createdAt: booking.created_at || ''
+        newsletter: false, // Default since we don't have this data
+        locale: '', // Default since we don't have this data
+        status: status,
+        createdAt: createdAt
       }
     })
     
@@ -90,7 +135,7 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
 
     const headers = data[0]
     const rows = data.slice(1)
-    const rowIndex = rows.findIndex(row => row[0] === id)
+    const rowIndex = rows.findIndex(row => row[0] == id || row[0] === id)
     
     if (rowIndex === -1) {
       return res.status(404).json({ error: 'Programarea nu a fost găsită' })
@@ -111,9 +156,11 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
   }
 })
 
-router.delete('/bookings/:id', requireAuth, async (req, res) => {
+// PUT endpoint for full booking updates
+router.put('/bookings/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
+    const bookingData = req.body
     
     const data = await GoogleSheetsService.getData('Bookings')
     
@@ -121,12 +168,68 @@ router.delete('/bookings/:id', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Nu există programări' })
     }
 
+    const headers = data[0]
     const rows = data.slice(1)
-    const rowIndex = rows.findIndex(row => row[0] === id)
+    const rowIndex = rows.findIndex(row => row[0] == id || row[0] === id)
     
     if (rowIndex === -1) {
       return res.status(404).json({ error: 'Programarea nu a fost găsită' })
     }
+    
+    // Create updated row with new data while preserving the ID
+    const updatedRow = [...rows[rowIndex]]
+    
+    // Update each field based on the headers
+    Object.keys(bookingData).forEach(key => {
+      const columnIndex = headers.findIndex(header => header.toLowerCase() === key.toLowerCase())
+      if (columnIndex !== -1) {
+        updatedRow[columnIndex] = bookingData[key]
+      }
+    })
+    
+    // Update the entire row
+    await GoogleSheetsService.updateData('Bookings', rowIndex, updatedRow)
+    
+    res.json({ success: true, booking: updatedRow })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+router.delete('/bookings/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params
+    console.log(`🗑️  Attempting to delete booking with ID: ${id}`)
+    
+    const data = await GoogleSheetsService.getData('Bookings')
+    console.log(`📊 Found ${data.length} total rows in Bookings sheet`)
+    
+    if (data.length <= 1) {
+      console.log('❌ No bookings found in sheet')
+      return res.status(404).json({ error: 'Nu există programări' })
+    }
+
+    const rows = data.slice(1)
+    console.log(`📋 Checking ${rows.length} booking rows for ID: ${id}`)
+    
+    // Log first few rows to see the data structure
+    if (rows.length > 0) {
+      console.log(`🔍 First row ID: ${rows[0][0]} (type: ${typeof rows[0][0]})`)
+      console.log(`🔍 Second row ID: ${rows[1][0]} (type: ${typeof rows[1][0]})`)
+    }
+    
+    const rowIndex = rows.findIndex(row => {
+      const rowId = row[0]
+      console.log(`🔍 Comparing row ID: ${rowId} (type: ${typeof rowId}) with search ID: ${id} (type: ${typeof id})`)
+      return rowId == id || rowId === id
+    })
+    
+    if (rowIndex === -1) {
+      console.log(`❌ Booking with ID ${id} not found`)
+      return res.status(404).json({ error: 'Programarea nu a fost găsită' })
+    }
+    
+    console.log(`✅ Found booking at row index: ${rowIndex}`)
     
     await GoogleSheetsService.deleteData('Bookings', rowIndex)
     
@@ -447,7 +550,7 @@ router.get('/vehicle-services', requireAuth, async (req, res) => {
         category_pl: service.category_pl || '',
         category_ro: service.category_ro || '',
         duration_minutes: parseInt(service.duration_minutes) || 0,
-        is_active: (service.is_active || 'true').toLowerCase() === 'true',
+        is_active: String(service.is_active || 'true').toLowerCase() === 'true',
         createdAt: service.created_at || '',
         prices: servicePrices
       }

@@ -5,7 +5,17 @@ class VehicleServicesService {
   constructor() {
     this.services = [];
     this.servicePrices = [];
-    this.bodyTypes = getActiveBodyTypes();
+    try {
+      this.bodyTypes = getActiveBodyTypes();
+      console.log('✅ VehicleServicesService constructor - bodyTypes loaded:', this.bodyTypes?.length || 0);
+      if (!this.bodyTypes || this.bodyTypes.length === 0) {
+        console.warn('⚠️  No active body types found, using fallback');
+        this.bodyTypes = BODY_TYPES.filter(bt => bt.is_active);
+      }
+    } catch (error) {
+      console.error('❌ Error loading body types in constructor:', error);
+      this.bodyTypes = BODY_TYPES.filter(bt => bt.is_active);
+    }
   }
 
   // Inițializează datele demo

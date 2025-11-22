@@ -20,6 +20,11 @@ interface Booking {
   }>
   total: number
   status: string
+  make?: string
+  model?: string
+  body?: string
+  newsletter?: boolean
+  locale?: string
 }
 
 interface Service {
@@ -92,9 +97,12 @@ interface VehicleService {
 const Admin: React.FC = () => {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
-  const { showError, showInfo } = useToast()
+  const { showSuccess, showError, showInfo } = useToast()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [bookingToDelete, setBookingToDelete] = useState<string | null>(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [bookingsRefreshKey, setBookingsRefreshKey] = useState(0)
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [showResetForm, setShowResetForm] = useState(false)
@@ -146,6 +154,33 @@ const Admin: React.FC = () => {
 
   const handleGoHome = () => {
     navigate('/')
+  }
+
+  const deleteBooking = (id: string) => {
+    setBookingToDelete(id)
+    setShowDeleteModal(true)
+  }
+
+  const confirmDeleteBooking = async () => {
+    if (bookingToDelete) {
+      try {
+        await adminAPI.deleteBooking(bookingToDelete)
+        showSuccess(t('admin.bookingDeleted'))
+        // Refresh bookings list after successful deletion
+        setBookingsRefreshKey(prev => prev + 1)
+      } catch (error) {
+        console.error('Error deleting booking:', error)
+        showError(t('admin.errorDeletingBooking'))
+      } finally {
+        setShowDeleteModal(false)
+        setBookingToDelete(null)
+      }
+    }
+  }
+
+  const cancelDeleteBooking = () => {
+    setShowDeleteModal(false)
+    setBookingToDelete(null)
   }
 
   const handleForgotPassword = () => {
@@ -310,13 +345,40 @@ const Admin: React.FC = () => {
 
         <main className="admin-main">
           {activeTab === 'dashboard' && <Dashboard />}
-          {activeTab === 'bookings' && <BookingsManagement />}
+          {activeTab === 'bookings' && <BookingsManagement onDeleteBooking={deleteBooking} refreshKey={bookingsRefreshKey} />}
           {activeTab === 'services' && <ServicesManagement />}
           {activeTab === 'vehicle-services' && <VehicleServicesManagement />}
           {activeTab === 'gallery' && <GalleryManagement />}
           {activeTab === 'newsletter' && <NewsletterManagement />}
         </main>
       </div>
+
+      {/* Delete Confirmation Modal - Moved to admin-panel level for proper positioning */}
+      {showDeleteModal && (
+        <div className="modal-overlay" onClick={cancelDeleteBooking}>
+          <div className="modal-content delete-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>🗑️ {t('admin.confirmDelete')}</h2>
+              <button onClick={cancelDeleteBooking} className="close-btn">×</button>
+            </div>
+            <div className="modal-body">
+              <div className="delete-warning">
+                <div className="warning-icon">⚠️</div>
+                <p>{t('admin.deleteBookingWarning')}</p>
+                <p className="delete-note">{t('admin.thisActionCannotBeUndone')}</p>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button onClick={confirmDeleteBooking} className="delete-confirm-btn">
+                🗑️ {t('admin.confirmDelete')}
+              </button>
+              <button onClick={cancelDeleteBooking} className="cancel-btn">
+                {t('admin.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -380,19 +442,63 @@ const Dashboard: React.FC = () => {
 }
 
 // Bookings Management Component
-const BookingsManagement: React.FC = () => {
+interface BookingsManagementProps {
+  onDeleteBooking: (id: string) => void
+  refreshKey?: number
+}
+
+const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking, refreshKey }) => {
   const { t } = useTranslation()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   useEffect(() => {
     loadBookings()
   }, [])
 
+  useEffect(() => {
+    if (refreshKey && refreshKey > 0) {
+      loadBookings()
+    }
+  }, [refreshKey])
+
   const loadBookings = async () => {
     try {
       const response = await adminAPI.getBookings()
-      setBookings(response.data)
+      console.log('📊 API Response:', response)
+      console.log('📋 Bookings data:', response.data)
+      console.log('🔍 First booking sample:', response.data?.[0])
+      
+      // Transform server data to match frontend structure
+      const transformedBookings = response.data.map((booking: any) => {
+        console.log('🔍 Processing booking:', booking.id, 'services:', booking.services, 'type:', typeof booking.services)
+        return {
+          id: booking.id,
+          user: {
+            name: booking.customer_name || booking.user?.name || '',
+            email: booking.customer_email || booking.user?.email || '',
+            phone: booking.customer_phone || booking.user?.phone || ''
+          },
+          date: booking.date || '',
+          services: Array.isArray(booking.services) ? booking.services.map((service: any) => ({
+            id: service.id || service.name || '',
+            name: service.name || ''
+          })) : (typeof booking.services === 'string' ? [{ id: booking.services, name: booking.services }] : []),
+          total: typeof booking.total === 'string' ? parseFloat(booking.total) : booking.total || 0,
+          status: booking.status || 'pending',
+          make: booking.make || booking.vehicle_make || '',
+          model: booking.model || booking.vehicle_model || '',
+          body: booking.body || booking.vehicle_body || ''
+        }
+      })
+      
+      console.log('🔄 Transformed bookings:', transformedBookings)
+      console.log('🔍 First transformed booking:', transformedBookings?.[0])
+      setBookings(transformedBookings)
     } catch (error) {
       console.error('Error loading bookings:', error)
     } finally {
@@ -400,23 +506,113 @@ const BookingsManagement: React.FC = () => {
     }
   }
 
-  const updateBookingStatus = async (id: string, status: string) => {
+  const handleDeleteBooking = (id: string) => {
+    onDeleteBooking(id)
+  }
+
+  const formatDate = (dateString: string) => {
+    if (!dateString || dateString === 'Invalid Date') {
+      return t('admin.noDate') || 'No date specified'
+    }
     try {
-      await adminAPI.updateBooking(id, { status })
-      loadBookings()
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) {
+        return t('admin.invalidDate') || 'Invalid date'
+      }
+      
+      // Format date and time separately for better visual appeal
+      const datePart = date.toLocaleDateString(i18n.language, {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      })
+      
+      const timePart = date.toLocaleTimeString(i18n.language, {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+      
+      return `${datePart} • ${timePart}`
     } catch (error) {
-      console.error('Error updating booking:', error)
+      return t('admin.invalidDate') || 'Invalid date'
     }
   }
 
-  const deleteBooking = async (id: string) => {
-    if (window.confirm(t('admin.areYouSureDeleteBooking'))) {
-      try {
-        await adminAPI.deleteBooking(id)
-        loadBookings()
-      } catch (error) {
-        console.error('Error deleting booking:', error)
+  const formatServices = (services: any[]) => {
+    if (!Array.isArray(services) || services.length === 0) {
+      return t('admin.noServices') || 'No services selected'
+    }
+    
+    return services.map((service: any) => {
+      let serviceName = ''
+      if (typeof service.name === 'object') {
+        serviceName = service.name[i18n.language] || service.name.nl || service.name.en || service.name
+      } else {
+        serviceName = service.name || t('admin.unknownService') || 'Unknown service'
       }
+      
+      // Include price if available and greater than 0
+      if (service.price && service.price > 0) {
+        return `${serviceName} (€${service.price})`
+      }
+      
+      return serviceName
+    }).join(', ')
+  }
+
+  const formatTotal = (total: number) => {
+    const numTotal = parseFloat(String(total)) || 0
+    return `€${numTotal.toFixed(2)}`
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'confirmed': return '#00e5ff'
+      case 'cancelled': return '#ff4757'
+      case 'pending':
+      default: return '#ffa502'
+    }
+  }
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'confirmed': return '' // Removed green check icon
+      case 'cancelled': return '❌'
+      case 'pending':
+      default: return '⏳'
+    }
+  }
+
+  const openDetailsModal = (booking: Booking) => {
+    setSelectedBooking(booking)
+    setShowDetailsModal(true)
+  }
+
+  const closeDetailsModal = () => {
+    setSelectedBooking(null)
+    setShowDetailsModal(false)
+  }
+
+  const openEditModal = (booking: Booking) => {
+    setEditingBooking(booking)
+    setShowEditModal(true)
+  }
+
+  const closeEditModal = () => {
+    setEditingBooking(null)
+    setShowEditModal(false)
+  }
+
+  const saveBookingEdit = async () => {
+    if (!editingBooking) return
+    
+    try {
+      await adminAPI.updateBooking(editingBooking.id, editingBooking)
+      loadBookings()
+      closeEditModal()
+    } catch (error) {
+      console.error('Error updating booking:', error)
     }
   }
 
@@ -424,46 +620,241 @@ const BookingsManagement: React.FC = () => {
 
   return (
     <div className="bookings-management">
-      <h2>{t('admin.bookingsManagement')}</h2>
-      <div className="bookings-list">
+      <div className="bookings-header">
+        <h2>{t('admin.bookingsManagement')}</h2>
+        <div className="bookings-stats">
+          <span className="stat-item">
+            <strong>{bookings.length}</strong> {t('admin.totalBookings')}
+          </span>
+          <span className="stat-item">
+            <strong>{bookings.filter(b => b.status === 'pending').length}</strong> {t('admin.pending')}
+          </span>
+          <span className="stat-item">
+            <strong>{bookings.filter(b => b.status === 'confirmed').length}</strong> {t('admin.confirmed')}
+          </span>
+        </div>
+      </div>
+      
+      <div className="bookings-grid">
         {Array.isArray(bookings) && bookings.map((booking: any) => (
-          <div key={booking.id} className="booking-item">
-            <div className="booking-info">
-              <h4>{booking.user.name}</h4>
-              <p>{booking.user.email}</p>
-              <p>{booking.user.phone}</p>
-              <p><strong>{t('admin.date')}:</strong> {new Date(booking.date).toLocaleDateString()}</p>
-              <p><strong>{t('services')}:</strong> 
-                {Array.isArray(booking.services) 
-                  ? booking.services.map((s: any) => {
-                      // Try to get translated service name from available data
-                      if (typeof s.name === 'object') {
-                        return s.name[i18n.language] || s.name.nl || s.name.en || s.name
-                      }
-                      return s.name
-                    }).join(', ') 
-                  : t('admin.noServices')
-                }
-              </p>
-              <p><strong>{t('admin.total')}:</strong> €{booking.total}</p>
+          <div key={booking.id} className="booking-card">
+            <div className="booking-card-header">
+              <div className="booking-status" style={{ backgroundColor: getStatusColor(booking.status) }}>
+                {getStatusIcon(booking.status)} {t(booking.status) || booking.status}
+              </div>
+              <div className="booking-datetime">
+                <div className="booking-date">
+                  📅 {formatDate(booking.date)}
+                </div>
+              </div>
             </div>
-            <div className="booking-actions">
-              <select 
-                value={booking.status}
-                onChange={(e) => updateBookingStatus(booking.id, e.target.value)}
-                className={`status-select ${booking.status}`}
+            
+            <div className="booking-card-body">
+              <div className="customer-info">
+                <div className="customer-avatar">
+                  {booking.user.name?.charAt(0)?.toUpperCase() || '?'}
+                </div>
+                <div className="customer-details">
+                  <h3>{booking.user.name || t('admin.noName')}</h3>
+                  <p className="customer-email">📧 {booking.user.email || t('admin.noEmail')}</p>
+                  <p className="customer-phone">📱 {booking.user.phone || t('admin.noPhone')}</p>
+                </div>
+              </div>
+              
+
+              
+              <div className="booking-services">
+                <h4>{t('services')}:</h4>
+                <p>{formatServices(booking.services)}</p>
+              </div>
+              
+              <div className="booking-total">
+                <span className="total-label">{t('admin.total')}:</span>
+                <span className="total-amount">{formatTotal(booking.total)}</span>
+              </div>
+            </div>
+            
+            <div className="booking-card-actions">
+              <button 
+                onClick={() => openDetailsModal(booking)}
+                className="details-btn"
+                title={t('admin.viewDetails')}
               >
-                <option value="pending">{t('pending')}</option>
-                <option value="confirmed">{t('confirmed')}</option>
-                <option value="cancelled">{t('cancelled')}</option>
-              </select>
-              <button onClick={() => deleteBooking(booking.id)} className="delete-btn">
-                {t('admin.delete')}
+                👁️ {t('admin.details')}
+              </button>
+              <button 
+                onClick={() => openEditModal(booking)}
+                className="edit-btn"
+                title={t('admin.editBooking')}
+              >
+                ✏️ {t('admin.edit')}
+              </button>
+
+              <button 
+                onClick={() => handleDeleteBooking(booking.id)} 
+                className="delete-btn"
+                title={t('admin.deleteBooking')}
+              >
+                🗑️
               </button>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Details Modal */}
+      {showDetailsModal && selectedBooking && (
+        <div className="modal-overlay" onClick={closeDetailsModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{t('admin.bookingDetails')}</h2>
+              <button onClick={closeDetailsModal} className="close-btn">×</button>
+            </div>
+            <div className="modal-body">
+              <div className="detail-section">
+                <h3>{t('admin.customerInformation')}</h3>
+                <div className="detail-grid">
+                  <div className="detail-item">
+                    <label>{t('admin.name')}:</label>
+                    <span>{selectedBooking.user.name || t('admin.notSpecified')}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>{t('admin.email')}:</label>
+                    <span>{selectedBooking.user.email || t('admin.notSpecified')}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>{t('admin.phone')}:</label>
+                    <span>{selectedBooking.user.phone || t('admin.notSpecified')}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="detail-section">
+                <h3>{t('admin.bookingInformation')}</h3>
+                <div className="detail-grid">
+                  <div className="detail-item">
+                    <label>{t('admin.date')}:</label>
+                    <span>{formatDate(selectedBooking.date)}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>{t('admin.status')}:</label>
+                    <span style={{ color: getStatusColor(selectedBooking.status) }}>
+                      {getStatusIcon(selectedBooking.status)} {t(selectedBooking.status) || selectedBooking.status}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <label>{t('admin.total')}:</label>
+                    <span className="total-highlight">{formatTotal(selectedBooking.total)}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="detail-section">
+                <h3>{t('services')}</h3>
+                <div className="services-list">
+                  {Array.isArray(selectedBooking.services) && selectedBooking.services.length > 0 ? (
+                    selectedBooking.services.map((service: any, index: number) => (
+                      <div key={index} className="service-item-detail">
+                        {typeof service.name === 'object' 
+                          ? service.name[i18n.language] || service.name.nl || service.name.en || service.name
+                          : service.name
+                        }
+                      </div>
+                    ))
+                  ) : (
+                    <p>{t('admin.noServices')}</p>
+                  )}
+                </div>
+              </div>
+              
+              {selectedBooking.newsletter && (
+                <div className="detail-section">
+                  <h3>{t('admin.newsletter')}</h3>
+                  <p>✅ {t('admin.subscribedToNewsletter')}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && editingBooking && (
+        <div className="modal-overlay" onClick={closeEditModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{t('admin.editBooking')}</h2>
+              <button onClick={closeEditModal} className="close-btn">×</button>
+            </div>
+            <div className="modal-body">
+              <form onSubmit={(e) => { e.preventDefault(); saveBookingEdit(); }}>
+                <div className="form-group">
+                  <label>{t('admin.customerName')}:</label>
+                  <input
+                    type="text"
+                    value={editingBooking.user.name || ''}
+                    onChange={(e) => setEditingBooking({
+                      ...editingBooking,
+                      user: { ...editingBooking.user, name: e.target.value }
+                    })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>{t('admin.email')}:</label>
+                  <input
+                    type="email"
+                    value={editingBooking.user.email || ''}
+                    onChange={(e) => setEditingBooking({
+                      ...editingBooking,
+                      user: { ...editingBooking.user, email: e.target.value }
+                    })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>{t('admin.phone')}:</label>
+                  <input
+                    type="tel"
+                    value={editingBooking.user.phone || ''}
+                    onChange={(e) => setEditingBooking({
+                      ...editingBooking,
+                      user: { ...editingBooking.user, phone: e.target.value }
+                    })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>{t('admin.date')}:</label>
+                  <input
+                    type="date"
+                    value={editingBooking.date || ''}
+                    onChange={(e) => setEditingBooking({
+                      ...editingBooking,
+                      date: e.target.value
+                    })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>{t('admin.status')}:</label>
+                  <select
+                    value={editingBooking.status}
+                    onChange={(e) => setEditingBooking({
+                      ...editingBooking,
+                      status: e.target.value
+                    })}
+                  >
+                    <option value="pending">{t('pending')}</option>
+                    <option value="confirmed">{t('confirmed')}</option>
+                    <option value="cancelled">{t('cancelled')}</option>
+                  </select>
+                </div>
+                <div className="form-actions">
+                  <button type="submit" className="save-btn">{t('admin.save')}</button>
+                  <button type="button" onClick={closeEditModal} className="cancel-btn">{t('admin.cancel')}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -643,8 +1034,8 @@ const ServicesManagement: React.FC = () => {
                 <button onClick={() => editService(service)} className="edit-btn">
                   {t('admin.edit')}
                 </button>
-                <button onClick={() => deleteService(service.id)} className="delete-btn">
-                  {t('admin.delete')}
+                <button onClick={() => deleteService(service.id)} className="delete-btn" title={t('admin.delete')}>
+                  🗑️
                 </button>
               </div>
             </div>
@@ -1224,8 +1615,8 @@ const VehicleServicesManagement: React.FC = () => {
               <button onClick={() => editVehicleService(service)} className="edit-btn">
                 {t('admin.edit')}
               </button>
-              <button onClick={() => deleteVehicleService(service.id)} className="delete-btn">
-                {t('admin.delete')}
+              <button onClick={() => deleteVehicleService(service.id)} className="delete-btn" title={t('admin.delete')}>
+                🗑️
               </button>
             </div>
           </div>
@@ -1250,8 +1641,8 @@ const VehicleServicesManagement: React.FC = () => {
                 <button onClick={() => editBodyType(bodyType)} className="edit-btn">
                   {t('admin.edit')}
                 </button>
-                <button onClick={() => deleteBodyType(bodyType.id)} className="delete-btn">
-                  {t('admin.delete')}
+                <button onClick={() => deleteBodyType(bodyType.id)} className="delete-btn" title={t('admin.delete')}>
+                  🗑️
                 </button>
               </div>
             </div>

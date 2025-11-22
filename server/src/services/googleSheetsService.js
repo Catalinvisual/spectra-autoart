@@ -66,8 +66,10 @@ class GoogleSheetsService {
         ];
       case 'Bookings':
         return [
-          ['ID', 'Date', 'Time', 'Service_ID', 'Customer_Name', 'Customer_Email', 'Customer_Phone', 'Vehicle_Make', 'Vehicle_Model', 'Vehicle_Year', 'Vehicle_License_Plate', 'Status', 'Notes', 'Created_Date', 'Updated_Date'],
-          ['1', '2024-01-15', '09:00', '1', 'John Doe', 'john@example.com', '+1234567890', 'BMW', 'X5', '2020', 'ABC123', 'confirmed', 'Customer requested premium service', '2024-01-01T00:00:00.000Z', '2024-01-01T00:00:00.000Z']
+          ['ID', 'Name', 'Email', 'Phone', 'Date', 'Services', 'Total', 'Status', 'Created At', 'Make', 'Model', 'Type', 'Body'],
+          ['1', 'John Doe', 'john@example.com', '+1234567890', '2024-01-15T09:00:00.000Z', '[{"name":"Premium Detailing","price":150}]', '150.00', 'confirmed', '2024-01-01T00:00:00.000Z', 'BMW', 'X5', 'SUV', 'SUV'],
+          ['2', 'Jane Smith', 'jane@example.com', '+0987654321', '2024-01-16T14:00:00.000Z', 'Interior Cleaning, Exterior Wash', '80.00', 'pending', '2024-01-02T10:30:00.000Z', 'Audi', 'A4', 'Sedan', 'Sedan'],
+          ['3', 'Mike Johnson', 'mike@example.com', '+1122334455', '2024-01-17T11:00:00.000Z', '[{"name":"Ceramic Coating","price":500}]', '500.00', 'confirmed', '2024-01-03T09:15:00.000Z', 'Mercedes', 'C-Class', 'Sedan', 'Sedan']
         ];
       case 'Newsletter_subscribers':
         return [
@@ -217,6 +219,39 @@ class GoogleSheetsService {
       return true;
     } catch (error) {
       console.error(`❌ Error appending data to ${sheetName}:`, error);
+      throw error;
+    }
+  }
+
+  async appendDataWithFormats(sheetName, data, formats = {}) {
+    try {
+      // Simulate success in demo mode
+      if (this.isDemoMode) {
+        console.log(`📊 Demo mode: Simulating append to ${sheetName} with formats`, data);
+        return true;
+      }
+
+      const sheet = this.doc.sheetsByTitle[sheetName];
+      if (!sheet) {
+        throw new Error(`Sheet ${sheetName} not found`);
+      }
+
+      // Create a copy of data to modify
+      const formattedData = [...data];
+      
+      // Apply text formatting by adding single quote prefix
+      for (const [colIndex, format] of Object.entries(formats)) {
+        if (format === 'TEXT' && formattedData[parseInt(colIndex)]) {
+          formattedData[parseInt(colIndex)] = `'${formattedData[parseInt(colIndex)]}`;
+        }
+      }
+
+      // Add the formatted row
+      await sheet.addRow(formattedData);
+      
+      return true;
+    } catch (error) {
+      console.error(`❌ Error appending data with formats to ${sheetName}:`, error);
       throw error;
     }
   }

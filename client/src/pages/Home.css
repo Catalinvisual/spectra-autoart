@@ -89,16 +89,29 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .booking-wizard-modal {
-    padding: 30px 20px;
-    margin: 10px;
+    padding: 0 20px 30px 20px;
+    margin: 10px auto;
+    width: calc(100% - 20px);
+    max-width: none;
   }
   
   .close-wizard-btn {
-    top: 15px;
-    right: 15px;
-    width: 35px;
-    height: 35px;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
     font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    color: #ffffff;
+    padding: 0;
+    line-height: 1;
   }
 }
 
@@ -110,13 +123,27 @@
   .booking-wizard-modal {
     padding: 20px 15px;
     border-radius: 15px;
+    margin: 0 auto;
+    width: calc(100% - 20px);
+    max-width: none;
   }
   
   .close-wizard-btn {
-    top: 10px;
-    right: 10px;
-    width: 30px;
-    height: 30px;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
     font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    color: #ffffff;
+    padding: 0;
+    line-height: 1;
   }
 }

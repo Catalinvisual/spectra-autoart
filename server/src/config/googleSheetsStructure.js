@@ -2,7 +2,7 @@
 export const GOOGLE_SHEETS_STRUCTURE = {
   bookings: {
     sheetName: 'Bookings',
-    columns: ['ID', 'Name', 'Email', 'Phone', 'Date', 'Services', 'Total', 'Status', 'Created At']
+    columns: ['ID', 'Name', 'Email', 'Phone', 'Date', 'Time', 'Services', 'Total', 'Status', 'Created At']
   },
   services: {
     sheetName: 'Services', 

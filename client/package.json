@@ -9,6 +9,7 @@
     "dev": "vite",
     "build": "tsc -b && set VITE_API_URL=https://spectra-autoart-production.up.railway.app/api && vite build",
     "build:railway": "tsc -b && set VITE_API_URL=https://spectra-autoart-production.up.railway.app/api && vite build",
+    "build:local": "tsc -b && set VITE_API_URL=http://localhost:8080/api && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
