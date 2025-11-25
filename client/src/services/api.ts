@@ -1,14 +1,14 @@
 import axios from 'axios'
 import type { VehicleData, Service, BookingData, BodyType, ServiceWithPrices } from '../components/BookingWizard'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
 
 console.log('🔍 API Base URL:', API_BASE_URL)
 console.log('🔍 VITE_API_URL env:', import.meta.env.VITE_API_URL)
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
@@ -24,6 +24,19 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+    
+    // Debug logging for testimonial requests
+    if (config.url?.includes('/public/testimonials')) {
+      console.log('🎯 Testimonials Request:', {
+        url: config.url,
+        baseURL: config.baseURL,
+        fullURL: `${config.baseURL}${config.url}`,
+        method: config.method,
+        headers: config.headers,
+        timeout: config.timeout
+      })
+    }
+    
     return config
   },
   (error) => {
@@ -34,6 +47,16 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
+    // Debug logging for testimonial responses
+    if (response.config.url?.includes('/public/testimonials')) {
+      console.log('✅ Testimonials Response:', {
+        url: response.config.url,
+        status: response.status,
+        statusText: response.statusText,
+        data: response.data
+      })
+    }
+    
     // Debug logging for admin services
     if (response.config.url?.includes('/admin/services')) {
       console.log('🌐 API Response before processing:', response)
@@ -69,6 +92,18 @@ api.interceptors.response.use(
     return response
   },
   (error) => {
+    // Debug logging for testimonial errors
+    if (error.config?.url?.includes('/public/testimonials')) {
+      console.log('❌ Testimonials Error:', {
+        url: error.config.url,
+        method: error.config.method,
+        message: error.message,
+        code: error.code,
+        response: error.response?.data,
+        status: error.response?.status
+      })
+    }
+    
     if (error.response?.status === 401) {
       localStorage.removeItem('adminToken')
       // Only redirect to admin login if not already on admin page
@@ -100,8 +135,8 @@ export const publicAPI = {
   submitTestimonial: (data: { name: string; rating: number; comment: string }) => api.post('/public/testimonials', data),
   createBooking: (data: BookingData) => api.post('/public/bookings', data),
   subscribeNewsletter: (data: { email: string }) => api.post('/public/newsletter', data),
-  translateText: (data: { text: string; target: string; source?: string }) => api.post('/public/translate', data),
-  translateBatch: (data: { texts: string[]; target: string; source?: string }) => api.post('/public/translate/batch', data)
+  translateText: (data: { text: string; target: string; source?: string }) => api.post('/translate', data),
+  translateBatch: (data: { texts: string[]; target: string; source?: string }) => api.post('/translate/batch', data)
 }
 
 // Admin API endpoints
@@ -123,7 +158,7 @@ export const adminAPI = {
   updateBodyType: (id: string, data: any) => api.put(`/admin/body-types/${id}`, data),
   deleteBodyType: (id: string) => api.delete(`/admin/body-types/${id}`),
   getGallery: () => api.get('/admin/gallery'),
-  uploadImage: (data: FormData) => api.post('/admin/gallery', data),
+  uploadImage: (data: { url: string; alt_text: string; category: string; active: boolean }) => api.post('/admin/gallery', data),
   deleteImage: (id: string) => api.delete(`/admin/gallery/${id}`),
   getNewsletterSubscribers: () => api.get('/admin/newsletter-subscribers'),
   sendNewsletter: (data: { subject: string; content: string }) => api.post('/admin/newsletter/send', data)

@@ -14,6 +14,31 @@ const resources = {
       aboutUsDescription: 'Spectra AutoArt is uw premium partner voor auto detailing en styling. Met jarenlange ervaring en passie voor perfectie, bieden wij hoogwaardige diensten die uw voertuig transformeren tot een ware showstopper. Ons team van gespecialiseerde professionals gebruikt alleen de beste producten en technieken om uitzonderlijke resultaten te leveren. We geloven in kwaliteit, aandacht voor detail en klanttevredenheid die uw verwachtingen overtreft.',
       gallery: 'Galerij',
       testimonials: 'Testimonials',
+      testimonialPage: {
+        title: 'Wat klanten zeggen',
+        subtitle: 'De ervaringen van onze tevreden klanten',
+        noTestimonials: 'Er zijn nog geen testimonials beschikbaar.',
+        writeReview: 'Schrijf een recensie',
+        yourName: 'Uw naam',
+        yourRating: 'Uw beoordeling',
+        yourReview: 'Uw recensie',
+        namePlaceholder: 'Vul uw naam in',
+        reviewPlaceholder: 'Vertel ons over uw ervaring...',
+        submitReview: 'Recensie versturen',
+        errorSubmit: 'Fout bij het versturen van de recensie',
+        submitting: 'Bezig met versturen...',
+        cancel: 'Annuleren',
+        reviewSubmittedSuccessfully: 'Recensie succesvol verzonden!'
+      },
+      premiumServices: {
+        title: 'Premium auto detailing and styling services.',
+        subtitle: 'Transform your vehicle with our expert care and attention to detail.',
+        description: 'We transform cars into works of art with premium detailing and styling services!'
+      },
+      servicesPage: {
+        fromPrice: 'Vanaf',
+        minimumPrice: 'Minimale prijs'
+      },
       contact: 'Contact',
       selectLanguage: 'Taal selecteren',
       vehicleBrand: 'Merk',
@@ -386,6 +411,31 @@ const resources = {
         }
       },
       testimonials: 'Testimonials',
+      testimonialPage: {
+        title: 'What customers say',
+        subtitle: 'The experiences of our satisfied customers',
+        noTestimonials: 'No testimonials available yet.',
+        writeReview: 'Write a review',
+        yourName: 'Your name',
+        yourRating: 'Your rating',
+        yourReview: 'Your review',
+        namePlaceholder: 'Enter your name',
+        reviewPlaceholder: 'Tell us about your experience...',
+        submitReview: 'Submit review',
+        errorSubmit: 'Error submitting the review',
+        submitting: 'Submitting...',
+        cancel: 'Cancel',
+        reviewSubmittedSuccessfully: 'Review submitted successfully!'
+      },
+      premiumServices: {
+        title: 'Premium auto detailing and styling services.',
+        subtitle: 'Transform your vehicle with our expert care and attention to detail.',
+        description: 'We transform cars into works of art with premium detailing and styling services!'
+      },
+      servicesPage: {
+        fromPrice: 'From',
+        minimumPrice: 'Minimum price'
+      },
       contact: 'Contact',
       selectLanguage: 'Select Language',
       vehicleBrand: 'Brand',
@@ -713,6 +763,10 @@ const resources = {
         }
       },
       testimonials: 'Testimonios',
+      servicesPage: {
+        fromPrice: 'Desde',
+        minimumPrice: 'Precio mínimo'
+      },
       contact: 'Contacto',
       selectLanguage: 'Seleccionar Idioma',
       vehicleBrand: 'Marca',
@@ -902,6 +956,10 @@ const resources = {
         }
       },
       testimonials: 'Opinie',
+      servicesPage: {
+        fromPrice: 'Od',
+        minimumPrice: 'Cena minimalna'
+      },
       contact: 'Kontakt',
       selectLanguage: 'Wybierz Język',
       vehicleBrand: 'Marka',
@@ -1091,6 +1149,10 @@ const resources = {
         }
       },
       testimonials: 'Testimoniale',
+      servicesPage: {
+        fromPrice: 'De la',
+        minimumPrice: 'Preț minim'
+      },
       contact: 'Contact',
       selectLanguage: 'Selectează Limba',
       vehicleBrand: 'Marcă',

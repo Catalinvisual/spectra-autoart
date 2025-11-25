@@ -611,16 +611,101 @@ router.get('/gallery', requireAuth, async (req, res) => {
         id: item.id || '',
         title: item.title || '',
         description: item.description || '',
-        imageUrl: item.image_url || '',
+        url: item.image_url || '',  // Changed from imageUrl to url to match client expectation
         category: item.category || '',
-        active: (item.active || 'true').toLowerCase() === 'true',
-        createdAt: item.created_at || ''
+        active: (item.Active || 'true').toLowerCase() === 'true',
+        createdAt: item.upload_date || ''
       }
     })
     
     res.json(gallery)
   } catch (error) {
     res.status(500).json({ error: error.message })
+  }
+})
+
+// Upload new image to gallery
+router.post('/gallery', requireAuth, async (req, res) => {
+  try {
+    const { url, alt_text, category, active } = req.body
+    
+    if (!url) {
+      return res.status(400).json({ error: 'Image URL is required' })
+    }
+    
+    // Generate unique ID
+    const id = Date.now().toString()
+    const createdAt = new Date().toISOString()
+    
+    // Prepare data for Google Sheets - as array matching column structure
+    const imageData = [
+      id,                    // ID
+      alt_text || '',        // Title
+      alt_text || '',        // Description  
+      url,                   // Image URL
+      category || 'general', // Category
+      active || 'true',      // Active
+      createdAt              // Upload Date
+    ]
+    
+    // Add to Google Sheets
+    await GoogleSheetsService.appendData('Gallery', imageData)
+    
+    res.json({ 
+      success: true, 
+      image: {
+        id,
+        title: alt_text || '',
+        description: alt_text || '',
+        image_url: url,
+        category: category || 'general',
+        created_at: createdAt
+      }
+    })
+  } catch (error) {
+    console.error('Error adding gallery image:', error)
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    })
+  }
+})
+
+// Delete gallery image
+router.delete('/gallery/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params
+    
+    const data = await GoogleSheetsService.getData('Gallery')
+    
+    if (data.length <= 1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'No gallery images found' 
+      })
+    }
+
+    const rowIndex = data.slice(1).findIndex(row => row[0] === id)
+    
+    if (rowIndex === -1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Gallery image not found' 
+      })
+    }
+
+    await GoogleSheetsService.deleteData('Gallery', rowIndex)
+    
+    res.json({ 
+      success: true, 
+      message: 'Gallery image deleted successfully' 
+    })
+  } catch (error) {
+    console.error('Error deleting gallery image:', error)
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to delete gallery image' 
+    })
   }
 })
 

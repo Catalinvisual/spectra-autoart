@@ -1,11 +1,11 @@
 import express from 'express';
-import { translateWithArgosCacheAndI18n } from '../services/argosTranslationService.js';
+import { translateMultipleWithDeepL } from '../services/deeplTranslationService.js';
 
 const router = express.Router();
 
 /**
  * POST /
- * Translate text using Google Translate API with caching
+ * Translate text using DeepL API
  * Body: { text: string, target: string, source?: string }
  */
 router.post('/', async (req, res) => {
@@ -26,7 +26,14 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const translatedText = await translateWithArgosCacheAndI18n(text, target, source);
+    let translatedText = text;
+    try {
+      const result = await translateMultipleWithDeepL(text, [target.toUpperCase()], source);
+      translatedText = result[target.toUpperCase()] || text;
+    } catch (error) {
+      console.error('DeepL translation error:', error);
+      translatedText = text; // Fallback to original text
+    }
 
     res.json({
       success: true,
@@ -49,7 +56,7 @@ router.post('/', async (req, res) => {
 
 /**
  * POST /batch
- * Translate multiple texts using Google Translate API with caching
+ * Translate multiple texts using DeepL API
  * Body: { texts: string[], target: string, source?: string }
  */
 router.post('/batch', async (req, res) => {
@@ -73,8 +80,13 @@ router.post('/batch', async (req, res) => {
     const translatedTexts = [];
     
     for (const text of texts) {
-      const translated = await translateWithArgosCacheAndI18n(text, target, source);
-      translatedTexts.push(translated);
+      try {
+        const result = await translateMultipleWithDeepL(text, [target.toUpperCase()], source);
+        translatedTexts.push(result[target.toUpperCase()] || text);
+      } catch (error) {
+        console.error(`❌ DeepL translation failed for text:`, text.substring(0, 50), error.message);
+        translatedTexts.push(text); // Fallback to original text
+      }
     }
 
     res.json({

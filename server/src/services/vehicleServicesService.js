@@ -1,5 +1,6 @@
 import GoogleSheetsService from './googleSheetsService.js';
 import { BODY_TYPES, getActiveBodyTypes } from '../config/bodyTypesConfig.js';
+import { translateMultipleWithDeepL, detectLanguageWithDeepL } from './deeplTranslationService.js';
 
 class VehicleServicesService {
   constructor() {
@@ -349,14 +350,86 @@ class VehicleServicesService {
       // Creează slug din nume
       const slug = this.createSlug(serviceData.name);
       
-      // Creează serviciul nou
+      // Detectează limba originală pentru nume și descriere folosind DeepL
+      const detectedNameLang = await detectLanguageWithDeepL(serviceData.name);
+      const detectedDescLang = serviceData.description ? await detectLanguageWithDeepL(serviceData.description) : 'EN';
+      
+      console.log(`🔍 DeepL detected languages - Name: ${detectedNameLang}, Description: ${detectedDescLang}`);
+      
+      // Traduce numele și descrierea în toate cele 5 limbi folosind DeepL
+      const targetLanguages = ['NL', 'EN', 'ES', 'PL', 'RO'];
+      const nameTranslations = {};
+      const descTranslations = {};
+      
+      // Traduce numele folosind DeepL
+      try {
+        console.log(`🔄 DeepL translating name: "${serviceData.name}" from ${detectedNameLang} to all languages...`);
+        const nameTranslationsResult = await translateMultipleWithDeepL(serviceData.name, targetLanguages, detectedNameLang);
+        
+        // Procesează rezultatele traducerii
+        targetLanguages.forEach(lang => {
+          if (lang === detectedNameLang) {
+            nameTranslations[lang] = serviceData.name; // Păstrează originalul
+            console.log(`✅ Keeping original name for ${lang}: ${serviceData.name}`);
+          } else {
+            nameTranslations[lang] = nameTranslationsResult[lang] || serviceData.name;
+            console.log(`🔄 DeepL translated name to ${lang}: ${nameTranslations[lang]}`);
+          }
+        });
+      } catch (error) {
+        console.error('❌ DeepL name translation failed:', error);
+        // Fallback: folosește textul original pentru toate limbile
+        targetLanguages.forEach(lang => {
+          nameTranslations[lang] = serviceData.name;
+        });
+      }
+      
+      // Traduce descrierea folosind DeepL
+      if (serviceData.description) {
+        try {
+          console.log(`🔄 DeepL translating description: "${serviceData.description.substring(0, 50)}..." from ${detectedDescLang} to all languages...`);
+          const descTranslationsResult = await translateMultipleWithDeepL(serviceData.description, targetLanguages, detectedDescLang);
+          
+          // Procesează rezultatele traducerii
+          targetLanguages.forEach(lang => {
+            if (lang === detectedDescLang) {
+              descTranslations[lang] = serviceData.description; // Păstrează originalul
+              console.log(`✅ Keeping original description for ${lang}: ${serviceData.description.substring(0, 50)}...`);
+            } else {
+              descTranslations[lang] = descTranslationsResult[lang] || serviceData.description;
+              console.log(`🔄 DeepL translated description to ${lang}: ${descTranslations[lang].substring(0, 50)}...`);
+            }
+          });
+        } catch (error) {
+          console.error('❌ DeepL description translation failed:', error);
+          // Fallback: folosește textul original pentru toate limbile
+          targetLanguages.forEach(lang => {
+            descTranslations[lang] = serviceData.description;
+          });
+        }
+      } else {
+        // Dacă nu există descriere, setează string gol pentru toate limbile
+        targetLanguages.forEach(lang => {
+          descTranslations[lang] = '';
+        });
+      }
+      
+      // Creează serviciul nou cu traduceri
       const newService = {
         id: newServiceId,
         slug: slug,
         name: serviceData.name,
-        name_en: serviceData.name_en || serviceData.name,
+        name_nl: nameTranslations['NL'] || serviceData.name,
+        name_en: nameTranslations['EN'] || serviceData.name,
+        name_es: nameTranslations['ES'] || serviceData.name,
+        name_pl: nameTranslations['PL'] || serviceData.name,
+        name_ro: nameTranslations['RO'] || serviceData.name,
         description: serviceData.description || '',
-        description_en: serviceData.description_en || serviceData.description || '',
+        description_nl: descTranslations['NL'] || serviceData.description || '',
+        description_en: descTranslations['EN'] || serviceData.description || '',
+        description_es: descTranslations['ES'] || serviceData.description || '',
+        description_pl: descTranslations['PL'] || serviceData.description || '',
+        description_ro: descTranslations['RO'] || serviceData.description || '',
         category: serviceData.category || 'general',
         image_url: serviceData.image_url || '/images/services/default.jpg',
         duration_minutes: serviceData.duration_minutes || 60,

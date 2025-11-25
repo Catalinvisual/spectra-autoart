@@ -1,7 +1,8 @@
 import { Router } from 'express'
 import auth from '../middleware/auth.js'
 import GoogleSheetsService from '../services/googleSheetsService.js'
-import { translateMultipleWithCache } from '../services/translationCacheService.js'
+import { translateMultipleWithDeepL } from '../services/deeplTranslationService.js'
+
 
 const router = Router()
 
@@ -46,13 +47,13 @@ router.get('/', async (req, res) => {
       if (lang !== 'nl') {
         try {
           console.log(`🔄 Translating service to ${lang}: "${baseName}"`)
-          finalName = await translateMultipleWithCache([baseName], lang);
-          finalName = finalName[0] || baseName;
+          const nameResult = await translateMultipleWithDeepL(baseName, [lang.toUpperCase()], 'nl');
+          finalName = nameResult[lang.toUpperCase()] || baseName;
           
           if (baseDescription) {
             console.log(`🔄 Translating description to ${lang}: "${baseDescription.substring(0, 50)}..."`)
-            finalDescription = await translateMultipleWithCache([baseDescription], lang);
-            finalDescription = finalDescription[0] || baseDescription;
+            const descResult = await translateMultipleWithDeepL(baseDescription, [lang.toUpperCase()], 'nl');
+            finalDescription = descResult[lang.toUpperCase()] || baseDescription;
           }
         } catch (translationError) {
           console.error(`Error translating to ${lang}:`, translationError);

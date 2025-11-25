@@ -4,8 +4,8 @@ import { translateText } from '../services/translator.js'
 import VehicleService from '../services/vehicleService.js'
 import GoogleSheetsService from '../services/googleSheetsService.js'
 import NotificationService from '../services/notificationService.js'
-import { translateMultipleWithCache } from '../services/translationCacheService.js'
 import { getActiveBodyTypes } from '../config/bodyTypesConfig.js'
+import { translateMultipleWithDeepL, detectLanguageWithDeepL } from '../services/deeplTranslationService.js'
 
 const router = Router()
 
@@ -83,20 +83,33 @@ router.get('/vehicles', async (req, res) => {
                 const typesToTranslate = vehicles.map(vehicle => vehicle.type)
                 const bodiesToTranslate = vehicles.map(vehicle => vehicle.body)
                 
-                const [translatedMakes, translatedModels, translatedTypes, translatedBodies] = await Promise.all([
-                  translateMultipleWithCache(makesToTranslate, lang),
-                  translateMultipleWithCache(modelsToTranslate, lang),
-                  translateMultipleWithCache(typesToTranslate, lang),
-                  translateMultipleWithCache(bodiesToTranslate, lang)
-                ])
-                
-                vehicles = vehicles.map((vehicle, index) => ({
-                  ...vehicle,
-                  make: translatedMakes[index] || vehicle.make,
-                  model: translatedModels[index] || vehicle.model,
-                  type: translatedTypes[index] || vehicle.type,
-                  body: translatedBodies[index] || vehicle.body
-                }))
+                // Use DeepL for vehicle translations
+                try {
+                  const { translateMultipleWithDeepL } = await import('./services/deeplTranslationService.js');
+                  
+                  const [makesResult, modelsResult, typesResult, bodiesResult] = await Promise.all([
+                    translateMultipleWithDeepL(makesToTranslate.join(' | '), [lang.toUpperCase()], 'NL'),
+                    translateMultipleWithDeepL(modelsToTranslate.join(' | '), [lang.toUpperCase()], 'NL'),
+                    translateMultipleWithDeepL(typesToTranslate.join(' | '), [lang.toUpperCase()], 'NL'),
+                    translateMultipleWithDeepL(bodiesToTranslate.join(' | '), [lang.toUpperCase()], 'NL')
+                  ]);
+                  
+                  const translatedMakes = makesResult[lang.toUpperCase()].split(' | ');
+                  const translatedModels = modelsResult[lang.toUpperCase()].split(' | ');
+                  const translatedTypes = typesResult[lang.toUpperCase()].split(' | ');
+                  const translatedBodies = bodiesResult[lang.toUpperCase()].split(' | ');
+                  
+                  vehicles = vehicles.map((vehicle, index) => ({
+                    ...vehicle,
+                    make: translatedMakes[index] || vehicle.make,
+                    model: translatedModels[index] || vehicle.model,
+                    type: translatedTypes[index] || vehicle.type,
+                    body: translatedBodies[index] || vehicle.body
+                  }));
+                } catch (translationError) {
+                  console.error('DeepL translation error:', translationError);
+                  // Keep original vehicles data if translation fails
+                }
                 
                 console.log(`🔄 Translated ${vehicles.length} vehicles from NL to ${lang}`)
               } catch (translationError) {
@@ -324,12 +337,12 @@ router.get('/services', async (req, res) => {
     const { lang = 'nl' } = req.query
     let services = []
     
-    // Try to fetch services from Google Sheets first with Argos Translate integration
+    // Try to fetch services from Google Sheets first with DeepL Translate integration
     try {
-      // Use the new Argos Translate method for services
+      // Use the new DeepL Translate method for services
       if (lang !== 'nl') {
-        console.log(`🔄 Using Argos Translate for services in language: ${lang}`)
-        services = await GoogleSheetsService.getServicesWithArgosTranslation(lang, true, true)
+        console.log(`🔄 Using DeepL Translate for services in language: ${lang}`)
+        services = await GoogleSheetsService.getServicesWithDeepLTranslation(lang, true, true)
       } else {
         // For Dutch, use the standard method
         const servicesData = await GoogleSheetsService.getData('Services')
@@ -427,20 +440,31 @@ router.get('/vehicle-services', async (req, res) => {
     
     try {
       // Use the dedicated method from GoogleSheetsService
-      vehicleServices = await GoogleSheetsService.getServicesWithPrices()
+      vehicleServices = await GoogleSheetsService.getServicesWithPrices(lang)
       console.log(`📊 Vehicle services with prices:`, vehicleServices.length, 'services')
       console.log(`📋 First 3 vehicle services:`, vehicleServices.slice(0, 3))
       
-      // Translate if needed (services already have English names by default)
-      if (lang !== 'en' && lang !== 'nl') {
+      // Translate if needed - services are in English by default from Google Sheets
+      if (lang === 'nl') {
+        // For Dutch, use the original English text as Dutch (since Argos API doesn't support Dutch translation)
+        // The Google Sheets data is already in English, so we use it as-is for Dutch
+        console.log(`🇳🇱 Using original English text as Dutch for ${vehicleServices.length} vehicle services`)
+        // No translation needed - English text serves as Dutch default
+      } else if (lang !== 'en') {
+        // For other languages, translate from English using DeepL
         try {
           const namesToTranslate = vehicleServices.map(service => service.name)
           const descsToTranslate = vehicleServices.map(service => service.description)
           
-          const [translatedNames, translatedDescs] = await Promise.all([
-            translateMultipleWithCache(namesToTranslate, lang),
-            translateMultipleWithCache(descsToTranslate, lang)
-          ])
+          const { translateMultipleWithDeepL } = await import('./services/deeplTranslationService.js');
+          
+          const [namesResult, descsResult] = await Promise.all([
+            translateMultipleWithDeepL(namesToTranslate.join(' | '), [lang.toUpperCase()], 'EN'),
+            translateMultipleWithDeepL(descsToTranslate.join(' | '), [lang.toUpperCase()], 'EN')
+          ]);
+          
+          const translatedNames = namesResult[lang.toUpperCase()].split(' | ');
+          const translatedDescs = descsResult[lang.toUpperCase()].split(' | ');
           
           vehicleServices = vehicleServices.map((service, index) => ({
             ...service,
@@ -776,127 +800,45 @@ router.get('/testimonials', async (req, res) => {
   try {
     const { lang = 'nl' } = req.query
     
-    // Use Argos Translate for testimonials if language is not Dutch
+    console.log('🎯 Testimonials route hit with lang:', lang)
+    console.log('📋 Full query:', req.query)
+    
+    // Use DeepL for testimonial translations
     let testimonials = [];
+    console.log(`🔄 Processing testimonials for language: ${lang}`)
     
-    if (lang !== 'nl') {
-      console.log(`🔄 Using Argos Translate for testimonials in language: ${lang}`)
-      testimonials = await GoogleSheetsService.getTestimonialsWithArgosTranslation(lang, true, true)
-    } else {
-      // For Dutch, use the standard method
-      // Get testimonials from Google Sheets
-      const data = await GoogleSheetsService.getData('Testimonials')
+    try {
+      console.log('🔄 Using DeepL Translate for testimonials...')
       
-      console.log('📊 Raw testimonials data from Google Sheets:', data)
+      // Create a timeout promise that rejects after 15 seconds
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Translation timeout - exceeded 15 seconds')), 15000)
+      })
       
-      if (data.length <= 1) {
-        console.log('⚠️ No testimonials data found or only header row exists')
-        return res.json({
-          success: true,
-          data: []
-        })
-      }
-
-      const headers = data[0]
-      console.log('📋 Headers:', headers)
+      // Race between translation and timeout
+      const limitedTestimonials = await Promise.race([
+        GoogleSheetsService.getTestimonialsWithDeepLTranslation(lang, true, true),
+        timeoutPromise
+      ])
       
-      // Create a mapping of headers to indices for easier access
-      const headerMap = {};
-      headers.forEach((header, index) => {
-        if (typeof header === 'string') {
-          headerMap[header.toLowerCase().replace(/ /g, '_')] = index;
-        } else {
-          // For non-string headers (like numbers), convert to string first
-          headerMap[String(header).toLowerCase().replace(/ /g, '_')] = index;
-        }
-      });
-      
-      console.log('🗺️ Header map:', headerMap);
-      
-      testimonials = data.slice(1).map(row => {
-        // Get the appropriate comment based on language with fallback logic
-        let comment = '';
-        
-        // Try to find comment in requested language
-        const commentLangKey = headerMap[`comment_${lang}`];
-        if (commentLangKey !== undefined && row[commentLangKey] && typeof row[commentLangKey] === 'string' && row[commentLangKey].trim() !== '') {
-          comment = row[commentLangKey];
-        } else if (headerMap.comment_nl !== undefined && row[headerMap.comment_nl] && typeof row[headerMap.comment_nl] === 'string' && row[headerMap.comment_nl].trim() !== '') {
-          // Fallback to Dutch
-          comment = row[headerMap.comment_nl];
-        } else if (headerMap.comment !== undefined && row[headerMap.comment] && typeof row[headerMap.comment] === 'string' && row[headerMap.comment].trim() !== '') {
-          // Fallback to generic comment
-          comment = row[headerMap.comment];
-        }
-        
-        // Get date from created_date or created_at with proper priority
-      let dateValue = '';
-      
-      // Priority order for date sources:
-      // 1. created_date (preferred - new structure)
-      // 2. created_at (fallback)
-      // 3. date (legacy fallback)
-      
-      if (headerMap.created_date !== undefined && row[headerMap.created_date] && row[headerMap.created_date] !== '') {
-        dateValue = row[headerMap.created_date];
-        console.log(`📅 Using created_date: ${dateValue}`)
-      } else if (headerMap.created_at !== undefined && row[headerMap.created_at] && row[headerMap.created_at] !== '') {
-        dateValue = row[headerMap.created_at];
-        console.log(`📅 Using created_at: ${dateValue}`)
-      } else if (headerMap.date !== undefined && row[headerMap.date] && row[headerMap.date] !== '') {
-        dateValue = row[headerMap.date];
-        console.log(`📅 Using date: ${dateValue}`)
-      }
-      
-      // Extract other values
-      const name = (headerMap.name !== undefined && row[headerMap.name]) ? row[headerMap.name] : 'Unknown Client';
-      const rating = (headerMap.rating !== undefined && row[headerMap.rating]) ? parseInt(row[headerMap.rating]) : 5;
-      const id = (headerMap.id !== undefined && row[headerMap.id]) ? row[headerMap.id] : `test-${Date.now()}`;
-      const service = (headerMap.service !== undefined && row[headerMap.service]) ? row[headerMap.service] : '';
-      
-      return {
-        id: id,
-        name: name,
-        rating: rating,
-        comment: comment,
-        date: dateValue,
-        service: service
-      }
-    }).filter(testimonial => testimonial.name && testimonial.comment && typeof testimonial.comment === 'string' && testimonial.comment.trim() !== '')
+      // Limit results to prevent performance issues
+      testimonials = limitedTestimonials.slice(0, 10)
+      console.log('✅ DeepL Translate successful, testimonials count (limited to 10):', testimonials.length)
+    } catch (error) {
+      console.log('⚠️ Translation failed:', error.message)
+      // Return empty array if translation fails
+      testimonials = []
+    }
     
-    // Convert Excel serial dates to ISO dates
-    testimonials.forEach(testimonial => {
-      console.log(`📅 Processing testimonial date:`, testimonial.date, `type:`, typeof testimonial.date);
-      
-      if (testimonial.date && typeof testimonial.date === 'number') {
-        // Excel serial date: days since January 1, 1900
-        // Convert to JavaScript date (milliseconds since January 1, 1970)
-        const excelEpoch = new Date(1900, 0, 1); // January 1, 1900
-        const jsDate = new Date(excelEpoch.getTime() + (testimonial.date - 2) * 24 * 60 * 60 * 1000);
-        const formattedDate = jsDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-        console.log(`📅 Converted Excel date ${testimonial.date} to ${formattedDate}`);
-        testimonial.date = formattedDate;
-      } else if (testimonial.date && typeof testimonial.date === 'string' && testimonial.date.includes('/')) {
-        // Handle MM/DD/YYYY format from Google Sheets
-        const parts = testimonial.date.split('/');
-        if (parts.length === 3) {
-          const jsDate = new Date(parts[0], parts[1] - 1, parts[2]);
-          const formattedDate = jsDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-          console.log(`📅 Converted MM/DD/YYYY date ${testimonial.date} to ${formattedDate}`);
-          testimonial.date = formattedDate;
-        }
-      }
-    })
-
-    console.log('✅ Processed testimonials:', testimonials)
-    console.log('🔍 Filtered testimonials count:', testimonials.length)
+    console.log('✅ Processed testimonials:', testimonials.length, 'items');
+    console.log('📤 Sending response immediately...');
     
-    res.json({
+    // Send response immediately
+    return res.json({
       success: true,
       data: testimonials
-    })
-  }
-} catch (error) {
+    });
+  } catch (error) {
     console.error('Error getting testimonials:', error)
     res.status(500).json({ 
       success: false, 
@@ -938,17 +880,83 @@ router.post('/testimonials', async (req, res) => {
     const currentDate = new Date().toISOString();
     const currentDateOnly = currentDate.split('T')[0]; // YYYY-MM-DD format
     
+    // Use DeepL for language detection
+    let detectedLanguage;
+    try {
+      detectedLanguage = await detectLanguageWithDeepL(comment);
+      console.log(`🔍 DeepL detected language: ${detectedLanguage} for comment: "${comment.substring(0, 50)}..."`);
+    } catch (error) {
+      console.error(`❌ DeepL language detection failed:`, error.message);
+      // Fallback to enhanced Romanian detection
+      const textLower = comment.toLowerCase();
+      if (/\b(foarte|mulțumit|servicii|personalul|profesionist|atent|detalii|recomand|încredere|excelent|superb|calitate)\b/.test(textLower) || 
+          /[ăâîșțĂÂÎȘȚ]/.test(comment) ||
+          comment.includes('mulțumesc') || 
+          comment.includes('sunt') || 
+          comment.includes('foarte')) {
+        detectedLanguage = 'ro';
+        console.log(`🔍 Fallback detection: Romanian language detected for comment: "${comment.substring(0, 50)}..."`);
+      } else {
+        detectedLanguage = 'en'; // Default to English
+        console.log(`🔍 Fallback detection: English language detected for comment: "${comment.substring(0, 50)}..."`);
+      }
+    }
+    
+    // Map detected language to column suffix
+    const languageMap = {
+      'eng': 'EN',
+      'nld': 'NL', 
+      'ron': 'RO',
+      'spa': 'ES',
+      'pol': 'PL'
+    };
+    
+    const detectedSuffix = languageMap[detectedLanguage] || 'EN'; // Default to English if uncertain
+    console.log(`📝 Will translate from ${detectedSuffix} to all languages`);
+    
+    // Translate to all languages using DeepL
+    const translations = {};
+    const targetLanguages = ['NL', 'EN', 'ES', 'PL', 'RO'];
+    
+    try {
+      console.log(`🔄 Starting DeepL translation for ${targetLanguages.length} languages...`);
+      
+      // Process translations using DeepL (translate to all languages)
+      const translationPromises = targetLanguages.map(async (lang) => {
+        // Translate using DeepL for all languages
+        try {
+          const result = await translateMultipleWithDeepL(comment, [lang], detectedLanguage);
+          const translatedText = result[lang] || comment;
+          translations[lang] = translatedText;
+          console.log(`✅ DeepL translation to ${lang}: ${translatedText.substring(0, 50)}...`);
+        } catch (error) {
+          console.error(`❌ DeepL translation failed for ${lang}:`, error.message);
+          translations[lang] = comment; // Fallback to original
+        }
+      });
+      
+      await Promise.all(translationPromises);
+      console.log(`✅ All DeepL translations completed!`);
+      
+    } catch (error) {
+      console.error(`❌ DeepL translation system failed:`, error);
+      // Fallback: use original text for all languages
+      targetLanguages.forEach(lang => {
+        translations[lang] = comment;
+      });
+    }
+    
     // Create new testimonial data with proper structure for Google Sheets
     // ID, Name, Rating, Comment_NL, Comment_EN, Comment_ES, Comment_PL, Comment_RO, Active, Created_Date
     const newTestimonial = [
       `test-${Date.now()}`,    // ID
       name,                    // Name
       rating.toString(),       // Rating
-      comment,                 // Comment_NL (comentariul original în olandeză)
-      '',                      // Comment_EN (gol pentru moment)
-      '',                      // Comment_ES (gol)
-      '',                      // Comment_PL (gol)
-      '',                      // Comment_RO (gol)
+      translations['NL'] || comment,  // Comment_NL
+      translations['EN'] || comment,  // Comment_EN
+      translations['ES'] || comment,  // Comment_ES
+      translations['PL'] || comment,  // Comment_PL
+      translations['RO'] || comment,  // Comment_RO
       'true',                  // Active
       currentDateOnly          // Created_Date (format YYYY-MM-DD)
     ]

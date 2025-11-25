@@ -144,7 +144,7 @@ spectra-autoart/
 - Google Sheets API pentru stocare
 - JWT pentru autentificare
 - Twilio pentru notificări
-- Google Translate API
+- Argos Translate pentru traduceri
 
 ## 📝 Script-uri Disponibile
 

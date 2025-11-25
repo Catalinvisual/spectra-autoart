@@ -18,6 +18,8 @@ console.log('📊 GOOGLE_SHEETS_SPREADSHEET_ID:', process.env.GOOGLE_SHEETS_SPRE
 console.log('📧 GOOGLE_SERVICE_ACCOUNT_EMAIL:', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)
 console.log('🔑 GOOGLE_PRIVATE_KEY exists:', !!process.env.GOOGLE_PRIVATE_KEY)
 console.log('🔑 GOOGLE_PRIVATE_KEY length:', process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.length : 'undefined')
+console.log('🔑 DEEPL_KEY exists:', !!process.env.DEEPL_KEY)
+console.log('🔑 DEEPL_KEY format:', process.env.DEEPL_KEY ? process.env.DEEPL_KEY.substring(0, 8) + '...' + process.env.DEEPL_KEY.slice(-4) : 'undefined')
 
 import publicRouter from './routes/public.js'
 import adminRouter from './routes/admin.js'
@@ -28,7 +30,6 @@ import bookingsRouter from './routes/bookings.js'
 import galleryRouter from './routes/gallery.js'
 import testimonialsRouter from './routes/testimonials.js'
 import translateRouter from './routes/translate.js'
-import argosTranslateRouter from './routes/argosTranslate.js'
 import debugVehiclesRouter from './routes/debugVehicles.js'
 import GoogleSheetsService from './services/googleSheetsService.js'
 import VehiclesAPIService from './services/vehiclesAPIService.js'
@@ -52,26 +53,37 @@ app.use(cors({
 app.use(express.json({ limit: '1mb' }))
 app.use(express.urlencoded({ extended: true }))
 
+// Debug middleware to log all requests - MUST be before API routes
+app.use((req, res, next) => {
+  console.log('🌐 Server received request:', {
+    method: req.method,
+    url: req.url,
+    path: req.path,
+    query: req.query,
+    headers: req.headers
+  })
+  next()
+})
+
 app.use('/api/public', publicRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api/vehicles', vehicleRouter)
 app.use('/api/services', servicesRouter)
-app.use('/api', vehicleServicesRouter)
+app.use('/api/vehicle-services', vehicleServicesRouter)
 app.use('/api/bookings', bookingsRouter)
 app.use('/api/gallery', galleryRouter)
 app.use('/api/testimonials', testimonialsRouter)
 app.use('/api/translate', translateRouter)
-app.use('/api/argos-translate', argosTranslateRouter)
 app.use('/api/debug', debugVehiclesRouter)
+
+// API health check - must be before static files and catch-all route
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
 
 // Serve static files from React build
 const clientBuildPath = path.join(__dirname, '../../client/dist')
 app.use(express.static(clientBuildPath))
-
-// API health check - must be before catch-all route
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() })
-})
 
 // Handle React routing, return all requests to React app
 // This should be the LAST route to catch any unmatched requests

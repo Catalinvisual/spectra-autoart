@@ -14,11 +14,11 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const languages = [
-    { code: 'nl', name: 'Nederlands' },
-    { code: 'en', name: 'English' },
-    { code: 'es', name: 'Español' },
-    { code: 'pl', name: 'Polski' },
-    { code: 'ro', name: 'Română' }
+    { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
+    { code: 'en', name: 'English', flag: '🇬🇧' },
+    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'pl', name: 'Polski', flag: '🇵🇱' },
+    { code: 'ro', name: 'Română', flag: '🇷🇴' }
   ]
 
   const handleLanguageChange = async (languageCode: string) => {
@@ -130,7 +130,8 @@ const Header = () => {
                   className="language-option"
                   onClick={() => handleLanguageChange(lang.code)}
                 >
-                  {lang.name}
+                  <span className="language-flag">{lang.flag}</span>
+                  <span className="language-name">{lang.name}</span>
                 </button>
               ))}
             </div>

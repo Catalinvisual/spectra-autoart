@@ -17,7 +17,7 @@ interface Testimonial {
 
 const Testimonials: React.FC = () => {
   const { currentLanguage } = useLanguage()
-  const { t, isTranslating } = useTestimonialTranslations()
+  const { t, translateMultiple } = useTestimonialTranslations()
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [translatedTestimonials, setTranslatedTestimonials] = useState<Testimonial[]>([])
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -31,8 +31,36 @@ const Testimonials: React.FC = () => {
 
   // Translate testimonials when language changes or testimonials are loaded
   useEffect(() => {
-    translateTestimonials()
+    translateTestimonialComments()
   }, [testimonials, currentLanguage])
+
+  const translateTestimonialComments = async () => {
+    if (currentLanguage === 'nl' || testimonials.length === 0) {
+      // For Dutch, use testimonials as-is (they should already be in Dutch from backend)
+      setTranslatedTestimonials(testimonials)
+      return
+    }
+
+    try {
+      // Extract all comments for translation
+      const comments = testimonials.map(t => t.comment)
+      
+      // Translate all comments at once
+      const translatedComments = await translateMultiple(comments)
+      
+      // Create new testimonials with translated comments
+      const translatedTestimonials = testimonials.map((testimonial, index) => ({
+        ...testimonial,
+        comment: translatedComments[index] || testimonial.comment
+      }))
+      
+      setTranslatedTestimonials(translatedTestimonials)
+    } catch (error) {
+      console.error('Error translating testimonials:', error)
+      // Fallback to original testimonials if translation fails
+      setTranslatedTestimonials(testimonials)
+    }
+  }
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -77,42 +105,6 @@ const Testimonials: React.FC = () => {
     }
   }
 
-  const translateTestimonials = () => {
-    if (!testimonials.length || currentLanguage === 'nl') {
-      setTranslatedTestimonials(testimonials)
-      return
-    }
-
-    // Extract only comments to translate (names remain unchanged)
-    const comments = testimonials.map(t => t.comment)
-    
-    // Translate only comments using the LanguageContext
-    const translateComments = async () => {
-      try {
-        const translatedComments = await publicAPI.translateBatch({ 
-          texts: comments, 
-          target: currentLanguage, 
-          source: 'nl' 
-        })
-        
-        // Create translated testimonials (names remain original)
-        const translated = testimonials.map((testimonial, index) => ({
-          ...testimonial,
-          comment: translatedComments.data?.translatedTexts?.[index] || testimonial.comment
-          // Name is NOT translated - keeps original value
-        }))
-        
-        setTranslatedTestimonials(translated)
-      } catch (error) {
-        console.error('Error translating testimonials:', error)
-        // Fallback to original testimonials on error
-        setTranslatedTestimonials(testimonials)
-      }
-    }
-    
-    translateComments()
-  }
-
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, index) => (
       <span 
@@ -122,14 +114,6 @@ const Testimonials: React.FC = () => {
         ★
       </span>
     ))
-  }
-
-  const nextSlide = () => {
-    setCurrentSlide(prev => (prev + 1) % translatedTestimonials.length)
-  }
-
-  const prevSlide = () => {
-    setCurrentSlide(prev => (prev - 1 + translatedTestimonials.length) % translatedTestimonials.length)
   }
 
   const openModal = () => {
@@ -145,15 +129,12 @@ const Testimonials: React.FC = () => {
     loadTestimonials()
   }
 
-  if (loading || isTranslating || (testimonials.length > 0 && translatedTestimonials.length === 0)) {
+  if (loading) {
     return (
       <section className="testimonials-section">
         <div className="container">
           <div className="loading-spinner">
             <div className="spinner"></div>
-            {isTranslating && (
-              <p className="translation-indicator">🌐 Translating content...</p>
-            )}
           </div>
         </div>
       </section>
@@ -225,16 +206,6 @@ const Testimonials: React.FC = () => {
                 </div>
               </div>
             ))}
-          </div>
-
-          <div className="slider-controls">
-            <button className="slider-btn prev-btn" onClick={prevSlide}>
-              ‹
-            </button>
-            
-            <button className="slider-btn next-btn" onClick={nextSlide}>
-              ›
-            </button>
           </div>
         </div>
 

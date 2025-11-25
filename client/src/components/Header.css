@@ -166,11 +166,25 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .language-option:hover {
   background: rgba(0, 229, 255, 0.1);
   color: var(--cyan);
+}
+
+.language-flag {
+  font-size: 1.1rem;
+  line-height: 1;
+  display: inline-block;
+  margin-right: 0.25rem;
+}
+
+.language-name {
+  flex: 1;
 }
 
 /* Hamburger menu */

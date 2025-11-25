@@ -2,7 +2,8 @@ import { Router } from 'express'
 import auth from '../middleware/auth.js'
 import VehiclesAPIService from '../services/vehiclesAPIService.js'
 import GoogleSheetsService from '../services/googleSheetsService.js'
-import { translateMultipleWithCache } from '../services/translationCacheService.js'
+import { translateMultipleWithDeepL } from '../services/deeplTranslationService.js'
+
 import { fallbackModels } from '../data/vehicleData.js'
 
 const router = Router()
@@ -175,12 +176,19 @@ router.get('/', async (req, res) => {
               const typesToTranslate = vehicles.map(vehicle => vehicle.type)
               const bodiesToTranslate = vehicles.map(vehicle => vehicle.body)
               
-              const [translatedMakes, translatedModels, translatedTypes, translatedBodies] = await Promise.all([
-                translateMultipleWithCache(makesToTranslate, lang),
-                translateMultipleWithCache(modelsToTranslate, lang),
-                translateMultipleWithCache(typesToTranslate, lang),
-                translateMultipleWithCache(bodiesToTranslate, lang)
+              const langUpper = lang.toUpperCase();
+              const [makesResult, modelsResult, typesResult, bodiesResult] = await Promise.all([
+                translateMultipleWithDeepL(makesToTranslate.join('|'), [langUpper], 'nl'),
+                translateMultipleWithDeepL(modelsToTranslate.join('|'), [langUpper], 'nl'),
+                translateMultipleWithDeepL(typesToTranslate.join('|'), [langUpper], 'nl'),
+                translateMultipleWithDeepL(bodiesToTranslate.join('|'), [langUpper], 'nl')
               ])
+              
+              // Split the translated strings back to arrays
+              const translatedMakes = makesResult[langUpper]?.split('|') || makesToTranslate;
+              const translatedModels = modelsResult[langUpper]?.split('|') || modelsToTranslate;
+              const translatedTypes = typesResult[langUpper]?.split('|') || typesToTranslate;
+              const translatedBodies = bodiesResult[langUpper]?.split('|') || bodiesToTranslate;
               
               vehicles = vehicles.map((vehicle, index) => ({
                 ...vehicle,

@@ -155,8 +155,8 @@ const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
                 <div className="service-price">
                   {minPrice && (
                     <>
-                      <span className="price-amount">de la €{minPrice}</span>
-                      <div className="price-note">Preț minim</div>
+                      <span className="price-amount">{t('servicesPage.fromPrice')} €{minPrice}</span>
+                      <div className="price-note">{t('servicesPage.minimumPrice')}</div>
                     </>
                   )}
                 </div>

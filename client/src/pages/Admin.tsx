@@ -1674,6 +1674,7 @@ const GalleryManagement: React.FC = () => {
     active: true
   })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string>('')
 
   useEffect(() => {
     loadImages()
@@ -1696,6 +1697,13 @@ const GalleryManagement: React.FC = () => {
     if (file) {
       setSelectedFile(file)
       setNewImage({ ...newImage, url: '' }) // Clear URL when file is selected
+      
+      // Creează preview URL pentru imaginea selectată
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        setPreviewUrl(event.target?.result as string)
+      }
+      reader.readAsDataURL(file)
     }
   }
 
@@ -1704,24 +1712,38 @@ const GalleryManagement: React.FC = () => {
   const handleAddImage = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!selectedFile) {
+    if (!selectedFile && !newImage.url) {
       showWarning(t('admin.pleaseSelectImage'))
       return
     }
 
     try {
       setLoading(true)
-      const formData = new FormData()
       
-      // Add file
-      formData.append('image', selectedFile)
-      formData.append('alt_text', newImage.alt_text)
-      formData.append('category', newImage.category)
-      formData.append('active', String(newImage.active))
+      // Dacă avem fișier selectat, folosim URL-ul de preview
+      let imageUrl = newImage.url
       
-      await adminAPI.uploadImage(formData)
+      if (selectedFile && previewUrl) {
+        imageUrl = previewUrl
+      }
+      
+      if (!imageUrl) {
+        showWarning('Te rugăm să selectezi o imagine sau să introduci un URL')
+        return
+      }
+      
+      // Trimite datele către API
+      const imageData = {
+        url: imageUrl,
+        alt_text: newImage.alt_text,
+        category: newImage.category,
+        active: newImage.active
+      }
+      
+      await adminAPI.uploadImage(imageData)
       setNewImage({ url: '', alt_text: '', category: 'general', active: true })
       setSelectedFile(null)
+      setPreviewUrl('')
       await loadImages()
       showSuccess(t('admin.imageAdded'))
     } catch (error) {
@@ -1758,12 +1780,13 @@ const GalleryManagement: React.FC = () => {
       const image = images.find(img => img.id === imageId)
       if (image) {
         await adminAPI.deleteImage(imageId)
-        const formData = new FormData()
-        formData.append('url', image.url)
-        formData.append('alt_text', image.alt_text)
-        formData.append('category', image.category)
-        formData.append('active', String(!currentStatus))
-        await adminAPI.uploadImage(formData)
+        const imageData = {
+          url: image.url,
+          alt_text: image.alt_text,
+          category: image.category,
+          active: !currentStatus
+        }
+        await adminAPI.uploadImage(imageData)
         await loadImages()
       }
     } catch (error) {
@@ -1797,9 +1820,20 @@ const GalleryManagement: React.FC = () => {
                 onClick={() => document.getElementById('imageFileInput')?.click()}
                 className="upload-button"
               >
-                {t('admin.chooseImageFile')}
+                Choose File
               </button>
-              {selectedFile && (
+              
+              {/* Preview imagine */}
+              {previewUrl && (
+                <div className="image-preview-container">
+                  <img src={previewUrl} alt="Preview" className="image-preview" />
+                  <div className="preview-info">
+                    {selectedFile?.name}
+                  </div>
+                </div>
+              )}
+              
+              {selectedFile && !previewUrl && (
                 <div className="selected-file-info">
                   {selectedFile.name}
                 </div>

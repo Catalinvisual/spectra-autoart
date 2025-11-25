@@ -4,7 +4,8 @@ import path from 'path'
 import fs from 'fs'
 import auth from '../middleware/auth.js'
 import GoogleSheetsService from '../services/googleSheetsService.js'
-import { translateMultipleWithCache } from '../services/translationCacheService.js'
+import { translateMultipleWithDeepL } from '../services/deeplTranslationService.js'
+
 
 const router = Router()
 
@@ -68,12 +69,12 @@ router.get('/', async (req, res) => {
       
       return {
         id: image.id || '',
-        url: image.url || '',
-        alt_text: image.alt_text || '',
+        url: image.image_url || '',     // Image URL column
+        alt_text: image.description || '', // Description column used as alt_text
         category: image.category || 'general',
-        active: image.active === 'true',
-        created_date: image.created_date || '',
-        updated_date: image.updated_date || ''
+        active: (image.Active || 'true').toLowerCase() === 'true',
+        created_date: image.upload_date || '', // Upload Date column
+        updated_date: image.upload_date || ''  // Upload Date column
       }
     }).filter(image => image.url && image.id)
 
@@ -85,7 +86,8 @@ router.get('/', async (req, res) => {
         const altTextsToTranslate = images.map(img => img.alt_text)
 
         // Translate all alt_texts
-        const translatedAltTexts = await translateMultipleWithCache(altTextsToTranslate, lang)
+        const translatedAltTextsResult = await translateMultipleWithDeepL(altTextsToTranslate.join('|'), [lang.toUpperCase()], 'nl');
+        const translatedAltTexts = translatedAltTextsResult[lang.toUpperCase()]?.split('|') || altTextsToTranslate;
 
         // Create translated images
         translatedImages = images.map((image, index) => ({
@@ -99,10 +101,7 @@ router.get('/', async (req, res) => {
       }
     }
     
-    res.json({ 
-      success: true, 
-      data: translatedImages 
-    })
+    res.json(translatedImages)
   } catch (error) {
     console.error('Error getting gallery images:', error)
     res.status(500).json({ 
@@ -136,12 +135,12 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
 
     const imageData = [
       Date.now().toString(), // ID
-      imageUrl,
-      alt_text || '',
-      category || 'general',
-      active !== undefined ? active.toString() : 'true',
-      new Date().toISOString(), // Created_Date
-      new Date().toISOString()  // Updated_Date
+      alt_text || '',        // Title
+      alt_text || '',        // Description
+      imageUrl,              // Image URL
+      category || 'general', // Category
+      active || 'true',    // Active
+      new Date().toISOString() // Upload Date
     ]
 
     const success = await GoogleSheetsService.appendData('Gallery', imageData)

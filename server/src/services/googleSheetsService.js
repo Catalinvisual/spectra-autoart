@@ -1,7 +1,7 @@
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 import { GOOGLE_SHEETS_STRUCTURE } from '../config/googleSheetsStructure.js';
-import { translateWithI18nAndArgos, translateMultipleWithI18nAndArgos } from './argosTranslationService.js';
+import { translateMultipleWithDeepL, detectLanguageWithDeepL } from './deeplTranslationService.js';
 
 class GoogleSheetsService {
   constructor() {
@@ -406,9 +406,10 @@ class GoogleSheetsService {
       .trim();
   }
 
-  async getServicesWithPrices() {
-    const servicesData = await this.getData('Vehicle_Services');
-    const pricesData = await this.getData('Vehicle_Service_Prices');
+  async getServicesWithPrices(lang = 'nl') {
+    try {
+      const servicesData = await this.getData('Vehicle_Services');
+      const pricesData = await this.getData('Vehicle_Service_Prices');
 
     console.log('DEBUG: Vehicle_Services data length:', servicesData?.length || 0);
     console.log('DEBUG: Vehicle_Service_Prices data length:', pricesData?.length || 0);
@@ -419,6 +420,23 @@ class GoogleSheetsService {
 
     const servicesHeaders = servicesData[0];
     const pricesHeaders = pricesData.length > 0 ? pricesData[0] : [];
+
+    // Funcție pentru detectarea limbii originale pe fiecare serviciu
+    const detectServiceOriginalLanguage = (row) => {
+      // Detectează limba originală pentru acest serviciu specific
+      if (servicesHeaders.indexOf('Name_NL') !== -1 && row[servicesHeaders.indexOf('Name_NL')] && row[servicesHeaders.indexOf('Name_NL')].trim().length > 0) {
+        return 'nl';
+      } else if (servicesHeaders.indexOf('Name_EN') !== -1 && row[servicesHeaders.indexOf('Name_EN')] && row[servicesHeaders.indexOf('Name_EN')].trim().length > 0) {
+        return 'en';
+      } else if (servicesHeaders.indexOf('Name_RO') !== -1 && row[servicesHeaders.indexOf('Name_RO')] && row[servicesHeaders.indexOf('Name_RO')].trim().length > 0) {
+        return 'ro';
+      } else if (servicesHeaders.indexOf('Name_ES') !== -1 && row[servicesHeaders.indexOf('Name_ES')] && row[servicesHeaders.indexOf('Name_ES')].trim().length > 0) {
+        return 'es';
+      } else if (servicesHeaders.indexOf('Name_PL') !== -1 && row[servicesHeaders.indexOf('Name_PL')] && row[servicesHeaders.indexOf('Name_PL')].trim().length > 0) {
+        return 'pl';
+      }
+      return 'en'; // Default
+    };
 
     // Map prices by service_id and body_type_id
     const pricesMap = {};
@@ -484,7 +502,7 @@ class GoogleSheetsService {
     console.log('DEBUG: Active services found:', activeServices.length);
     console.log('DEBUG: First active service:', activeServices[0]);
     
-    return activeServices.map(row => {
+    return await Promise.all(activeServices.map(async (row) => {
         const serviceId = row[servicesHeaders.indexOf('ID')];
         const serviceIdStr = serviceId.toString();
         
@@ -527,19 +545,158 @@ class GoogleSheetsService {
           });
           console.log(`✅ Generated ${servicePrices.length} fallback prices for service ${serviceIdStr}`);
         }
+
+        // Detectează limba originală pentru acest serviciu specific
+        const serviceOriginalLang = detectServiceOriginalLanguage(row);
+        console.log(`DEBUG: Service ${serviceIdStr} original language: ${serviceOriginalLang}`);
+
+        // Get text from original language columns
+        const getOriginalText = (columnBaseName) => {
+          const originalColumn = servicesHeaders.indexOf(`${columnBaseName}_${serviceOriginalLang.toUpperCase()}`);
+          if (originalColumn !== -1 && row[originalColumn]) {
+            return row[originalColumn];
+          }
+          // Fallback to English if original language not found
+          const englishColumn = servicesHeaders.indexOf(`${columnBaseName}_EN`);
+          if (englishColumn !== -1 && row[englishColumn]) {
+            return row[englishColumn];
+          }
+          // Last fallback: use any available language column
+          for (const langSuffix of ['NL', 'RO', 'EN']) {
+            const column = servicesHeaders.indexOf(`${columnBaseName}_${langSuffix}`);
+            if (column !== -1 && row[column]) {
+              return row[column];
+            }
+          }
+          return '';
+        };
+
+        // Get original texts
+        const originalName = getOriginalText('Name');
+        const originalDescription = getOriginalText('Description');
+        const originalCategory = getOriginalText('Category');
+
+        // If target language is Dutch and we have Dutch columns, use them directly
+        if (lang === 'nl') {
+          const dutchNameColumn = servicesHeaders.indexOf('Name_NL') !== -1 ? 'Name_NL' : null;
+          const dutchDescColumn = servicesHeaders.indexOf('Description_NL') !== -1 ? 'Description_NL' : null;
+          const dutchCategoryColumn = servicesHeaders.indexOf('Category_NL') !== -1 ? 'Category_NL' : null;
+
+          // Use Dutch if available, otherwise translate from original using DeepL
+          let finalName = originalName;
+          let finalDescription = originalDescription;
+          let finalCategory = originalCategory;
+          
+          if (dutchNameColumn && row[servicesHeaders.indexOf(dutchNameColumn)]) {
+            finalName = row[servicesHeaders.indexOf(dutchNameColumn)];
+          } else if (serviceOriginalLang !== 'nl') {
+            try {
+              const nameResult = await translateMultipleWithDeepL(originalName, ['NL'], serviceOriginalLang);
+              finalName = nameResult['NL'] || originalName;
+            } catch (error) {
+              console.error(`❌ DeepL translation failed for service name:`, originalName, error.message);
+              finalName = originalName;
+            }
+          }
+          
+          if (dutchDescColumn && row[servicesHeaders.indexOf(dutchDescColumn)]) {
+            finalDescription = row[servicesHeaders.indexOf(dutchDescColumn)];
+          } else if (serviceOriginalLang !== 'nl') {
+            try {
+              const descResult = await translateMultipleWithDeepL(originalDescription, ['NL'], serviceOriginalLang);
+              finalDescription = descResult['NL'] || originalDescription;
+            } catch (error) {
+              console.error(`❌ DeepL translation failed for service description:`, originalDescription, error.message);
+              finalDescription = originalDescription;
+            }
+          }
+          
+          if (dutchCategoryColumn && row[servicesHeaders.indexOf(dutchCategoryColumn)]) {
+            finalCategory = row[servicesHeaders.indexOf(dutchCategoryColumn)];
+          } else if (serviceOriginalLang !== 'nl') {
+            try {
+              const categoryResult = await translateMultipleWithDeepL(originalCategory, ['NL'], serviceOriginalLang);
+              finalCategory = categoryResult['NL'] || originalCategory;
+            } catch (error) {
+              console.error(`❌ DeepL translation failed for service category:`, originalCategory, error.message);
+              finalCategory = originalCategory;
+            }
+          }
+
+          return {
+            id: parseInt(serviceId) || 0,
+            slug: this.createSlug(finalName),
+            name: finalName,
+            description: finalDescription,
+            category: finalCategory,
+            image_url: '',
+            duration_minutes: parseInt(row[servicesHeaders.indexOf('Duration_Minutes')]) || 0,
+            is_active: row[servicesHeaders.indexOf('Is_Active')] === 'true',
+            prices: servicePrices
+          };
+        }
+
+        // For other languages: first translate to Dutch (if needed), then to target language
+        let dutchName = originalName;
+        let dutchDescription = originalDescription;
+        let dutchCategory = originalCategory;
+
+        // If original is not Dutch, translate to Dutch first
+        if (serviceOriginalLang !== 'nl') {
+          try {
+            const nameResult = await translateMultipleWithDeepL(originalName, ['NL'], serviceOriginalLang);
+            dutchName = nameResult['NL'] || originalName;
+            
+            const descResult = await translateMultipleWithDeepL(originalDescription, ['NL'], serviceOriginalLang);
+            dutchDescription = descResult['NL'] || originalDescription;
+            
+            const categoryResult = await translateMultipleWithDeepL(originalCategory, ['NL'], serviceOriginalLang);
+            dutchCategory = categoryResult['NL'] || originalCategory;
+          } catch (error) {
+            console.error(`❌ DeepL translation to Dutch failed:`, error.message);
+            dutchName = originalName;
+            dutchDescription = originalDescription;
+            dutchCategory = originalCategory;
+          }
+        }
+
+        // Now translate from Dutch to target language
+        let targetName = dutchName;
+        let targetDescription = dutchDescription;
+        let targetCategory = dutchCategory;
         
+        try {
+          const nameResult = await translateMultipleWithDeepL(dutchName, [lang.toUpperCase()], 'NL');
+          targetName = nameResult[lang.toUpperCase()] || dutchName;
+          
+          const descResult = await translateMultipleWithDeepL(dutchDescription, [lang.toUpperCase()], 'NL');
+          targetDescription = descResult[lang.toUpperCase()] || dutchDescription;
+          
+          const categoryResult = await translateMultipleWithDeepL(dutchCategory, [lang.toUpperCase()], 'NL');
+          targetCategory = categoryResult[lang.toUpperCase()] || dutchCategory;
+        } catch (error) {
+          console.error(`❌ DeepL translation from Dutch to ${lang} failed:`, error.message);
+          targetName = dutchName;
+          targetDescription = dutchDescription;
+          targetCategory = dutchCategory;
+        }
+
         return {
           id: parseInt(serviceId) || 0,
-          slug: this.createSlug(row[servicesHeaders.indexOf('Name_EN')]),
-          name: row[servicesHeaders.indexOf('Name_EN')], // Use English name as default
-          description: row[servicesHeaders.indexOf('Description_EN')], // Use English description as default
-          category: row[servicesHeaders.indexOf('Category_EN')],
-          image_url: '', // No image URL in Vehicle_Services structure
+          slug: this.createSlug(targetName),
+          name: targetName,
+          description: targetDescription,
+          category: targetCategory,
+          image_url: '',
           duration_minutes: parseInt(row[servicesHeaders.indexOf('Duration_Minutes')]) || 0,
           is_active: row[servicesHeaders.indexOf('Is_Active')] === 'true',
           prices: servicePrices
         };
-      });
+      }));
+    } catch (error) {
+      console.error('❌ Error in getServicesWithPrices:', error);
+      throw error;
+    }
   }
 
   async updateServices(services) {
@@ -793,8 +950,17 @@ class GoogleSheetsService {
 
       console.log(`📝 Found ${textsToTranslate.length} texts to translate`);
 
-      // Translate all texts using Argos Translate with i18n fallback
-      const translatedTexts = await translateMultipleWithI18nAndArgos(textsToTranslate, targetLanguage, sourceLanguage);
+      // Translate all texts using DeepL
+      const translatedTexts = [];
+      for (const text of textsToTranslate) {
+        try {
+          const result = await translateMultipleWithDeepL(text, [targetLanguage.toUpperCase()], sourceLanguage);
+          translatedTexts.push(result[targetLanguage.toUpperCase()] || text);
+        } catch (error) {
+          console.error(`❌ DeepL translation failed for text:`, text.substring(0, 50), error.message);
+          translatedTexts.push(text); // Fallback to original text
+        }
+      }
 
       // Create new data array with translated texts
       const translatedData = [headers];
@@ -862,32 +1028,313 @@ class GoogleSheetsService {
    * @param {boolean} useArgosTranslate - Use Argos Translate for dynamic translation
    * @returns {Promise<Array>} - Testimonials array with translated content
    */
-  async getTestimonialsWithArgosTranslation(locale = 'nl', activeOnly = true, useArgosTranslate = true) {
+  async getTestimonialsWithDeepLTranslation(locale = 'nl', activeOnly = true, useDeepLTranslate = true) {
     let data = await this.getData('Testimonials');
     
-    // If Argos Translate is enabled and locale is not Dutch, translate the data
-    if (useArgosTranslate && locale !== 'nl' && data.length > 1) {
-      console.log(`🔄 Using Argos Translate to translate testimonials to ${locale}...`);
-      data = await this.translateSheetData(data, locale);
+    console.log(`📊 getTestimonialsWithDeepLTranslation called with locale=${locale}, useDeepLTranslate=${useDeepLTranslate}`);
+    console.log(`📋 Raw data length: ${data.length}`);
+    
+    if (data.length > 1) {
+      console.log(`📋 Headers: ${JSON.stringify(data[0])}`);
     }
 
     if (data.length <= 1) return [];
 
     const headers = data[0];
-    const commentIndex = headers.indexOf(`Comment_${locale.toUpperCase()}`);
     const activeIndex = headers.indexOf('Active');
+    
+    console.log(`🔍 Looking for testimonials in locale: ${locale}`);
+    console.log(`🔍 Found Active at index: ${activeIndex}`);
 
-    return data.slice(1)
-      .filter(row => !activeOnly || row[activeIndex] === 'true')
-      .map(row => ({
-        id: row[0],
-        name: row[headers.indexOf('Name')],
-        rating: parseInt(row[headers.indexOf('Rating')]) || 5,
-        comment: row[commentIndex] || row[headers.indexOf('Comment_NL')],
-        active: row[activeIndex] === 'true',
-        created_date: row[headers.indexOf('Created_Date')]
-      }));
+    // Detect the original language of the testimonials in Google Sheets
+    const detectOriginalLanguage = () => {
+      // Get active testimonials only
+      const activeTestimonials = data.slice(1).filter(row => {
+        if (!activeOnly) return true;
+        if (activeIndex === -1) return true;
+        const activeValue = row[activeIndex];
+        return activeValue === 'true' || activeValue === true || activeValue === 1 || activeValue === '1';
+      });
+      
+      // Debug: Show content of ALL testimonials (active and inactive)
+      console.log(`DEBUG: Found ${data.slice(1).length} total testimonials`);
+      console.log(`DEBUG: Found ${activeTestimonials.length} active testimonials`);
+      data.slice(1).forEach((row, index) => {
+        const nlComment = headers.indexOf('Comment_NL') !== -1 ? row[headers.indexOf('Comment_NL')] : 'N/A';
+        const enComment = headers.indexOf('Comment_EN') !== -1 ? row[headers.indexOf('Comment_EN')] : 'N/A';
+        const roComment = headers.indexOf('Comment_RO') !== -1 ? row[headers.indexOf('Comment_RO')] : 'N/A';
+        const isActive = activeIndex !== -1 ? row[activeIndex] : 'N/A';
+        console.log(`DEBUG: Testimonial ${index + 1} (Active: ${isActive}):`);
+        console.log(`  NL: "${nlComment}"`);
+        console.log(`  EN: "${enComment}"`);
+        console.log(`  RO: "${roComment}"`);
+      });
+      
+      // Check which language columns exist and have data in active testimonials
+      const hasEnglish = headers.includes('Comment_EN') && activeTestimonials.some(row => {
+        const comment = row[headers.indexOf('Comment_EN')];
+        return comment && comment.trim().length > 0;
+      });
+      
+      const hasDutch = headers.includes('Comment_NL') && activeTestimonials.some(row => {
+        const comment = row[headers.indexOf('Comment_NL')];
+        return comment && comment.trim().length > 0;
+      });
+      
+      const hasRomanian = headers.includes('Comment_RO') && activeTestimonials.some(row => {
+        const comment = row[headers.indexOf('Comment_RO')];
+        return comment && comment.trim().length > 0;
+      });
+      
+      console.log(`DEBUG: Language detection results:`);
+      console.log(`  Has Dutch (NL): ${hasDutch}`);
+      console.log(`  Has English (EN): ${hasEnglish}`);
+      console.log(`  Has Romanian (RO): ${hasRomanian}`);
+      
+      // Priority: if Dutch exists and has data, use Dutch as original
+      if (hasDutch) return 'nl';
+      // If English exists and has data, use English
+      if (hasEnglish) return 'en';
+      // If Romanian exists and has data, use Romanian
+      if (hasRomanian) return 'ro';
+      
+      // Default to English if nothing found
+      return 'en';
+    };
+
+    const originalLanguage = detectOriginalLanguage();
+    console.log(`DEBUG: Detected original language for testimonials: ${originalLanguage}`);
+    
+    // Debug: Show what's in the Dutch, English, and Romanian columns for active testimonials
+    const activeTestimonials = data.slice(1).filter(row => {
+      if (!activeOnly) return true;
+      if (activeIndex === -1) return true;
+      const activeValue = row[activeIndex];
+      return activeValue === 'true' || activeValue === true || activeValue === 1 || activeValue === '1';
+    });
+    
+    console.log(`DEBUG: Found ${activeTestimonials.length} active testimonials`);
+    activeTestimonials.forEach((row, index) => {
+      const nlComment = headers.indexOf('Comment_NL') !== -1 ? row[headers.indexOf('Comment_NL')] : 'N/A';
+      const enComment = headers.indexOf('Comment_EN') !== -1 ? row[headers.indexOf('Comment_EN')] : 'N/A';
+      const roComment = headers.indexOf('Comment_RO') !== -1 ? row[headers.indexOf('Comment_RO')] : 'N/A';
+      console.log(`DEBUG: Testimonial ${index + 1}:`);
+      console.log(`  NL: "${nlComment}"`);
+      console.log(`  EN: "${enComment}"`);
+      console.log(`  RO: "${roComment}"`);
+    });
+
+    // Get text from original language columns with better fallback logic
+    const getOriginalText = (row, columnBaseName) => {
+      // First try the detected original language
+      const originalColumn = headers.indexOf(`${columnBaseName}_${originalLanguage.toUpperCase()}`);
+      if (originalColumn !== -1 && row[originalColumn] && row[originalColumn].trim().length > 0) {
+        return row[originalColumn];
+      }
+      
+      // If original language column is empty, try to find any column with content
+      // Priority: English, Romanian, Dutch
+      for (const langSuffix of ['EN', 'RO', 'NL']) {
+        const column = headers.indexOf(`${columnBaseName}_${langSuffix}`);
+        if (column !== -1 && row[column] && row[column].trim().length > 0) {
+          return row[column];
+        }
+      }
+      
+      return '';
+    };
+
+    const result = await Promise.all(
+      data.slice(1)
+        .filter(row => {
+          if (!activeOnly) return true;
+          if (activeIndex === -1) return true; // No active column, include all
+          const activeValue = row[activeIndex];
+          return activeValue === 'true' || activeValue === true || activeValue === 1 || activeValue === '1';
+        })
+        .map(async (row) => {
+          // Get original comment text - detect language for THIS specific testimonial
+          const originalComment = getOriginalText(row, 'Comment');
+          
+          // Detect language for this specific testimonial based on which column has content
+          let testimonialOriginalLang = 'en'; // default
+          
+          if (headers.indexOf('Comment_NL') !== -1 && row[headers.indexOf('Comment_NL')] && row[headers.indexOf('Comment_NL')].trim().length > 0) {
+            testimonialOriginalLang = 'nl';
+          } else if (headers.indexOf('Comment_EN') !== -1 && row[headers.indexOf('Comment_EN')] && row[headers.indexOf('Comment_EN')].trim().length > 0) {
+            testimonialOriginalLang = 'en';
+          } else if (headers.indexOf('Comment_RO') !== -1 && row[headers.indexOf('Comment_RO')] && row[headers.indexOf('Comment_RO')].trim().length > 0) {
+            testimonialOriginalLang = 'ro';
+          } else if (headers.indexOf('Comment_ES') !== -1 && row[headers.indexOf('Comment_ES')] && row[headers.indexOf('Comment_ES')].trim().length > 0) {
+            testimonialOriginalLang = 'es';
+          } else if (headers.indexOf('Comment_PL') !== -1 && row[headers.indexOf('Comment_PL')] && row[headers.indexOf('Comment_PL')].trim().length > 0) {
+            testimonialOriginalLang = 'pl';
+          }
+          
+          let finalComment = originalComment;
+          
+          // Use DeepL for translation if enabled
+          if (useDeepLTranslate) {
+            try {
+              // If target language is Dutch
+              if (locale === 'nl') {
+                // If original is already Dutch, use it as-is
+                if (testimonialOriginalLang === 'nl') {
+                  finalComment = originalComment;
+                } else {
+                  // Translate from original language to Dutch using DeepL
+                  const translated = await translateMultipleWithDeepL(originalComment, ['NL'], testimonialOriginalLang);
+                  finalComment = translated['NL'] || originalComment;
+                }
+              } else {
+                // For other languages: first translate to Dutch (if needed), then to target language
+                let dutchComment = originalComment;
+                
+                // If original is not Dutch, translate to Dutch first
+                if (testimonialOriginalLang !== 'nl') {
+                  const dutchTranslated = await translateMultipleWithDeepL(originalComment, ['NL'], testimonialOriginalLang);
+                  dutchComment = dutchTranslated['NL'] || originalComment;
+                }
+                
+                // Now translate from Dutch to target language using DeepL
+                const finalTranslated = await translateMultipleWithDeepL(dutchComment, [locale.toUpperCase()], 'NL');
+                finalComment = finalTranslated[locale.toUpperCase()] || dutchComment;
+              }
+            } catch (error) {
+              console.error('❌ DeepL translation failed in getTestimonials, using original text as fallback:', error);
+              // Fallback to original text
+              finalComment = originalComment;
+            }
+          } else {
+            // Fallback to original text if DeepL is disabled
+            finalComment = originalComment;
+          }
+          
+          return {
+            id: row[0],
+            name: row[headers.indexOf('Name')] || 'Unknown Client',
+            rating: parseInt(row[headers.indexOf('Rating')]) || 5,
+            comment: finalComment,
+            active: activeIndex !== -1 ? row[activeIndex] === 'true' : true,
+            created_date: row[headers.indexOf('Created_Date')] || ''
+          };
+        })
+    );
+      
+    console.log(`✅ getTestimonialsWithDeepLTranslation returning ${result.length} testimonials`);
+    return result;
+  }
+
+  /**
+   * Get services with DeepL Translate integration
+   * @param {string} locale - Target language code (e.g., 'en', 'es', 'pl', 'ro')
+   * @param {boolean} activeOnly - Return only active services
+   * @param {boolean} useDeepLTranslate - Use DeepL Translate for dynamic translation
+   * @returns {Promise<Array>} - Services array with translated content
+   */
+  async getServicesWithDeepLTranslation(locale = 'nl', activeOnly = true, useDeepLTranslate = true) {
+    let data = await this.getData('Services');
+    
+    console.log(`📊 getServicesWithDeepLTranslation called with locale=${locale}, useDeepLTranslate=${useDeepLTranslate}`);
+    console.log(`📋 Raw services data length: ${data.length}`);
+    
+    if (data.length <= 1) return [];
+
+    const headers = data[0];
+    const activeIndex = headers.indexOf('Is_Active');
+    
+    console.log(`🔍 Processing services for locale: ${locale}`);
+    
+    // Filter active services if requested
+    let servicesData = data.slice(1);
+    if (activeOnly && activeIndex !== -1) {
+      servicesData = servicesData.filter(row => row[activeIndex] === 'true');
+    }
+    
+    // If DeepL Translate is enabled and locale is not Dutch, translate the data
+    if (useDeepLTranslate && locale !== 'nl') {
+      console.log(`🔄 Using DeepL Translate to translate services to ${locale}...`);
+      
+      // Get the original language (assuming Dutch for services)
+      const originalLang = 'nl';
+      
+      // Process each service
+      const translatedServices = await Promise.all(
+        servicesData.map(async (row) => {
+          const idIndex = headers.indexOf('ID');
+          const nameIndex = headers.indexOf('Name_NL');
+          const descIndex = headers.indexOf('Description_NL');
+          const priceIndex = headers.indexOf('Price');
+          const categoryIndex = headers.indexOf('Category');
+          const durationIndex = headers.indexOf('Duration_Minutes');
+          
+          if (idIndex === -1 || nameIndex === -1 || descIndex === -1) {
+            console.warn('⚠️ Missing required service columns');
+            return null;
+          }
+          
+          const originalName = row[nameIndex] || '';
+          const originalDesc = row[descIndex] || '';
+          
+          let translatedName = originalName;
+          let translatedDesc = originalDesc;
+          
+          // Translate to target language using DeepL
+          try {
+            const { translateMultipleWithDeepL } = await import('./deeplTranslationService.js');
+            
+            if (originalName) {
+              const nameResult = await translateMultipleWithDeepL(originalName, [locale.toUpperCase()], originalLang);
+              translatedName = nameResult[locale.toUpperCase()] || originalName;
+            }
+            
+            if (originalDesc) {
+              const descResult = await translateMultipleWithDeepL(originalDesc, [locale.toUpperCase()], originalLang);
+              translatedDesc = descResult[locale.toUpperCase()] || originalDesc;
+            }
+            
+            console.log(`✅ Translated service ${row[idIndex]}: "${originalName}" → "${translatedName}"`);
+          } catch (error) {
+            console.error(`❌ DeepL translation failed for service ${row[idIndex]}:`, error.message);
+            // Keep original text as fallback
+          }
+          
+          return {
+            id: row[idIndex] || '',
+            name: translatedName,
+            description: translatedDesc,
+            price: parseFloat(row[priceIndex]) || 0,
+            category: row[categoryIndex] || '',
+            duration_minutes: parseInt(row[durationIndex]) || 0,
+            is_active: activeIndex !== -1 ? row[activeIndex] === 'true' : true
+          };
+        })
+      );
+      
+      return translatedServices.filter(service => service !== null);
+    }
+    
+    // If no translation needed or disabled, return services as-is
+    return servicesData.map(row => {
+      const idIndex = headers.indexOf('ID');
+      const nameIndex = headers.indexOf('Name_NL');
+      const descIndex = headers.indexOf('Description_NL');
+      const priceIndex = headers.indexOf('Price');
+      const categoryIndex = headers.indexOf('Category');
+      const durationIndex = headers.indexOf('Duration_Minutes');
+      
+      return {
+        id: row[idIndex] || '',
+        name: row[nameIndex] || '',
+        description: row[descIndex] || '',
+        price: parseFloat(row[priceIndex]) || 0,
+        category: row[categoryIndex] || '',
+        duration_minutes: parseInt(row[durationIndex]) || 0,
+        is_active: activeIndex !== -1 ? row[activeIndex] === 'true' : true
+      };
+    });
   }
 }
 
+export { GoogleSheetsService };
 export default new GoogleSheetsService();
