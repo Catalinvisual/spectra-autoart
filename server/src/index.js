@@ -4,10 +4,37 @@ import cors from 'cors'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+// LOG STARTUP DETALIAT PENTRU DEBUGGING CONTAINER
+console.log('🚀 SERVER STARTUP - Container Debug Log')
+console.log('📍 Current directory:', process.cwd())
+console.log('🔧 NODE_ENV:', process.env.NODE_ENV)
+console.log('📋 Process arguments:', process.argv)
+
+// Handler pentru erori neașteptate
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error.message)
+  console.error('Stack:', error.stack)
+  process.exit(1)
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason)
+  process.exit(1)
+})
+
+// Timeout de siguranță pentru startup
+const startupTimeout = setTimeout(() => {
+  console.error('❌ Server startup timeout - server failed to start within 30 seconds')
+  process.exit(1)
+}, 30000)
+
 // Configurare dotenv să încarce fișierul .env din directorul server
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const envPath = path.join(__dirname, '..', '.env')
+
+console.log('📂 __dirname:', __dirname)
+console.log('🎯 __filename:', __filename)
 
 // Încearcă să încarce fișierul .env, dar nu opri serverul dacă lipsește
 try {
@@ -184,19 +211,34 @@ async function initializeServices() {
   }
 }
 
-const port = process.env.PORT || 8080
-const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost'
+try {
+  const port = process.env.PORT || 8080
+  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost'
 
-// Pornim serverul IMEDIAT - fără să așteptăm inițializarea serviciilor
-const server = app.listen(port, host, () => {
-  console.log(`🚀 Server Spectra AutoArt rulează pe ${host}:${port}`)
-  console.log(`🏥 Healthcheck disponibil la: http://${host}:${port}/health`)
-  console.log(`🏓 Ping healthcheck disponibil la: http://${host}:${port}/ping`)
+  console.log(`🎯 Starting server on ${host}:${port}`)
   
-  // Inițializăm serviciile ÎN BACKGROUND după ce serverul a pornit
-  setTimeout(() => {
-    initializeServices().catch(error => {
-      console.error('❌ Failed to initialize services:', error.message)
-    })
-  }, 100)
-})
+  // Pornim serverul IMEDIAT - fără să așteptăm inițializarea serviciilor
+  const server = app.listen(port, host, () => {
+    clearTimeout(startupTimeout) // Oprim timeout-ul de siguranță
+    console.log(`✅ Server Spectra AutoArt STARTED SUCCESSFULLY on ${host}:${port}`)
+    console.log(`🏥 Healthcheck available at: http://${host}:${port}/health`)
+    console.log(`🏓 Ping healthcheck available at: http://${host}:${port}/ping`)
+    
+    // Inițializăm serviciile ÎN BACKGROUND după ce serverul a pornit
+    setTimeout(() => {
+      initializeServices().catch(error => {
+        console.error('❌ Failed to initialize services:', error.message)
+      })
+    }, 100)
+  })
+  
+  server.on('error', (error) => {
+    console.error('❌ Server startup error:', error.message)
+    process.exit(1)
+  })
+  
+} catch (error) {
+  console.error('❌ CRITICAL ERROR during server startup:', error.message)
+  console.error('Stack trace:', error.stack)
+  process.exit(1)
+}

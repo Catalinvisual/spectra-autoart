@@ -1,6 +1,6 @@
 [build]
 buildCommand = ""
-startCommand = "node server/src/index.js"
+startCommand = "cd server && node src/index.js"
 dockerfilePath = "Dockerfile.production"
 
 [deploy]
