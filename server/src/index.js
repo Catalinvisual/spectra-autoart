@@ -176,10 +176,10 @@ const port = process.env.PORT || 8080
 const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost'
 app.listen(port, host, async () => {
   console.log(`🚀 Server Spectra AutoArt rulează pe ${host}:${port}`)
-  // Initialize services after server starts to avoid blocking
+  // Initialize services after server starts to avoid blocking - use very short delay for Railway
   setTimeout(() => {
     initializeServices().catch(error => {
       console.error('❌ Failed to initialize services:', error.message)
     })
-  }, 1000)
+  }, 100)
 })
