@@ -149,8 +149,9 @@ async function initializeServices() {
 }
 
 const port = process.env.PORT || 8080
-app.listen(port, async () => {
-  console.log(`🚀 Server Spectra AutoArt rulează pe portul ${port}`)
+const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost'
+app.listen(port, host, async () => {
+  console.log(`🚀 Server Spectra AutoArt rulează pe ${host}:${port}`)
   // Initialize services after server starts to avoid blocking
   setTimeout(() => {
     initializeServices().catch(error => {
