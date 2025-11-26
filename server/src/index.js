@@ -107,8 +107,14 @@ app.get('/health', (req, res) => {
     status: 'ok', 
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    port: process.env.PORT || 8080
   })
+})
+
+// Healthcheck ultra-simplu pentru Docker
+app.get('/ping', (req, res) => {
+  res.status(200).send('pong')
 })
 
 // Serve static files from React build
@@ -180,12 +186,17 @@ async function initializeServices() {
 
 const port = process.env.PORT || 8080
 const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost'
-app.listen(port, host, async () => {
+
+// Pornim serverul IMEDIAT - fără să așteptăm inițializarea serviciilor
+const server = app.listen(port, host, () => {
   console.log(`🚀 Server Spectra AutoArt rulează pe ${host}:${port}`)
-  // Initialize services after server starts to avoid blocking - use very short delay for Railway
+  console.log(`🏥 Healthcheck disponibil la: http://${host}:${port}/health`)
+  console.log(`🏓 Ping healthcheck disponibil la: http://${host}:${port}/ping`)
+  
+  // Inițializăm serviciile ÎN BACKGROUND după ce serverul a pornit
   setTimeout(() => {
     initializeServices().catch(error => {
       console.error('❌ Failed to initialize services:', error.message)
     })
-  }, 50)
+  }, 100)
 })
