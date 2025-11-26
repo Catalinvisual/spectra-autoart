@@ -1,11 +1,11 @@
 [build]
 buildCommand = ""
-startCommand = "NODE_ENV=production node server/src/index.js"
+startCommand = "node server/src/index.js"
 dockerfilePath = "Dockerfile.production"
 
 [deploy]
 healthcheckPath = "/health"
-healthcheckTimeout = 300
+healthcheckTimeout = 10000
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 

@@ -102,7 +102,13 @@ app.use('/api/debug', debugVehiclesRouter)
 
 // API health check - must be before static files and catch-all route
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+  // Health check rapid - răspunde imediat fără dependențe externe
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  })
 })
 
 // Serve static files from React build
@@ -181,5 +187,5 @@ app.listen(port, host, async () => {
     initializeServices().catch(error => {
       console.error('❌ Failed to initialize services:', error.message)
     })
-  }, 100)
+  }, 50)
 })
