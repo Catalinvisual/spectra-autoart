@@ -613,7 +613,7 @@ router.get('/gallery', requireAuth, async (req, res) => {
         description: item.description || '',
         url: item.image_url || '',  // Changed from imageUrl to url to match client expectation
         category: item.category || '',
-        active: (item.Active || 'true').toLowerCase() === 'true',
+        active: item.Active ? (item.Active.toLowerCase() === 'true') : true, // Default to true if Active column doesn't exist
         createdAt: item.upload_date || ''
       }
     })

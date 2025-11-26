@@ -72,7 +72,7 @@ router.get('/', async (req, res) => {
         url: image.image_url || '',     // Image URL column
         alt_text: image.description || '', // Description column used as alt_text
         category: image.category || 'general',
-        active: (image.Active || 'true').toLowerCase() === 'true',
+        active: image.Active ? (image.Active.toLowerCase() === 'true') : true, // Default to true if Active column doesn't exist
         created_date: image.upload_date || '', // Upload Date column
         updated_date: image.upload_date || ''  // Upload Date column
       }

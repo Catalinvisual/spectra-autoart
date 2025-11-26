@@ -9,7 +9,31 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const envPath = path.join(__dirname, '..', '.env')
 
-dotenv.config({ path: envPath })
+// Încearcă să încarce fișierul .env, dar nu opri serverul dacă lipsește
+try {
+  const result = dotenv.config({ path: envPath })
+  if (result.error) {
+    console.log('⚠️  Fișierul .env nu a putut fi încărcat, dar serverul va continua:', result.error.message)
+  } else {
+    console.log('✅ Fișierul .env a fost încărcat cu succes')
+  }
+} catch (error) {
+  console.log('⚠️  Eroare la încărcarea fișierului .env, dar serverul va continua:', error.message)
+}
+
+// Fallback-uri pentru variabile critice
+if (!process.env.PORT) {
+  process.env.PORT = '8080'
+  console.log('⚠️  PORT nu este setat, se folosește valoarea implicită: 8080')
+}
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'fallback-jwt-secret-key-for-development'
+  console.log('⚠️  JWT_SECRET nu este setat, se folosește valoarea implicită (NU folosi în producție!)')
+}
+if (!process.env.CLIENT_ORIGIN) {
+  process.env.CLIENT_ORIGIN = 'https://spectra-autoart-production.up.railway.app'
+  console.log('⚠️  CLIENT_ORIGIN nu este setat, se folosește valoarea implicită:', process.env.CLIENT_ORIGIN)
+}
 
 // Debug logging pentru verificare variabile Google Sheets
 console.log('🔍 Server index.js - Verificare încărcare variabile din dotenv:')
