@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { adminAPI } from '../services/api'
+import api from '../services/api'
 import { useToast } from '../contexts/ToastContext'
 import './Admin.css'
 import i18n from '../i18n'
@@ -1734,7 +1735,14 @@ const GalleryManagement: React.FC = () => {
         formData.append('category', newImage.category)
         formData.append('active', newImage.active.toString())
         
-        await adminAPI.uploadImageFile(formData)
+        // Utilizează axios direct pentru upload de fișier
+        const token = localStorage.getItem('adminToken')
+        await api.post('/gallery', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}`
+          }
+        })
       } else if (newImage.url) {
         // Dacă avem doar URL, folosim endpoint-ul clasic
         const imageData = {
