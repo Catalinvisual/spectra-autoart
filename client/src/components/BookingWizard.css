@@ -65,7 +65,7 @@
     background: #12161d;
     width: auto!important;
     padding: 0 20px 30px 20px;
-    margin: auto;
+    margin: 20px;
     position: fixed;
     top: 50%;
     left: 50%;
@@ -131,6 +131,24 @@
   }
 }
 
+@media (max-width: 768px) {
+  .booking-wizard-modal {
+    padding: 0 20px 30px 20px;
+    margin: 10px 20px;
+    width: calc(100% - 20px);
+    max-width: none;
+  }
+  
+  /* Crește înălțimea pentru select-urile de marcă și model */
+  .wizard-step:nth-child(1) .form-select, /* Select marca */
+  .wizard-step:nth-child(2) .form-select { /* Select model */
+    min-height: 50px; /* Mai înalt pentru a încăpea continutul */
+    padding: 12px 2.5rem 12px 1rem; /* Padding vertical mărit */
+    line-height: 1.5; /* Spațiu între linii */
+    font-size: 16px; /* Mărime font optimă pentru mobile */
+  }
+}
+
 @media (max-width: 480px) {
   .booking-wizard-modal {
     padding: 0 15px 20px 15px;
@@ -142,6 +160,7 @@
     transform: translate(-50%, -50%);
     max-height: 90vh;
     overflow-y: auto;
+    margin: 20px;
   }
   
   /* Position close button directly on wizard-progress-circles */

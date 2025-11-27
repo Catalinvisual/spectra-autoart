@@ -29,6 +29,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className={`booking-modal-overlay ${isOpen ? 'booking-modal-open' : 'booking-modal-hidden'}`} onClick={handleBackdropClick}>
+      {/* Straturi de elemente blue-cyan animate */}
+      <div className="dots-layer-2"></div>
+      <div className="geometric-shapes"></div>
+      
       <div className="booking-modal booking-modal-instant">
         <div className="booking-modal-content">
           <BookingWizard onCancel={onClose} />
