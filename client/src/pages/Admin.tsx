@@ -1684,7 +1684,12 @@ const GalleryManagement: React.FC = () => {
     try {
       setLoading(true)
       const response = await adminAPI.getGallery()
-      setImages(response.data)
+      // Construiește URL-uri complete pentru imagini
+      const processedImages = response.data.map((image: any) => ({
+        ...image,
+        url: image.url.startsWith('http') ? image.url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8080'}${image.url}`
+      }))
+      setImages(processedImages)
     } catch (error) {
       console.error('Error loading gallery images:', error)
     } finally {
@@ -1720,27 +1725,28 @@ const GalleryManagement: React.FC = () => {
     try {
       setLoading(true)
       
-      // Dacă avem fișier selectat, folosim URL-ul de preview
-      let imageUrl = newImage.url
-      
-      if (selectedFile && previewUrl) {
-        imageUrl = previewUrl
+      // Dacă avem fișier selectat, folosim upload de fișier
+      if (selectedFile) {
+        // Creează FormData pentru upload de fișier
+        const formData = new FormData()
+        formData.append('image', selectedFile)
+        formData.append('alt_text', newImage.alt_text)
+        formData.append('category', newImage.category)
+        formData.append('active', newImage.active.toString())
+        
+        await adminAPI.uploadImageFile(formData)
+      } else if (newImage.url) {
+        // Dacă avem doar URL, folosim endpoint-ul clasic
+        const imageData = {
+          url: newImage.url,
+          alt_text: newImage.alt_text,
+          category: newImage.category,
+          active: newImage.active
+        }
+        
+        await adminAPI.uploadImage(imageData)
       }
       
-      if (!imageUrl) {
-        showWarning('Te rugăm să selectezi o imagine sau să introduci un URL')
-        return
-      }
-      
-      // Trimite datele către API
-      const imageData = {
-        url: imageUrl,
-        alt_text: newImage.alt_text,
-        category: newImage.category,
-        active: newImage.active
-      }
-      
-      await adminAPI.uploadImage(imageData)
       setNewImage({ url: '', alt_text: '', category: 'general', active: true })
       setSelectedFile(null)
       setPreviewUrl('')

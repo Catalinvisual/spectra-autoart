@@ -30,7 +30,12 @@ const Gallery: React.FC = () => {
   const loadGalleryImages = async () => {
     try {
       const response = await publicAPI.getGallery(currentLanguage)
-      setImages(response.data)
+      // Construiește URL-uri complete pentru imagini
+      const processedImages = response.data.map((image: GalleryImage) => ({
+        ...image,
+        url: image.url.startsWith('http') ? image.url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8080'}${image.url}`
+      }))
+      setImages(processedImages)
     } catch (error) {
       console.error('Error loading gallery images:', error)
       // Fallback gallery images

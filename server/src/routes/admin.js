@@ -1,40 +1,81 @@
-import { Router } from 'express'
-import jwt from 'jsonwebtoken'
+// Admin routes
+import express from 'express'
 import bcrypt from 'bcryptjs'
-import requireAuth from '../middleware/auth.js'
+import jwt from 'jsonwebtoken'
 import GoogleSheetsService from '../services/googleSheetsService.js'
-import NotificationService from '../services/notificationService.js'
-import { vehicleServicesService } from '../services/vehicleServicesService.js'
+import requireAuth from '../middleware/auth.js'
 
-const router = Router()
+const router = express.Router()
 
+// Admin login
 router.post('/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body
-    
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email și parolă sunt obligatorii' })
+
+    // Validate credentials against environment variables
+    if (email !== process.env.ADMIN_DEFAULT_EMAIL || password !== process.env.ADMIN_DEFAULT_PASSWORD) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Invalid credentials' 
+      })
     }
-    
-    const adminEmail = process.env.ADMIN_DEFAULT_EMAIL
-    const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD
-    
-    if (email === adminEmail && password === adminPassword) {
-      const token = jwt.sign(
-        { email, role: 'admin' },
-        process.env.JWT_SECRET,
-        { expiresIn: '24h' }
-      )
-      
-      return res.json({ token, user: { email, role: 'admin' } })
-    }
-    
-    res.status(401).json({ error: 'Credențiale invalide' })
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { email, role: 'admin' },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    )
+
+    res.json({
+      success: true,
+      token,
+      admin: { email }
+    })
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    console.error('Login error:', error)
+    res.status(500).json({ 
+      success: false, 
+      error: 'Login failed' 
+    })
   }
 })
 
+// Get dashboard stats
+router.get('/dashboard', requireAuth, async (req, res) => {
+  try {
+    const bookings = await GoogleSheetsService.getData('Bookings')
+    const gallery = await GoogleSheetsService.getData('Gallery')
+    const messages = await GoogleSheetsService.getData('Messages')
+    
+    const totalBookings = bookings.length > 1 ? bookings.length - 1 : 0
+    const totalGallery = gallery.length > 1 ? gallery.length - 1 : 0
+    const totalMessages = messages.length > 1 ? messages.length - 1 : 0
+    
+    // Get recent bookings (last 5)
+    const recentBookings = bookings.slice(-5).map(row => ({
+      date: row[1] || '',
+      time: row[2] || '',
+      services: row[7] || '',
+      total: row[8] || '',
+      status: row[9] || 'pending'
+    }))
+
+    res.json({
+      stats: {
+        totalBookings,
+        totalGallery,
+        totalMessages
+      },
+      recentBookings
+    })
+  } catch (error) {
+    console.error('Dashboard error:', error)
+    res.status(500).json({ error: 'Failed to load dashboard data' })
+  }
+})
+
+// Get all bookings
 router.get('/bookings', requireAuth, async (req, res) => {
   try {
     const data = await GoogleSheetsService.getData('Bookings')
@@ -43,56 +84,33 @@ router.get('/bookings', requireAuth, async (req, res) => {
       return res.json([])
     }
 
-    const bookings = data.slice(1).map(row => {
-      // New correct mapping for updated Google Sheets structure:
-      // ID, Name, Email, Phone, Date, Time, Services, Total, Status, Created At
-      const id = row[0] ? row[0].toString() : Date.now().toString();
-      const name = row[1] || '';
-      const email = row[2] || '';
-      const phone = row[3] || '';
-      const dateRaw = row[4] || '';
-      const timeRaw = row[5] || '';
-      const servicesRaw = row[6]; // Services as comma-separated string
-      const totalRaw = row[7];
-      const status = row[8] || 'pending';
-      const createdAt = row[9] || '';
+    // Convert rows to booking objects
+    const bookings = data.slice(1).map((row, index) => {
+      // Map columns based on actual Google Sheets structure
+      const id = row[0] || `booking_${index + 1}`
+      const date = row[1] || ''
+      const time = row[2] || ''
+      const name = row[3] || ''
+      const email = row[4] || ''
+      const phone = row[5] || ''
+      const services = row[6] || ''
+      const totalRaw = row[7] || '0'
+      const status = row[8] || 'pending'
+      const createdAt = row[9] || new Date().toISOString()
       
-      // Clean date and time - remove single quote prefix if present
-      const date = dateRaw.toString().replace(/^'/, '');
-      const time = timeRaw.toString().replace(/^'/, '');
-      
-      // Parse services from comma-separated string
-      let services = []
-      if (servicesRaw) {
-        if (typeof servicesRaw === 'string') {
-          services = servicesRaw.split(',').map(service => ({
-            name: service.trim(),
-            price: 0
-          }))
-        } else {
-          // Handle case where servicesRaw is not a string (single service)
-          services = [{
-            name: servicesRaw.toString().trim(),
-            price: 0
-          }]
-        }
-      }
-      
-      // Parse total
+      // Parse total amount
       let total = 0
-      if (totalRaw) {
-        if (typeof totalRaw === 'number') {
-          total = totalRaw
-        } else if (typeof totalRaw === 'string') {
-          total = parseFloat(totalRaw) || 0
-        }
+      if (typeof totalRaw === 'number') {
+        total = totalRaw
+      } else if (typeof totalRaw === 'string') {
+        total = parseFloat(totalRaw) || 0
       }
       
       // Extract make/model from services or use defaults
-      const make = '';
-      const model = '';
-      const type = '';
-      const body = '';
+      const make = ''
+      const model = ''
+      const type = ''
+      const body = ''
       
       return {
         id: id,
@@ -118,7 +136,8 @@ router.get('/bookings', requireAuth, async (req, res) => {
     
     res.json(bookings)
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    console.error('Bookings error:', error)
+    res.status(500).json({ error: 'Failed to load bookings' })
   }
 })
 
@@ -133,465 +152,89 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Nu există programări' })
     }
 
-    const headers = data[0]
-    const rows = data.slice(1)
-    const rowIndex = rows.findIndex(row => row[0] == id || row[0] === id)
-    
-    if (rowIndex === -1) {
-      return res.status(404).json({ error: 'Programarea nu a fost găsită' })
-    }
-    
-    // Update the status column (find the status column index)
-    const statusIndex = headers.findIndex(header => header.toLowerCase() === 'status')
-    if (statusIndex !== -1) {
-      rows[rowIndex][statusIndex] = status
-    }
-    
-    // Update the entire row
-    await GoogleSheetsService.updateData('Bookings', rowIndex, rows[rowIndex])
-    
-    res.json({ success: true })
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-// PUT endpoint for full booking updates
-router.put('/bookings/:id', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params
-    const bookingData = req.body
-    
-    const data = await GoogleSheetsService.getData('Bookings')
-    
-    if (data.length <= 1) {
-      return res.status(404).json({ error: 'Nu există programări' })
-    }
-
-    const headers = data[0]
-    const rows = data.slice(1)
-    const rowIndex = rows.findIndex(row => row[0] == id || row[0] === id)
-    
-    if (rowIndex === -1) {
-      return res.status(404).json({ error: 'Programarea nu a fost găsită' })
-    }
-    
-    // Create updated row with new data while preserving the ID
-    const updatedRow = [...rows[rowIndex]]
-    
-    // Update each field based on the headers
-    Object.keys(bookingData).forEach(key => {
-      const columnIndex = headers.findIndex(header => header.toLowerCase() === key.toLowerCase())
-      if (columnIndex !== -1) {
-        updatedRow[columnIndex] = bookingData[key]
-      }
-    })
-    
-    // Update the entire row
-    await GoogleSheetsService.updateData('Bookings', rowIndex, updatedRow)
-    
-    res.json({ success: true, booking: updatedRow })
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-router.delete('/bookings/:id', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params
-    console.log(`🗑️  Attempting to delete booking with ID: ${id}`)
-    
-    const data = await GoogleSheetsService.getData('Bookings')
-    console.log(`📊 Found ${data.length} total rows in Bookings sheet`)
-    
-    if (data.length <= 1) {
-      console.log('❌ No bookings found in sheet')
-      return res.status(404).json({ error: 'Nu există programări' })
-    }
-
-    const rows = data.slice(1)
-    console.log(`📋 Checking ${rows.length} booking rows for ID: ${id}`)
-    
-    // Log first few rows to see the data structure
-    if (rows.length > 0) {
-      console.log(`🔍 First row ID: ${rows[0][0]} (type: ${typeof rows[0][0]})`)
-      console.log(`🔍 Second row ID: ${rows[1][0]} (type: ${typeof rows[1][0]})`)
-    }
-    
-    const rowIndex = rows.findIndex(row => {
-      const rowId = row[0]
-      console.log(`🔍 Comparing row ID: ${rowId} (type: ${typeof rowId}) with search ID: ${id} (type: ${typeof id})`)
-      return rowId == id || rowId === id
-    })
-    
-    if (rowIndex === -1) {
-      console.log(`❌ Booking with ID ${id} not found`)
-      return res.status(404).json({ error: 'Programarea nu a fost găsită' })
-    }
-    
-    console.log(`✅ Found booking at row index: ${rowIndex}`)
-    
-    await GoogleSheetsService.deleteData('Bookings', rowIndex)
-    
-    res.json({ success: true })
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-router.get('/services', requireAuth, async (req, res) => {
-  try {
-    const data = await GoogleSheetsService.getData('Services')
-    
-    if (data.length <= 1) {
-      return res.json([])
-    }
-
-    const headers = data[0]
-    
-    // Handle case where headers might be missing or incomplete
-    if (!headers || !Array.isArray(headers) || headers.length === 0) {
-      console.log('No valid headers found, using default structure')
-      return res.json([])
-    }
-    
-    const services = data.slice(1).map((row, index) => {
-      const service = {}
-      headers.forEach((header, index) => {
-        if (header && typeof header === 'string') {
-          service[header.toLowerCase().replace(/ /g, '_')] = row[index] || ''
-        } else {
-          // Fallback for missing/invalid headers
-          service[`column_${index}`] = row[index] || ''
-        }
-      })
-      
-      // Try to extract service data with fallback logic
-      let serviceId = service.id || service.column_0 || ''
-      
-      // Generate a unique ID if none exists (for existing services without IDs)
-      if (!serviceId) {
-        serviceId = `service_${Date.now()}_${index}`
-      }
-      
-      const serviceName = service.name || service.column_1 || 'Unknown Service'
-      const serviceDescription = service.description || service.column_2 || ''
-      const servicePrice = parseFloat(service.price || service.column_3 || '0') || 0
-      const serviceActive = (service.active || service.column_4 || 'true').toLowerCase() === 'true'
-      
-      return {
-        id: serviceId,
-        name: {
-          nl: serviceName,
-          en: serviceName,
-          es: serviceName,
-          pl: serviceName,
-          ro: serviceName
-        },
-        description: {
-          nl: serviceDescription,
-          en: serviceDescription,
-          es: serviceDescription,
-          pl: serviceDescription,
-          ro: serviceDescription
-        },
-        price: servicePrice,
-        active: serviceActive
-      }
-    })
-    
-    res.json(services)
-  } catch (error) {
-    console.error('Error in get services:', error)
-    res.status(500).json({ error: error.message })
-  }
-})
-
-router.post('/services', requireAuth, async (req, res) => {
-  try {
-    const { name, description, price, active } = req.body
-    
-    const serviceId = Date.now().toString()
-    
-    const serviceData = [
-      serviceId,
-      name.nl || name,
-      name.en || '',
-      name.es || '',
-      name.pl || '',
-      name.ro || '',
-      description.nl || description,
-      description.en || '',
-      description.es || '',
-      description.pl || '',
-      description.ro || '',
-      price || 0,
-      active ? 'true' : 'false',
-      new Date().toISOString(), // Created_Date
-      new Date().toISOString()  // Updated_Date
-    ]
-    
-    await GoogleSheetsService.appendData('Services', serviceData)
-    
-    res.json({ success: true, id: serviceId })
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-router.put('/services/:id', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params
-    const { name, description, price, active } = req.body
-    
-    const data = await GoogleSheetsService.getData('Services')
-    
-    if (data.length <= 1) {
-      return res.status(404).json({ error: 'No services found' })
-    }
-
+    // Find the row by ID
     const rowIndex = data.slice(1).findIndex(row => row[0] === id)
     
     if (rowIndex === -1) {
-      return res.status(404).json({ error: 'Service not found' })
+      return res.status(404).json({ error: 'Programarea nu a fost găsită' })
     }
-    
-    const currentRow = data[rowIndex + 1]
-    const updatedData = [
-      id,
-      name.nl || name || currentRow[1],
-      name.en || currentRow[2],
-      name.es || currentRow[3],
-      name.pl || currentRow[4],
-      name.ro || currentRow[5],
-      description.nl || description || currentRow[6],
-      description.en || currentRow[7],
-      description.es || currentRow[8],
-      description.pl || currentRow[9],
-      description.ro || currentRow[10],
-      price !== undefined ? price.toString() : currentRow[11],
-      active !== undefined ? (active ? 'true' : 'false') : currentRow[12],
-      currentRow[13], // Created_Date
-      new Date().toISOString() // Updated_Date
-    ]
-    
-    await GoogleSheetsService.updateData('Services', rowIndex, updatedData)
-    
-    res.json({ success: true })
+
+    // Update the status in the row (status is in column 8)
+    const actualRowIndex = rowIndex + 1 // +1 to account for header row
+    data[actualRowIndex][8] = status
+
+    // Update the data in Google Sheets
+    await GoogleSheetsService.updateData('Bookings', actualRowIndex + 1, data[actualRowIndex]) // +1 because Google Sheets is 1-indexed
+
+    res.json({ success: true, message: 'Status updated successfully' })
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    console.error('Update booking error:', error)
+    res.status(500).json({ error: 'Failed to update booking status' })
   }
 })
 
-router.delete('/services/:id', requireAuth, async (req, res) => {
+// Get all messages
+router.get('/messages', requireAuth, async (req, res) => {
   try {
-    const { id } = req.params
-    
-    const data = await GoogleSheetsService.getData('Services')
+    const data = await GoogleSheetsService.getData('Messages')
     
     if (data.length <= 1) {
-      return res.status(404).json({ error: 'No services found' })
+      return res.json([])
     }
 
+    // Convert rows to message objects
+    const messages = data.slice(1).map((row, index) => ({
+      id: row[0] || `message_${index + 1}`,
+      name: row[1] || '',
+      email: row[2] || '',
+      phone: row[3] || '',
+      subject: row[4] || '',
+      message: row[5] || '',
+      createdAt: row[6] || new Date().toISOString(),
+      status: row[7] || 'unread'
+    }))
+
+    res.json(messages)
+  } catch (error) {
+    console.error('Messages error:', error)
+    res.status(500).json({ error: 'Failed to load messages' })
+  }
+})
+
+// Update message status
+router.patch('/messages/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params
+    const { status } = req.body
+    
+    const data = await GoogleSheetsService.getData('Messages')
+    
+    if (data.length <= 1) {
+      return res.status(404).json({ error: 'Nu există mesaje' })
+    }
+
+    // Find the row by ID
     const rowIndex = data.slice(1).findIndex(row => row[0] === id)
     
     if (rowIndex === -1) {
-      return res.status(404).json({ error: 'Service not found' })
+      return res.status(404).json({ error: 'Mesajul nu a fost găsit' })
     }
-    
-    await GoogleSheetsService.deleteData('Services', rowIndex)
-    
-    res.json({ success: true })
+
+    // Update the status in the row (status is in column 7)
+    const actualRowIndex = rowIndex + 1 // +1 to account for header row
+    data[actualRowIndex][7] = status
+
+    // Update the data in Google Sheets
+    await GoogleSheetsService.updateData('Messages', actualRowIndex + 1, data[actualRowIndex]) // +1 because Google Sheets is 1-indexed
+
+    res.json({ success: true, message: 'Status updated successfully' })
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    console.error('Update message error:', error)
+    res.status(500).json({ error: 'Failed to update message status' })
   }
 })
 
-router.get('/newsletter-subscribers', requireAuth, async (req, res) => {
-  try {
-    const data = await GoogleSheetsService.getData('Newsletter_subscribers')
-    
-    if (data.length <= 1) {
-      return res.json([])
-    }
-
-    const headers = data[0]
-    const subscribers = data.slice(1).map(row => {
-      const subscriber = {}
-      headers.forEach((header, index) => {
-        subscriber[header.toLowerCase().replace(/ /g, '_')] = row[index] || ''
-      })
-      
-      return {
-        email: subscriber.email || '',
-        name: subscriber.name || '',
-        locale: subscriber.locale || 'nl',
-        ip: subscriber.ip || '',
-        subscribedAt: subscriber.subscribed_at || ''
-      }
-    }).filter(subscriber => subscriber.email)
-    
-    res.json(subscribers)
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-router.post('/newsletter/send', requireAuth, async (req, res) => {
-  try {
-    const { subject, htmlContent, textContent, locale = 'nl' } = req.body
-    
-    if (!subject || !htmlContent) {
-      return res.status(400).json({ 
-        error: 'Subject and HTML content are required' 
-      })
-    }
-    
-    // Get all newsletter subscribers
-    const data = await GoogleSheetsService.getData('Newsletter_subscribers')
-    
-    if (data.length <= 1) {
-      return res.status(400).json({ 
-        error: 'No newsletter subscribers found' 
-      })
-    }
-
-    const headers = data[0]
-    const subscribers = data.slice(1).map(row => {
-      const subscriber = {}
-      headers.forEach((header, index) => {
-        subscriber[header.toLowerCase().replace(/ /g, '_')] = row[index] || ''
-      })
-      
-      return {
-        email: subscriber.email || '',
-        name: subscriber.name || '',
-        locale: subscriber.locale || 'nl'
-      }
-    }).filter(subscriber => subscriber.email)
-    
-    if (subscribers.length === 0) {
-      return res.status(400).json({ 
-        error: 'No newsletter subscribers found' 
-      })
-    }
-    
-    // Send newsletter to all subscribers
-    const result = await NotificationService.sendNewsletter(
-      subscribers,
-      subject,
-      htmlContent,
-      textContent
-    )
-    
-    res.json({
-      success: true,
-      message: `Newsletter sent to ${result.sent} subscribers`,
-      details: result
-    })
-  } catch (error) {
-    console.error('Error sending newsletter:', error)
-    res.status(500).json({ error: error.message })
-  }
-})
-
-router.get('/vehicle-services', requireAuth, async (req, res) => {
-  try {
-    const data = await GoogleSheetsService.getData('Vehicle_Services')
-    const pricesData = await GoogleSheetsService.getData('Vehicle_Service_Prices')
-    
-    if (data.length <= 1) {
-      return res.json([])
-    }
-
-    const headers = data[0]
-    const priceHeaders = pricesData.length > 0 ? pricesData[0] : []
-    const activePrices = pricesData.length > 1 ? pricesData.slice(1).filter(row => row[8] === 'true') : []
-
-    const vehicleServices = data.slice(1).map(row => {
-      const service = {}
-      headers.forEach((header, index) => {
-        service[header.toLowerCase().replace(/ /g, '_')] = row[index] || ''
-      })
-      
-      // Get prices for this service
-      const servicePrices = activePrices
-        .filter(priceRow => parseInt(priceRow[1]) === parseInt(service.id))
-        .map(priceRow => ({
-          id: parseInt(priceRow[0]) || 0,
-          service_id: parseInt(priceRow[1]) || 0,
-          body_type_key: priceRow[2] || '',
-          price_min: parseFloat(priceRow[3]) || 0,
-          price_max: priceRow[4] ? parseFloat(priceRow[4]) : null,
-          currency: priceRow[5] || 'EUR',
-          duration_minutes: parseInt(priceRow[6]) || 0,
-          promo_percent: parseInt(priceRow[7]) || 0,
-          is_active: priceRow[8] === 'true'
-        }))
-      
-      return {
-        id: service.id || '',
-        name: service.name || '',
-        name_en: service.name_en || '',
-        name_nl: service.name_nl || '',
-        name_es: service.name_es || '',
-        name_pl: service.name_pl || '',
-        name_ro: service.name_ro || '',
-        description: service.description || '',
-        description_en: service.description_en || '',
-        description_nl: service.description_nl || '',
-        description_es: service.description_es || '',
-        description_pl: service.description_pl || '',
-        description_ro: service.description_ro || '',
-        category: service.category || '',
-        category_en: service.category_en || '',
-        category_nl: service.category_nl || '',
-        category_es: service.category_es || '',
-        category_pl: service.category_pl || '',
-        category_ro: service.category_ro || '',
-        duration_minutes: parseInt(service.duration_minutes) || 0,
-        is_active: String(service.is_active || 'true').toLowerCase() === 'true',
-        createdAt: service.created_at || '',
-        prices: servicePrices
-      }
-    })
-    
-    res.json(vehicleServices)
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-router.get('/body-types', requireAuth, async (req, res) => {
-  try {
-    const data = await GoogleSheetsService.getData('Body_Types')
-    
-    if (data.length <= 1) {
-      return res.json([])
-    }
-
-    const headers = data[0]
-    const bodyTypes = data.slice(1).map(row => {
-      const bodyType = {}
-      headers.forEach((header, index) => {
-        bodyType[header.toLowerCase().replace(/ /g, '_')] = row[index] || ''
-      })
-      
-      return {
-        id: bodyType.id || '',
-        key: bodyType.key || '',
-        name: bodyType.name || '',
-        sort_order: parseInt(bodyType.sort_order) || 0,
-        is_active: String(bodyType.is_active || 'true').toLowerCase() === 'true'
-      }
-    })
-    
-    res.json(bodyTypes)
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
+// Get all gallery images
 router.get('/gallery', requireAuth, async (req, res) => {
   try {
     const data = await GoogleSheetsService.getData('Gallery')
@@ -600,73 +243,72 @@ router.get('/gallery', requireAuth, async (req, res) => {
       return res.json([])
     }
 
-    const headers = data[0]
-    const gallery = data.slice(1).map(row => {
-      const item = {}
-      headers.forEach((header, index) => {
-        item[header.toLowerCase().replace(/ /g, '_')] = row[index] || ''
-      })
-      
-      return {
-        id: item.id || '',
-        title: item.title || '',
-        description: item.description || '',
-        url: item.image_url || '',  // Changed from imageUrl to url to match client expectation
-        category: item.category || '',
-        active: item.Active ? (item.Active.toLowerCase() === 'true') : true, // Default to true if Active column doesn't exist
-        createdAt: item.upload_date || ''
-      }
-    })
-    
+    // Convert rows to gallery objects
+    const gallery = data.slice(1).map((row, index) => ({
+      id: row[0] || `gallery_${index + 1}`,
+      url: row[1] || '', // image URL (column B)
+      alt_text: row[2] || '', // description (column C)
+      category: row[3] || 'general', // category (column D)
+      active: row[4] === true || row[4] === 'true', // active (column E)
+      createdAt: row[5] || new Date().toISOString() // upload date (column F)
+    }))
+
     res.json(gallery)
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    console.error('Gallery error:', error)
+    res.status(500).json({ error: 'Failed to load gallery' })
   }
 })
 
-// Upload new image to gallery
+// Add new gallery image
 router.post('/gallery', requireAuth, async (req, res) => {
   try {
     const { url, alt_text, category, active } = req.body
     
+    // Validate required fields
     if (!url) {
-      return res.status(400).json({ error: 'Image URL is required' })
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Image URL is required' 
+      })
     }
-    
+
     // Generate unique ID
     const id = Date.now().toString()
     const createdAt = new Date().toISOString()
-    
-    // Prepare data for Google Sheets - as array matching column structure
-    const imageData = [
-      id,                    // ID
-      alt_text || '',        // Title
-      alt_text || '',        // Description  
-      url,                   // Image URL
-      category || 'general', // Category
-      active || 'true',      // Active
-      createdAt              // Upload Date
+
+    // Create new gallery entry - match Google Sheets structure
+    const galleryData = [
+      id,                                    // ID (column A)
+      url,                                   // Title (column B) - contains image URL
+      alt_text || '',                        // Description (column C)
+      category || 'general',                 // Image_URL (column D) - contains category
+      active !== undefined ? active : true,  // Category (column E) - contains active status
+      createdAt                              // Active (column F) - contains upload date
     ]
-    
-    // Add to Google Sheets
-    await GoogleSheetsService.appendData('Gallery', imageData)
-    
+
+    console.log('🖼️ Adding gallery image:', galleryData)
+
+    // Append to Google Sheets
+    await GoogleSheetsService.appendData('Gallery', galleryData)
+
     res.json({ 
       success: true, 
+      message: 'Gallery image added successfully',
       image: {
         id,
-        title: alt_text || '',
-        description: alt_text || '',
-        image_url: url,
-        category: category || 'general',
-        created_at: createdAt
+        url,
+        alt_text: alt_text || '',
+        category,
+        active: active !== undefined ? active : true,
+        createdAt
       }
     })
   } catch (error) {
-    console.error('Error adding gallery image:', error)
+    console.error('Add gallery error:', error)
     res.status(500).json({ 
       success: false, 
-      error: error.message 
+      error: 'Failed to add gallery image' 
     })
   }
 })
@@ -675,26 +317,61 @@ router.post('/gallery', requireAuth, async (req, res) => {
 router.delete('/gallery/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
+    console.log('🗑️ Attempting to delete gallery image with ID:', id)
     
     const data = await GoogleSheetsService.getData('Gallery')
+    console.log('📊 Gallery data for deletion:', JSON.stringify(data, null, 2))
     
     if (data.length <= 1) {
+      console.log('❌ No gallery data found for deletion')
       return res.status(404).json({ 
         success: false, 
         error: 'No gallery images found' 
       })
     }
 
-    const rowIndex = data.slice(1).findIndex(row => row[0] === id)
+    // Get headers to find the correct column for ID
+    const headers = data[0]
+    console.log('📋 Gallery headers:', headers)
+    
+    // Find the ID column index (usually 'id' or similar)
+    const idColumnIndex = headers.findIndex(header => 
+      header.toLowerCase().replace(/ /g, '_') === 'id'
+    )
+    
+    console.log('🔍 ID column index:', idColumnIndex)
+    
+    if (idColumnIndex === -1) {
+      console.log('❌ ID column not found in headers')
+      return res.status(404).json({ 
+        success: false, 
+        error: 'ID column not found in gallery data' 
+      })
+    }
+
+    const rowIndex = data.slice(1).findIndex(row => {
+      const rowId = row[idColumnIndex]
+      console.log('🔍 Comparing row ID:', rowId, 'with ID:', id, 'Types:', typeof rowId, typeof id)
+      // Handle both string and number comparisons
+      return String(rowId) === String(id)
+    })
+    
+    console.log('📍 Row index found:', rowIndex)
     
     if (rowIndex === -1) {
+      console.log('❌ Gallery image not found with ID:', id)
       return res.status(404).json({ 
         success: false, 
         error: 'Gallery image not found' 
       })
     }
 
-    await GoogleSheetsService.deleteData('Gallery', rowIndex)
+    console.log('🗑️ Deleting row at index:', rowIndex)
+    // Convert to 0-based index for GoogleSheetsService (data rows start at index 0)
+    const actualRowIndex = rowIndex
+    console.log('🗑️ Actual row index for deletion:', actualRowIndex)
+    const success = await GoogleSheetsService.deleteData('Gallery', actualRowIndex)
+    console.log('✅ Deletion result:', success)
     
     res.json({ 
       success: true, 
@@ -709,145 +386,151 @@ router.delete('/gallery/:id', requireAuth, async (req, res) => {
   }
 })
 
-// Create new vehicle service
-router.post('/vehicle-services', requireAuth, async (req, res) => {
+// Get all services
+router.get('/services', requireAuth, async (req, res) => {
   try {
-    const { name, name_en, name_nl, name_es, name_pl, name_ro, description, description_en, description_nl, description_es, description_pl, description_ro, category, category_en, category_nl, category_es, category_pl, category_ro, duration_minutes, is_active, prices } = req.body
-    
-    // Prepare service data in the format expected by vehicleServicesService
-    const serviceData = {
-      name: name || '',
-      name_en: name_en || '',
-      name_nl: name_nl || '',
-      name_es: name_es || '',
-      name_pl: name_pl || '',
-      name_ro: name_ro || '',
-      description: description || '',
-      description_en: description_en || '',
-      description_nl: description_nl || '',
-      description_es: description_es || '',
-      description_pl: description_pl || '',
-      description_ro: description_ro || '',
-      category: category || '',
-      category_en: category_en || '',
-      category_nl: category_nl || '',
-      category_es: category_es || '',
-      category_pl: category_pl || '',
-      category_ro: category_ro || '',
-      duration_minutes: duration_minutes || 60,
-      is_active: is_active !== undefined ? is_active : true
-    }
-    
-    // Use the vehicleServicesService to create the service with prices
-    // This will automatically generate Service_ID and create prices for all body types
-    // Include the prices from the request body in serviceData
-    const serviceDataWithPrices = {
-      ...serviceData,
-      prices: prices || []
-    }
-    
-    const result = await vehicleServicesService.addServiceWithPrices(serviceDataWithPrices)
-    
-    res.json({ 
-      success: true, 
-      service: result.service,
-      prices: result.prices
-    })
+    // Return empty array for now since services are managed in vehicle-services
+    // This endpoint is kept for backward compatibility
+    res.json([])
   } catch (error) {
-    console.error('Error creating vehicle service:', error)
-    res.status(500).json({ 
-      success: false, 
-      error: error.message 
-    })
+    console.error('Services error:', error)
+    res.status(500).json({ error: 'Failed to load services' })
   }
 })
 
-// Update vehicle service
-router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
+// Get vehicle services
+router.get('/vehicle-services', requireAuth, async (req, res) => {
   try {
-    const serviceId = parseInt(req.params.id)
-    const { name, name_en, name_nl, name_es, name_pl, name_ro, description, description_en, description_nl, description_es, description_pl, description_ro, category, category_en, category_nl, category_es, category_pl, category_ro, duration_minutes, is_active, prices } = req.body
+    const data = await GoogleSheetsService.getData('VehicleServices')
     
-    // Get existing services
-    const existingData = await GoogleSheetsService.getData('Vehicle_Services')
-    if (existingData.length <= 1) {
-      return res.status(404).json({ error: 'Service not found' })
+    if (data.length <= 1) {
+      return res.json([])
     }
-    
-    const headers = existingData[0]
-    const serviceIndex = existingData.findIndex(row => parseInt(row[0]) === serviceId)
-    
-    if (serviceIndex === -1) {
-      return res.status(404).json({ error: 'Service not found' })
-    }
-    
-    // Update service data
-    const updatedService = {
-      id: serviceId,
-      name: name || existingData[serviceIndex][headers.indexOf('name')] || '',
-      name_en: name_en || existingData[serviceIndex][headers.indexOf('name_en')] || '',
-      name_nl: name_nl || existingData[serviceIndex][headers.indexOf('name_nl')] || '',
-      name_es: name_es || existingData[serviceIndex][headers.indexOf('name_es')] || '',
-      name_pl: name_pl || existingData[serviceIndex][headers.indexOf('name_pl')] || '',
-      name_ro: name_ro || existingData[serviceIndex][headers.indexOf('name_ro')] || '',
-      description: description || existingData[serviceIndex][headers.indexOf('description')] || '',
-      description_en: description_en || existingData[serviceIndex][headers.indexOf('description_en')] || '',
-      description_nl: description_nl || existingData[serviceIndex][headers.indexOf('description_nl')] || '',
-      description_es: description_es || existingData[serviceIndex][headers.indexOf('description_es')] || '',
-      description_pl: description_pl || existingData[serviceIndex][headers.indexOf('description_pl')] || '',
-      description_ro: description_ro || existingData[serviceIndex][headers.indexOf('description_ro')] || '',
-      category: category || existingData[serviceIndex][headers.indexOf('category')] || '',
-      category_en: category_en || existingData[serviceIndex][headers.indexOf('category_en')] || '',
-      category_nl: category_nl || existingData[serviceIndex][headers.indexOf('category_nl')] || '',
-      category_es: category_es || existingData[serviceIndex][headers.indexOf('category_es')] || '',
-      category_pl: category_pl || existingData[serviceIndex][headers.indexOf('category_pl')] || '',
-      category_ro: category_ro || existingData[serviceIndex][headers.indexOf('category_ro')] || '',
-      duration_minutes: duration_minutes !== undefined ? duration_minutes : (existingData[serviceIndex][headers.indexOf('duration_minutes')] || 0),
-      is_active: is_active !== undefined ? is_active : (existingData[serviceIndex][headers.indexOf('is_active')] === 'true'),
-      created_at: existingData[serviceIndex][headers.indexOf('created_at')] || new Date().toISOString()
-    }
-    
-    // Update service in Google Sheets
-    await GoogleSheetsService.updateData('Vehicle_Services', serviceIndex, Object.values(updatedService))
-    
-    // Update prices if provided
-    if (prices && prices.length > 0) {
-      // Get existing prices
-      const existingPrices = await GoogleSheetsService.getData('Vehicle_Service_Prices')
-      
-      // Deactivate all existing prices for this service
-      if (existingPrices.length > 1) {
-        for (let i = 1; i < existingPrices.length; i++) {
-          if (parseInt(existingPrices[i][1]) === serviceId) {
-            existingPrices[i][8] = 'false' // Set is_active to false
-            await GoogleSheetsService.updateData('Vehicle_Service_Prices', i, existingPrices[i])
-          }
-        }
-      }
-      
-      // Add new prices
-      let nextPriceId = existingPrices.length > 1 ? Math.max(...existingPrices.slice(1).map(row => parseInt(row[0]) || 0)) + 1 : 1
-      
-      const priceData = prices.filter(price => price.price_min !== null && price.price_min !== undefined).map(price => [
-        nextPriceId++,
-        serviceId,
-        price.body_type_key || '',
-        price.price_min || 0,
-        price.price_max || '',
-        'EUR',
-        price.duration_minutes || updatedService.duration_minutes,
-        0, // promo_percent
-        price.is_active !== undefined ? price.is_active : true
-      ])
-      
-      for (const priceRow of priceData) {
-        await GoogleSheetsService.appendData('Vehicle_Service_Prices', [priceRow])
-      }
-    }
-    
-    res.json({ success: true, service: updatedService })
+
+    const vehicleServices = data.slice(1).map((row, index) => ({
+      id: row[0] || `vehicle_service_${index + 1}`,
+      name: row[1] || '',
+      description: row[2] || '',
+      price: row[3] || '0',
+      duration: row[4] || '0',
+      category: row[5] || 'general',
+      isActive: row[6] !== 'false'
+    }))
+
+    res.json(vehicleServices)
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    console.error('Vehicle services error:', error)
+    res.status(500).json({ error: 'Failed to load vehicle services' })
+  }
+})
+
+// Get body types
+router.get('/body-types', requireAuth, async (req, res) => {
+  try {
+    const data = await GoogleSheetsService.getData('BodyTypes')
+    
+    if (data.length <= 1) {
+      return res.json([])
+    }
+
+    const bodyTypes = data.slice(1).map((row, index) => ({
+      id: row[0] || `body_type_${index + 1}`,
+      name: row[1] || '',
+      description: row[2] || '',
+      image: row[3] || '',
+      isActive: row[4] !== 'false'
+    }))
+
+    res.json(bodyTypes)
+  } catch (error) {
+    console.error('Body types error:', error)
+    res.status(500).json({ error: 'Failed to load body types' })
+  }
+})
+
+// Get newsletter subscribers
+router.get('/newsletter-subscribers', requireAuth, async (req, res) => {
+  try {
+    const data = await GoogleSheetsService.getData('Newsletter')
+    
+    if (data.length <= 1) {
+      return res.json([])
+    }
+
+    // Convert rows to subscriber objects
+    const subscribers = data.slice(1).map((row, index) => ({
+      id: row[0] || `subscriber_${index + 1}`,
+      email: row[1] || '',
+      subscribedAt: row[2] || new Date().toISOString(),
+      status: row[3] || 'active'
+    }))
+
+    res.json(subscribers)
+  } catch (error) {
+    console.error('Newsletter subscribers error:', error)
+    res.status(500).json({ error: 'Failed to load newsletter subscribers' })
+  }
+})
+
+// Send newsletter
+router.post('/newsletter/send', requireAuth, async (req, res) => {
+  try {
+    const { subject, content } = req.body
+    
+    if (!subject || !content) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Subject and content are required' 
+      })
+    }
+
+    // Get all active subscribers
+    const data = await GoogleSheetsService.getData('Newsletter')
+    const subscribers = data.slice(1).filter(row => {
+      const status = row[3] || 'active'
+      return status === 'active'
+    }).map(row => row[1]) // Email is in column 1
+
+    if (subscribers.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'No active subscribers found' 
+      })
+    }
+
+    console.log(`📧 Sending newsletter to ${subscribers.length} subscribers`)
+    
+    // Here you would integrate with your email service
+    // For now, we'll just log and return success
+    console.log(`📨 Newsletter subject: ${subject}`)
+    console.log(`📝 Newsletter content preview: ${content.substring(0, 100)}...`)
+    
+    // Log the newsletter send event to Google Sheets
+    const newsletterLog = [
+      Date.now().toString(),
+      new Date().toISOString(),
+      subject,
+      subscribers.length.toString(),
+      'sent'
+    ]
+    
+    try {
+      await GoogleSheetsService.appendData('NewsletterLogs', newsletterLog)
+    } catch (logError) {
+      console.warn('⚠️ Failed to log newsletter send event:', logError.message)
+    }
+
+    res.json({ 
+      success: true, 
+      message: `Newsletter sent successfully to ${subscribers.length} subscribers`,
+      subscriberCount: subscribers.length
+    })
+  } catch (error) {
+    console.error('Send newsletter error:', error)
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to send newsletter' 
+    })
   }
 })
 

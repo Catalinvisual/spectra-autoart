@@ -995,4 +995,87 @@ router.post('/testimonials', async (req, res) => {
   }
 })
 
+// GET /public/gallery - Get gallery images from Google Sheets
+router.get('/gallery', async (req, res) => {
+  try {
+    const { lang = 'nl' } = req.query
+    
+    // Get gallery images from Google Sheets
+    const data = await GoogleSheetsService.getData('Gallery')
+    
+    console.log('🖼️ Public Gallery - Google Sheets data:', JSON.stringify(data, null, 2))
+    
+    if (data.length <= 1) {
+      console.log('🔄 Public Gallery empty or only headers')
+      return res.json({ 
+        success: true, 
+        data: [] 
+      })
+    }
+
+    const headers = data[0]
+    console.log('📋 Public Gallery headers:', headers)
+    
+    const images = data.slice(1).map(row => {
+      const image = {}
+      headers.forEach((header, index) => {
+        image[header.toLowerCase().replace(/ /g, '_')] = row[index] || ''
+      })
+      
+      console.log('🖼️ Processing public gallery item:', JSON.stringify(image, null, 2))
+      
+      return {
+        id: image.id || '',
+        url: image.title_ || image.image_url || '', // Title column contains actual image URL
+        title: image.description || image.alt_text || '', // Use description as title for Gallery component
+        description: image.description || image.alt_text || '', // Description for Gallery component
+        category: image.image_url || image.category || 'general', // Image_URL contains category
+        active: image.category ? (image.category.toString().toLowerCase() === 'true') : true, // Category column contains active status
+        created_date: image.active || image.upload_date || '', // Active column contains upload date
+        updated_date: image.active || image.upload_date || ''  // Active column contains upload date
+      }
+    }).filter(image => image.url && image.id)
+    
+    // Filter out images without URL or ID
+    const filteredImages = images.filter(image => image.url && image.id)
+    console.log('🔍 Filtered images (removed empty url/id):', filteredImages.length, 'from', images.length)
+    
+    // Translate gallery images if language is not Dutch
+    let translatedImages = filteredImages
+    if (lang !== 'nl') {
+      try {
+        // Extract descriptions that need translation
+        const descriptionsToTranslate = filteredImages.map(img => img.description)
+
+        // Translate all descriptions
+        const translatedDescriptionsResult = await translateMultipleWithDeepL(descriptionsToTranslate.join('|'), [lang.toUpperCase()], 'nl');
+        const translatedDescriptions = translatedDescriptionsResult[lang.toUpperCase()]?.split('|') || descriptionsToTranslate;
+
+        // Create translated images
+        translatedImages = filteredImages.map((image, index) => ({
+          ...image,
+          title: translatedDescriptions[index] || image.title,
+          description: translatedDescriptions[index] || image.description
+        }))
+      } catch (translationError) {
+        console.error('Translation error:', translationError)
+        // Fallback to original images
+        translatedImages = filteredImages
+      }
+    }
+    
+    console.log('✅ Final public gallery response:', JSON.stringify(translatedImages, null, 2))
+    res.json({
+      success: true,
+      data: translatedImages
+    })
+  } catch (error) {
+    console.error('Error getting gallery images:', error)
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to get gallery images'
+    })
+  }
+})
+
 export default router
