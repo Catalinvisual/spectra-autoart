@@ -1036,13 +1036,15 @@ router.get('/gallery', async (req, res) => {
       }
     }).filter(image => image.url && image.id)
     
-    // Filter out images without valid URL (exclude simple words like "interior", "general")
-    const filteredImages = images.filter(image => {
-      const hasUrl = image.url && image.id
-      const isValidUrl = image.url.includes('/') || image.url.startsWith('http') || image.url.endsWith('.jpg') || image.url.endsWith('.jpeg') || image.url.endsWith('.png') || image.url.endsWith('.gif') || image.url.endsWith('.webp')
-      return hasUrl && isValidUrl
+    // Temporarily show all images for debugging - remove filter to see what data we have
+    const filteredImages = images.filter(image => image.url && image.id)
+    console.log('🔍 All images before filtering:', images.length)
+    console.log('🔍 Images after basic filtering:', filteredImages.length)
+    
+    // Log all URLs to understand the data structure
+    filteredImages.forEach((image, index) => {
+      console.log(`🖼️ Image ${index + 1}: ID="${image.id}", URL="${image.url}", Category="${image.category}"`)
     })
-    console.log('🔍 Filtered images (removed invalid urls):', filteredImages.length, 'from', images.length)
     
     // Translate gallery images if language is not Dutch
     let translatedImages = filteredImages

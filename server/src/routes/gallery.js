@@ -161,11 +161,12 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
 
     const imageData = [
       Date.now().toString(), // ID
-      imageUrl,              // Image URL
-      alt_text || '',        // Description
-      category || 'general', // Category
-      active || 'true',      // Active
-      new Date().toISOString() // Upload Date
+      '',                    // Title (empty for now - coloana 2)
+      alt_text || '',        // Description (coloana 3)
+      imageUrl,              // Image URL (coloana 4)
+      category || 'general', // Category (coloana 5)
+      active || 'true',      // Active (coloana 6)
+      new Date().toISOString() // Upload Date (coloana 7)
     ]
     
     console.log('📊 Prepared image data for Google Sheets:', imageData)
