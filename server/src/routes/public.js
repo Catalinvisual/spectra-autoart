@@ -1036,9 +1036,13 @@ router.get('/gallery', async (req, res) => {
       }
     }).filter(image => image.url && image.id)
     
-    // Filter out images without URL or ID
-    const filteredImages = images.filter(image => image.url && image.id)
-    console.log('🔍 Filtered images (removed empty url/id):', filteredImages.length, 'from', images.length)
+    // Filter out images without valid URL (exclude simple words like "interior", "general")
+    const filteredImages = images.filter(image => {
+      const hasUrl = image.url && image.id
+      const isValidUrl = image.url.includes('/') || image.url.startsWith('http') || image.url.endsWith('.jpg') || image.url.endsWith('.jpeg') || image.url.endsWith('.png') || image.url.endsWith('.gif') || image.url.endsWith('.webp')
+      return hasUrl && isValidUrl
+    })
+    console.log('🔍 Filtered images (removed invalid urls):', filteredImages.length, 'from', images.length)
     
     // Translate gallery images if language is not Dutch
     let translatedImages = filteredImages
