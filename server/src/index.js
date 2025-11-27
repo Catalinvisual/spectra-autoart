@@ -28,24 +28,32 @@ const startupTimeout = setTimeout(() => {
   process.exit(1)
 }, 30000)
 
-// Configurare dotenv să încarce fișierul .env din directorul server
+// Configurare dotenv să încarce fișierul .env.local din directorul server
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const envLocalPath = path.join(__dirname, '..', '.env.local')
 const envPath = path.join(__dirname, '..', '.env')
 
 console.log('📂 __dirname:', __dirname)
 console.log('🎯 __filename:', __filename)
 
-// Încearcă să încarce fișierul .env, dar nu opri serverul dacă lipsește
+// Încearcă să încarce fișierul .env.local, apoi .env ca fallback
 try {
-  const result = dotenv.config({ path: envPath })
+  const result = dotenv.config({ path: envLocalPath })
   if (result.error) {
-    console.log('⚠️  Fișierul .env nu a putut fi încărcat, dar serverul va continua:', result.error.message)
+    console.log('⚠️  Fișierul .env.local nu a putut fi încărcat, încerc .env:', result.error.message)
+    // Fallback la .env dacă .env.local nu există
+    const fallbackResult = dotenv.config({ path: envPath })
+    if (fallbackResult.error) {
+      console.log('⚠️  Nici fișierul .env nu a putut fi încărcat, dar serverul va continua:', fallbackResult.error.message)
+    } else {
+      console.log('✅ Fișierul .env a fost încărcat cu succes (fallback)')
+    }
   } else {
-    console.log('✅ Fișierul .env a fost încărcat cu succes')
+    console.log('✅ Fișierul .env.local a fost încărcat cu succes')
   }
 } catch (error) {
-  console.log('⚠️  Eroare la încărcarea fișierului .env, dar serverul va continua:', error.message)
+  console.log('⚠️  Eroare la încărcarea fișierului de configurare, dar serverul va continua:', error.message)
 }
 
 // Fallback-uri pentru variabile critice
@@ -143,6 +151,10 @@ app.get('/health', (req, res) => {
 app.get('/ping', (req, res) => {
   res.status(200).send('pong')
 })
+
+// Serve uploaded files
+const uploadsPath = path.join(__dirname, '../uploads')
+app.use('/uploads', express.static(uploadsPath))
 
 // Serve static files from React build
 const clientBuildPath = path.join(__dirname, '../../client/dist')

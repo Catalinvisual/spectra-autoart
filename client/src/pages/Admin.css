@@ -2424,13 +2424,16 @@ h2:hover::before {
 
 
 
+/* ÎNDEPĂRTAT: Stilul interferează cu gallery din componenta principală 
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
   margin-top: 20px;
 }
+*/
 
+/* ÎNDEPĂRTAT: Stilul interferează cu gallery din componenta principală 
 .gallery-item {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -2439,13 +2442,17 @@ h2:hover::before {
   text-align: center;
   transition: all 0.3s ease;
 }
+*/
 
+/* ÎNDEPĂRTAT: Stilul interferează cu gallery din componenta principală 
 .gallery-item:hover {
   transform: translateY(-3px);
   box-shadow: 0 10px 20px rgba(0, 229, 255, 0.2);
   border-color: #00e5ff;
 }
+*/
 
+/* ÎNDEPĂRTAT: Stilul interferează cu gallery din componenta principală 
 .gallery-item img {
   width: 100%;
   height: 150px;
@@ -2453,6 +2460,7 @@ h2:hover::before {
   border-radius: 8px;
   margin-bottom: 10px;
 }
+*/
 
 .gallery-item h4 {
   color: #ffffff;
@@ -2590,8 +2598,10 @@ h2:hover::before {
     padding: 10px;
   }
   
+/* ÎNDEPĂRTAT: Stilul interferează cu gallery din componenta principală 
   .gallery-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 15px;
   }
+*/
 }

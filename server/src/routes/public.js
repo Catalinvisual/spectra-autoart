@@ -1026,13 +1026,13 @@ router.get('/gallery', async (req, res) => {
       
       return {
         id: image.id || '',
-        url: image.title_ || image.image_url || '', // Title column contains actual image URL
-        title: image.description || image.alt_text || '', // Use description as title for Gallery component
-        description: image.description || image.alt_text || '', // Description for Gallery component
-        category: image.image_url || image.category || 'general', // Image_URL contains category
-        active: image.category ? (image.category.toString().toLowerCase() === 'true') : true, // Category column contains active status
-        created_date: image.active || image.upload_date || '', // Active column contains upload date
-        updated_date: image.active || image.upload_date || ''  // Active column contains upload date
+        url: image.image_url || '', // Image URL column contains actual image URL
+        title: image.title || '', // Title column contains title for Gallery component
+        description: image.description || '', // Description column contains description for Gallery component
+        category: image.category || 'general', // Category column contains category
+        active: image.active ? (image.active.toString().toLowerCase() === 'true') : true, // Active column contains active status
+        created_date: image.upload_date || '', // Upload_Date column contains upload date
+        updated_date: image.upload_date || ''  // Upload_Date column contains upload date
       }
     }).filter(image => image.url && image.id)
     

@@ -6,26 +6,17 @@
   align-items: center;
   text-align: center;
   padding: 8rem 2rem 2rem;
-  background: linear-gradient(135deg, var(--bg) 0%, rgba(0, 229, 255, 0.05) 100%);
   position: relative;
   overflow: hidden;
+  background: linear-gradient(135deg, var(--bg) 0%, rgba(0, 229, 255, 0.05) 100%);
 }
 
+/* Background cinematic - eliminăm imaginea statică veche */
 .hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url('../assets/hero-image.jpeg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 0.3;
-  z-index: 0;
+  content: none;
 }
 
+/* Overlay gradient actualizat pentru video background */
 .hero::after {
   content: '';
   position: absolute;
@@ -33,24 +24,32 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, 
-    rgba(11, 15, 20, 0.8) 0%, 
-    rgba(11, 15, 20, 0.6) 50%, 
-    rgba(0, 229, 255, 0.1) 100%);
+  background: linear-gradient(
+    135deg, 
+    rgba(11, 15, 20, 0.85) 0%, 
+    rgba(11, 15, 20, 0.65) 40%, 
+    rgba(0, 229, 255, 0.15) 70%,
+    rgba(11, 15, 20, 0.9) 100%
+  );
   z-index: 1;
+  backdrop-filter: blur(0.3px);
 }
 
 .hero-content {
   position: relative;
   z-index: 2;
   max-width: 800px;
-  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  padding: 2rem 0;
 }
 
 .hero-title {
   font-size: clamp(3rem, 6vw, 5.5rem);
   font-weight: 800;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
   line-height: 1.1;
   display: flex;
   align-items: center;
@@ -84,7 +83,7 @@
 .hero-subtitle {
   /* font-size: clamp(1.8rem, 4vw, 2.5rem); */
   color: var(--muted);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
   min-height: 5rem;
   position: relative;
   font-weight: 500;
@@ -97,7 +96,7 @@
 .hero-description {
   font-size: clamp(1rem, 2vw, 1.2rem);
   color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 2.5rem;
+  margin-bottom: 0;
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
@@ -269,9 +268,7 @@
     padding: 8rem 1rem 2rem;
   }
   
-  .hero-content {
-    margin-top: 3rem;
-  }
+  /* .hero-content { margin-top eliminat pentru consistență } */
   
   .hero-title {
     font-size: clamp(2.5rem, 8vw, 4rem);
@@ -281,12 +278,12 @@
   .hero-subtitle {
     font-size: clamp(2.2rem, 6vw, 3.5rem);
     min-height: 4rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0;
   }
 
   .hero-description {
     font-size: clamp(1.1rem, 3vw, 1.3rem);
-    margin-bottom: 3rem;
+    margin-bottom: 0;
   }
   
   .cta-button {

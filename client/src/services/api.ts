@@ -89,6 +89,17 @@ api.interceptors.response.use(
       console.log('📋 Bookings data after unwrap:', response.data)
     }
     
+    // Debug logging for ALL admin responses to identify HTML returns
+    if (response.config.url?.includes('/admin/') && typeof response.data === 'string' && response.data.includes('<!doctype html>')) {
+      console.log('❌ ADMIN HTML RESPONSE DETECTED:', {
+        url: response.config.url,
+        method: response.config.method,
+        status: response.status,
+        dataType: typeof response.data,
+        dataPreview: response.data.substring(0, 200)
+      })
+    }
+    
     return response
   },
   (error) => {
@@ -159,6 +170,11 @@ export const adminAPI = {
   deleteBodyType: (id: string) => api.delete(`/admin/body-types/${id}`),
   getGallery: () => api.get('/admin/gallery'),
   uploadImage: (data: { url: string; alt_text: string; category: string; active: boolean }) => api.post('/admin/gallery', data),
+  uploadImageFile: (formData: FormData) => api.post('/gallery', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }),
   deleteImage: (id: string) => api.delete(`/admin/gallery/${id}`),
   getNewsletterSubscribers: () => api.get('/admin/newsletter-subscribers'),
   sendNewsletter: (data: { subject: string; content: string }) => api.post('/admin/newsletter/send', data)

@@ -30,6 +30,33 @@ const resources = {
         cancel: 'Annuleren',
         reviewSubmittedSuccessfully: 'Recensie succesvol verzonden!'
       },
+      // Gallery translations
+      galleryPage: {
+        title: 'Galerij',
+        subtitle: 'Bekijk ons premium auto detailing werk',
+        categories: {
+          all: 'Alles',
+          'detailing-interior': 'Interieur Detailing',
+          'detailing-exterior': 'Exterieur Detailing',
+          'ambient-lights': 'Ambient Verlichting',
+          'starlight-ceiling': 'Sterrenhemel Plafond',
+          'chrome-delete': 'Chrome Delete',
+          'trim-wrapping': 'Trim Wrapping',
+          'polish-auto': 'Auto Polijsten',
+          'ceramic-protection': 'Keramische Bescherming',
+          'before-after': 'Voor & Na'
+        },
+        fallback: {
+          premiumDetailing: 'Premium Detailing',
+          completeDetailing: 'Complete Detailing',
+          chromeDelete: 'Chrome Delete',
+          chromeTransformation: 'Chrome Transformation',
+          interiorDetail: 'Interior Detail',
+          interiorCleaning: 'Interior Cleaning',
+          exteriorPolish: 'Exterior Polish',
+          paintCorrection: 'Paint Correction'
+        }
+      },
       premiumServices: {
         title: 'Premium auto detailing and styling services.',
         subtitle: 'Transform your vehicle with our expert care and attention to detail.',
@@ -157,28 +184,7 @@ const resources = {
       totalServices: 'Totaal Diensten',
       unknownService: 'Onbekende Service',
       
-      // Gallery translations
-      galleryPage: {
-        title: 'Galerij',
-        subtitle: 'Bekijk onze premium auto detailing werkzaamheden',
-        categories: {
-          all: 'Alles',
-          exterior: 'Exterieur',
-          interior: 'Interieur',
-          detailing: 'Detailing',
-          'chrome-delete': 'Chrome Delete'
-        },
-        fallback: {
-          premiumDetailing: 'Premium Detailing',
-          completeDetailing: 'Complete Detailing',
-          chromeDelete: 'Chrome Delete',
-          chromeTransformation: 'Chrome Transformatie',
-          interiorDetail: 'Interieur Detail',
-          interiorCleaning: 'Interieur Reiniging',
-          exteriorPolish: 'Exterieur Poetsen',
-          paintCorrection: 'Lak Correctie'
-        }
-      },
+
       loadingBookings: 'Laden van afspraken...',
       bookingsManagement: 'Afspraken Beheer',
       areYouSureDeleteBooking: 'Weet u zeker dat u deze afspraak wilt verwijderen?',
@@ -261,6 +267,13 @@ const resources = {
         descriptionOfImage: 'Beschrijving van afbeelding',
         category: 'Categorie',
         general: 'Algemeen',
+        detailingInterior: 'Detailing Interior',
+        detailingExterior: 'Detailing Exterior',
+        ambientLights: 'Ambient Verlichting',
+        starlightCeiling: 'Sterrenhemel Plafond',
+        trimWrapping: 'Trim Wrapping',
+        polishAuto: 'Auto Polijsten',
+        ceramicProtection: 'Keramische Bescherming',
         active: 'Actief',
         addImage: 'Afbeelding Toevoegen',
         existingImages: 'Bestaande Afbeeldingen ({{count}})',
@@ -394,10 +407,15 @@ const resources = {
         subtitle: 'View our premium auto detailing work',
         categories: {
           all: 'All',
-          exterior: 'Exterior',
-          interior: 'Interior',
-          detailing: 'Detailing',
-          'chrome-delete': 'Chrome Delete'
+          'detailing-interior': 'Interieur Detailing',
+          'detailing-exterior': 'Exterieur Detailing',
+          'ambient-lights': 'Ambient Verlichting',
+          'starlight-ceiling': 'Sterrenhemel Plafond',
+          'chrome-delete': 'Chrome Delete',
+          'trim-wrapping': 'Trim Wrapping',
+          'polish-auto': 'Auto Polijsten',
+          'ceramic-protection': 'Keramische Bescherming',
+          'before-after': 'Voor & Na'
         },
         fallback: {
           premiumDetailing: 'Premium Detailing',
@@ -625,6 +643,13 @@ const resources = {
         descriptionOfImage: 'Description of image',
         category: 'Category',
         general: 'General',
+        detailingInterior: 'Detailing Interior',
+        detailingExterior: 'Detailing Exterior',
+        ambientLights: 'Ambient Verlichting',
+        starlightCeiling: 'Sterrenhemel Plafond',
+        trimWrapping: 'Trim Wrapping',
+        polishAuto: 'Auto Polijsten',
+        ceramicProtection: 'Keramische Bescherming',
         active: 'Active',
         addImage: 'Add Image',
         existingImages: 'Existing Images ({{count}})',
@@ -746,10 +771,15 @@ const resources = {
         subtitle: 'Vea nuestro trabajo premium de detailing de autos',
         categories: {
           all: 'Todo',
-          exterior: 'Exterior',
-          interior: 'Interior',
-          detailing: 'Detailing',
-          'chrome-delete': 'Chrome Delete'
+          'detailing-interior': 'Interieur Detailing',
+          'detailing-exterior': 'Exterieur Detailing',
+          'ambient-lights': 'Ambient Verlichting',
+          'starlight-ceiling': 'Sterrenhemel Plafond',
+          'chrome-delete': 'Chrome Delete',
+          'trim-wrapping': 'Trim Wrapping',
+          'polish-auto': 'Auto Polijsten',
+          'ceramic-protection': 'Keramische Bescherming',
+          'before-after': 'Voor & Na'
         },
         fallback: {
           premiumDetailing: 'Detailing Premium',
@@ -939,10 +969,15 @@ const resources = {
         subtitle: 'Zobacz naszą premium pracę detailingu samochodów',
         categories: {
           all: 'Wszystko',
-          exterior: 'Zewnętrzne',
-          interior: 'Wewnętrzne',
-          detailing: 'Detailing',
-          'chrome-delete': 'Chrome Delete'
+          'detailing-interior': 'Interieur Detailing',
+          'detailing-exterior': 'Exterieur Detailing',
+          'ambient-lights': 'Ambient Verlichting',
+          'starlight-ceiling': 'Sterrenhemel Plafond',
+          'chrome-delete': 'Chrome Delete',
+          'trim-wrapping': 'Trim Wrapping',
+          'polish-auto': 'Auto Polijsten',
+          'ceramic-protection': 'Keramische Bescherming',
+          'before-after': 'Voor & Na'
         },
         fallback: {
           premiumDetailing: 'Premium Detailing',
@@ -1132,10 +1167,15 @@ const resources = {
         subtitle: 'Vezi lucrările noastre premium de detailing auto',
         categories: {
           all: 'Tot',
-          exterior: 'Exterior',
-          interior: 'Interior',
-          detailing: 'Detailing',
-          'chrome-delete': 'Chrome Delete'
+          'detailing-interior': 'Detailing Interior',
+          'detailing-exterior': 'Detailing Exterior',
+          'ambient-lights': 'Lumini Ambientale',
+          'starlight-ceiling': 'Plafon Înstelat',
+          'chrome-delete': 'Chrome Delete',
+          'trim-wrapping': 'Colantare Trimuri',
+          'polish-auto': 'Polish Auto',
+          'ceramic-protection': 'Protecție Ceramică',
+          'before-after': 'Înainte și După'
         },
         fallback: {
           premiumDetailing: 'Premium Detailing',

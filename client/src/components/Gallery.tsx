@@ -20,8 +20,14 @@ const Gallery: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [setAnimationElement] = useScrollAnimation()
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [showDropdown, setShowDropdown] = useState(false)
 
-  const categories = ['all', 'exterior', 'interior', 'detailing', 'chrome-delete']
+  const categories = ['all', 'detailing-interior', 'detailing-exterior', 'ambient-lights', 'starlight-ceiling', 'chrome-delete', 'trim-wrapping', 'polish-auto', 'ceramic-protection', 'before-after']
+
+  const handleImageClick = (imageId: string) => {
+    setSelectedImage(selectedImage === imageId ? null : imageId)
+  }
 
   useEffect(() => {
     loadGalleryImages()
@@ -31,10 +37,35 @@ const Gallery: React.FC = () => {
     try {
       const response = await publicAPI.getGallery(currentLanguage)
       // Construiește URL-uri complete pentru imagini
-      const processedImages = response.data.map((image: GalleryImage) => ({
-        ...image,
-        url: image.url.startsWith('http') ? image.url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8080'}${image.url}`
-      }))
+      const processedImages = response.data.map((image: GalleryImage) => {
+        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8080'
+        let fullUrl = image.url
+        
+        // Dacă URL-ul nu începe cu http și nu este deja o cale relativă completă
+        if (!image.url.startsWith('http')) {
+          if (image.url.startsWith('/')) {
+            // Dacă începe cu /, este deja o cale relativă completă
+            fullUrl = `${baseUrl}${image.url}`
+          } else if (image.url.includes('uploads/gallery')) {
+            // Dacă conține deja uploads/gallery, adaugă doar baza
+            fullUrl = `${baseUrl}/${image.url}`
+          } else {
+            // Altfel, adaugă /uploads/gallery/ înaintea numelui fișierului
+            fullUrl = `${baseUrl}/uploads/gallery/${image.url}`
+          }
+        }
+        
+        console.log('🔍 Gallery image URL processing:', {
+          original: image.url,
+          baseUrl: baseUrl,
+          fullUrl: fullUrl,
+          startsWithHttp: image.url.startsWith('http')
+        })
+        return {
+          ...image,
+          url: fullUrl
+        }
+      })
       setImages(processedImages)
     } catch (error) {
       console.error('Error loading gallery images:', error)
@@ -113,23 +144,51 @@ const Gallery: React.FC = () => {
         </div>
 
         <div className="gallery-filters">
-          {Array.isArray(categories) && categories.map(category => (
-            <button
-              key={category}
-              className={`filter-btn ${selectedCategory === category ? 'active' : ''}`}
-              onClick={() => setSelectedCategory(category)}
+          <div className="category-dropdown">
+            <button 
+              className="filter-btn dropdown-btn"
+              onClick={() => setShowDropdown(!showDropdown)}
             >
-              {t(`galleryPage.categories.${category}`)}
+              {selectedCategory === 'all' ? t('galleryPage.categories.all') : t(`galleryPage.categories.${selectedCategory}`)}
+              <span className="dropdown-arrow">▼</span>
             </button>
-          ))}
+            
+            {showDropdown && (
+              <div className="dropdown-content">
+                <button
+                  key="all"
+                  className={`dropdown-item ${selectedCategory === 'all' ? 'active' : ''}`}
+                  onClick={() => {
+                    setSelectedCategory('all')
+                    setShowDropdown(false)
+                  }}
+                >
+                  {t('galleryPage.categories.all')}
+                </button>
+                {categories.filter(cat => cat !== 'all').map(category => (
+                  <button
+                    key={category}
+                    className={`dropdown-item ${selectedCategory === category ? 'active' : ''}`}
+                    onClick={() => {
+                      setSelectedCategory(category)
+                      setShowDropdown(false)
+                    }}
+                  >
+                    {t(`galleryPage.categories.${category}`)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="gallery-grid">
           {Array.isArray(filteredImages) && filteredImages.map((image, index) => (
             <div 
               key={image.id} 
-              className="gallery-item"
+              className={`gallery-item ${selectedImage === image.id ? 'active' : ''}`}
               style={{ animationDelay: `${index * 0.1}s` }}
+              onClick={() => handleImageClick(image.id)}
             >
               <div className="image-wrapper">
                 <img 

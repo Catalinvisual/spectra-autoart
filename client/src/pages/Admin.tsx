@@ -1686,10 +1686,20 @@ const GalleryManagement: React.FC = () => {
       setLoading(true)
       const response = await adminAPI.getGallery()
       // Construiește URL-uri complete pentru imagini
-      const processedImages = response.data.map((image: any) => ({
-        ...image,
-        url: image.url.startsWith('http') ? image.url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8080'}${image.url}`
-      }))
+      const processedImages = response.data.map((image: any) => {
+        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8080'
+        const fullUrl = image.url.startsWith('http') ? image.url : `${baseUrl}${image.url}`
+        console.log('🔍 Admin gallery image URL processing:', {
+          original: image.url,
+          baseUrl: baseUrl,
+          fullUrl: fullUrl,
+          startsWithHttp: image.url.startsWith('http')
+        })
+        return {
+          ...image,
+          url: fullUrl
+        }
+      })
       setImages(processedImages)
     } catch (error) {
       console.error('Error loading gallery images:', error)
@@ -1871,12 +1881,15 @@ const GalleryManagement: React.FC = () => {
               value={newImage.category}
               onChange={(e) => setNewImage({ ...newImage, category: e.target.value })}
             >
-              <option value="general">{t('admin.general')}</option>
-              <option value="detailing">{t('admin.detailing')}</option>
+              <option value="detailing-interior">{t('admin.detailingInterior')}</option>
+              <option value="detailing-exterior">{t('admin.detailingExterior')}</option>
+              <option value="ambient-lights">{t('admin.ambientLights')}</option>
+              <option value="starlight-ceiling">{t('admin.starlightCeiling')}</option>
               <option value="chrome-delete">Chrome Delete</option>
+              <option value="trim-wrapping">{t('admin.trimWrapping')}</option>
+              <option value="polish-auto">{t('admin.polishAuto')}</option>
+              <option value="ceramic-protection">{t('admin.ceramicProtection')}</option>
               <option value="before-after">{t('admin.beforeAfter')}</option>
-              <option value="interior">{t('admin.interior')}</option>
-              <option value="exterior">{t('admin.exterior')}</option>
             </select>
           </div>
           

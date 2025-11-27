@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useScrollAnimation, useTypingAnimation } from '../hooks/useAnimations'
+import CinematicBackground from './CinematicBackground'
 import './Hero.css'
 
 interface HeroProps {
@@ -17,6 +18,12 @@ const Hero: React.FC<HeroProps> = ({ onBookNow }) => {
 
   return (
     <section id="hero" className="hero" ref={setHeroElement}>
+      <CinematicBackground 
+        gradientColors={['#0a0a0f', '#1a1a2e', '#16213e', '#0f0f1a']}
+        enableParticles={true}
+        enableLightEffects={true}
+      />
+      
       <div className="hero-content">
         <h1 className="hero-title">
           <span className="title-main">Spectra</span>
@@ -35,6 +42,7 @@ const Hero: React.FC<HeroProps> = ({ onBookNow }) => {
         </button>
       </div>
       
+      {/* Gradient orbs rămân pentru efect adițional */}
       <div className="hero-background">
         <div className="gradient-orb orb-1"></div>
         <div className="gradient-orb orb-2"></div>

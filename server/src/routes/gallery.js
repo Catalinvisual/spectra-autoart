@@ -53,7 +53,10 @@ router.get('/', async (req, res) => {
     // Get gallery images from Google Sheets
     const data = await GoogleSheetsService.getData('Gallery')
     
+    console.log('🖼️ Public Gallery - Google Sheets data:', JSON.stringify(data, null, 2))
+    
     if (data.length <= 1) {
+      console.log('🔄 Public Gallery empty or only headers')
       return res.json({ 
         success: true, 
         data: [] 
@@ -61,11 +64,15 @@ router.get('/', async (req, res) => {
     }
 
     const headers = data[0]
+    console.log('📋 Public Gallery headers:', headers)
+    
     const images = data.slice(1).map(row => {
       const image = {}
       headers.forEach((header, index) => {
         image[header.toLowerCase().replace(/ /g, '_')] = row[index] || ''
       })
+      
+      console.log('🖼️ Processing public gallery item:', JSON.stringify(image, null, 2))
       
       return {
         id: image.id || '',
@@ -78,30 +85,42 @@ router.get('/', async (req, res) => {
       }
     }).filter(image => image.url && image.id)
 
+    // Filter out images without valid URL (exclude simple words like "interior", "general")
+    const filteredImages = images.filter(image => {
+      const hasUrl = image.url && image.id
+      const isValidUrl = image.url.includes('/') || image.url.startsWith('http') || image.url.endsWith('.jpg') || image.url.endsWith('.jpeg') || image.url.endsWith('.png') || image.url.endsWith('.gif') || image.url.endsWith('.webp')
+      return hasUrl && isValidUrl
+    })
+    console.log('🔍 Filtered images (removed empty url/id):', filteredImages.length, 'from', images.length)
+    
     // Translate gallery images if language is not Dutch
-    let translatedImages = images
+    let translatedImages = filteredImages
     if (lang !== 'nl') {
       try {
         // Extract alt_texts that need translation
-        const altTextsToTranslate = images.map(img => img.alt_text)
+        const altTextsToTranslate = filteredImages.map(img => img.alt_text)
 
         // Translate all alt_texts
         const translatedAltTextsResult = await translateMultipleWithDeepL(altTextsToTranslate.join('|'), [lang.toUpperCase()], 'nl');
         const translatedAltTexts = translatedAltTextsResult[lang.toUpperCase()]?.split('|') || altTextsToTranslate;
 
         // Create translated images
-        translatedImages = images.map((image, index) => ({
+        translatedImages = filteredImages.map((image, index) => ({
           ...image,
           alt_text: translatedAltTexts[index] || image.alt_text
         }))
       } catch (translationError) {
         console.error('Translation error:', translationError)
         // Fallback to original images
-        translatedImages = images
+        translatedImages = filteredImages
       }
     }
     
-    res.json(translatedImages)
+    console.log('✅ Final public gallery response:', JSON.stringify(translatedImages, null, 2))
+    res.json({
+      success: true,
+      data: translatedImages
+    })
   } catch (error) {
     console.error('Error getting gallery images:', error)
     res.status(500).json({ 
@@ -114,6 +133,11 @@ router.get('/', async (req, res) => {
 // Add new gallery image (admin only) - supports both file upload and URL
 router.post('/', auth, upload.single('image'), async (req, res) => {
   try {
+    console.log('🖼️ GALLERY ADD - Request received:', {
+      body: req.body,
+      file: req.file ? { filename: req.file.filename, path: req.file.path } : null
+    })
+    
     let imageUrl = ''
     
     // Handle file upload
@@ -124,6 +148,7 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
     } else if (req.body.url) {
       // URL was provided
       imageUrl = req.body.url
+      console.log(`🔗 URL provided: ${imageUrl}`)
     } else {
       return res.status(400).json({ 
         success: false,
@@ -132,18 +157,21 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
     }
 
     const { alt_text, category, active } = req.body
+    console.log(`📝 Form data: alt_text="${alt_text}", category="${category}", active="${active}"`)
 
     const imageData = [
       Date.now().toString(), // ID
-      alt_text || '',        // Title
-      alt_text || '',        // Description
       imageUrl,              // Image URL
+      alt_text || '',        // Description
       category || 'general', // Category
-      active || 'true',    // Active
+      active || 'true',      // Active
       new Date().toISOString() // Upload Date
     ]
+    
+    console.log('📊 Prepared image data for Google Sheets:', imageData)
 
     const success = await GoogleSheetsService.appendData('Gallery', imageData)
+    console.log('✅ Google Sheets append result:', success)
     
     if (!success) {
       // If failed, delete the uploaded file

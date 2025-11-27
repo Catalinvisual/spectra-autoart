@@ -20,10 +20,10 @@ class GoogleSheetsService {
       console.log('🌍 NODE_ENV:', process.env.NODE_ENV)
       
       if (!process.env.GOOGLE_SHEETS_SPREADSHEET_ID || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
-        console.log('⚠️  Google Sheets credentials not configured - switching to demo mode');
-        this.isDemoMode = true;
-        this.isInitialized = true;
-        return true;
+        console.log('⚠️  Google Sheets credentials not configured - service will not initialize');
+        this.isDemoMode = false; // Explicitly disable demo mode
+        this.isInitialized = false;
+        return false;
       }
 
       // Clean private key - remove surrounding quotes if present and handle formatting
@@ -49,24 +49,44 @@ class GoogleSheetsService {
       console.log('🔑 Cleaned private key first 50 chars:', JSON.stringify(privateKey.substring(0, 50)));
       console.log('🔑 Cleaned private key last 50 chars:', JSON.stringify(privateKey.substring(privateKey.length - 50)));
       
-      const serviceAccountAuth = new JWT({
-        email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        key: privateKey,
-        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-      });
+      try {
+        // Additional private key validation and formatting
+        if (!privateKey.includes('BEGIN PRIVATE KEY') || !privateKey.includes('END PRIVATE KEY')) {
+          throw new Error('Invalid private key format: missing BEGIN/END markers');
+        }
+        
+        // Ensure the private key has proper PEM format - preserve existing newlines
+        const formattedKey = privateKey.trim();
+        
+        const serviceAccountAuth = new JWT({
+          email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+          key: formattedKey,
+          scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        });
 
-      this.doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEETS_SPREADSHEET_ID, serviceAccountAuth);
-      await this.doc.loadInfo();
-      
-      // Initialize spreadsheet structure if needed
-      await this.initializeSpreadsheetStructure();
-      
-      this.isInitialized = true;
-      console.log('✅ Google Sheets service initialized successfully');
-      return true;
+        this.doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEETS_SPREADSHEET_ID, serviceAccountAuth);
+        await this.doc.loadInfo();
+        
+        // Initialize spreadsheet structure if needed
+        await this.initializeSpreadsheetStructure();
+        
+        this.isInitialized = true;
+        console.log('✅ Google Sheets service initialized successfully');
+        return true;
+      } catch (authError) {
+        console.error('❌ Google Sheets authentication failed:', authError.message);
+        console.error('❌ Full auth error:', authError);
+        // DO NOT fall back to demo mode - let the service fail properly
+        this.isDemoMode = false;
+        this.isInitialized = false;
+        throw new Error(`Google Sheets authentication failed: ${authError.message}`);
+      }
     } catch (error) {
       console.error('❌ Failed to initialize Google Sheets service:', error);
-      throw error;
+      // DO NOT fall back to demo mode - let the service fail properly
+      this.isDemoMode = false;
+      this.isInitialized = false;
+      throw new Error(`Failed to initialize Google Sheets service: ${error.message}`);
     }
   }
 
@@ -124,6 +144,13 @@ class GoogleSheetsService {
           ['3', '2', 'sedan', '100', '130', 'EUR', '120', 'true'],
           ['4', '2', 'suv', '120', '150', 'EUR', '120', 'true']
         ];
+      case 'Gallery':
+        return [
+          ['ID', 'Image_URL', 'Description', 'Category', 'Active', 'Upload_Date'],
+          ['img1', 'https://example.com/image1.jpg', 'Mașină premium detailing', 'exterior', 'true', '2024-01-01'],
+          ['img2', 'https://example.com/image2.jpg', 'Interior curățat profesional', 'interior', 'true', '2024-01-02'],
+          ['img3', 'https://example.com/image3.jpg', 'Ceramic coating aplicație', 'protection', 'true', '2024-01-03']
+        ];
       default:
         return [['Demo header'], ['Demo data']];
     }
@@ -163,23 +190,24 @@ class GoogleSheetsService {
 
   async getData(sheetName) {
     try {
-      // Return demo data if in demo mode
-      if (this.isDemoMode) {
-        console.log(`🔄 Returning demo data for ${sheetName} (demo mode active)`);
-        return this.getDemoData(sheetName);
+      // Force real Google Sheets operation - no more demo mode
+      if (!this.isInitialized || !this.doc) {
+        throw new Error('Google Sheets service not properly initialized for getting data');
       }
 
-      // Check if service is initialized
-      if (!this.isInitialized || !this.doc) {
-        console.log(`⚠️  Google Sheets service not initialized, using demo data for ${sheetName}`);
-        console.log(`🔍 isInitialized: ${this.isInitialized}, doc exists: ${!!this.doc}`);
-        return this.getDemoData(sheetName);
+      // Ensure document info is loaded
+      try {
+        if (!this.doc.title) {
+          await this.doc.loadInfo();
+        }
+      } catch (loadError) {
+        console.log(`⚠️  Document info not loaded, loading now: ${loadError.message}`);
+        await this.doc.loadInfo();
       }
 
       const sheet = this.doc.sheetsByTitle[sheetName];
       if (!sheet) {
-        console.log(`⚠️  Sheet ${sheetName} not found, returning empty array`);
-        return [['No data']]; // Return minimal array to avoid errors
+        throw new Error(`Sheet ${sheetName} not found`);
       }
 
       await sheet.loadCells();
@@ -222,10 +250,19 @@ class GoogleSheetsService {
 
   async appendData(sheetName, data) {
     try {
-      // Simulate success in demo mode
-      if (this.isDemoMode) {
-        console.log(`📊 Demo mode: Simulating append to ${sheetName}`, data);
-        return true;
+      // Force real Google Sheets operation - no more demo mode
+      if (!this.isInitialized || !this.doc) {
+        throw new Error('Google Sheets service not properly initialized for appending data');
+      }
+
+      // Ensure document info is loaded
+      try {
+        if (!this.doc.title) {
+          await this.doc.loadInfo();
+        }
+      } catch (loadError) {
+        console.log(`⚠️  Document info not loaded, loading now: ${loadError.message}`);
+        await this.doc.loadInfo();
       }
 
       const sheet = this.doc.sheetsByTitle[sheetName];
@@ -234,6 +271,7 @@ class GoogleSheetsService {
       }
 
       await sheet.addRow(data);
+      console.log(`✅ Successfully appended data to ${sheetName}`);
       return true;
     } catch (error) {
       console.error(`❌ Error appending data to ${sheetName}:`, error);
@@ -243,10 +281,19 @@ class GoogleSheetsService {
 
   async appendDataWithFormats(sheetName, data, formats = {}) {
     try {
-      // Simulate success in demo mode
-      if (this.isDemoMode) {
-        console.log(`📊 Demo mode: Simulating append to ${sheetName} with formats`, data);
-        return true;
+      // Force real Google Sheets operation - no more demo mode
+      if (!this.isInitialized || !this.doc) {
+        throw new Error('Google Sheets service not properly initialized for appending formatted data');
+      }
+
+      // Ensure document info is loaded
+      try {
+        if (!this.doc.title) {
+          await this.doc.loadInfo();
+        }
+      } catch (loadError) {
+        console.log(`⚠️  Document info not loaded, loading now: ${loadError.message}`);
+        await this.doc.loadInfo();
       }
 
       const sheet = this.doc.sheetsByTitle[sheetName];
@@ -266,6 +313,7 @@ class GoogleSheetsService {
 
       // Add the formatted row
       await sheet.addRow(formattedData);
+      console.log(`✅ Successfully appended formatted data to ${sheetName}`);
       
       return true;
     } catch (error) {
@@ -276,10 +324,19 @@ class GoogleSheetsService {
 
   async updateData(sheetName, rowIndex, data) {
     try {
-      // Simulate success in demo mode
-      if (this.isDemoMode) {
-        console.log(`📊 Demo mode: Simulating update in ${sheetName} at row ${rowIndex}`, data);
-        return true;
+      // Force real Google Sheets operation - no more demo mode
+      if (!this.isInitialized || !this.doc) {
+        throw new Error('Google Sheets service not properly initialized for updating data');
+      }
+
+      // Ensure document info is loaded
+      try {
+        if (!this.doc.title) {
+          await this.doc.loadInfo();
+        }
+      } catch (loadError) {
+        console.log(`⚠️  Document info not loaded, loading now: ${loadError.message}`);
+        await this.doc.loadInfo();
       }
 
       const sheet = this.doc.sheetsByTitle[sheetName];
@@ -291,8 +348,10 @@ class GoogleSheetsService {
       if (rowIndex >= 0 && rowIndex < rows.length) {
         Object.assign(rows[rowIndex], data);
         await rows[rowIndex].save();
+        console.log(`✅ Successfully updated row ${rowIndex} in ${sheetName}`);
         return true;
       }
+      console.log(`❌ Row index ${rowIndex} not found in ${sheetName}`);
       return false;
     } catch (error) {
       console.error(`❌ Error updating data in ${sheetName}:`, error);
@@ -302,10 +361,19 @@ class GoogleSheetsService {
 
   async deleteData(sheetName, rowIndex) {
     try {
-      // Simulate success in demo mode
-      if (this.isDemoMode) {
-        console.log(`📊 Demo mode: Simulating delete from ${sheetName} at row ${rowIndex}`);
-        return true;
+      // Force real Google Sheets operation - no more demo mode
+      if (!this.isInitialized || !this.doc) {
+        throw new Error('Google Sheets service not properly initialized for deletion');
+      }
+
+      // Ensure document info is loaded
+      try {
+        if (!this.doc.title) {
+          await this.doc.loadInfo();
+        }
+      } catch (loadError) {
+        console.log(`⚠️  Document info not loaded, loading now: ${loadError.message}`);
+        await this.doc.loadInfo();
       }
 
       const sheet = this.doc.sheetsByTitle[sheetName];
@@ -316,8 +384,10 @@ class GoogleSheetsService {
       const rows = await sheet.getRows();
       if (rowIndex >= 0 && rowIndex < rows.length) {
         await rows[rowIndex].delete();
+        console.log(`✅ Successfully deleted row ${rowIndex} from ${sheetName}`);
         return true;
       }
+      console.log(`❌ Row index ${rowIndex} not found in ${sheetName}`);
       return false;
     } catch (error) {
       console.error(`❌ Error deleting data from ${sheetName}:`, error);

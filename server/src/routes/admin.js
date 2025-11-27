@@ -280,11 +280,11 @@ router.post('/gallery', requireAuth, async (req, res) => {
     // Create new gallery entry - match Google Sheets structure
     const galleryData = [
       id,                                    // ID (column A)
-      url,                                   // Title (column B) - contains image URL
-      alt_text || '',                        // Description (column C)
-      category || 'general',                 // Image_URL (column D) - contains category
+      url,                                   // Title (column B) - contains image title
+      alt_text || '',                        // Description (column C) - contains image description
+      category || 'general',                 // Image URL (column D) - contains image URL
       active !== undefined ? active : true,  // Category (column E) - contains active status
-      createdAt                              // Active (column F) - contains upload date
+      createdAt                              // Upload Date (column F) - contains upload date
     ]
 
     console.log('🖼️ Adding gallery image:', galleryData)

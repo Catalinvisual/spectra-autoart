@@ -13,9 +13,23 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { i18n } = useTranslation();
-  const [currentLanguage, setCurrentLanguage] = useState<string>(i18n.language || 'nl');
+  
+  // Load saved language from localStorage or default to Dutch
+  const getInitialLanguage = () => {
+    const savedLanguage = localStorage.getItem('selectedLanguage');
+    return savedLanguage || 'nl';
+  };
+  
+  const [currentLanguage, setCurrentLanguage] = useState<string>(getInitialLanguage());
 
   useEffect(() => {
+    // Set the initial language on mount
+    const initialLang = getInitialLanguage();
+    if (initialLang !== i18n.language) {
+      i18n.changeLanguage(initialLang);
+    }
+    setCurrentLanguage(initialLang);
+
     // Sync with i18next language changes
     const handleLanguageChange = (lng: string) => {
       setCurrentLanguage(lng);
