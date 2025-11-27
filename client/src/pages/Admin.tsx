@@ -1688,7 +1688,15 @@ const GalleryManagement: React.FC = () => {
       // Construiește URL-uri complete pentru imagini
       const processedImages = response.data.map((image: any) => {
         const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8080'
-        const fullUrl = image.url.startsWith('http') ? image.url : `${baseUrl}${image.url}`
+        let fullUrl = image.url
+        
+        // Dacă URL-ul nu începe cu http, construiește URL complet
+        if (!image.url.startsWith('http')) {
+          // Asigură-te că URL-ul începe cu / pentru a fi o cale relativă validă
+          const normalizedPath = image.url.startsWith('/') ? image.url : `/${image.url}`
+          fullUrl = `${baseUrl}${normalizedPath}`
+        }
+        
         console.log('🔍 Admin gallery image URL processing:', {
           original: image.url,
           baseUrl: baseUrl,

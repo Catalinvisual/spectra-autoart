@@ -41,18 +41,11 @@ const Gallery: React.FC = () => {
         const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8080'
         let fullUrl = image.url
         
-        // Dacă URL-ul nu începe cu http și nu este deja o cale relativă completă
+        // Dacă URL-ul nu începe cu http, construiește URL complet
         if (!image.url.startsWith('http')) {
-          if (image.url.startsWith('/')) {
-            // Dacă începe cu /, este deja o cale relativă completă
-            fullUrl = `${baseUrl}${image.url}`
-          } else if (image.url.includes('uploads/gallery')) {
-            // Dacă conține deja uploads/gallery, adaugă doar baza
-            fullUrl = `${baseUrl}/${image.url}`
-          } else {
-            // Altfel, adaugă /uploads/gallery/ înaintea numelui fișierului
-            fullUrl = `${baseUrl}/uploads/gallery/${image.url}`
-          }
+          // Asigură-te că URL-ul începe cu / pentru a fi o cale relativă validă
+          const normalizedPath = image.url.startsWith('/') ? image.url : `/${image.url}`
+          fullUrl = `${baseUrl}${normalizedPath}`
         }
         
         console.log('🔍 Gallery image URL processing:', {
