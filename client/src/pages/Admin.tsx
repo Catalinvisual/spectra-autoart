@@ -307,37 +307,37 @@ const Admin: React.FC = () => {
       <div className="admin-content">
         <nav className="admin-nav">
           <button 
-            className={activeTab === 'dashboard' ? 'active' : ''}
+            className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
             {t('dashboard')}
           </button>
           <button 
-            className={activeTab === 'bookings' ? 'active' : ''}
+            className={`nav-btn ${activeTab === 'bookings' ? 'active' : ''}`}
             onClick={() => setActiveTab('bookings')}
           >
             {t('bookings')}
           </button>
           <button 
-            className={activeTab === 'services' ? 'active' : ''}
+            className={`nav-btn ${activeTab === 'services' ? 'active' : ''}`}
             onClick={() => setActiveTab('services')}
           >
             {t('services')}
           </button>
           <button 
-            className={activeTab === 'vehicle-services' ? 'active' : ''}
+            className={`nav-btn ${activeTab === 'vehicle-services' ? 'active' : ''}`}
             onClick={() => setActiveTab('vehicle-services')}
           >
             {t('vehicleServices')}
           </button>
           <button 
-            className={activeTab === 'gallery' ? 'active' : ''}
+            className={`nav-btn ${activeTab === 'gallery' ? 'active' : ''}`}
             onClick={() => setActiveTab('gallery')}
           >
             {t('galleryAdmin')}
           </button>
           <button 
-            className={activeTab === 'newsletter' ? 'active' : ''}
+            className={`nav-btn ${activeTab === 'newsletter' ? 'active' : ''}`}
             onClick={() => setActiveTab('newsletter')}
           >
             {t('newsletterSubscribers')}
