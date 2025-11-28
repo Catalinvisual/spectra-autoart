@@ -1,0 +1,252 @@
+/* Legal Pages Styling */
+.legal-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  padding: 80px 20px 40px;
+  color: #ffffff;
+}
+
+.legal-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 60px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.legal-container h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.legal-container h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 40px 0 20px;
+  color: #ffffff;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 10px;
+}
+
+.legal-container h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 25px 0 15px;
+  color: #e0e0e0;
+}
+
+.legal-container p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin-bottom: 20px;
+  color: #d0d0d0;
+}
+
+.legal-container ul,
+.legal-container ol {
+  margin: 20px 0;
+  padding-left: 30px;
+}
+
+.legal-container li {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  color: #d0d0d0;
+}
+
+.legal-container strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.legal-container a {
+  color: #4a9eff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.legal-container a:hover {
+  color: #6bb3ff;
+  text-decoration: underline;
+}
+
+.last-updated {
+  font-size: 1rem;
+  color: #888;
+  font-style: italic;
+  margin-bottom: 40px;
+}
+
+.contact-info {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  border-radius: 15px;
+  margin-top: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.contact-info h2 {
+  margin-top: 0;
+  border-bottom: none;
+}
+
+/* Cookie table styling */
+.cookie-table {
+  margin: 30px 0;
+  overflow-x: auto;
+}
+
+.cookie-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.cookie-table th {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.cookie-table td {
+  padding: 15px;
+  color: #d0d0d0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cookie-table tr:last-child td {
+  border-bottom: none;
+}
+
+.cookie-table tr:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .legal-page {
+    padding: 60px 15px 30px;
+  }
+  
+  .legal-container {
+    padding: 30px 20px;
+    margin: 0 10px;
+  }
+  
+  .legal-container h1 {
+    font-size: 2rem;
+  }
+  
+  .legal-container h2 {
+    font-size: 1.5rem;
+    margin: 30px 0 15px;
+  }
+  
+  .legal-container h3 {
+    font-size: 1.2rem;
+  }
+  
+  .legal-container p,
+  .legal-container li {
+    font-size: 1rem;
+  }
+  
+  .contact-info {
+    padding: 20px;
+  }
+  
+  .cookie-table {
+    font-size: 0.9rem;
+  }
+  
+  .cookie-table th,
+  .cookie-table td {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .legal-container {
+    padding: 20px 15px;
+  }
+  
+  .legal-container h1 {
+    font-size: 1.8rem;
+  }
+  
+  .legal-container h2 {
+    font-size: 1.3rem;
+  }
+  
+  .legal-container h3 {
+    font-size: 1.1rem;
+  }
+  
+  .legal-container p,
+  .legal-container li {
+    font-size: 0.95rem;
+  }
+  
+  .cookie-table {
+    font-size: 0.8rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .legal-page {
+    background: white;
+    color: black;
+    padding: 20px;
+  }
+  
+  .legal-container {
+    background: white;
+    color: black;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+  
+  .legal-container h1,
+  .legal-container h2,
+  .legal-container h3 {
+    color: black;
+    -webkit-text-fill-color: black;
+    background: none;
+  }
+  
+  .legal-container p,
+  .legal-container li {
+    color: black;
+  }
+  
+  .contact-info {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+  }
+  
+  .cookie-table table {
+    background: white;
+    border: 1px solid #ddd;
+  }
+  
+  .cookie-table th {
+    background: #f0f0f0;
+    color: black;
+  }
+}

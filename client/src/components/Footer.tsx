@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { publicAPI } from '../services/api'
 import './Footer.css'
 
@@ -101,6 +102,16 @@ const Footer = () => {
             </button>
           </form>
           {message && <div className="newsletter-message">{message}</div>}
+        </div>
+      </div>
+      
+      <div className="footer-legal">
+        <div className="legal-links">
+          <Link to="/terms">{t('footer.terms')}</Link>
+          <Link to="/privacy">{t('footer.privacy')}</Link>
+          <Link to="/cookies">{t('footer.cookies')}</Link>
+          <Link to="/contact-legal">{t('footer.contact')}</Link>
+          <Link to="/gdpr">{t('footer.gdpr')}</Link>
         </div>
       </div>
       

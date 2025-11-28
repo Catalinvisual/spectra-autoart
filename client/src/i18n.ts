@@ -388,6 +388,23 @@ const resources = {
         bookingsResponse: 'U kunt eenvoudig online een afspraak maken via onze website!',
         servicesResponse: 'We bieden verschillende detailing en styling diensten aan. Kijk op onze website voor meer details.',
         hoursResponse: 'We zijn geopend van maandag tot vrijdag van 9:00 tot 18:00 en op zaterdag van 9:00 tot 16:00.'
+      },
+      
+      // Footer translations
+      footer: {
+        terms: 'Algemene Voorwaarden',
+        privacy: 'Privacybeleid',
+        cookies: 'Cookiebeleid',
+        contact: 'Contact & Juridisch',
+        gdpr: 'AVG / GDPR'
+      },
+      
+      // Terms popup translations
+      termsPopup: {
+        title: 'Welkom bij Spectra AutoArt',
+        description: 'Door onze website te gebruiken, gaat u akkoord met onze algemene voorwaarden en privacybeleid. Wij waarderen uw privacy en zijn toegewijd aan het beschermen van uw persoonlijke gegevens.',
+        accept: 'Accepteren',
+        decline: 'Afwijzen'
       }
     }
   },
@@ -611,6 +628,23 @@ const resources = {
         bookingsResponse: 'You can easily book online through our website!',
         servicesResponse: 'We offer various detailing and styling services. Check our website for more details.',
         hoursResponse: 'We are open Monday to Friday from 9:00 AM to 6:00 PM and Saturday from 9:00 AM to 4:00 PM.'
+      },
+      
+      // Footer translations
+      footer: {
+        terms: 'Terms & Conditions',
+        privacy: 'Privacy Policy',
+        cookies: 'Cookie Policy',
+        contact: 'Contact & Legal',
+        gdpr: 'GDPR'
+      },
+      
+      // Terms popup translations
+      termsPopup: {
+        title: 'Welcome to Spectra AutoArt',
+        description: 'By using our website, you agree to our terms and conditions and privacy policy. We value your privacy and are committed to protecting your personal data.',
+        accept: 'Accept',
+        decline: 'Decline'
       },
       
       // Admin translations
