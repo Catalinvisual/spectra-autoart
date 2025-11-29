@@ -2,6 +2,9 @@
 import express from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import GoogleSheetsService from '../services/googleSheetsService.js'
 import requireAuth from '../middleware/auth.js'
 
@@ -237,23 +240,54 @@ router.patch('/messages/:id', requireAuth, async (req, res) => {
 // Get all gallery images
 router.get('/gallery', requireAuth, async (req, res) => {
   try {
-    const data = await GoogleSheetsService.getData('Gallery')
+    // Import CloudinaryService dynamically to avoid circular dependencies
+    const { default: CloudinaryService } = await import('../services/cloudinaryService.js')
     
-    if (data.length <= 1) {
-      return res.json([])
+    // Get images from Cloudinary
+    const cloudinaryResult = await CloudinaryService.getImagesFromFolder('spectra-autoart/gallery')
+    const cloudinaryImages = cloudinaryResult.success ? cloudinaryResult.data : []
+    
+    // Get metadata from Google Sheets
+    let googleSheetsData = []
+    try {
+      const data = await GoogleSheetsService.getData('Gallery')
+      if (data.length > 1) {
+        googleSheetsData = data.slice(1).map(row => ({
+          id: row[0] || '',
+          url: row[1] || '',
+          alt_text: row[2] || '',
+          category: row[3] || 'general',
+          active: row[4] === true || row[4] === 'true',
+          createdAt: row[5] || ''
+        }))
+      }
+    } catch (sheetsError) {
+      console.warn('⚠️ Could not load Google Sheets metadata:', sheetsError.message)
     }
 
-    // Convert rows to gallery objects
-    const gallery = data.slice(1).map((row, index) => ({
-      id: row[0] || `gallery_${index + 1}`,
-      url: row[1] || '', // image URL (column B)
-      alt_text: row[2] || '', // description (column C)
-      category: row[3] || 'general', // category (column D)
-      active: row[4] === true || row[4] === 'true', // active (column E)
-      createdAt: row[5] || new Date().toISOString() // upload date (column F)
-    }))
+    // Combine Cloudinary images with Google Sheets metadata
+    const gallery = cloudinaryImages.map(image => {
+      // Try to find matching metadata from Google Sheets
+      const matchingMetadata = googleSheetsData.find(sheetData => 
+        sheetData.url === image.url || 
+        sheetData.id === image.id
+      )
 
-    res.json(gallery)
+      return {
+        id: image.id, // Use Cloudinary public_id as unique ID
+        url: image.url,
+        alt_text: matchingMetadata?.alt_text || image.description || '',
+        category: matchingMetadata?.category || image.category || 'general',
+        active: matchingMetadata?.active !== undefined ? matchingMetadata.active : image.active,
+        createdAt: image.created_date || new Date().toISOString(),
+        width: image.width,
+        height: image.height,
+        format: image.format,
+        bytes: image.size
+      }
+    })
+
+    res.json({ success: true, data: gallery })
   } catch (error) {
     console.error('Gallery error:', error)
     res.status(500).json({ error: 'Failed to load gallery' })
@@ -263,7 +297,7 @@ router.get('/gallery', requireAuth, async (req, res) => {
 // Add new gallery image
 router.post('/gallery', requireAuth, async (req, res) => {
   try {
-    const { url, alt_text, category, active } = req.body
+    const { url, alt_text, category, active, public_id } = req.body
     
     // Validate required fields
     if (!url) {
@@ -273,33 +307,38 @@ router.post('/gallery', requireAuth, async (req, res) => {
       })
     }
 
-    // Generate unique ID
-    const id = Date.now().toString()
+    // Use public_id from Cloudinary if provided, otherwise generate one
+    const id = public_id || Date.now().toString()
     const createdAt = new Date().toISOString()
 
-    // Create new gallery entry - match Google Sheets structure
+    // Create new gallery entry - match Google Sheets structure for metadata
     const galleryData = [
-      id,                                    // ID (column A)
-      url,                                   // Title (column B) - contains image title
+      id,                                    // ID (column A) - use Cloudinary public_id
+      url,                                   // Title (column B) - contains image URL
       alt_text || '',                        // Description (column C) - contains image description
-      category || 'general',                 // Image URL (column D) - contains image URL
+      category || 'general',                 // Image URL (column D) - contains category
       active !== undefined ? active : true,  // Category (column E) - contains active status
       createdAt                              // Upload Date (column F) - contains upload date
     ]
 
-    console.log('🖼️ Adding gallery image:', galleryData)
+    console.log('🖼️ Adding gallery image metadata:', galleryData)
 
-    // Append to Google Sheets
-    await GoogleSheetsService.appendData('Gallery', galleryData)
+    // Append metadata to Google Sheets
+    try {
+      await GoogleSheetsService.appendData('Gallery', galleryData)
+      console.log('✅ Gallery metadata saved to Google Sheets')
+    } catch (sheetsError) {
+      console.warn('⚠️ Could not save metadata to Google Sheets:', sheetsError.message)
+    }
 
     res.json({ 
       success: true, 
-      message: 'Gallery image added successfully',
+      message: 'Gallery image metadata saved successfully',
       image: {
         id,
         url,
         alt_text: alt_text || '',
-        category,
+        category: category || 'general',
         active: active !== undefined ? active : true,
         createdAt
       }
@@ -308,80 +347,294 @@ router.post('/gallery', requireAuth, async (req, res) => {
     console.error('Add gallery error:', error)
     res.status(500).json({ 
       success: false, 
-      error: 'Failed to add gallery image' 
+      error: 'Failed to add gallery image metadata' 
     })
   }
 })
 
-// Delete gallery image
-router.delete('/gallery/:id', requireAuth, async (req, res) => {
+// Update gallery image status - using wildcard to handle IDs with forward slashes
+router.put('/gallery/*', requireAuth, async (req, res) => {
   try {
-    const { id } = req.params
-    console.log('🗑️ Attempting to delete gallery image with ID:', id)
+    const id = req.params[0] // Get the full path after /gallery/
+    const { active, alt_text, category } = req.body
     
+    console.log('🔄 Updating gallery image:', id, { active, alt_text, category })
+    
+    // Get current data from Google Sheets
     const data = await GoogleSheetsService.getData('Gallery')
-    console.log('📊 Gallery data for deletion:', JSON.stringify(data, null, 2))
     
     if (data.length <= 1) {
-      console.log('❌ No gallery data found for deletion')
       return res.status(404).json({ 
         success: false, 
         error: 'No gallery images found' 
       })
     }
 
-    // Get headers to find the correct column for ID
+    // Find the row by ID
     const headers = data[0]
-    console.log('📋 Gallery headers:', headers)
-    
-    // Find the ID column index (usually 'id' or similar)
     const idColumnIndex = headers.findIndex(header => 
       header.toLowerCase().replace(/ /g, '_') === 'id'
     )
     
-    console.log('🔍 ID column index:', idColumnIndex)
-    
     if (idColumnIndex === -1) {
-      console.log('❌ ID column not found in headers')
-      return res.status(404).json({ 
+      return res.status(400).json({ 
         success: false, 
-        error: 'ID column not found in gallery data' 
+        error: 'ID column not found in Gallery data' 
       })
     }
 
+    // Extract numeric ID from Cloudinary path (e.g., "spectra-autoart/gallery/gallery-1764413003189-824263647" -> "1764413003189")
+    const extractNumericId = (cloudinaryPath) => {
+      // Dacă este deja un ID numeric simplu, returnează-l direct
+      if (/^\d+$/.test(cloudinaryPath)) {
+        return cloudinaryPath
+      }
+      // Extrage ID-ul numeric din formatul Cloudinary gallery-XXXX-XXXX sau gallery-XXXX
+      const match = cloudinaryPath.match(/gallery-(\d+)/)
+      return match ? match[1] : cloudinaryPath
+    }
+    
+    const numericId = extractNumericId(id)
+    console.log('🔍 Extracted numeric ID for PUT:', numericId, 'from path:', id)
+    
     const rowIndex = data.slice(1).findIndex(row => {
       const rowId = row[idColumnIndex]
-      console.log('🔍 Comparing row ID:', rowId, 'with ID:', id, 'Types:', typeof rowId, typeof id)
-      // Handle both string and number comparisons
-      return String(rowId) === String(id)
+      return String(rowId) === String(numericId)
     })
     
-    console.log('📍 Row index found:', rowIndex)
-    
     if (rowIndex === -1) {
-      console.log('❌ Gallery image not found with ID:', id)
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Gallery image not found' 
-      })
+      // Image not found in Google Sheets, but might exist in Cloudinary
+      // Create a new entry in Google Sheets for this Cloudinary image
+      console.log(`🆕 Creating new Google Sheets entry for Cloudinary image: ${id}`)
+      
+      // Get image data from Cloudinary if available
+      let imageUrl = ''
+      let imageAltText = alt_text || ''
+      let imageCategory = category || 'general'
+      
+      try {
+        // Try to get image info from Cloudinary
+        const cloudinaryResult = await CloudinaryService.searchImages(`public_id:${id}`)
+        if (cloudinaryResult.success && cloudinaryResult.data.length > 0) {
+          const cloudinaryImage = cloudinaryResult.data[0]
+          imageUrl = cloudinaryImage.url
+          imageAltText = alt_text || cloudinaryImage.description || ''
+          imageCategory = category || cloudinaryImage.category || 'general'
+        }
+      } catch (cloudinaryError) {
+        console.warn('⚠️ Could not fetch Cloudinary image info:', cloudinaryError.message)
+      }
+      
+      // Create new row data
+      const newRowData = [
+        id,                                    // ID
+        imageUrl,                              // URL
+        imageAltText,                          // Alt text
+        imageCategory,                         // Category
+        active !== undefined ? active : true,  // Active status
+        new Date().toISOString()               // Created at
+      ]
+      
+      try {
+        await GoogleSheetsService.appendData('Gallery', newRowData)
+        console.log('✅ New Google Sheets entry created for Cloudinary image')
+        
+        return res.json({ 
+          success: true, 
+          message: 'Image metadata created successfully',
+          image: {
+            id,
+            url: imageUrl,
+            alt_text: imageAltText,
+            category: imageCategory,
+            active: active !== undefined ? active : true,
+            createdAt: new Date().toISOString()
+          }
+        })
+      } catch (appendError) {
+        console.error('❌ Error creating Google Sheets entry:', appendError)
+        return res.status(500).json({ 
+          success: false, 
+          error: 'Failed to create image metadata' 
+        })
+      }
     }
 
-    console.log('🗑️ Deleting row at index:', rowIndex)
-    // Convert to 0-based index for GoogleSheetsService (data rows start at index 0)
-    const actualRowIndex = rowIndex
-    console.log('🗑️ Actual row index for deletion:', actualRowIndex)
-    const success = await GoogleSheetsService.deleteData('Gallery', actualRowIndex)
-    console.log('✅ Deletion result:', success)
+    // Update the data in the row
+    const actualRowIndex = rowIndex + 1 // +1 to account for header row
+    const currentRow = [...data[actualRowIndex]] // Create a copy
+    
+    // Update fields if provided
+    if (active !== undefined) {
+      currentRow[4] = active // Active status is in column 5 (index 4)
+    }
+    if (alt_text !== undefined) {
+      currentRow[2] = alt_text // Alt text is in column 3 (index 2)
+    }
+    if (category !== undefined) {
+      currentRow[3] = category // Category is in column 4 (index 3)
+    }
+
+    // Update the data in Google Sheets
+    await GoogleSheetsService.updateData('Gallery', actualRowIndex + 1, currentRow)
+    console.log('✅ Gallery image updated successfully:', id)
+
+    res.json({ 
+      success: true, 
+      message: 'Image updated successfully',
+      image: {
+        id: currentRow[0],
+        url: currentRow[1],
+        alt_text: currentRow[2],
+        category: currentRow[3],
+        active: currentRow[4]
+      }
+    })
+  } catch (error) {
+    console.error('Update gallery image error:', error)
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to update gallery image' 
+    })
+  }
+})
+
+// Delete gallery image - using wildcard to handle IDs with forward slashes
+router.delete('/gallery/*', requireAuth, async (req, res) => {
+  try {
+    const id = req.params[0] // Get the full path after /gallery/
+    console.log('🗑️ Attempting to delete gallery image with ID:', id)
+    console.log('📍 Request path:', req.path)
+    console.log('🔍 Route params:', req.params)
+    
+    // First, find the image in Google Sheets to get the URL and determine if it's local or Cloudinary
+    const data = await GoogleSheetsService.getData('Gallery')
+    
+    if (data.length <= 1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Gallery is empty'
+      })
+    }
+    
+    const headers = data[0]
+    const idColumnIndex = headers.findIndex(header => 
+      header.toLowerCase().replace(/ /g, '_') === 'id'
+    )
+    
+    if (idColumnIndex === -1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'ID column not found in Google Sheets'
+      })
+    }
+    
+    // Find image by matching Cloudinary URL or ID pattern
+    const findImageRow = (targetId, rows) => {
+      // Caută după ID direct
+      let rowIndex = rows.findIndex(row => String(row[idColumnIndex]) === String(targetId))
+      if (rowIndex !== -1) return rowIndex
+      
+      // Caută după URL care conține partea din ID
+      const urlColumnIndex = headers.findIndex(header => 
+        header.toLowerCase().replace(/ /g, '_') === 'image_url'
+      )
+      
+      if (urlColumnIndex !== -1) {
+        // Extrage partea relevantă din ID pentru căutare
+        const searchPattern = targetId.includes('gallery-') ? targetId : `gallery-${targetId}`
+        
+        rowIndex = rows.findIndex(row => {
+          const url = row[urlColumnIndex] || ''
+          return url.includes(searchPattern)
+        })
+      }
+      
+      return rowIndex
+    }
+    
+    console.log('🔍 Searching for image with ID:', id)
+    
+    // Find the row with matching ID or URL
+    const rowIndex = findImageRow(id, data.slice(1))
+    
+    if (rowIndex === -1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Image not found in Google Sheets'
+      })
+    }
+    
+    // Get the image data from Google Sheets
+    const imageRow = data.slice(1)[rowIndex]
+    const imageData = {}
+    headers.forEach((header, index) => {
+      imageData[header.toLowerCase().replace(/ /g, '_')] = imageRow[index] || ''
+    })
+    
+    console.log('🖼️ Found image data:', JSON.stringify(imageData, null, 2))
+    
+    const imageUrl = imageData.image_url || ''
+    
+    // Delete from Cloudinary if it's a Cloudinary URL
+    if (imageUrl.includes('cloudinary.com')) {
+      try {
+        // Extract public_id from Cloudinary URL
+        const urlParts = imageUrl.split('/')
+        const versionIndex = urlParts.findIndex(part => part.startsWith('v'))
+        if (versionIndex !== -1 && versionIndex < urlParts.length - 1) {
+          const publicId = urlParts.slice(versionIndex + 1).join('/').split('.')[0]
+          console.log('🗑️ Deleting Cloudinary image with public_id:', publicId)
+          
+          const { default: CloudinaryService } = await import('../services/cloudinaryService.js')
+          const cloudinaryResult = await CloudinaryService.deleteImage(publicId)
+          
+          if (cloudinaryResult.success) {
+            console.log('✅ Cloudinary image deleted successfully')
+          } else {
+            console.log('⚠️ Cloudinary deletion failed:', cloudinaryResult.error)
+          }
+        }
+      } catch (cloudinaryError) {
+        console.warn('⚠️ Could not delete from Cloudinary:', cloudinaryError.message)
+      }
+    } else if (imageUrl.startsWith('/uploads/')) {
+      // Delete local file
+      try {
+        const __filename = fileURLToPath(import.meta.url)
+        const __dirname = path.dirname(__filename)
+        const filePath = path.join(__dirname, '..', '..', imageUrl)
+        
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath)
+          console.log('✅ Local file deleted:', filePath)
+        } else {
+          console.log('⚠️ Local file not found:', filePath)
+        }
+      } catch (fileError) {
+        console.warn('⚠️ Could not delete local file:', fileError.message)
+      }
+    }
+    
+    // Delete from Google Sheets
+    try {
+      const actualRowIndex = rowIndex // Use 0-based index for GoogleSheetsService.deleteData
+      await GoogleSheetsService.deleteData('Gallery', actualRowIndex)
+      console.log('✅ Google Sheets entry deleted successfully')
+    } catch (sheetsError) {
+      console.warn('⚠️ Could not delete from Google Sheets:', sheetsError.message)
+    }
     
     res.json({ 
       success: true, 
-      message: 'Gallery image deleted successfully' 
+      message: 'Image deleted successfully'
     })
+    
   } catch (error) {
     console.error('Error deleting gallery image:', error)
     res.status(500).json({ 
       success: false, 
-      error: 'Failed to delete gallery image' 
+      error: 'Failed to delete gallery image'
     })
   }
 })

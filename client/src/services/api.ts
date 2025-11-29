@@ -170,12 +170,13 @@ export const adminAPI = {
   deleteBodyType: (id: string) => api.delete(`/admin/body-types/${id}`),
   getGallery: () => api.get('/admin/gallery'),
   uploadImage: (data: { url: string; alt_text: string; category: string; active: boolean }) => api.post('/admin/gallery', data),
-  uploadImageFile: (formData: FormData) => api.post('/gallery', formData, {
+  uploadImageFile: (formData: FormData) => api.post('/admin/gallery', formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
   }),
   deleteImage: (id: string) => api.delete(`/admin/gallery/${id}`),
+  updateImage: (id: string, data: { active?: boolean; alt_text?: string; category?: string }) => api.put(`/admin/gallery/${id}`, data),
   getNewsletterSubscribers: () => api.get('/admin/newsletter-subscribers'),
   sendNewsletter: (data: { subject: string; content: string }) => api.post('/admin/newsletter/send', data)
 }
