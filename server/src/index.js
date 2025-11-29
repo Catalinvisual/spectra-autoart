@@ -93,6 +93,7 @@ import debugVehiclesRouter from './routes/debugVehicles.js'
 import GoogleSheetsService from './services/googleSheetsService.js'
 import VehiclesAPIService from './services/vehiclesAPIService.js'
 import { vehicleServicesService } from './services/vehicleServicesService.js'
+import { initializeEmailService } from './services/emailService.js'
 
 const app = express()
 
@@ -169,6 +170,14 @@ app.get('*', (req, res) => {
 // Initialize Google Sheets Service
 async function initializeServices() {
   try {
+    // Initialize Email Service
+    const emailServiceInitialized = await initializeEmailService();
+    if (emailServiceInitialized) {
+      console.log('✅ Email service initialized successfully');
+    } else {
+      console.log('⚠️  Email service initialization failed - emails may not be sent');
+    }
+    
     // Initialize Vehicles API Service
     const vehiclesAPIInitialized = await VehiclesAPIService.initialize();
     if (vehiclesAPIInitialized) {

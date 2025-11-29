@@ -6,6 +6,8 @@ import GoogleSheetsService from '../services/googleSheetsService.js'
 import NotificationService from '../services/notificationService.js'
 import { getActiveBodyTypes } from '../config/bodyTypesConfig.js'
 import { translateMultipleWithDeepL, detectLanguageWithDeepL } from '../services/deeplTranslationService.js'
+import CloudinaryService from '../services/cloudinaryService.js'
+import { sendBookingConfirmation, sendAdminNotification } from '../services/emailService.js'
 
 const router = Router()
 
@@ -693,12 +695,35 @@ router.post('/bookings', async (req, res) => {
       // Continue even if Google Sheets fails
     }
     
-    // Send notifications (demo mode)
+    // Send email notifications
     try {
-      console.log('📧 Demo notification would be sent for booking:', bookingId);
-      console.log('Booking details:', { user, date, make, model, services, total });
+      console.log('📧 Sending email notifications for booking:', bookingId);
+      
+      // Prepare services data for emails
+      const emailServices = servicesList.split(', ').map(serviceName => ({
+        name: serviceName,
+        description: 'Serviciu auto detailing',
+        price: total > 0 ? (total / servicesList.split(', ').length).toFixed(2) : '0'
+      }));
+      
+      // Send confirmation email to client
+      const clientEmailResult = await sendBookingConfirmation(req.body, emailServices);
+      if (clientEmailResult.success) {
+        console.log('✅ Client confirmation email sent successfully');
+      } else {
+        console.error('❌ Failed to send client confirmation email:', clientEmailResult.error);
+      }
+      
+      // Send notification email to admin
+      const adminEmailResult = await sendAdminNotification(req.body, emailServices);
+      if (adminEmailResult.success) {
+        console.log('✅ Admin notification email sent successfully');
+      } else {
+        console.error('❌ Failed to send admin notification email:', adminEmailResult.error);
+      }
+      
     } catch (notificationError) {
-      console.error('❌ Notification error:', notificationError);
+      console.error('❌ Email notification error:', notificationError);
     }
     
     res.status(201).json({ 
@@ -995,7 +1020,7 @@ router.post('/testimonials', async (req, res) => {
   }
 })
 
-// GET /public/gallery - Get gallery images from Google Sheets
+// GET /public/gallery - Get gallery images from Google Sheets with Cloudinary support
 router.get('/gallery', async (req, res) => {
   try {
     const { lang = 'nl' } = req.query
@@ -1035,30 +1060,68 @@ router.get('/gallery', async (req, res) => {
         updated_date: image.upload_date || ''  // Upload_Date column contains upload date
       }
     }).filter(image => image.url && image.id)
+
+    // Filter out images without valid URL (exclude simple words like "interior", "general")
+    const filteredImages = images.filter(image => {
+      const hasUrl = image.url && image.id
+      const isValidUrl = image.url.includes('/') || image.url.startsWith('http') || image.url.endsWith('.jpg') || image.url.endsWith('.jpeg') || image.url.endsWith('.png') || image.url.endsWith('.gif') || image.url.endsWith('.webp')
+      return hasUrl && isValidUrl
+    })
     
-    // Temporarily show all images for debugging - remove filter to see what data we have
-    const filteredImages = images.filter(image => image.url && image.id)
-    console.log('🔍 All images before filtering:', images.length)
-    console.log('🔍 Images after basic filtering:', filteredImages.length)
+    console.log('🔍 Images after filtering:', filteredImages.length, 'from', images.length)
     
     // Log all URLs to understand the data structure
     filteredImages.forEach((image, index) => {
       console.log(`🖼️ Image ${index + 1}: ID="${image.id}", URL="${image.url}", Category="${image.category}"`)
     })
     
+    // Process images to ensure proper Cloudinary URLs
+    const processedImages = filteredImages.map(image => {
+      let processedUrl = image.url
+      
+      // If URL is from Cloudinary, ensure it uses HTTPS and has proper format
+      if (image.url.includes('cloudinary.com')) {
+        // Ensure HTTPS protocol
+        if (image.url.startsWith('http://')) {
+          processedUrl = image.url.replace('http://', 'https://')
+        }
+        
+        // Log Cloudinary URL processing
+        console.log(`☁️ Processing Cloudinary URL: ${image.url} -> ${processedUrl}`)
+      }
+      
+      // For local URLs, ensure they're properly formatted
+      else if (image.url.startsWith('/uploads/')) {
+        const baseUrl = process.env.API_URL || 'http://localhost:8080'
+        processedUrl = `${baseUrl}${image.url}`
+        console.log(`📁 Processing local URL: ${image.url} -> ${processedUrl}`)
+      }
+      
+      // For Google Drive URLs, use as-is (they should already be proper URLs)
+      else if (image.url.includes('drive.google.com') || image.url.includes('googleusercontent.com')) {
+        console.log(`📄 Processing Google Drive URL: ${image.url}`)
+        processedUrl = image.url
+      }
+      
+      return {
+        ...image,
+        url: processedUrl
+      }
+    })
+    
     // Translate gallery images if language is not Dutch
-    let translatedImages = filteredImages
+    let translatedImages = processedImages
     if (lang !== 'nl') {
       try {
         // Extract descriptions that need translation
-        const descriptionsToTranslate = filteredImages.map(img => img.description)
+        const descriptionsToTranslate = processedImages.map(img => img.description)
 
         // Translate all descriptions
         const translatedDescriptionsResult = await translateMultipleWithDeepL(descriptionsToTranslate.join('|'), [lang.toUpperCase()], 'nl');
         const translatedDescriptions = translatedDescriptionsResult[lang.toUpperCase()]?.split('|') || descriptionsToTranslate;
 
         // Create translated images
-        translatedImages = filteredImages.map((image, index) => ({
+        translatedImages = processedImages.map((image, index) => ({
           ...image,
           title: translatedDescriptions[index] || image.title,
           description: translatedDescriptions[index] || image.description
@@ -1066,7 +1129,7 @@ router.get('/gallery', async (req, res) => {
       } catch (translationError) {
         console.error('Translation error:', translationError)
         // Fallback to original images
-        translatedImages = filteredImages
+        translatedImages = processedImages
       }
     }
     
@@ -1080,6 +1143,136 @@ router.get('/gallery', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       error: 'Failed to get gallery images'
+    })
+  }
+})
+
+// GET /public/gallery/cloudinary - Get gallery images directly from Cloudinary with Google Sheets sync
+router.get('/gallery/cloudinary', async (req, res) => {
+  try {
+    const { lang = 'nl', folder = 'gallery', max = 100 } = req.query
+    
+    console.log(`🖼️ Getting gallery images from Cloudinary folder: ${folder}`)
+    console.log(`📊 Query params: lang=${lang}, folder=${folder}, max=${max}`)
+    
+    // Get images from Cloudinary
+    const result = await CloudinaryService.getImagesFromFolder(folder, parseInt(max))
+    
+    if (!result.success) {
+      console.error('❌ Failed to get images from Cloudinary:', result.error)
+      console.error('❌ Cloudinary error details:', result)
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to get images from Cloudinary',
+        details: result.error
+      })
+    }
+    
+    console.log(`✅ Found ${result.data.length} images in Cloudinary`)
+    
+    // Get gallery metadata from Google Sheets
+    let googleSheetsData = []
+    try {
+      const sheetsData = await GoogleSheetsService.getData('Gallery')
+      console.log(`📊 Retrieved ${sheetsData.length} rows from Google Sheets Gallery`)
+      
+      if (sheetsData.length > 1) {
+        const headers = sheetsData[0]
+        googleSheetsData = sheetsData.slice(1).map(row => {
+          const imageData = {}
+          headers.forEach((header, index) => {
+            imageData[header.toLowerCase().replace(/ /g, '_')] = row[index] || ''
+          })
+          return {
+            id: imageData.id || '',
+            title: imageData.title || '',
+            description: imageData.description || '',
+            category: imageData.category || 'general',
+            active: imageData.active ? (imageData.active.toString().toLowerCase() === 'true') : true,
+            upload_date: imageData.upload_date || ''
+          }
+        })
+      }
+    } catch (sheetsError) {
+      console.warn('⚠️ Could not retrieve Google Sheets data:', sheetsError.message)
+      // Continue without Google Sheets data
+    }
+    
+    // Process images and merge with Google Sheets data
+    console.log(`📊 Processing ${result.data.length} Cloudinary images with ${googleSheetsData.length} Google Sheets entries`)
+    
+    const processedImages = result.data.map(image => {
+      console.log(`🔍 Looking for metadata for image ID: "${image.id}", URL: "${image.url}"`)
+      
+      // Try to find matching Google Sheets data by image ID or URL
+      const sheetsMetadata = googleSheetsData.find(sheet => {
+        const match = sheet.id === image.id || 
+                     sheet.id === image.public_id ||
+                     image.url.includes(sheet.id) ||
+                     (sheet.image_url && image.url === sheet.image_url)
+        
+        if (match) {
+          console.log(`✅ Found metadata match for "${image.id}":`, {
+            title: sheet.title,
+            description: sheet.description,
+            category: sheet.category
+          })
+        }
+        
+        return match
+      })
+      
+      if (!sheetsMetadata) {
+        console.log(`⚠️ No metadata found for image "${image.id}", using defaults`)
+      }
+      
+      return {
+        id: image.id,
+        url: image.url,
+        title: sheetsMetadata?.title || image.title || 'Gallery Image',
+        description: sheetsMetadata?.description || image.description || '',
+        category: sheetsMetadata?.category || image.category || 'general',
+        active: sheetsMetadata?.active !== undefined ? sheetsMetadata.active : true,
+        created_date: image.created_date,
+        updated_date: image.updated_date,
+        width: image.width,
+        height: image.height,
+        size: image.size,
+        has_sheets_metadata: !!sheetsMetadata
+      }
+    })
+    
+    // Translate descriptions if language is not Dutch
+    let translatedImages = processedImages
+    if (lang !== 'nl' && processedImages.some(img => img.description)) {
+      try {
+        const descriptionsToTranslate = processedImages.map(img => img.description)
+        const translatedDescriptionsResult = await translateMultipleWithDeepL(descriptionsToTranslate.join('|'), [lang.toUpperCase()], 'nl')
+        const translatedDescriptions = translatedDescriptionsResult[lang.toUpperCase()]?.split('|') || descriptionsToTranslate
+        
+        translatedImages = processedImages.map((image, index) => ({
+          ...image,
+          description: translatedDescriptions[index] || image.description
+        }))
+        
+        console.log(`🔄 Translated ${translatedImages.length} image descriptions to ${lang}`)
+      } catch (translationError) {
+        console.warn('⚠️ Translation failed, using original descriptions:', translationError.message)
+        translatedImages = processedImages
+      }
+    }
+    
+    console.log(`✅ Returning ${translatedImages.length} gallery images (${translatedImages.filter(img => img.has_sheets_metadata).length} with Google Sheets metadata)`)
+    res.json({
+      success: true,
+      data: translatedImages
+    })
+    
+  } catch (error) {
+    console.error('Error getting Cloudinary gallery images:', error)
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to get Cloudinary gallery images'
     })
   }
 })
