@@ -551,9 +551,13 @@ router.get('/bookings/availability', async (req, res) => {
 })
 
 router.post('/bookings', async (req, res) => {
-  // Add overall timeout protection for the entire endpoint
+  const startTime = Date.now();
+  console.log(`🚀 Booking request started at ${new Date().toISOString()}`);
+  
+  // Add overall timeout protection for the entire endpoint - reduced to 15 seconds
   const requestTimeout = setTimeout(() => {
-    console.error('❌ Booking endpoint timeout - sending error response');
+    const elapsed = Date.now() - startTime;
+    console.error(`❌ Booking endpoint timeout after ${elapsed}ms - sending error response`);
     if (!res.headersSent) {
       res.status(504).json({ 
         success: false,
@@ -561,55 +565,56 @@ router.post('/bookings', async (req, res) => {
         demo: true 
       });
     }
-  }, 25000); // 25 second overall timeout
+  }, 15000); // 15 second overall timeout (reduced from 25)
   
   try {
     const { date, time, make, model, type, body, services, user, locale } = req.body
     
+    console.log(`📋 Booking data received: ${services?.length || 0} services, user: ${user?.email || 'unknown'}`);
+    
     if (!date || !time || !make || !model || !user?.name || !user?.email || !user?.phone) {
       clearTimeout(requestTimeout);
+      console.log(`❌ Missing required fields in booking request`);
       return res.status(400).json({ 
         success: false,
         error: 'Toate câmpurile sunt obligatorii' 
       })
    }
     
-    // For demo purposes, allow all dates (remove weekend restriction)
-    // const bookingDate = new Date(date);
-    // const isWeekend = bookingDate.getDay() === 0 || bookingDate.getDay() === 6;
-    
-    // if (isWeekend) {
-    //   return res.status(409).json({ 
-    //     success: false,
-    //     error: 'Data este deja rezervată' 
-    //   })
-    // }
-    
     const bookingId = Date.now().toString()
     
-    // Get services data to calculate total and names
-    let servicesData = [];
+    // Get services data to calculate total and names - with optimized parallel fetching
     let servicesList = '';
     let total = 0;
     
     try {
-      // Add timeout protection for Google Sheets operations
-      const servicesTimeout = new Promise((resolve) => {
-        setTimeout(() => resolve(null), 3000); // 3 second timeout
+      const servicesStartTime = Date.now();
+      console.log(`🔍 Starting services data fetch...`);
+      
+      // Create optimized timeout for Google Sheets operations (2 seconds)
+      const sheetsTimeout = new Promise((resolve) => {
+        setTimeout(() => resolve(null), 2000); // 2 second timeout
       });
       
-      // Get services names from Services sheet with timeout
+      // Fetch both sheets in parallel with timeout
       const servicesPromise = GoogleSheetsService.getData('Services');
-      const servicesFromSheets = await Promise.race([servicesPromise, servicesTimeout]);
+      const pricesPromise = GoogleSheetsService.getData('Service_Prices');
+      
+      const [servicesFromSheets, servicePricesFromSheets] = await Promise.all([
+        Promise.race([servicesPromise, sheetsTimeout]),
+        Promise.race([pricesPromise, sheetsTimeout])
+      ]);
+      
+      const servicesFetchTime = Date.now() - servicesStartTime;
+      console.log(`✅ Services data fetch completed in ${servicesFetchTime}ms`);
       
       if (!servicesFromSheets) {
         console.log('⚠️  Google Sheets services request timed out, using fallback');
         throw new Error('Google Sheets timeout');
       }
       
-      // Get service prices from Service_Prices sheet with timeout
-      const pricesPromise = GoogleSheetsService.getData('Service_Prices');
-      const servicePricesFromSheets = await Promise.race([pricesPromise, servicesTimeout]) || [];
+      // Use empty array if prices timed out
+      const pricesData = servicePricesFromSheets || [];
       
       if (servicesFromSheets.length > 1) {
         // Parse Services headers
@@ -619,23 +624,34 @@ router.post('/bookings', async (req, res) => {
         const servicesPriceIndex = servicesHeaders.indexOf('Price'); // Fallback price from Services sheet
         
         // Parse Service_Prices headers (if available)
-        const pricesHeaders = servicePricesFromSheets.length > 1 ? servicePricesFromSheets[0] : [];
+        const pricesHeaders = pricesData.length > 1 ? pricesData[0] : [];
         const pricesServiceIdIndex = pricesHeaders.indexOf('Service_ID');
         const pricesBodyTypeIndex = pricesHeaders.indexOf('Body_Type_ID');
         const pricesPriceMinIndex = pricesHeaders.indexOf('Price_Min');
         
         if (servicesIdIndex !== -1 && servicesNameIndex !== -1) {
           
-          // Get service names and prices for the selected service IDs
+          // Get service names and prices for the selected service IDs - optimized
           const serviceNames = [];
           
-          services.forEach(serviceId => {
-            // Find service name - handle both string and number comparisons
-            const serviceRow = servicesFromSheets.slice(1).find(row => {
-              const rowId = row[servicesIdIndex];
-              // Convert both to string for comparison to handle mixed types
-              return String(rowId).trim() === String(serviceId).trim();
+          // Pre-process services data for faster lookup
+          const servicesMap = new Map();
+          servicesFromSheets.slice(1).forEach(row => {
+            const rowId = String(row[servicesIdIndex]).trim();
+            servicesMap.set(rowId, row);
+          });
+          
+          // Pre-process prices data for faster lookup
+          const pricesMap = new Map();
+          if (pricesData.length > 1 && pricesServiceIdIndex !== -1 && pricesBodyTypeIndex !== -1) {
+            pricesData.slice(1).forEach(row => {
+              const key = `${String(row[pricesServiceIdIndex]).trim()}_${String(row[pricesBodyTypeIndex]).trim()}`;
+              pricesMap.set(key, row);
             });
+          }
+          
+          services.forEach(serviceId => {
+            const serviceRow = servicesMap.get(String(serviceId).trim());
             
             if (serviceRow) {
               const serviceName = serviceRow[servicesNameIndex] || serviceRow[servicesIdIndex];
@@ -643,14 +659,10 @@ router.post('/bookings', async (req, res) => {
               
               let servicePrice = 0;
               
-              // First try to find price in Service_Prices sheet (if available)
+              // Optimized price lookup using pre-built map
               if (pricesServiceIdIndex !== -1 && pricesBodyTypeIndex !== -1 && pricesPriceMinIndex !== -1) {
-                const priceRow = servicePricesFromSheets.slice(1).find(row => {
-                  const rowServiceId = String(row[pricesServiceIdIndex]).trim();
-                  const rowBodyType = String(row[pricesBodyTypeIndex]).trim();
-                  return rowServiceId === String(serviceId).trim() && rowBodyType === String(body).trim();
-                });
-                
+                const priceKey = `${String(serviceId).trim()}_${String(body).trim()}`;
+                const priceRow = pricesMap.get(priceKey);
                 if (priceRow) {
                   servicePrice = parseFloat(priceRow[pricesPriceMinIndex]) || 0;
                 }
@@ -674,97 +686,109 @@ router.post('/bookings', async (req, res) => {
       total = 0; // Set to 0 if we can't calculate
     }
     
-    // Save booking to Google Sheets with timeout protection
-    try {
-      
-      // Format date and time for display
-      const formattedDateTime = `${date} ${time}`;
-      
-      // Format date and time to prevent Google Sheets auto-conversion
-      // Use single quote prefix to force text format (hidden in Google Sheets)
-      const formattedDate = `'${date}`;  // '2025-11-30 (appears as 2025-11-30)
-      const formattedTime = `'${time}`;  // '14:30 (appears as 14:30)
-      
-      const bookingData = [
-        bookingId,                    // ID (column 0)
-        user.name,                    // Name (column 1)
-        user.email,                   // Email (column 2)
-        user.phone,                   // Phone (column 3)
-        formattedDate,                // Date (column 4) - text format
-        formattedTime,              // Time (column 5) - text format
-        servicesList,                 // Services (column 6)
-        total.toString(),             // Total (column 7)
-        'confirmed',                  // Status (column 8)
-        new Date().toISOString()      // Created At (column 9)
-      ];
-      
-      console.log('💾 Saving booking to Google Sheets:', bookingData);
-      
-      // Add timeout protection for Google Sheets save operation
-      const saveTimeout = new Promise((resolve) => {
-        setTimeout(() => {
-          console.log('⚠️  Google Sheets save operation timed out');
-          resolve(false);
-        }, 5000); // 5 second timeout for save
-      });
-      
-      const savePromise = GoogleSheetsService.appendDataWithFormats('Bookings', bookingData, {
-        4: 'TEXT', // Date column - force text format
-        5: 'TEXT'  // Time column - force text format
-      });
-      
-      const saved = await Promise.race([savePromise, saveTimeout]);
-      
-      if (saved) {
-        console.log('✅ Booking saved successfully to Google Sheets');
-      } else {
-        console.log('⚠️  Booking save failed or timed out, continuing with demo mode');
+    // Save booking to Google Sheets with optimized timeout - fire and forget approach
+    // This operation will continue in background after response is sent
+    const saveBookingAsync = async () => {
+      try {
+        // Format date and time to prevent Google Sheets auto-conversion
+        const formattedDate = `'${date}`;  // '2025-11-30 (appears as 2025-11-30)
+        const formattedTime = `'${time}`;  // '14:30 (appears as 14:30)
+        
+        const bookingData = [
+          bookingId,                    // ID (column 0)
+          user.name,                    // Name (column 1)
+          user.email,                   // Email (column 2)
+          user.phone,                   // Phone (column 3)
+          formattedDate,                // Date (column 4) - text format
+          formattedTime,              // Time (column 5) - text format
+          servicesList,                 // Services (column 6)
+          total.toString(),             // Total (column 7)
+          'confirmed',                  // Status (column 8)
+          new Date().toISOString()      // Created At (column 9)
+        ];
+        
+        console.log('💾 Saving booking to Google Sheets (async):', bookingData);
+        
+        // Quick timeout for save operation (3 seconds)
+        const saveTimeout = new Promise((resolve) => {
+          setTimeout(() => {
+            console.log('⚠️  Google Sheets save operation timed out (async)');
+            resolve(false);
+          }, 3000); // 3 second timeout
+        });
+        
+        const savePromise = GoogleSheetsService.appendDataWithFormats('Bookings', bookingData, {
+          4: 'TEXT', // Date column - force text format
+          5: 'TEXT'  // Time column - force text format
+        });
+        
+        const saved = await Promise.race([savePromise, saveTimeout]);
+        
+        if (saved) {
+          console.log('✅ Booking saved successfully to Google Sheets (async)');
+        } else {
+          console.log('⚠️  Booking save failed or timed out (async), but continuing');
+        }
+      } catch (sheetsError) {
+        console.error('❌ Google Sheets error (async):', sheetsError);
+        // Silent fail - don't affect user experience
       }
-    } catch (sheetsError) {
-      console.error('❌ Google Sheets error:', sheetsError);
-      // Continue even if Google Sheets fails
-    }
+    };
     
-    // Send email notifications
-    try {
-      console.log('📧 Sending email notifications for booking:', bookingId);
-      
-      // Prepare services data for emails
-      const emailServices = servicesList.split(', ').map(serviceName => ({
-        name: serviceName,
-        description: 'Serviciu auto detailing',
-        price: total > 0 ? (total / servicesList.split(', ').length).toFixed(2) : '0'
-      }));
-      
-      // Send confirmation email to client
-      const clientEmailResult = await sendBookingConfirmation(req.body, emailServices);
-      if (clientEmailResult.success) {
-        console.log('✅ Client confirmation email sent successfully');
-      } else {
-        console.error('❌ Failed to send client confirmation email:', clientEmailResult.error);
+    // Send email notifications asynchronously (fire and forget)
+    const sendEmailsAsync = async () => {
+      try {
+        console.log('📧 Sending email notifications for booking (async):', bookingId);
+        
+        // Prepare services data for emails
+        const emailServices = servicesList.split(', ').map(serviceName => ({
+          name: serviceName,
+          description: 'Serviciu auto detailing',
+          price: total > 0 ? (total / servicesList.split(', ').length).toFixed(2) : '0'
+        }));
+        
+        // Send confirmation email to client
+        const clientEmailResult = await sendBookingConfirmation(req.body, emailServices);
+        if (clientEmailResult.success) {
+          console.log('✅ Client confirmation email sent successfully (async)');
+        } else {
+          console.error('❌ Failed to send client confirmation email (async):', clientEmailResult.error);
+        }
+        
+        // Send notification email to admin
+        const adminEmailResult = await sendAdminNotification(req.body, emailServices);
+        if (adminEmailResult.success) {
+          console.log('✅ Admin notification email sent successfully (async)');
+        } else {
+          console.error('❌ Failed to send admin notification email (async):', adminEmailResult.error);
+        }
+        
+      } catch (notificationError) {
+        console.error('❌ Email notification error (async):', notificationError);
       }
-      
-      // Send notification email to admin
-      const adminEmailResult = await sendAdminNotification(req.body, emailServices);
-      if (adminEmailResult.success) {
-        console.log('✅ Admin notification email sent successfully');
-      } else {
-        console.error('❌ Failed to send admin notification email:', adminEmailResult.error);
-      }
-      
-    } catch (notificationError) {
-      console.error('❌ Email notification error:', notificationError);
-    }
+    };
+    
+    // Start async operations but don't wait for them
+    saveBookingAsync();
+    sendEmailsAsync();
+    
+    const totalTime = Date.now() - startTime;
+    console.log(`✅ Booking request completed successfully in ${totalTime}ms`);
     
     clearTimeout(requestTimeout);
     res.status(201).json({ 
       success: true, 
       bookingId,
-      message: 'Programarea a fost confirmată'
+      message: 'Programarea a fost confirmată',
+      performance: {
+        totalTime: `${totalTime}ms`,
+        timestamp: new Date().toISOString()
+      }
     })
   } catch (error) {
+    const totalTime = Date.now() - startTime;
     clearTimeout(requestTimeout);
-    console.error('Error creating booking:', error);
+    console.error(`❌ Error creating booking after ${totalTime}ms:`, error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to create booking',

@@ -73,6 +73,8 @@ const resources = {
       vehicleType: 'Type',
       vehicleBody: 'Carrosserie',
       selectService: 'Selecteer Service',
+      selectTime: 'Tijd selecteren',
+      service: 'Service',
       personalDetails: 'Persoonlijke Gegevens',
       selectDate: 'Datum selecteren',
       name: 'Naam',
@@ -150,6 +152,8 @@ const resources = {
       passwordResetFailed: 'Wachtwoord reset mislukt.',
 
       failedToUpdateImageStatus: 'Status afbeelding bijwerken mislukt',
+      imageStatusUpdated: 'Afbeeldingsstatus bijgewerkt!',
+      imageNotFound: 'Afbeelding niet gevonden',
       imageUrlPlaceholder: 'https://voorbeeld.nl/afbeelding.jpg',
       enterNewsletterSubjectPlaceholder: 'Voer nieuwsbrief onderwerp in...',
       enterPlainTextContentPlaceholder: 'Voer platte tekst inhoud in...',
@@ -478,6 +482,8 @@ const resources = {
       vehicleType: 'Type',
       vehicleBody: 'Body',
       selectService: 'Select Service',
+      selectTime: 'Select Time',
+      service: 'Service',
       personalDetails: 'Personal Details',
       selectDate: 'Select Date',
       name: 'Name',
@@ -558,6 +564,8 @@ const resources = {
       passwordResetFailed: 'Password reset failed.',
 
       failedToUpdateImageStatus: 'Failed to update image status',
+      imageStatusUpdated: 'Image status updated!',
+      imageNotFound: 'Image not found',
       imageUrlPlaceholder: 'https://example.com/image.jpg',
       enterNewsletterSubjectPlaceholder: 'Enter newsletter subject...',
       enterPlainTextContentPlaceholder: 'Enter plain text content...',
@@ -914,6 +922,8 @@ const resources = {
       defaultAdminCredentials: 'Credenciales de admin por defecto:\nEmail: admin@spectra.com\nContraseña: admin123\n\nPor favor usa estas credenciales para iniciar sesión.',
 
       failedToUpdateImageStatus: 'Error al actualizar estado de imagen',
+      imageStatusUpdated: '¡Estado de imagen actualizado!',
+      imageNotFound: 'Imagen no encontrada',
       imageUrlPlaceholder: 'https://ejemplo.com/imagen.jpg',
       enterNewsletterSubjectPlaceholder: 'Ingrese asunto del boletín...',
       enterPlainTextContentPlaceholder: 'Ingrese contenido de texto plano...',
@@ -1112,6 +1122,8 @@ const resources = {
       defaultAdminCredentials: 'Domyślne dane logowania admina:\nEmail: admin@spectra.com\nHasło: admin123\n\nUżyj tych danych do zalogowania się.',
 
       failedToUpdateImageStatus: 'Nie udało się zaktualizować statusu obrazu',
+      imageStatusUpdated: 'Status obrazu zaktualizowany!',
+      imageNotFound: 'Nie znaleziono obrazu',
       imageUrlPlaceholder: 'https://przyklad.pl/obraz.jpg',
       enterNewsletterSubjectPlaceholder: 'Wprowadź temat newslettera...',
       enterPlainTextContentPlaceholder: 'Wprowadź treść tekstową...',
@@ -1234,6 +1246,8 @@ const resources = {
       vehicleType: 'Tip',
       vehicleBody: 'Caroserie',
       selectService: 'Selectează Serviciu',
+      selectTime: 'Selectează Ora',
+      service: 'Serviciu',
       personalDetails: 'Detalii Personale',
       selectDate: 'Selectează Data',
       name: 'Nume',
@@ -1310,6 +1324,8 @@ const resources = {
 
 
       failedToUpdateImageStatus: 'Actualizarea statusului imaginii a eșuat',
+      imageStatusUpdated: 'Statusul imaginii a fost actualizat!',
+      imageNotFound: 'Imaginea nu a fost găsită',
       imageUrlPlaceholder: 'https://exemplu.ro/imagine.jpg',
       enterNewsletterSubjectPlaceholder: 'Introduceți subiect newsletter...',
       enterPlainTextContentPlaceholder: 'Introduceți conținut text simplu...',
