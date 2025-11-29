@@ -863,4 +863,104 @@ router.delete('/bookings/:id', requireAuth, async (req, res) => {
   }
 });
 
+// Get email configuration status
+router.get('/email/config', requireAuth, async (req, res) => {
+  try {
+    console.log('🔧 Checking email configuration...');
+    
+    const config = {
+      emailUser: process.env.EMAIL_USER ? 'CONFIGURED' : 'MISSING',
+      emailPass: process.env.EMAIL_PASS ? 'CONFIGURED' : 'MISSING',
+      smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
+      smtpPort: process.env.SMTP_PORT || '465',
+      smtpSecure: process.env.SMTP_SECURE || 'true'
+    };
+
+    // Test if transporter is working
+    let transporterStatus = 'UNKNOWN';
+    try {
+      if (transporter && transporter.verify) {
+        await transporter.verify();
+        transporterStatus = 'WORKING';
+      } else {
+        transporterStatus = 'NOT_INITIALIZED';
+      }
+    } catch (verifyError) {
+      transporterStatus = 'FAILED';
+      console.error('❌ Transporter verification failed:', verifyError.message);
+    }
+
+    res.json({
+      success: true,
+      configuration: {
+        ...config,
+        transporterStatus
+      },
+      message: 'Email configuration retrieved successfully'
+    });
+
+  } catch (error) {
+    console.error('Email config error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get email configuration'
+    });
+  }
+});
+
+// Send test email
+router.post('/email/send', requireAuth, async (req, res) => {
+  try {
+    const { to, subject, html, text } = req.body;
+    
+    if (!to || !subject || (!html && !text)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: to, subject, html/text'
+      });
+    }
+
+    console.log(`📧 Sending test email to: ${to}`);
+    
+    if (!transporter) {
+      console.warn('⚠️ Email transporter not available');
+      return res.status(503).json({
+        success: false,
+        error: 'Email service not configured'
+      });
+    }
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to,
+      subject,
+      text: text || html.replace(/<[^>]*>/g, ''),
+      html: html || text
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log(`✅ Test email sent successfully to ${to} with messageId: ${result.messageId}`);
+    
+    res.json({
+      success: true,
+      message: 'Test email sent successfully',
+      messageId: result.messageId
+    });
+
+  } catch (error) {
+    console.error('❌ Test email failed:', error.message);
+    console.error('Error details:', {
+      code: error.code,
+      response: error.response,
+      responseCode: error.responseCode
+    });
+    
+    res.status(500).json({
+      success: false,
+      error: 'Failed to send test email',
+      details: error.message
+    });
+  }
+});
+
 export default router
