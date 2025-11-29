@@ -29,6 +29,9 @@ export const useGoogleTranslation = (text: string, dependencies: any[] = []): Us
     error: null
   })
 
+  // Memoize dependencies to prevent infinite re-renders
+  const dependenciesKey = JSON.stringify(dependencies)
+
   const translate = useCallback(async (textToTranslate: string): Promise<string> => {
     if (!textToTranslate || currentLanguage === 'nl') {
       return textToTranslate
@@ -73,7 +76,7 @@ export const useGoogleTranslation = (text: string, dependencies: any[] = []): Us
 
   useEffect(() => {
     translate(text)
-  }, [text, currentLanguage, ...dependencies])
+  }, [text, currentLanguage, dependenciesKey])
 
   return {
     translatedText: translation.translatedText,
@@ -97,6 +100,9 @@ export const useGoogleTranslations = (texts: string[], dependencies: any[] = [])
     isTranslating: false,
     error: null
   })
+
+  // Memoize dependencies to prevent infinite re-renders
+  const dependenciesKey = JSON.stringify(dependencies)
 
   const translateMultiple = useCallback(async (textsToTranslate: string[]): Promise<string[]> => {
     if (!textsToTranslate || textsToTranslate.length === 0 || currentLanguage === 'nl') {
@@ -171,7 +177,7 @@ export const useGoogleTranslations = (texts: string[], dependencies: any[] = [])
 
   useEffect(() => {
     translateMultiple(texts)
-  }, [JSON.stringify(texts), currentLanguage, ...dependencies])
+  }, [JSON.stringify(texts), currentLanguage, dependenciesKey])
 
   return {
     translatedTexts: translations.translatedTexts,

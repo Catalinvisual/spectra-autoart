@@ -91,11 +91,11 @@ router.get('/bookings', requireAuth, async (req, res) => {
     const bookings = data.slice(1).map((row, index) => {
       // Map columns based on actual Google Sheets structure
       const id = row[0] || `booking_${index + 1}`
-      const date = row[1] || ''
-      const time = row[2] || ''
-      const name = row[3] || ''
-      const email = row[4] || ''
-      const phone = row[5] || ''
+      const name = row[1] || ''
+      const email = row[2] || ''
+      const phone = row[3] || ''
+      const date = row[4] || ''
+      const time = row[5] || ''
       const services = row[6] || ''
       const totalRaw = row[7] || '0'
       const status = row[8] || 'pending'

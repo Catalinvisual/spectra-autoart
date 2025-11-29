@@ -740,6 +740,12 @@ router.post('/bookings', async (req, res) => {
       try {
         console.log('📧 Sending email notifications for booking (async):', bookingId);
         
+        // Check if email service is configured
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+          console.warn('⚠️ Email service not configured - skipping email notifications');
+          return;
+        }
+        
         // Prepare services data for emails
         const emailServices = servicesList.split(', ').map(serviceName => ({
           name: serviceName,

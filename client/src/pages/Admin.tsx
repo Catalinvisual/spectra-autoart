@@ -1685,30 +1685,43 @@ const GalleryManagement: React.FC = () => {
     try {
       setLoading(true)
       const response = await adminAPI.getGallery()
-      // Construiește URL-uri complete pentru imagini
-      const processedImages = response.data.map((image: any) => {
-        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8080'
-        let fullUrl = image.url
-        
-        // Dacă URL-ul nu începe cu http, construiește URL complet
-        if (!image.url.startsWith('http')) {
-          // Asigură-te că URL-ul începe cu / pentru a fi o cale relativă validă
-          const normalizedPath = image.url.startsWith('/') ? image.url : `/${image.url}`
-          fullUrl = `${baseUrl}${normalizedPath}`
-        }
-        
-        console.log('🔍 Admin gallery image URL processing:', {
-          original: image.url,
-          baseUrl: baseUrl,
-          fullUrl: fullUrl,
-          startsWithHttp: image.url.startsWith('http')
+      
+      // Procesează și filtrează imagini duplicate
+      const processedImages = response.data
+        .map((image: any) => {
+          // Curăță URL-ul de spații și caractere speciale
+          let cleanUrl = image.url?.toString().trim().replace(/^`|`$/g, '') || ''
+          
+          // Verifică dacă URL-ul este deja complet (Cloudinary sau alt serviciu)
+          let finalUrl = cleanUrl
+          if (cleanUrl && !cleanUrl.startsWith('http')) {
+            // Doar pentru URL-uri relative locale
+            const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8080'
+            const normalizedPath = cleanUrl.startsWith('/') ? cleanUrl : `/${cleanUrl}`
+            finalUrl = `${baseUrl}${normalizedPath}`
+          }
+          
+          console.log('🔍 Admin gallery image URL processing:', {
+            original: image.url,
+            cleanUrl: cleanUrl,
+            finalUrl: finalUrl,
+            id: image.id
+          })
+          
+          return {
+            ...image,
+            url: finalUrl
+          }
         })
-        return {
-          ...image,
-          url: fullUrl
-        }
-      })
-      setImages(processedImages)
+        .filter((image: any) => image.url && image.id) // Filtrează imagini fără URL sau ID
+      
+      // Elimină duplicate bazate pe ID
+      const uniqueImages = processedImages.filter((image: any, index: number, self: any[]) => 
+        index === self.findIndex((i: any) => i.id === image.id)
+      )
+      
+      console.log(`✅ Loaded ${uniqueImages.length} unique images from ${processedImages.length} total`)
+      setImages(uniqueImages)
     } catch (error) {
       console.error('Error loading gallery images:', error)
     } finally {
@@ -1776,7 +1789,17 @@ const GalleryManagement: React.FC = () => {
       setNewImage({ url: '', alt_text: '', category: 'general', active: true })
       setSelectedFile(null)
       setPreviewUrl('')
-      await loadImages()
+      // Actualizează local lista fără reîncărcare completă
+      // Creează obiectul imageData pentru actualizarea locală
+      const uploadedImageData = {
+        id: Date.now().toString(), // ID temporar pentru local
+        url: newImage.url || (selectedFile ? URL.createObjectURL(selectedFile) : ''),
+        alt_text: newImage.alt_text,
+        category: newImage.category,
+        active: newImage.active,
+        createdAt: new Date().toISOString()
+      }
+      setImages(prevImages => [...prevImages, uploadedImageData])
       showSuccess(t('admin.imageAdded'))
     } catch (error) {
       console.error('Error adding image:', error)
@@ -1794,11 +1817,17 @@ const GalleryManagement: React.FC = () => {
     try {
       setLoading(true)
       await adminAPI.deleteImage(imageId)
-      await loadImages()
+      
+      // Actualizează local lista de imagini fără a reîncărca tot
+      setImages(prevImages => prevImages.filter(img => img.id !== imageId))
+      
       showSuccess(t('admin.imageDeleted'))
     } catch (error) {
       console.error('Error deleting image:', error)
       showError(t('admin.failedToDeleteImage'))
+      
+      // În caz de eroare, reîncarcă lista completă
+      await loadImages()
     } finally {
       setLoading(false)
     }
@@ -1807,22 +1836,38 @@ const GalleryManagement: React.FC = () => {
   const toggleImageStatus = async (imageId: string, currentStatus: boolean) => {
     try {
       setLoading(true)
-      // For now, we'll delete and re-add with updated status
-      // In a real implementation, you'd have an update endpoint
+      
+      // Găsește imaginea curentă
       const image = images.find(img => img.id === imageId)
-      if (image) {
-        await adminAPI.deleteImage(imageId)
-        const imageData = {
-          url: image.url,
-          alt_text: image.alt_text,
-          category: image.category,
-          active: !currentStatus
-        }
-        await adminAPI.uploadImage(imageData)
-        await loadImages()
+      if (!image) {
+        showError(t('admin.imageNotFound'))
+        return
+      }
+      
+      // Actualizează statusul local imediat pentru feedback rapid
+      setImages(prevImages => 
+        prevImages.map(img => 
+          img.id === imageId ? { ...img, active: !currentStatus } : img
+        )
+      )
+      
+      try {
+        // Folosește noul endpoint de update în loc de ștergere și re-upload
+        await adminAPI.updateImage(imageId, { active: !currentStatus })
+        
+        showSuccess(t('admin.imageStatusUpdated'))
+      } catch (error) {
+        console.error('Error updating image status:', error)
+        // Revenire la statusul anterior în caz de eroare
+        setImages(prevImages => 
+          prevImages.map(img => 
+            img.id === imageId ? { ...img, active: currentStatus } : img
+          )
+        )
+        showError(t('admin.failedToUpdateImageStatus'))
       }
     } catch (error) {
-      console.error('Error updating image status:', error)
+      console.error('Error in toggleImageStatus:', error)
       showError(t('admin.failedToUpdateImageStatus'))
     } finally {
       setLoading(false)

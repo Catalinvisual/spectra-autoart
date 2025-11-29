@@ -234,23 +234,34 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rem;
+  padding: 2rem 0;
+}
+
   .hero {
-    padding: 8rem 1rem 2rem;
+    padding: 2rem 1rem 2rem;
   }
   
   .hero-title {
-    font-size: clamp(2.5rem, 8vw, 4rem);
+    font-size: clamp(5rem, 10vw, 6rem)!important;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.4rem;
   }
   
   .hero-subtitle {
-    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-size: clamp(3.5rem, 5vw, 3.5rem);
     min-height: 4rem;
   }
   
   .hero-description {
-    font-size: clamp(1rem, 2vw, 1.2rem);
+    font-size: clamp(1.2rem, 2vw, 1.2rem);
   }
   
   .cta-button {
@@ -264,25 +275,36 @@
 }
 
 @media (max-width: 480px) {
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  padding: 2rem 0;
+}
+
   .hero {
-    padding: 8rem 1rem 2rem;
+    padding: 2rem 1rem 2rem;
   }
   
   /* .hero-content { margin-top eliminat pentru consistență } */
   
   .hero-title {
-    font-size: clamp(2.5rem, 8vw, 4rem);
+    font-size: clamp(4rem, 10vw, 6rem)!important;
     margin-bottom: 2rem;
   }
   
   .hero-subtitle {
-    font-size: clamp(2.2rem, 6vw, 3.5rem);
+    font-size: clamp(3rem, 6vw, 3.5rem);
     min-height: 4rem;
     margin-bottom: 0;
   }
 
   .hero-description {
-    font-size: clamp(1.1rem, 3vw, 1.3rem);
+    font-size: clamp(1.3rem, 3vw, 1.3rem);
     margin-bottom: 0;
   }
   

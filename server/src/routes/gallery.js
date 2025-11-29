@@ -4,6 +4,8 @@ import path from 'path'
 import fs from 'fs'
 import auth from '../middleware/auth.js'
 import GoogleSheetsService from '../services/googleSheetsService.js'
+import GoogleDriveService from '../services/googleDriveService.js'
+import CloudinaryService from '../services/cloudinaryService.js'
 import { translateMultipleWithDeepL } from '../services/deeplTranslationService.js'
 
 
@@ -139,12 +141,65 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
     })
     
     let imageUrl = ''
+    let driveFileId = ''
+    let useGoogleDrive = false
     
-    // Handle file upload
+    // Handle file upload to Cloudinary (preferred) or Google Drive
     if (req.file) {
-      // File was uploaded, use the file path
-      imageUrl = `/uploads/gallery/${req.file.filename}`
-      console.log(`📁 File uploaded: ${req.file.filename}`)
+      console.log(`📁 Processing uploaded file: ${req.file.filename}`)
+      
+      // Try to upload to Cloudinary first (preferred)
+      const uploadResult = await CloudinaryService.uploadImage(
+        req.file.path,
+        req.file.filename
+      )
+      
+      if (uploadResult.success) {
+        // Cloudinary upload successful
+        imageUrl = uploadResult.webViewLink
+        driveFileId = uploadResult.fileId
+        useGoogleDrive = false // Now using Cloudinary
+        console.log(`✅ File uploaded to Cloudinary: ${imageUrl}`)
+        
+        // Clean up local file after successful upload
+        try {
+          fs.unlinkSync(req.file.path)
+        } catch (cleanupError) {
+          console.warn('⚠️ Could not delete temp file:', cleanupError.message)
+        }
+      } else {
+        // Cloudinary upload failed - fallback to Google Drive
+        console.warn(`⚠️ Cloudinary upload failed: ${uploadResult.error}`)
+        console.log(`📁 Falling back to Google Drive`)
+        
+        const driveUploadResult = await GoogleDriveService.uploadImage(
+          req.file.path,
+          req.file.filename
+        )
+        
+        if (driveUploadResult.success) {
+          imageUrl = driveUploadResult.webViewLink
+          driveFileId = driveUploadResult.fileId
+          useGoogleDrive = true
+          console.log(`✅ File uploaded to Google Drive: ${imageUrl}`)
+          
+          // Clean up local file after successful upload
+          try {
+            fs.unlinkSync(req.file.path)
+          } catch (cleanupError) {
+            console.warn('⚠️ Could not delete temp file:', cleanupError.message)
+          }
+        } else {
+          // Both failed - use local storage as final fallback
+          console.warn(`⚠️ Google Drive upload also failed: ${driveUploadResult.error}`)
+          console.log(`💾 Falling back to local storage`)
+          
+          const relativePath = `/uploads/gallery/${req.file.filename}`
+          imageUrl = relativePath
+          console.log(`💾 File stored locally: ${imageUrl}`)
+        }
+      }
+      
     } else if (req.body.url) {
       // URL was provided
       imageUrl = req.body.url
@@ -175,13 +230,18 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
     console.log('✅ Google Sheets append result:', success)
     
     if (!success) {
-      // If failed, delete the uploaded file
-      if (req.file) {
-        fs.unlinkSync(req.file.path)
+      // If Google Sheets failed, try to delete the uploaded file from Drive
+      if (driveFileId) {
+        try {
+          await GoogleDriveService.deleteImage(driveFileId)
+        } catch (deleteError) {
+          console.warn('⚠️ Could not delete file from Google Drive:', deleteError.message)
+        }
       }
+      
       return res.status(500).json({ 
         success: false,
-        error: 'Failed to add gallery image',
+        error: 'Failed to add gallery image to database',
         demo: true 
       })
     }
@@ -189,7 +249,7 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
     res.json({ 
       success: true, 
       message: 'Gallery image added successfully',
-      data: { url: imageUrl }
+      data: { url: imageUrl, driveFileId: driveFileId }
     })
   } catch (error) {
     console.error('Error adding gallery image:', error)
@@ -224,7 +284,7 @@ router.put('/:id', auth, async (req, res) => {
       })
     }
 
-    const rowIndex = data.slice(1).findIndex(row => row[0] === id)
+    const rowIndex = data.slice(1).findIndex(row => row[0] === Number(id))
     
     if (rowIndex === -1) {
       return res.status(404).json({ 
@@ -234,13 +294,54 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     const currentRow = data[rowIndex + 1]
+    const currentImageUrl = currentRow[3] // Current image URL
+    
+    // If URL is being changed, clean up the old image
+    if (url && url !== currentImageUrl) {
+      // Handle Cloudinary cleanup
+      if (currentImageUrl.includes('res.cloudinary.com')) {
+        try {
+          // Extrage public_id din URL Cloudinary
+          const urlParts = currentImageUrl.split('/')
+          const versionIndex = urlParts.findIndex(part => part.startsWith('v'))
+          if (versionIndex !== -1) {
+            const publicIdWithExtension = urlParts.slice(versionIndex + 1).join('/')
+            const publicId = publicIdWithExtension.replace(/\.[^/.]+$/, '') // Remove extension
+            
+            await CloudinaryService.deleteImage(`spectra-autoart/gallery/${publicId}`)
+            console.log(`✅ Deleted old image from Cloudinary: ${publicId}`)
+          }
+        } catch (cloudinaryError) {
+          console.warn('⚠️ Could not delete old image from Cloudinary:', cloudinaryError.message)
+        }
+      }
+      // Handle Google Drive cleanup
+      else if (currentImageUrl.includes('drive.google.com')) {
+        const oldFileId = GoogleDriveService.extractFileIdFromUrl(currentImageUrl)
+        if (oldFileId) {
+          try {
+            await GoogleDriveService.deleteImage(oldFileId)
+            console.log(`✅ Deleted old image from Google Drive: ${oldFileId}`)
+          } catch (driveError) {
+            console.warn('⚠️ Could not delete old image from Google Drive:', driveError.message)
+          }
+        }
+      }
+      // Handle local file cleanup (optional - you might want to keep local files)
+      else if (currentImageUrl.includes('/uploads/')) {
+        // For now, we'll keep local files to avoid accidental deletions
+        console.log(`ℹ️ Local file cleanup skipped for: ${currentImageUrl}`)
+      }
+    }
+    
     const updatedData = [
       id,
       url !== undefined ? url : currentRow[1],
       alt_text !== undefined ? alt_text : currentRow[2],
-      category || currentRow[3],
-      active !== undefined ? active.toString() : currentRow[4],
-      currentRow[5], // Created_Date (keep original)
+      url !== undefined ? url : currentImageUrl, // Use new URL or keep current
+      category || currentRow[4],
+      active !== undefined ? active.toString() : currentRow[5],
+      currentRow[6], // Created_Date (keep original)
       new Date().toISOString() // Updated_Date
     ]
 
@@ -282,7 +383,7 @@ router.delete('/:id', auth, async (req, res) => {
       })
     }
 
-    const rowIndex = data.slice(1).findIndex(row => row[0] === id)
+    const rowIndex = data.slice(1).findIndex(row => row[0] === Number(id))
     
     if (rowIndex === -1) {
       return res.status(404).json({ 
@@ -291,19 +392,66 @@ router.delete('/:id', auth, async (req, res) => {
       })
     }
 
+    // Get the image URL before deletion to clean up storage
+    const imageRow = data[rowIndex + 1]
+    const imageUrl = imageRow[3] // Image URL column
+    
+    // Clean up based on storage type
+    if (imageUrl) {
+      if (imageUrl.includes('res.cloudinary.com')) {
+        // Delete from Cloudinary
+        try {
+          // Extrage public_id din URL Cloudinary
+          const urlParts = imageUrl.split('/')
+          const versionIndex = urlParts.findIndex(part => part.startsWith('v'))
+          if (versionIndex !== -1) {
+            const publicIdWithExtension = urlParts.slice(versionIndex + 1).join('/')
+            const publicId = publicIdWithExtension.replace(/\.[^/.]+$/, '') // Remove extension
+            
+            await CloudinaryService.deleteImage(`spectra-autoart/gallery/${publicId}`)
+            console.log(`✅ Deleted image from Cloudinary: ${publicId}`)
+          }
+        } catch (cloudinaryError) {
+          console.warn('⚠️ Could not delete image from Cloudinary:', cloudinaryError.message)
+        }
+      } else if (imageUrl.includes('drive.google.com')) {
+        // Try to extract Google Drive file ID and delete from Drive
+        const fileId = GoogleDriveService.extractFileIdFromUrl(imageUrl)
+        if (fileId) {
+          try {
+            await GoogleDriveService.deleteImage(fileId)
+            console.log(`✅ Deleted image from Google Drive: ${fileId}`)
+          } catch (driveError) {
+            console.warn('⚠️ Could not delete image from Google Drive:', driveError.message)
+          }
+        }
+      } else if (imageUrl.includes('/uploads/')) {
+        // Handle local file deletion (optional - you might want to keep local files)
+        console.log(`ℹ️ Local file cleanup skipped for: ${imageUrl}`)
+        // Uncomment the following lines if you want to delete local files:
+        // try {
+        //   const localPath = path.join(__dirname, '..', imageUrl)
+        //   fs.unlinkSync(localPath)
+        //   console.log(`✅ Deleted local file: ${localPath}`)
+        // } catch (localError) {
+        //   console.warn('⚠️ Could not delete local file:', localError.message)
+        // }
+      }
+    }
+
     const success = await GoogleSheetsService.deleteData('Gallery', rowIndex)
     
     if (!success) {
       return res.status(500).json({ 
         success: false,
-        error: 'Failed to delete gallery image',
+        error: 'Failed to delete gallery image from database',
         demo: true 
       })
     }
 
     res.json({ 
       success: true, 
-      message: 'Gallery image deleted successfully' 
+      message: 'Gallery image deleted successfully from database and Google Drive' 
     })
   } catch (error) {
     console.error('Error deleting gallery image:', error)
