@@ -551,10 +551,23 @@ router.get('/bookings/availability', async (req, res) => {
 })
 
 router.post('/bookings', async (req, res) => {
+  // Add overall timeout protection for the entire endpoint
+  const requestTimeout = setTimeout(() => {
+    console.error('❌ Booking endpoint timeout - sending error response');
+    if (!res.headersSent) {
+      res.status(504).json({ 
+        success: false,
+        error: 'Request timeout - server took too long to process',
+        demo: true 
+      });
+    }
+  }, 25000); // 25 second overall timeout
+  
   try {
     const { date, time, make, model, type, body, services, user, locale } = req.body
     
     if (!date || !time || !make || !model || !user?.name || !user?.email || !user?.phone) {
+      clearTimeout(requestTimeout);
       return res.status(400).json({ 
         success: false,
         error: 'Toate câmpurile sunt obligatorii' 
@@ -580,10 +593,23 @@ router.post('/bookings', async (req, res) => {
     let total = 0;
     
     try {
-      // Get services names from Services sheet
-      const servicesFromSheets = await GoogleSheetsService.getData('Services');
-      // Get service prices from Service_Prices sheet
-      const servicePricesFromSheets = await GoogleSheetsService.getData('Service_Prices');
+      // Add timeout protection for Google Sheets operations
+      const servicesTimeout = new Promise((resolve) => {
+        setTimeout(() => resolve(null), 3000); // 3 second timeout
+      });
+      
+      // Get services names from Services sheet with timeout
+      const servicesPromise = GoogleSheetsService.getData('Services');
+      const servicesFromSheets = await Promise.race([servicesPromise, servicesTimeout]);
+      
+      if (!servicesFromSheets) {
+        console.log('⚠️  Google Sheets services request timed out, using fallback');
+        throw new Error('Google Sheets timeout');
+      }
+      
+      // Get service prices from Service_Prices sheet with timeout
+      const pricesPromise = GoogleSheetsService.getData('Service_Prices');
+      const servicePricesFromSheets = await Promise.race([pricesPromise, servicesTimeout]) || [];
       
       if (servicesFromSheets.length > 1) {
         // Parse Services headers
@@ -603,32 +629,27 @@ router.post('/bookings', async (req, res) => {
           // Get service names and prices for the selected service IDs
           const serviceNames = [];
           
-          console.log('🔍 DEBUG: Looking for services:', services);
-          console.log('🔍 DEBUG: Available services in sheet:', servicesFromSheets.slice(1).map(row => ({id: row[servicesIdIndex], name: row[servicesNameIndex]})));
-          
           services.forEach(serviceId => {
-            console.log('🔍 DEBUG: Processing service ID:', serviceId, 'type:', typeof serviceId);
-            // Find service name
+            // Find service name - handle both string and number comparisons
             const serviceRow = servicesFromSheets.slice(1).find(row => {
               const rowId = row[servicesIdIndex];
-              console.log('🔍 DEBUG: Comparing:', serviceId, '===', rowId, 'type:', typeof rowId);
-              return rowId === serviceId;
+              // Convert both to string for comparison to handle mixed types
+              return String(rowId).trim() === String(serviceId).trim();
             });
-            
-            console.log('🔍 DEBUG: Found service row:', serviceRow);
             
             if (serviceRow) {
               const serviceName = serviceRow[servicesNameIndex] || serviceRow[servicesIdIndex];
-              console.log('🔍 DEBUG: Service name:', serviceName);
               serviceNames.push(serviceName);
               
               let servicePrice = 0;
               
               // First try to find price in Service_Prices sheet (if available)
               if (pricesServiceIdIndex !== -1 && pricesBodyTypeIndex !== -1 && pricesPriceMinIndex !== -1) {
-                const priceRow = servicePricesFromSheets.slice(1).find(row => 
-                  row[pricesServiceIdIndex] === serviceId && row[pricesBodyTypeIndex] === body
-                );
+                const priceRow = servicePricesFromSheets.slice(1).find(row => {
+                  const rowServiceId = String(row[pricesServiceIdIndex]).trim();
+                  const rowBodyType = String(row[pricesBodyTypeIndex]).trim();
+                  return rowServiceId === String(serviceId).trim() && rowBodyType === String(body).trim();
+                });
                 
                 if (priceRow) {
                   servicePrice = parseFloat(priceRow[pricesPriceMinIndex]) || 0;
@@ -640,12 +661,10 @@ router.post('/bookings', async (req, res) => {
                 servicePrice = parseFloat(serviceRow[servicesPriceIndex]) || 0;
               }
               
-              console.log('🔍 DEBUG: Service price:', servicePrice);
               total += servicePrice;
             }
           });
           servicesList = serviceNames.join(', ');
-          console.log('🔍 DEBUG: Final services list:', servicesList, 'Total:', total);
         }
       }
     } catch (servicesError) {
@@ -655,7 +674,7 @@ router.post('/bookings', async (req, res) => {
       total = 0; // Set to 0 if we can't calculate
     }
     
-    // Save booking to Google Sheets
+    // Save booking to Google Sheets with timeout protection
     try {
       
       // Format date and time for display
@@ -680,15 +699,26 @@ router.post('/bookings', async (req, res) => {
       ];
       
       console.log('💾 Saving booking to Google Sheets:', bookingData);
-      const saved = await GoogleSheetsService.appendDataWithFormats('Bookings', bookingData, {
+      
+      // Add timeout protection for Google Sheets save operation
+      const saveTimeout = new Promise((resolve) => {
+        setTimeout(() => {
+          console.log('⚠️  Google Sheets save operation timed out');
+          resolve(false);
+        }, 5000); // 5 second timeout for save
+      });
+      
+      const savePromise = GoogleSheetsService.appendDataWithFormats('Bookings', bookingData, {
         4: 'TEXT', // Date column - force text format
         5: 'TEXT'  // Time column - force text format
       });
       
+      const saved = await Promise.race([savePromise, saveTimeout]);
+      
       if (saved) {
         console.log('✅ Booking saved successfully to Google Sheets');
       } else {
-        console.log('⚠️  Booking save failed, continuing with demo mode');
+        console.log('⚠️  Booking save failed or timed out, continuing with demo mode');
       }
     } catch (sheetsError) {
       console.error('❌ Google Sheets error:', sheetsError);
@@ -726,12 +756,14 @@ router.post('/bookings', async (req, res) => {
       console.error('❌ Email notification error:', notificationError);
     }
     
+    clearTimeout(requestTimeout);
     res.status(201).json({ 
       success: true, 
       bookingId,
       message: 'Programarea a fost confirmată'
     })
   } catch (error) {
+    clearTimeout(requestTimeout);
     console.error('Error creating booking:', error);
     res.status(500).json({ 
       success: false,
