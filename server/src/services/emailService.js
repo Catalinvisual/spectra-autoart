@@ -3,19 +3,30 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-// Create transporter using environment variables
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT) || 465,
-  secure: process.env.SMTP_SECURE === 'true' || true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-})
+// Create transporter with error handling
+let transporter = null
+
+try {
+  transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT) || 465,
+    secure: process.env.SMTP_SECURE === 'true' || true,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  })
+} catch (error) {
+  console.error('❌ Failed to create email transporter:', error.message)
+}
 
 // Verify transporter configuration
 const verifyTransporter = async () => {
+  if (!transporter) {
+    console.warn('⚠️ Email transporter not initialized')
+    return false
+  }
+  
   try {
     await transporter.verify()
     console.log('✅ Email transporter verified successfully')
@@ -279,6 +290,11 @@ const emailTemplates = {
 
 // Send email function
 export const sendEmail = async (to, subject, html, text = '') => {
+  if (!transporter) {
+    console.warn(`⚠️ Email transporter not available, skipping email to ${to}`)
+    return { success: false, error: 'Email service not configured' }
+  }
+  
   try {
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -315,11 +331,22 @@ export const sendAdminNotification = async (bookingData, services) => {
 
 // Initialize and verify email service
 export const initializeEmailService = async () => {
-  const isVerified = await verifyTransporter()
-  if (!isVerified) {
-    console.warn('⚠️ Email service initialization failed - emails may not be sent')
+  // Check if email credentials are configured
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.warn('⚠️ Email credentials not configured - email service disabled')
+    return false
   }
-  return isVerified
+  
+  try {
+    const isVerified = await verifyTransporter()
+    if (!isVerified) {
+      console.warn('⚠️ Email service verification failed - emails may not be sent')
+    }
+    return isVerified
+  } catch (error) {
+    console.error('❌ Email service initialization error:', error.message)
+    return false
+  }
 }
 
 export default {

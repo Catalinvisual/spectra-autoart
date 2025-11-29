@@ -232,34 +232,40 @@ async function initializeServices() {
   }
 }
 
-try {
-  const port = process.env.PORT || 8080
-  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost'
+// Start server immediately without waiting for services initialization
+const startServer = async () => {
+  try {
+    const port = process.env.PORT || 8080
+    const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost'
 
-  console.log(`🎯 Starting server on ${host}:${port}`)
-  
-  // Pornim serverul IMEDIAT - fără să așteptăm inițializarea serviciilor
-  const server = app.listen(port, host, () => {
-    clearTimeout(startupTimeout) // Oprim timeout-ul de siguranță
-    console.log(`✅ Server Spectra AutoArt STARTED SUCCESSFULLY on ${host}:${port}`)
-    console.log(`🏥 Healthcheck available at: http://${host}:${port}/health`)
-    console.log(`🏓 Ping healthcheck available at: http://${host}:${port}/ping`)
+    console.log(`🎯 Starting server on ${host}:${port}`)
     
-    // Inițializăm serviciile ÎN BACKGROUND după ce serverul a pornit
-    setTimeout(() => {
-      initializeServices().catch(error => {
-        console.error('❌ Failed to initialize services:', error.message)
-      })
-    }, 100)
-  })
-  
-  server.on('error', (error) => {
-    console.error('❌ Server startup error:', error.message)
+    // Start server IMMEDIATELY - don't wait for services initialization
+    const server = app.listen(port, host, () => {
+      clearTimeout(startupTimeout) // Stop safety timeout
+      console.log(`✅ Server Spectra AutoArt STARTED SUCCESSFULLY on ${host}:${port}`)
+      console.log(`🏥 Healthcheck available at: http://${host}:${port}/health`)
+      console.log(`🏓 Ping healthcheck available at: http://${host}:${port}/ping`)
+      
+      // Initialize services in BACKGROUND after server starts
+      setTimeout(() => {
+        initializeServices().catch(error => {
+          console.error('❌ Failed to initialize services:', error.message)
+        })
+      }, 100)
+    })
+    
+    server.on('error', (error) => {
+      console.error('❌ Server startup error:', error.message)
+      process.exit(1)
+    })
+    
+  } catch (error) {
+    console.error('❌ CRITICAL ERROR during server startup:', error.message)
+    console.error('Stack trace:', error.stack)
     process.exit(1)
-  })
-  
-} catch (error) {
-  console.error('❌ CRITICAL ERROR during server startup:', error.message)
-  console.error('Stack trace:', error.stack)
-  process.exit(1)
+  }
 }
+
+// Start the server immediately
+startServer()
