@@ -292,6 +292,7 @@ const emailTemplates = {
 export const sendEmail = async (to, subject, html, text = '') => {
   if (!transporter) {
     console.warn(`⚠️ Email transporter not available, skipping email to ${to}`)
+    console.warn(`⚠️ Email configuration check - USER: ${process.env.EMAIL_USER ? 'SET' : 'MISSING'}, PASS: ${process.env.EMAIL_PASS ? 'SET' : 'MISSING'}`)
     return { success: false, error: 'Email service not configured' }
   }
   
@@ -304,11 +305,17 @@ export const sendEmail = async (to, subject, html, text = '') => {
       html
     }
 
+    console.log(`📧 Attempting to send email to ${to} from ${process.env.EMAIL_USER}`)
     const result = await transporter.sendMail(mailOptions)
-    console.log(`✅ Email sent successfully to ${to}`)
+    console.log(`✅ Email sent successfully to ${to} with messageId: ${result.messageId}`)
     return { success: true, messageId: result.messageId }
   } catch (error) {
-    console.error(`❌ Failed to send email to ${to}:`, error)
+    console.error(`❌ Failed to send email to ${to}:`, error.message)
+    console.error(`❌ Email config error details:`, {
+      code: error.code,
+      response: error.response,
+      responseCode: error.responseCode
+    })
     return { success: false, error: error.message }
   }
 }
@@ -349,9 +356,51 @@ export const initializeEmailService = async () => {
   }
 }
 
+// Test email function
+export const testEmailService = async () => {
+  console.log('🔧 Testing email service configuration...');
+  
+  // Check environment variables
+  const hasUser = !!process.env.EMAIL_USER;
+  const hasPass = !!process.env.EMAIL_PASS;
+  const hasHost = !!process.env.SMTP_HOST;
+  const hasPort = !!process.env.SMTP_PORT;
+  
+  console.log('📧 Email configuration status:');
+  console.log(`   USER: ${hasUser ? '✅ SET' : '❌ MISSING'}`);
+  console.log(`   PASS: ${hasPass ? '✅ SET' : '❌ MISSING'}`);
+  console.log(`   HOST: ${hasHost ? '✅ SET' : '❌ MISSING'} (${process.env.SMTP_HOST || 'default'})`);
+  console.log(`   PORT: ${hasPort ? '✅ SET' : '❌ MISSING'} (${process.env.SMTP_PORT || 'default'})`);
+  
+  if (!hasUser || !hasPass) {
+    console.warn('⚠️ Email service not properly configured');
+    return false;
+  }
+  
+  if (!transporter) {
+    console.error('❌ Email transporter not initialized');
+    return false;
+  }
+  
+  try {
+    const isVerified = await verifyTransporter();
+    if (isVerified) {
+      console.log('✅ Email service is ready');
+      return true;
+    } else {
+      console.warn('⚠️ Email transporter verification failed');
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Email service test failed:', error.message);
+    return false;
+  }
+};
+
 export default {
   sendEmail,
   sendBookingConfirmation,
   sendAdminNotification,
-  initializeEmailService
+  initializeEmailService,
+  testEmailService
 }

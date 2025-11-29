@@ -7,6 +7,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import GoogleSheetsService from '../services/googleSheetsService.js'
 import requireAuth from '../middleware/auth.js'
+import { sendBookingConfirmation, sendAdminNotification, testEmailService } from '../services/emailService.js'
 
 const router = express.Router()
 
@@ -786,5 +787,80 @@ router.post('/newsletter/send', requireAuth, async (req, res) => {
     })
   }
 })
+
+// Test email service
+router.get('/email/test', requireAuth, async (req, res) => {
+  try {
+    console.log('🧪 Testing email service...');
+    const result = await testEmailService();
+    
+    if (result) {
+      res.json({ 
+        success: true, 
+        message: 'Email service is working correctly' 
+      });
+    } else {
+      res.status(503).json({ 
+        success: false, 
+        error: 'Email service is not configured properly' 
+      });
+    }
+  } catch (error) {
+    console.error('Email test error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to test email service' 
+    });
+  }
+});
+
+// Delete booking
+router.delete('/bookings/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log('🗑️ Attempting to delete booking with ID:', id);
+
+    // Get all bookings to find the one to delete
+    const data = await GoogleSheetsService.getData('Bookings');
+    
+    if (data.length <= 1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'No bookings found' 
+      });
+    }
+
+    // Find the booking by ID
+    let bookingIndex = -1;
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] === id) {
+        bookingIndex = i;
+        break;
+      }
+    }
+
+    if (bookingIndex === -1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Booking not found' 
+      });
+    }
+
+    // Delete the booking from Google Sheets
+    await GoogleSheetsService.deleteData('Bookings', bookingIndex);
+    console.log('✅ Booking deleted successfully from Google Sheets:', id);
+
+    res.json({ 
+      success: true, 
+      message: 'Booking deleted successfully' 
+    });
+  } catch (error) {
+    console.error('Delete booking error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to delete booking' 
+    });
+  }
+});
 
 export default router

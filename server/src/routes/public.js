@@ -743,6 +743,7 @@ router.post('/bookings', async (req, res) => {
         // Check if email service is configured
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
           console.warn('⚠️ Email service not configured - skipping email notifications');
+          console.warn(`⚠️ EMAIL_USER: ${process.env.EMAIL_USER ? 'SET' : 'MISSING'}, EMAIL_PASS: ${process.env.EMAIL_PASS ? 'SET' : 'MISSING'}`);
           return;
         }
         
@@ -754,6 +755,7 @@ router.post('/bookings', async (req, res) => {
         }));
         
         // Send confirmation email to client
+        console.log(`📧 Sending client confirmation email to: ${req.body.user.email}`);
         const clientEmailResult = await sendBookingConfirmation(req.body, emailServices);
         if (clientEmailResult.success) {
           console.log('✅ Client confirmation email sent successfully (async)');
@@ -762,6 +764,7 @@ router.post('/bookings', async (req, res) => {
         }
         
         // Send notification email to admin
+        console.log('📧 Sending admin notification email to: spectraautoart@gmail.com');
         const adminEmailResult = await sendAdminNotification(req.body, emailServices);
         if (adminEmailResult.success) {
           console.log('✅ Admin notification email sent successfully (async)');
