@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-// Create transporter with error handling
+// Create transporter with error handling and Gmail-optimized settings
 let transporter = null
 
 try {
@@ -14,27 +14,57 @@ try {
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
-    }
+    },
+    // Gmail-optimized settings
+    connectionTimeout: 10000, // 10 seconds timeout
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
+    pool: false, // Disable connection pooling for Gmail
+    maxConnections: 1,
+    maxMessages: 1,
+    // Additional security settings
+    tls: {
+      rejectUnauthorized: false,
+      minVersion: 'TLSv1.2'
+    },
+    // Retry settings
+    retryDelay: 1000,
+    maxRetries: 3
   })
+  
+  console.log('📧 Email transporter created with Gmail-optimized settings')
 } catch (error) {
   console.error('❌ Failed to create email transporter:', error.message)
 }
 
-// Verify transporter configuration
-const verifyTransporter = async () => {
+// Verify transporter configuration with retry logic
+const verifyTransporter = async (retries = 3) => {
   if (!transporter) {
     console.warn('⚠️ Email transporter not initialized')
     return false
   }
   
-  try {
-    await transporter.verify()
-    console.log('✅ Email transporter verified successfully')
-    return true
-  } catch (error) {
-    console.error('❌ Email transporter verification failed:', error)
-    return false
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      console.log(`🔍 Verifying email transporter (attempt ${attempt}/${retries})...`)
+      await transporter.verify()
+      console.log('✅ Email transporter verified successfully')
+      return true
+    } catch (error) {
+      console.error(`❌ Email transporter verification failed (attempt ${attempt}):`, error.message)
+      
+      if (attempt === retries) {
+        console.error('❌ All verification attempts failed')
+        return false
+      }
+      
+      // Wait before retry
+      console.log(`⏱️  Retrying in ${attempt * 1000}ms...`)
+      await new Promise(resolve => setTimeout(resolve, attempt * 1000))
+    }
   }
+  
+  return false
 }
 
 // Email templates
