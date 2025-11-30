@@ -655,7 +655,7 @@ router.get('/services', requireAuth, async (req, res) => {
 // Get vehicle services
 router.get('/vehicle-services', requireAuth, async (req, res) => {
   try {
-    const data = await GoogleSheetsService.getData('VehicleServices')
+    const data = await GoogleSheetsService.getData('Vehicle_Services')
     
     if (data.length <= 1) {
       return res.json([])
@@ -681,7 +681,7 @@ router.get('/vehicle-services', requireAuth, async (req, res) => {
 // Get body types
 router.get('/body-types', requireAuth, async (req, res) => {
   try {
-    const data = await GoogleSheetsService.getData('BodyTypes')
+    const data = await GoogleSheetsService.getData('Body_Types')
     
     if (data.length <= 1) {
       return res.json([])

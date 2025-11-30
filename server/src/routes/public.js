@@ -568,9 +568,9 @@ router.post('/bookings', async (req, res) => {
   }, 15000); // 15 second overall timeout (reduced from 25)
   
   try {
-    const { date, time, make, model, type, body, services, user, locale } = req.body
+    const { date, time, make, model, type, body, services, user, locale, newsletter } = req.body
     
-    console.log(`📋 Booking data received: ${services?.length || 0} services, user: ${user?.email || 'unknown'}`);
+    console.log(`📋 Booking data received: ${services?.length || 0} services, user: ${user?.email || 'unknown'}, newsletter: ${newsletter || false}`);
     
     if (!date || !time || !make || !model || !user?.name || !user?.email || !user?.phone) {
       clearTimeout(requestTimeout);
@@ -777,8 +777,35 @@ router.post('/bookings', async (req, res) => {
       }
     };
     
+    // Process newsletter subscription if user checked the checkbox
+    const processNewsletterAsync = async () => {
+      try {
+        if (newsletter === true && user?.email) {
+          console.log('💾 Processing newsletter subscription for booking user:', user.email);
+          
+          // Get client IP for newsletter subscription
+          const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown';
+          
+          // Save to Google Sheets using the same method as the newsletter endpoint
+          const saved = await GoogleSheetsService.addNewsletterSubscriber(user.email, user.name || '', locale || 'nl', ip);
+          
+          if (saved) {
+            console.log('✅ Newsletter subscription saved successfully from booking:', user.email);
+          } else {
+            console.log('⚠️  Newsletter subscription failed from booking, but continuing');
+          }
+        } else {
+          console.log('ℹ️  No newsletter subscription requested or no email provided');
+        }
+      } catch (newsletterError) {
+        console.error('❌ Newsletter subscription error (async):', newsletterError);
+        // Silent fail - don't affect booking process
+      }
+    };
+    
     // Start async operations but don't wait for them
     saveBookingAsync();
+    processNewsletterAsync();
     sendEmailsAsync();
     
     const totalTime = Date.now() - startTime;
