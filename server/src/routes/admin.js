@@ -819,6 +819,8 @@ router.delete('/bookings/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     console.log('🗑️ Attempting to delete booking with ID:', id);
+    console.log('📍 ID type:', typeof id);
+    console.log('📍 ID value:', JSON.stringify(id));
 
     // Get all bookings to find the one to delete
     const data = await GoogleSheetsService.getData('Bookings');
@@ -830,16 +832,30 @@ router.delete('/bookings/:id', requireAuth, async (req, res) => {
       });
     }
 
-    // Find the booking by ID
+    // Log headers and first few rows for debugging
+    console.log('📊 Bookings headers:', data[0]);
+    console.log('📊 First 3 booking rows:');
+    for (let i = 1; i < Math.min(4, data.length); i++) {
+      console.log(`Row ${i}: ID="${data[i][0]}" (type: ${typeof data[i][0]}), Name="${data[i][1]}"`);
+    }
+
+    // Find the booking by ID with flexible matching
     let bookingIndex = -1;
+    const targetId = String(id).trim();
+    
     for (let i = 1; i < data.length; i++) {
-      if (data[i][0] === id) {
+      const rowId = String(data[i][0] || '').trim();
+      console.log(`🔍 Comparing target:"${targetId}" with row:"${rowId}"`);
+      
+      if (rowId === targetId) {
         bookingIndex = i;
+        console.log('✅ Found matching booking at index:', i);
         break;
       }
     }
 
     if (bookingIndex === -1) {
+      console.log('❌ Booking not found after searching all rows');
       return res.status(404).json({ 
         success: false, 
         error: 'Booking not found' 
@@ -847,7 +863,12 @@ router.delete('/bookings/:id', requireAuth, async (req, res) => {
     }
 
     // Delete the booking from Google Sheets
-    await GoogleSheetsService.deleteData('Bookings', bookingIndex);
+    // Note: bookingIndex is the index in data array (including header), 
+    // but for Google Sheets deletion we need the row index (excluding header)
+    const sheetRowIndex = bookingIndex - 1; // Convert to 0-based index for sheet rows
+    console.log('🗑️ Deleting row from sheet, data index:', bookingIndex, 'sheet index:', sheetRowIndex);
+    
+    await GoogleSheetsService.deleteData('Bookings', sheetRowIndex);
     console.log('✅ Booking deleted successfully from Google Sheets:', id);
 
     res.json({ 
