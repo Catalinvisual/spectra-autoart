@@ -994,6 +994,15 @@ const resources = {
         bookingsResponse: '¡Puedes reservar fácilmente en línea a través de nuestro sitio web!',
         servicesResponse: 'Ofrecemos varios servicios de detailing y estilizado. Revisa nuestro sitio web para más detalles.',
         hoursResponse: 'Estamos abiertos de lunes a viernes de 9:00 AM a 6:00 PM y los sábados de 9:00 AM a 4:00 PM.'
+      },
+      
+      // Footer translations
+      footer: {
+        terms: 'Términos y Condiciones',
+        privacy: 'Política de Privacidad',
+        cookies: 'Política de Cookies',
+        contact: 'Contacto y Legal',
+        gdpr: 'GDPR'
       }
     }
   },
@@ -1194,6 +1203,15 @@ const resources = {
         bookingsResponse: 'Możesz łatwo zarezerwować online przez naszą stronę internetową!',
         servicesResponse: 'Oferujemy różne usługi detailingu i stylizacji. Sprawdź naszą stronę internetową, aby uzyskać więcej informacji.',
         hoursResponse: 'Jesteśmy otwarci od poniedziałku do piątku od 9:00 do 18:00 i w soboty od 9:00 do 16:00.'
+      },
+      
+      // Footer translations
+      footer: {
+        terms: 'Regulamin',
+        privacy: 'Polityka Prywatności',
+        cookies: 'Polityka Cookies',
+        contact: 'Kontakt i Prawne',
+        gdpr: 'GDPR'
       }
     }
   },
@@ -1492,6 +1510,15 @@ const resources = {
         bookingsResponse: 'Vă puteți programa cu ușurință online prin intermediul site-ului nostru web!',
         servicesResponse: 'Oferim diverse servicii de detailing și styling. Verificați site-ul nostru web pentru mai multe detalii.',
         hoursResponse: 'Suntem deschiși de luni până vineri de la 9:00 la 18:00 și sâmbăta de la 9:00 la 16:00.'
+      },
+      
+      // Footer translations
+      footer: {
+        terms: 'Termeni și Condiții',
+        privacy: 'Politica de Confidențialitate',
+        cookies: 'Politica Cookies',
+        contact: 'Contact și Legal',
+        gdpr: 'GDPR'
       }
     }
   }
