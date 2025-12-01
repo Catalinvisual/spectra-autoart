@@ -666,6 +666,137 @@ const resources = {
           authority: 'U heeft ook het recht om een klacht in te dienen bij de Autoriteit Persoonsgegevens:',
           authorityAddress: 'Autoriteit Persoonsgegevens<br>Postbus 93374<br>2509 AJ Den Haag<br>Tel: 088 - 1805 250'
         }
+      },
+      
+      // Cookie Policy page translations
+      cookiePolicy: {
+        title: 'Cookiebeleid',
+        lastUpdated: 'Laatst bijgewerkt: 27 november 2025',
+        
+        section1: {
+          title: '1. Wat zijn cookies?',
+          content: 'Cookies zijn kleine tekstbestanden die op uw computer, tablet of mobiele telefoon worden opgeslagen wanneer u onze website bezoekt. Ze worden gebruikt om uw gebruikservaring te verbeteren en informatie over uw bezoek te verzamelen.'
+        },
+        
+        section2: {
+          title: '2. Welke cookies gebruiken wij?',
+          intro: 'Wij gebruiken de volgende soorten cookies:',
+          
+          subsection1: {
+            title: '2.1 Functionele cookies (vereist)',
+            intro: 'Deze cookies zijn essentieel voor het functioneren van onze website:',
+            items: [
+              'Taalvoorkeur: Onthoudt uw gekozen taal',
+              'Sessie-ID: Houdt uw sessie actief tijdens het boeken',
+              'Gebruikersvoorkeuren: Slaat uw voorkeuren op'
+            ]
+          },
+          
+          subsection2: {
+            title: '2.2 Analytische cookies',
+            intro: 'Deze cookies helpen ons begrijpen hoe bezoekers onze website gebruiken:',
+            items: [
+              'Google Analytics: Analyseert websiteverkeer en gebruikersgedrag',
+              'Bezoekersstatistieken: Meet populariteit van pagina\'s',
+              'Prestatie-analyse: Identificeert technische problemen'
+            ]
+          },
+          
+          subsection3: {
+            title: '2.3 Marketing cookies',
+            intro: 'Deze cookies worden gebruikt voor marketingdoeleinden:',
+            items: [
+              'Social media integratie: Delen via social media knoppen',
+              'Remarketing: Gerichte advertenties (alleen met toestemming)'
+            ]
+          }
+        },
+        
+        section3: {
+          title: '3. Cookie-overzicht',
+          intro: 'Hieronder vindt u een overzicht van de cookies die wij gebruiken:',
+          tableHeaders: {
+            name: 'Cookie Naam',
+            type: 'Type',
+            purpose: 'Doel',
+            expiry: 'Vervaltijd'
+          },
+          cookies: [
+            {
+              name: 'language_preference',
+              type: 'Functioneel',
+              purpose: 'Onthoudt taalvoorkeur',
+              expiry: '1 jaar'
+            },
+            {
+              name: 'session_id',
+              type: 'Functioneel',
+              purpose: 'Houdt sessie actief',
+              expiry: 'Sessie'
+            },
+            {
+              name: '_ga',
+              type: 'Analytisch',
+              purpose: 'Google Analytics tracking',
+              expiry: '2 jaar'
+            },
+            {
+              name: '_gid',
+              type: 'Analytisch',
+              purpose: 'Google Analytics sessie',
+              expiry: '24 uur'
+            },
+            {
+              name: 'cookie_consent',
+              type: 'Functioneel',
+              purpose: 'Onthoudt cookie toestemming',
+              expiry: '1 jaar'
+            }
+          ]
+        },
+        
+        section4: {
+          title: '4. Beheer van cookies',
+          intro: 'U kunt cookies beheren via uw browserinstellingen. Hier vindt u instructies voor de meest populaire browsers:',
+          browsers: [
+            'Google Chrome',
+            'Mozilla Firefox',
+            'Microsoft Edge',
+            'Safari'
+          ]
+        },
+        
+        section5: {
+          title: '5. Impact van het weigeren van cookies',
+          intro: 'Als u cookies weigert of verwijdert, kan dit de functionaliteit van onze website beperken:',
+          items: [
+            'U moet mogelijk uw taalvoorkeur herhaaldelijk instellen',
+            'Het boekingsproces kan minder soepel verlopen',
+            'Sommige websitefuncties werken mogelijk niet goed',
+            'Wij kunnen uw voorkeuren niet onthouden'
+          ]
+        },
+        
+        section6: {
+          title: '6. Third-party cookies',
+          intro: 'Sommige cookies worden geplaatst door derde partijen:',
+          items: [
+            'Google Analytics: Voor website-analyse',
+            'Social media: Voor integratie met social media platforms'
+          ],
+          outro: 'Wij hebben geen controle over hoe deze derde partijen cookies gebruiken. Raadpleeg hun privacybeleid voor meer informatie.'
+        },
+        
+        section7: {
+          title: '7. Updates van dit beleid',
+          content: 'Dit cookiebeleid kan worden bijgewerkt wanneer wij wijzigingen aanbrengen in ons cookiegebruik. Wij raden u aan dit beleid regelmatig te controleren.'
+        },
+        
+        section8: {
+          title: '8. Contact',
+          intro: 'Voor vragen over dit cookiebeleid kunt u contact opnemen:',
+          contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Telefoon: +31 6 12345678'
+        }
       }
     }
   },
@@ -1298,6 +1429,137 @@ const resources = {
           authority: 'You also have the right to file a complaint with the Dutch Data Protection Authority:',
           authorityAddress: 'Dutch Data Protection Authority<br>PO Box 93374<br>2509 AJ The Hague<br>Tel: 088 - 1805 250'
         }
+      },
+      
+      // Cookie Policy page translations
+      cookiePolicy: {
+        title: 'Cookie Policy',
+        lastUpdated: 'Last updated: November 27, 2025',
+        
+        section1: {
+          title: '1. What are cookies?',
+          content: 'Cookies are small text files that are stored on your computer, tablet or mobile phone when you visit our website. They are used to improve your user experience and collect information about your visit.'
+        },
+        
+        section2: {
+          title: '2. Which cookies do we use?',
+          intro: 'We use the following types of cookies:',
+          
+          subsection1: {
+            title: '2.1 Functional cookies (required)',
+            intro: 'These cookies are essential for the functioning of our website:',
+            items: [
+              'Language preference: Remembers your chosen language',
+              'Session ID: Keeps your session active during booking',
+              'User preferences: Saves your preferences'
+            ]
+          },
+          
+          subsection2: {
+            title: '2.2 Analytical cookies',
+            intro: 'These cookies help us understand how visitors use our website:',
+            items: [
+              'Google Analytics: Analyzes website traffic and user behavior',
+              'Visitor statistics: Measures page popularity',
+              'Performance analysis: Identifies technical problems'
+            ]
+          },
+          
+          subsection3: {
+            title: '2.3 Marketing cookies',
+            intro: 'These cookies are used for marketing purposes:',
+            items: [
+              'Social media integration: Sharing via social media buttons',
+              'Remarketing: Targeted ads (only with consent)'
+            ]
+          }
+        },
+        
+        section3: {
+          title: '3. Cookie overview',
+          intro: 'Below you will find an overview of the cookies we use:',
+          tableHeaders: {
+            name: 'Cookie Name',
+            type: 'Type',
+            purpose: 'Purpose',
+            expiry: 'Expiry'
+          },
+          cookies: [
+            {
+              name: 'language_preference',
+              type: 'Functional',
+              purpose: 'Remembers language preference',
+              expiry: '1 year'
+            },
+            {
+              name: 'session_id',
+              type: 'Functional',
+              purpose: 'Keeps session active',
+              expiry: 'Session'
+            },
+            {
+              name: '_ga',
+              type: 'Analytical',
+              purpose: 'Google Analytics tracking',
+              expiry: '2 years'
+            },
+            {
+              name: '_gid',
+              type: 'Analytical',
+              purpose: 'Google Analytics session',
+              expiry: '24 hours'
+            },
+            {
+              name: 'cookie_consent',
+              type: 'Functional',
+              purpose: 'Remembers cookie consent',
+              expiry: '1 year'
+            }
+          ]
+        },
+        
+        section4: {
+          title: '4. Cookie management',
+          intro: 'You can manage cookies through your browser settings. Here you will find instructions for the most popular browsers:',
+          browsers: [
+            'Google Chrome',
+            'Mozilla Firefox',
+            'Microsoft Edge',
+            'Safari'
+          ]
+        },
+        
+        section5: {
+          title: '5. Impact of refusing cookies',
+          intro: 'If you refuse or delete cookies, this may limit the functionality of our website:',
+          items: [
+            'You may need to repeatedly set your language preference',
+            'The booking process may be less smooth',
+            'Some website features may not work properly',
+            'We cannot remember your preferences'
+          ]
+        },
+        
+        section6: {
+          title: '6. Third-party cookies',
+          intro: 'Some cookies are placed by third parties:',
+          items: [
+            'Google Analytics: For website analysis',
+            'Social media: For integration with social media platforms'
+          ],
+          outro: 'We have no control over how these third parties use cookies. Please consult their privacy policy for more information.'
+        },
+        
+        section7: {
+          title: '7. Updates to this policy',
+          content: 'This cookie policy may be updated when we make changes to our cookie usage. We recommend that you check this policy regularly.'
+        },
+        
+        section8: {
+          title: '8. Contact',
+          intro: 'For questions about this cookie policy you can contact:',
+          contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Phone: +31 6 12345678'
+        }
       }
     }
   },
@@ -1754,6 +2016,137 @@ const resources = {
           authority: 'También tiene derecho a presentar una queja ante la Autoridad de Protección de Datos:',
           authorityAddress: 'Autoridad de Protección de Datos<br>Apartado de Correos 93374<br>2509 AJ La Haya<br>Tel: 088 - 1805 250'
         }
+      },
+      
+      // Cookie Policy page translations
+      cookiePolicy: {
+        title: 'Política de Cookies',
+        lastUpdated: 'Última actualización: 27 de noviembre de 2025',
+        
+        section1: {
+          title: '1. ¿Qué son las cookies?',
+          content: 'Las cookies son pequeños archivos de texto que se almacenan en su computadora, tableta o teléfono móvil cuando visita nuestro sitio web. Se utilizan para mejorar su experiencia de usuario y recopilar información sobre su visita.'
+        },
+        
+        section2: {
+          title: '2. ¿Qué cookies utilizamos?',
+          intro: 'Utilizamos los siguientes tipos de cookies:',
+          
+          subsection1: {
+            title: '2.1 Cookies funcionales (requeridas)',
+            intro: 'Estas cookies son esenciales para el funcionamiento de nuestro sitio web:',
+            items: [
+              'Preferencia de idioma: Recuerda su idioma elegido',
+              'ID de sesión: Mantiene su sesión activa durante la reserva',
+              'Preferencias del usuario: Guarda sus preferencias'
+            ]
+          },
+          
+          subsection2: {
+            title: '2.2 Cookies analíticas',
+            intro: 'Estas cookies nos ayudan a entender cómo los visitantes usan nuestro sitio web:',
+            items: [
+              'Google Analytics: Analiza el tráfico del sitio web y el comportamiento del usuario',
+              'Estadísticas de visitantes: Mide la popularidad de las páginas',
+              'Análisis de rendimiento: Identifica problemas técnicos'
+            ]
+          },
+          
+          subsection3: {
+            title: '2.3 Cookies de marketing',
+            intro: 'Estas cookies se utilizan con fines de marketing:',
+            items: [
+              'Integración con redes sociales: Compartir a través de botones de redes sociales',
+              'Remarketing: Anuncios dirigidos (solo con consentimiento)'
+            ]
+          }
+        },
+        
+        section3: {
+          title: '3. Resumen de cookies',
+          intro: 'A continuación encontrará un resumen de las cookies que utilizamos:',
+          tableHeaders: {
+            name: 'Nombre de Cookie',
+            type: 'Tipo',
+            purpose: 'Propósito',
+            expiry: 'Vencimiento'
+          },
+          cookies: [
+            {
+              name: 'language_preference',
+              type: 'Funcional',
+              purpose: 'Recuerda la preferencia de idioma',
+              expiry: '1 año'
+            },
+            {
+              name: 'session_id',
+              type: 'Funcional',
+              purpose: 'Mantiene la sesión activa',
+              expiry: 'Sesión'
+            },
+            {
+              name: '_ga',
+              type: 'Analítica',
+              purpose: 'Seguimiento de Google Analytics',
+              expiry: '2 años'
+            },
+            {
+              name: '_gid',
+              type: 'Analítica',
+              purpose: 'Sesión de Google Analytics',
+              expiry: '24 horas'
+            },
+            {
+              name: 'cookie_consent',
+              type: 'Funcional',
+              purpose: 'Recuerda el consentimiento de cookies',
+              expiry: '1 año'
+            }
+          ]
+        },
+        
+        section4: {
+          title: '4. Gestión de cookies',
+          intro: 'Puede gestionar las cookies a través de la configuración de su navegador. Aquí encontrará instrucciones para los navegadores más populares:',
+          browsers: [
+            'Google Chrome',
+            'Mozilla Firefox',
+            'Microsoft Edge',
+            'Safari'
+          ]
+        },
+        
+        section5: {
+          title: '5. Impacto de rechazar cookies',
+          intro: 'Si rechaza o elimina cookies, esto puede limitar la funcionalidad de nuestro sitio web:',
+          items: [
+            'Es posible que deba configurar su preferencia de idioma repetidamente',
+            'El proceso de reserva puede ser menos fluido',
+            'Algunas funciones del sitio web pueden no funcionar correctamente',
+            'No podemos recordar sus preferencias'
+          ]
+        },
+        
+        section6: {
+          title: '6. Cookies de terceros',
+          intro: 'Algunas cookies son colocadas por terceros:',
+          items: [
+            'Google Analytics: Para análisis del sitio web',
+            'Redes sociales: Para integración con plataformas de redes sociales'
+          ],
+          outro: 'No tenemos control sobre cómo estos terceros utilizan las cookies. Consulte su política de privacidad para más información.'
+        },
+        
+        section7: {
+          title: '7. Actualizaciones de esta política',
+          content: 'Esta política de cookies puede actualizarse cuando realicemos cambios en nuestro uso de cookies. Le recomendamos que revise esta política regularmente.'
+        },
+        
+        section8: {
+          title: '8. Contacto',
+          intro: 'Para preguntas sobre esta política de cookies puede contactar:',
+          contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Teléfono: +31 6 12345678'
+        }
       }
     }
   },
@@ -2205,6 +2598,137 @@ const resources = {
           contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Telefon: +31 6 12345678',
           authority: 'Masz również prawo złożyć skargę do Urzędu Ochrony Danych Osobowych:',
           authorityAddress: 'Urząd Ochrony Danych Osobowych<br>Skrytka pocztowa 93374<br>2509 AJ Haga<br>Tel: 088 - 1805 250'
+        }
+      },
+      
+      // Cookie Policy page translations
+      cookiePolicy: {
+        title: 'Polityka Cookies',
+        lastUpdated: 'Ostatnia aktualizacja: 27 listopada 2025',
+        
+        section1: {
+          title: '1. Czym są pliki cookies?',
+          content: 'Pliki cookies to małe pliki tekstowe, które są przechowywane na Twoim komputerze, tablecie lub telefonie komórkowym podczas odwiedzania naszej strony internetowej. Są one wykorzystywane do poprawy Twojego doświadczenia użytkownika i zbierania informacji o Twojej wizycie.'
+        },
+        
+        section2: {
+          title: '2. Jakich cookies używamy?',
+          intro: 'Używamy następujących rodzajów cookies:',
+          
+          subsection1: {
+            title: '2.1 Cookies funkcjonalne (wymagane)',
+            intro: 'Te cookies są niezbędne do funkcjonowania naszej strony internetowej:',
+            items: [
+              'Preferencje językowe: Zapamiętuje Twój wybrany język',
+              'ID sesji: Utrzymuje Twoją sesję aktywną podczas rezerwacji',
+              'Preferencje użytkownika: Zapisuje Twoje preferencje'
+            ]
+          },
+          
+          subsection2: {
+            title: '2.2 Cookies analityczne',
+            intro: 'Te cookies pomagają nam zrozumieć, jak odwiedzający korzystają z naszej strony internetowej:',
+            items: [
+              'Google Analytics: Analizuje ruch na stronie internetowej i zachowanie użytkowników',
+              'Statystyki odwiedzających: Mierzy popularność stron',
+              'Analiza wydajności: Identyfikuje problemy techniczne'
+            ]
+          },
+          
+          subsection3: {
+            title: '2.3 Cookies marketingowe',
+            intro: 'Te cookies są wykorzystywane do celów marketingowych:',
+            items: [
+              'Integracja z mediami społecznościowymi: Udostępnianie poprzez przyciski mediów społecznościowych',
+              'Remarketing: Ukierunkowane reklamy (tylko za zgodą)'
+            ]
+          }
+        },
+        
+        section3: {
+          title: '3. Przegląd cookies',
+          intro: 'Poniżej znajdziesz przegląd cookies, których używamy:',
+          tableHeaders: {
+            name: 'Nazwa Cookie',
+            type: 'Typ',
+            purpose: 'Cel',
+            expiry: 'Wygaśnięcie'
+          },
+          cookies: [
+            {
+              name: 'language_preference',
+              type: 'Funkcjonalne',
+              purpose: 'Zapamiętuje preferencje językowe',
+              expiry: '1 rok'
+            },
+            {
+              name: 'session_id',
+              type: 'Funkcjonalne',
+              purpose: 'Utrzymuje sesję aktywną',
+              expiry: 'Sesja'
+            },
+            {
+              name: '_ga',
+              type: 'Analityczne',
+              purpose: 'Śledzenie Google Analytics',
+              expiry: '2 lata'
+            },
+            {
+              name: '_gid',
+              type: 'Analityczne',
+              purpose: 'Sesja Google Analytics',
+              expiry: '24 godziny'
+            },
+            {
+              name: 'cookie_consent',
+              type: 'Funkcjonalne',
+              purpose: 'Zapamiętuje zgodę na cookies',
+              expiry: '1 rok'
+            }
+          ]
+        },
+        
+        section4: {
+          title: '4. Zarządzanie cookies',
+          intro: 'Możesz zarządzać cookies poprzez ustawienia swojej przeglądarki. Oto instrukcje dla najpopularniejszych przeglądarek:',
+          browsers: [
+            'Google Chrome',
+            'Mozilla Firefox',
+            'Microsoft Edge',
+            'Safari'
+          ]
+        },
+        
+        section5: {
+          title: '5. Skutki odmowy cookies',
+          intro: 'Jeśli odmówisz lub usuniesz cookies, może to ograniczyć funkcjonalność naszej strony internetowej:',
+          items: [
+            'Możesz być zmuszony do wielokrotnego ustawiania preferencji językowych',
+            'Proces rezerwacji może być mniej płynny',
+            'Niektóre funkcje strony internetowej mogą nie działać poprawnie',
+            'Nie możemy zapamiętać Twoich preferencji'
+          ]
+        },
+        
+        section6: {
+          title: '6. Cookies podmiotów trzecich',
+          intro: 'Niektóre cookies są umieszczane przez podmioty trzecie:',
+          items: [
+            'Google Analytics: Do analizy strony internetowej',
+            'Media społecznościowe: Do integracji z platformami mediów społecznościowych'
+          ],
+          outro: 'Nie mamy kontroli nad tym, jak te podmioty trzecie wykorzystują cookies. Prosimy o zapoznanie się z ich polityką prywatności, aby uzyskać więcej informacji.'
+        },
+        
+        section7: {
+          title: '7. Aktualizacje tej polityki',
+          content: 'Ta polityka cookies może być aktualizowana, gdy wprowadzamy zmiany w naszym wykorzystywaniu cookies. Zalecamy regularne sprawdzanie tej polityki.'
+        },
+        
+        section8: {
+          title: '8. Kontakt',
+          intro: 'W przypadku pytań o tę politykę cookies możesz się z nami skontaktować:',
+          contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Telefon: +31 6 12345678'
         }
       }
     }
@@ -2755,6 +3279,137 @@ const resources = {
           contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Telefon: +31 6 12345678',
           authority: 'De asemenea, aveți dreptul să depuneți o plângere la Autoritatea Olandeză pentru Protecția Datelor:',
           authorityAddress: 'Autoritatea Olandeză pentru Protecția Datelor<br>PO Box 93374<br>2509 AJ Haga<br>Tel: 088 - 1805 250'
+        }
+      },
+      
+      // Cookie Policy page translations
+      cookiePolicy: {
+        title: 'Politica de Cookies',
+        lastUpdated: 'Ultima actualizare: 27 noiembrie 2025',
+        
+        section1: {
+          title: '1. Ce sunt cookie-urile?',
+          content: 'Cookie-urile sunt fișiere text mici care sunt stocate pe computerul, tableta sau telefonul dvs. mobil atunci când vizitați site-ul nostru web. Acestea sunt utilizate pentru a vă îmbunătăți experiența de utilizare și pentru a colecta informații despre vizita dvs.'
+        },
+        
+        section2: {
+          title: '2. Ce cookie-uri folosim?',
+          intro: 'Folosim următoarele tipuri de cookie-uri:',
+          
+          subsection1: {
+            title: '2.1 Cookie-uri funcționale (necesare)',
+            intro: 'Aceste cookie-uri sunt esențiale pentru funcționarea site-ului nostru web:',
+            items: [
+              'Preferință limbă: Își amintește limba aleasă de dvs.',
+              'ID sesiune: Menține sesiunea dvs. activă în timpul rezervării',
+              'Preferințe utilizator: Salvează preferințele dvs.'
+            ]
+          },
+          
+          subsection2: {
+            title: '2.2 Cookie-uri analitice',
+            intro: 'Aceste cookie-uri ne ajută să înțelegem cum vizitatorii folosesc site-ul nostru web:',
+            items: [
+              'Google Analytics: Analizează traficul site-ului web și comportamentul utilizatorului',
+              'Statistici vizitatori: Măsoară popularitatea paginilor',
+              'Analiză performanță: Identifică probleme tehnice'
+            ]
+          },
+          
+          subsection3: {
+            title: '2.3 Cookie-uri de marketing',
+            intro: 'Aceste cookie-uri sunt utilizate în scopuri de marketing:',
+            items: [
+              'Integrare social media: Partajare prin butoane social media',
+              'Remarketing: Reclame direcționate (doar cu consimțământ)'
+            ]
+          }
+        },
+        
+        section3: {
+          title: '3. Prezentare generală cookie-uri',
+          intro: 'Mai jos găsiți o prezentare generală a cookie-urilor pe care le folosim:',
+          tableHeaders: {
+            name: 'Nume Cookie',
+            type: 'Tip',
+            purpose: 'Scop',
+            expiry: 'Data expirării'
+          },
+          cookies: [
+            {
+              name: 'language_preference',
+              type: 'Funcțional',
+              purpose: 'Își amintește preferința de limbă',
+              expiry: '1 an'
+            },
+            {
+              name: 'session_id',
+              type: 'Funcțional',
+              purpose: 'Menține sesiunea activă',
+              expiry: 'Sesiune'
+            },
+            {
+              name: '_ga',
+              type: 'Analitic',
+              purpose: 'Google Analytics tracking',
+              expiry: '2 ani'
+            },
+            {
+              name: '_gid',
+              type: 'Analitic',
+              purpose: 'Google Analytics sesiune',
+              expiry: '24 ore'
+            },
+            {
+              name: 'cookie_consent',
+              type: 'Funcțional',
+              purpose: 'Își amintește consimțământul pentru cookie-uri',
+              expiry: '1 an'
+            }
+          ]
+        },
+        
+        section4: {
+          title: '4. Gestionarea cookie-urilor',
+          intro: 'Puteți gestiona cookie-urile prin setările browserului dvs. Aici găsiți instrucțiuni pentru cele mai populare browsere:',
+          browsers: [
+            'Google Chrome',
+            'Mozilla Firefox',
+            'Microsoft Edge',
+            'Safari'
+          ]
+        },
+        
+        section5: {
+          title: '5. Impactul refuzării cookie-urilor',
+          intro: 'Dacă refuzați sau ștergeți cookie-urile, acest lucru poate limita funcționalitatea site-ului nostru web:',
+          items: [
+            'Este posibil să trebuiască să setați repetat preferința dvs. de limbă',
+            'Procesul de rezervare poate fi mai puțin fluid',
+            'Unele funcții ale site-ului web este posibil să nu funcționeze corect',
+            'Nu putem să ne amintim preferințele dvs.'
+          ]
+        },
+        
+        section6: {
+          title: '6. Cookie-uri ale unor terțe părți',
+          intro: 'Unele cookie-uri sunt plasate de către terțe părți:',
+          items: [
+            'Google Analytics: Pentru analiza site-ului web',
+            'Social media: Pentru integrare cu platformele social media'
+          ],
+          outro: 'Nu avem control asupra modului în care aceste terțe părți folosesc cookie-urile. Consultați politica lor de confidențialitate pentru mai multe informații.'
+        },
+        
+        section7: {
+          title: '7. Actualizări ale acestei politici',
+          content: 'Această politică de cookie-uri poate fi actualizată atunci când facem modificări în utilizarea noastră de cookie-uri. Vă recomandăm să verificați periodic această politică.'
+        },
+        
+        section8: {
+          title: '8. Contact',
+          intro: 'Pentru întrebări despre această politică de cookie-uri ne puteți contacta:',
+          contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Telefon: +31 6 12345678'
         }
       }
     }

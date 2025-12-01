@@ -1,158 +1,131 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import './LegalPages.css'
 
 const CookiePolicy: React.FC = () => {
+  const { t } = useTranslation()
+
+  const getBrowserLink = (browser: string): string => {
+    const links: { [key: string]: string } = {
+      'Google Chrome': 'https://support.google.com/chrome/answer/95647',
+      'Mozilla Firefox': 'https://support.mozilla.org/en-US/kb/enable-and-disable-cookies-website-preferences',
+      'Safari': 'https://support.apple.com/guide/safari/manage-cookies-and-website-data-sfri11471/mac',
+      'Microsoft Edge': 'https://support.microsoft.com/en-us/help/4027947/microsoft-edge-delete-cookies',
+      'Internet Explorer': 'https://support.microsoft.com/en-us/help/17442/windows-internet-explorer-delete-manage-cookies'
+    }
+    return links[browser] || '#'
+  }
 
   return (
     <div className="legal-page">
       <div className="legal-container">
-        <h1>Cookiebeleid</h1>
-        <p className="last-updated">Laatst bijgewerkt: 27 november 2025</p>
+        <h1>{t('cookiePolicy.title')}</h1>
+        <p className="last-updated">{t('cookiePolicy.lastUpdated')}</p>
         
         <section>
-          <h2>1. Wat zijn cookies?</h2>
-          <p>
-            Cookies zijn kleine tekstbestanden die op uw computer, tablet of mobiele telefoon worden opgeslagen 
-            wanneer u onze website bezoekt. Ze worden gebruikt om uw gebruikservaring te verbeteren en 
-            informatie over uw bezoek te verzamelen.
-          </p>
+          <h2>{t('cookiePolicy.section1.title')}</h2>
+          <p>{t('cookiePolicy.section1.content')}</p>
         </section>
 
         <section>
-          <h2>2. Welke cookies gebruiken wij?</h2>
+          <h2>{t('cookiePolicy.section2.title')}</h2>
           
-          <h3>2.1 Functionele cookies (vereist)</h3>
-          <p>Deze cookies zijn essentieel voor het functioneren van onze website:</p>
+          <h3>{t('cookiePolicy.section2.subsection1.title')}</h3>
+          <p>{t('cookiePolicy.section2.subsection1.intro')}</p>
           <ul>
-            <li><strong>Taalvoorkeur:</strong> Onthoudt uw gekozen taal</li>
-            <li><strong>Sessie-ID:</strong> Houdt uw sessie actief tijdens het boeken</li>
-            <li><strong>Gebruikersvoorkeuren:</strong> Slaat uw voorkeuren op</li>
+            {(t('cookiePolicy.section2.subsection1.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index} dangerouslySetInnerHTML={{ __html: item }} />
+            ))}
           </ul>
 
-          <h3>2.2 Analytische cookies</h3>
-          <p>Deze cookies helpen ons begrijpen hoe bezoekers onze website gebruiken:</p>
+          <h3>{t('cookiePolicy.section2.subsection2.title')}</h3>
+          <p>{t('cookiePolicy.section2.subsection2.intro')}</p>
           <ul>
-            <li><strong>Google Analytics:</strong> Analyseert websiteverkeer en gebruikersgedrag</li>
-            <li><strong>Bezoekersstatistieken:</strong> Meet populariteit van pagina's</li>
-            <li><strong>Prestatie-analyse:</strong> Identificeert technische problemen</li>
+            {(t('cookiePolicy.section2.subsection2.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index} dangerouslySetInnerHTML={{ __html: item }} />
+            ))}
           </ul>
 
-          <h3>2.3 Marketing cookies</h3>
-          <p>Deze cookies worden gebruikt voor marketingdoeleinden:</p>
+          <h3>{t('cookiePolicy.section2.subsection3.title')}</h3>
+          <p>{t('cookiePolicy.section2.subsection3.intro')}</p>
           <ul>
-            <li><strong>Social media integratie:</strong> Delen via social media knoppen</li>
-            <li><strong>Remarketing:</strong> Gerichte advertenties (alleen met toestemming)</li>
+            {(t('cookiePolicy.section2.subsection3.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index} dangerouslySetInnerHTML={{ __html: item }} />
+            ))}
           </ul>
         </section>
 
         <section>
-          <h2>3. Cookie-overzicht</h2>
+          <h2>{t('cookiePolicy.section3.title')}</h2>
+          <p>{t('cookiePolicy.section3.intro')}</p>
           <div className="cookie-table">
             <table>
               <thead>
                 <tr>
-                  <th>Cookie Naam</th>
-                  <th>Type</th>
-                  <th>Doel</th>
-                  <th>Vervaltijd</th>
+                  <th>{t('cookiePolicy.section3.tableHeaders.name')}</th>
+                  <th>{t('cookiePolicy.section3.tableHeaders.type')}</th>
+                  <th>{t('cookiePolicy.section3.tableHeaders.purpose')}</th>
+                  <th>{t('cookiePolicy.section3.tableHeaders.expiry')}</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>language_preference</td>
-                  <td>Functioneel</td>
-                  <td>Onthoudt taalvoorkeur</td>
-                  <td>1 jaar</td>
-                </tr>
-                <tr>
-                  <td>session_id</td>
-                  <td>Functioneel</td>
-                  <td>Houdt sessie actief</td>
-                  <td>Sessie</td>
-                </tr>
-                <tr>
-                  <td>_ga</td>
-                  <td>Analytisch</td>
-                  <td>Google Analytics tracking</td>
-                  <td>2 jaar</td>
-                </tr>
-                <tr>
-                  <td>_gid</td>
-                  <td>Analytisch</td>
-                  <td>Google Analytics sessie</td>
-                  <td>24 uur</td>
-                </tr>
-                <tr>
-                  <td>cookie_consent</td>
-                  <td>Functioneel</td>
-                  <td>Onthoudt cookie toestemming</td>
-                  <td>1 jaar</td>
-                </tr>
+                {(t('cookiePolicy.section3.cookies', { returnObjects: true }) as any[]).map((cookie: any, index: number) => (
+                  <tr key={index}>
+                    <td>{cookie.name}</td>
+                    <td>{cookie.type}</td>
+                    <td>{cookie.purpose}</td>
+                    <td>{cookie.expiry}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         </section>
 
         <section>
-          <h2>4. Beheer van cookies</h2>
-          <p>
-            U kunt cookies beheren via uw browserinstellingen. Hier vindt u instructies voor de meest 
-            populaire browsers:
-          </p>
+          <h2>{t('cookiePolicy.section4.title')}</h2>
+          <p>{t('cookiePolicy.section4.intro')}</p>
           <ul>
-            <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer">Google Chrome</a></li>
-            <li><a href="https://support.mozilla.org/nl/kb/cookies-verwijderen-gegevens-wissen-websites-opgeslagen" target="_blank" rel="noopener noreferrer">Mozilla Firefox</a></li>
-            <li><a href="https://support.microsoft.com/nl-nl/help/17442/windows-internet-explorer-delete-manage-cookies" target="_blank" rel="noopener noreferrer">Microsoft Edge</a></li>
-            <li><a href="https://support.apple.com/nl-nl/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer">Safari</a></li>
+            {(t('cookiePolicy.section4.browsers', { returnObjects: true }) as string[]).map((browser: string, index: number) => (
+              <li key={index}>
+                <a href={getBrowserLink(browser)} target="_blank" rel="noopener noreferrer">
+                  {browser}
+                </a>
+              </li>
+            ))}
           </ul>
         </section>
 
         <section>
-          <h2>5. Impact van het weigeren van cookies</h2>
-          <p>
-            Als u cookies weigert of verwijdert, kan dit de functionaliteit van onze website beperken:
-          </p>
+          <h2>{t('cookiePolicy.section5.title')}</h2>
+          <p>{t('cookiePolicy.section5.intro')}</p>
           <ul>
-            <li>U moet mogelijk uw taalvoorkeur herhaaldelijk instellen</li>
-            <li>Het boekingsproces kan minder soepel verlopen</li>
-            <li>Some website features may not work properly</li>
-            <li>Wij kunnen uw voorkeuren niet onthouden</li>
+            {(t('cookiePolicy.section5.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index} dangerouslySetInnerHTML={{ __html: item }} />
+            ))}
           </ul>
         </section>
 
         <section>
-          <h2>6. Third-party cookies</h2>
-          <p>
-            Sommige cookies worden geplaatst door derde partijen:
-          </p>
+          <h2>{t('cookiePolicy.section6.title')}</h2>
+          <p>{t('cookiePolicy.section6.intro')}</p>
           <ul>
-            <li><strong>Google Analytics:</strong> Voor website-analyse</li>
-            <li><strong>Social media:</strong> Voor integratie met social media platforms</li>
+            {(t('cookiePolicy.section6.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index} dangerouslySetInnerHTML={{ __html: item }} />
+            ))}
           </ul>
-          <p>
-            Wij hebben geen controle over hoe deze derde partijen cookies gebruiken. 
-            Raadpleeg hun privacybeleid voor meer informatie.
-          </p>
+          <p>{t('cookiePolicy.section6.outro')}</p>
         </section>
 
         <section>
-          <h2>7. Updates van dit beleid</h2>
-          <p>
-            Dit cookiebeleid kan worden bijgewerkt wanneer wij wijzigingen aanbrengen in ons cookiegebruik. 
-            Wij raden u aan dit beleid regelmatig te controleren.
-          </p>
+          <h2>{t('cookiePolicy.section7.title')}</h2>
+          <p>{t('cookiePolicy.section7.content')}</p>
         </section>
 
         <section>
-          <h2>8. Contact</h2>
-          <p>
-            Voor vragen over dit cookiebeleid kunt u contact opnemen:
-          </p>
-          <p>
-            <strong>Spectra AutoArt</strong><br />
-            Email: privacy@spectraautoart.nl<br />
-            Telefoon: +31 6 12345678
-          </p>
+          <h2>{t('cookiePolicy.section8.title')}</h2>
+          <p>{t('cookiePolicy.section8.intro')}</p>
+          <p dangerouslySetInnerHTML={{ __html: t('cookiePolicy.section8.contact') }} />
         </section>
       </div>
     </div>
