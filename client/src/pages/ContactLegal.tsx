@@ -1,181 +1,164 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import './LegalPages.css'
 
 const ContactLegal: React.FC = () => {
+  const { t } = useTranslation()
 
   return (
     <div className="legal-page">
       <div className="legal-container">
-        <h1>Contact & Juridische Informatie</h1>
-        <p className="last-updated">Laatst bijgewerkt: 27 november 2025</p>
+        <h1>{t('contactLegal.title')}</h1>
+        <p className="last-updated">{t('contactLegal.lastUpdated')}</p>
         
         <section>
-          <h2>1. Bedrijfsinformatie</h2>
+          <h2>{t('contactLegal.section1.title')}</h2>
           <p>
-            <strong>Bedrijfsnaam:</strong> Spectra AutoArt<br />
-            <strong>Handelsnaam:</strong> Spectra AutoArt<br />
-            <strong>Rechtsvorm:</strong> Eenmanszaak<br />
-            <strong>Gevestigd:</strong> Tilburg, Nederland<br />
-            <strong>KvK-nummer:</strong> [Wordt geregistreerd]<br />
-            <strong>BTW-nummer:</strong> [Wordt geregistreerd]
+            <strong>{t('contactLegal.section1.companyName')}:</strong> {t('contactLegal.section1.companyNameValue')}<br />
+            <strong>{t('contactLegal.section1.tradeName')}:</strong> {t('contactLegal.section1.tradeNameValue')}<br />
+            <strong>{t('contactLegal.section1.legalForm')}:</strong> {t('contactLegal.section1.legalFormValue')}<br />
+            <strong>{t('contactLegal.section1.located')}:</strong> {t('contactLegal.section1.locatedValue')}<br />
+            <strong>{t('contactLegal.section1.kvkNumber')}:</strong> {t('contactLegal.section1.kvkNumberValue')}<br />
+            <strong>{t('contactLegal.section1.vatNumber')}:</strong> {t('contactLegal.section1.vatNumberValue')}
           </p>
         </section>
 
         <section>
-          <h2>2. Contactgegevens</h2>
+          <h2>{t('contactLegal.section2.title')}</h2>
           
-          <h3>2.1 Algemene contactgegevens</h3>
+          <h3>{t('contactLegal.section2.generalContact')}</h3>
           <p>
-            <strong>Adres:</strong><br />
-            Spectra AutoArt<br />
-            Tilburg Stadscentrum<br />
-            [Straatnaam wordt vermeld bij registratie]<br />
-            [Postcode] Tilburg<br />
-            Nederland
+            <strong>{t('contactLegal.section2.address')}:</strong><br />
+            <span dangerouslySetInnerHTML={{ __html: t('contactLegal.section2.addressValue') }} />
           </p>
 
-          <h3>2.2 Communicatiekanalen</h3>
+          <h3>{t('contactLegal.section2.communicationChannels')}</h3>
           <p>
-            <strong>Telefoon:</strong> +31 6 12345678<br />
-            <strong>Email algemeen:</strong> info@spectraautoart.nl<br />
-            <strong>Email afspraken:</strong> bookings@spectraautoart.nl<br />
-            <strong>Email support:</strong> support@spectraautoart.nl
+            <strong>{t('contactLegal.section2.phone')}:</strong> {t('contactLegal.section2.phoneValue')}<br />
+            <strong>{t('contactLegal.section2.emailGeneral')}:</strong> {t('contactLegal.section2.emailGeneralValue')}<br />
+            <strong>{t('contactLegal.section2.emailAppointments')}:</strong> {t('contactLegal.section2.emailAppointmentsValue')}<br />
+            <strong>{t('contactLegal.section2.emailSupport')}:</strong> {t('contactLegal.section2.emailSupportValue')}
           </p>
 
-          <h3>2.3 WhatsApp Business</h3>
+          <h3>{t('contactLegal.section2.whatsappBusiness')}</h3>
           <p>
-            <strong>WhatsApp:</strong> +31 6 12345678<br />
-            <strong>Bereikbaarheid:</strong> Maandag t/m zaterdag, 9:00 - 18:00 uur
+            <strong>{t('contactLegal.section2.whatsapp')}:</strong> {t('contactLegal.section2.whatsappValue')}<br />
+            <strong>{t('contactLegal.section2.availability')}:</strong> {t('contactLegal.section2.availabilityValue')}
           </p>
 
-          <h3>2.4 Social Media</h3>
+          <h3>{t('contactLegal.section2.socialMedia')}</h3>
           <p>
-            <strong>Instagram:</strong> @spectraautoart<br />
-            <strong>Facebook:</strong> Spectra AutoArt<br />
-            <strong>LinkedIn:</strong> Spectra AutoArt
+            <strong>{t('contactLegal.section2.instagram')}:</strong> {t('contactLegal.section2.instagramValue')}<br />
+            <strong>{t('contactLegal.section2.facebook')}:</strong> {t('contactLegal.section2.facebookValue')}<br />
+            <strong>{t('contactLegal.section2.linkedin')}:</strong> {t('contactLegal.section2.linkedinValue')}
           </p>
         </section>
 
         <section>
-          <h2>3. Openingstijden</h2>
+          <h2>{t('contactLegal.section3.title')}</h2>
           <p>
-            <strong>Maandag:</strong> 9:00 - 18:00 uur<br />
-            <strong>Dinsdag:</strong> 9:00 - 18:00 uur<br />
-            <strong>Woensdag:</strong> 9:00 - 18:00 uur<br />
-            <strong>Donderdag:</strong> 9:00 - 18:00 uur<br />
-            <strong>Vrijdag:</strong> 9:00 - 18:00 uur<br />
-            <strong>Zaterdag:</strong> 9:00 - 16:00 uur<br />
-            <strong>Zondag:</strong> Gesloten
+            <strong>{t('contactLegal.section3.monday')}:</strong> {t('contactLegal.section3.hoursValue')}<br />
+            <strong>{t('contactLegal.section3.tuesday')}:</strong> {t('contactLegal.section3.hoursValue')}<br />
+            <strong>{t('contactLegal.section3.wednesday')}:</strong> {t('contactLegal.section3.hoursValue')}<br />
+            <strong>{t('contactLegal.section3.thursday')}:</strong> {t('contactLegal.section3.hoursValue')}<br />
+            <strong>{t('contactLegal.section3.friday')}:</strong> {t('contactLegal.section3.hoursValue')}<br />
+            <strong>{t('contactLegal.section3.saturday')}:</strong> {t('contactLegal.section3.saturdayHours')}<br />
+            <strong>{t('contactLegal.section3.sunday')}:</strong> {t('contactLegal.section3.closed')}
           </p>
           <p>
-            <em>Let op:</em> Buiten openingstijden zijn afspraken op afspraak mogelijk. 
-            Neem contact op voor de mogelijkheden.
+            <em>{t('contactLegal.section3.note')}:</em> {t('contactLegal.section3.noteText')}
           </p>
         </section>
 
         <section>
-          <h2>4. Diensten en specialisaties</h2>
+          <h2>{t('contactLegal.section4.title')}</h2>
           <p>
-            Spectra AutoArt is gespecialiseerd in premium auto detailing en styling diensten:
+            {t('contactLegal.section4.intro')}
           </p>
           <ul>
-            <li><strong>Interieur Detailing:</strong> Complete reiniging en bescherming van interieur</li>
-            <li><strong>Exterieur Detailing:</strong> Wasbeurt, polijsten en bescherming van lak</li>
-            <li><strong>Ambient Verlichting:</strong> Installatie van sfeerverlichting in interieur</li>
-            <li><strong>Sterrenhemel Plafond:</strong> Luxe plafondverlichting met LED-sterren</li>
-            <li><strong>Plafon Retapitatie:</strong> Herstel en vernieuwing van hoofdlining</li>
-            <li><strong>Chrome Delete:</strong> Matzwarte afwerking van chromen delen</li>
-            <li><strong>Trim Colantare:</strong> Wrapping van interieur- en exterieurtrim</li>
-            <li><strong>Auto Polijsten:</strong> Lakcorrectie en glansherstel</li>
-            <li><strong>Keramische Bescherming:</strong> Duurzame coating voor lakbescherming</li>
+            <li><strong>{t('contactLegal.section4.interiorDetailing')}:</strong> {t('contactLegal.section4.interiorDetailingDesc')}</li>
+            <li><strong>{t('contactLegal.section4.exteriorDetailing')}:</strong> {t('contactLegal.section4.exteriorDetailingDesc')}</li>
+            <li><strong>{t('contactLegal.section4.ambientLighting')}:</strong> {t('contactLegal.section4.ambientLightingDesc')}</li>
+            <li><strong>{t('contactLegal.section4.starlightCeiling')}:</strong> {t('contactLegal.section4.starlightCeilingDesc')}</li>
+            <li><strong>{t('contactLegal.section4.ceilingRestoration')}:</strong> {t('contactLegal.section4.ceilingRestorationDesc')}</li>
+            <li><strong>{t('contactLegal.section4.chromeDelete')}:</strong> {t('contactLegal.section4.chromeDeleteDesc')}</li>
+            <li><strong>{t('contactLegal.section4.trimWrapping')}:</strong> {t('contactLegal.section4.trimWrappingDesc')}</li>
+            <li><strong>{t('contactLegal.section4.autoPolish')}:</strong> {t('contactLegal.section4.autoPolishDesc')}</li>
+            <li><strong>{t('contactLegal.section4.ceramicProtection')}:</strong> {t('contactLegal.section4.ceramicProtectionDesc')}</li>
           </ul>
         </section>
 
         <section>
-          <h2>5. Juridische aansprakelijkheid</h2>
+          <h2>{t('contactLegal.section5.title')}</h2>
           
-          <h3>5.1 Algemene aansprakelijkheid</h3>
+          <h3>{t('contactLegal.section5.generalLiability')}</h3>
           <p>
-            Spectra AutoArt is aansprakelijk voor schade veroorzaakt tijdens het uitvoeren van onze 
-            diensten, met een maximum van de factuurwaarde van de betreffende dienst, tenzij er sprake is 
-            van opzet of grove schuld.
+            {t('contactLegal.section5.generalLiabilityText')}
           </p>
 
-          <h3>5.2 Uitsluitingen</h3>
+          <h3>{t('contactLegal.section5.exclusions')}</h3>
           <p>
-            Wij zijn niet aansprakelijk voor:
+            {t('contactLegal.section5.exclusionsText')}
           </p>
           <ul>
-            <li>Schade veroorzaakt door bestaande gebreken aan het voertuig</li>
-            <li>Waardevermindering van het voertuig</li>
-            <li>Indirecte schade of gevolgschade</li>
-            <li>Schade ontstaan na het verlaten van onze locatie</li>
-            <li>Verlies van persoonlijke bezittingen uit het voertuig</li>
+            <li>{t('contactLegal.section5.existingDefects')}</li>
+            <li>{t('contactLegal.section5.valueDepreciation')}</li>
+            <li>{t('contactLegal.section5.indirectDamage')}</li>
+            <li>{t('contactLegal.section5.postLocationDamage')}</li>
+            <li>{t('contactLegal.section5.personalItemsLoss')}</li>
           </ul>
 
-          <h3>5.3 Verzekering</h3>
+          <h3>{t('contactLegal.section5.insurance')}</h3>
           <p>
-            Spectra AutoArt is verzekerd tegen bedrijfsaansprakelijkheid. Onze verzekeringspolis 
-            dekt schades tot €1.000.000 per gebeurtenis.
+            {t('contactLegal.section5.insuranceText')}
           </p>
         </section>
 
         <section>
-          <h2>6. Klachtenprocedure</h2>
+          <h2>{t('contactLegal.section6.title')}</h2>
           <p>
-            Bent u niet tevreden over onze dienstverlening? Volg dan onze klachtenprocedure:
+            {t('contactLegal.section6.intro')}
           </p>
           <ol>
-            <li><strong>Melding:</strong> Binnen 7 dagen na voltooiing van de dienst</li>
-            <li><strong>Schriftelijk:</strong> Via email naar complaints@spectraautoart.nl</li>
-            <li><strong>Behandeling:</strong> Wij nemen binnen 5 werkdagen contact op</li>
-            <li><strong>Oplossing:</strong> Wij streven naar een passende oplossing binnen 30 dagen</li>
-            <li><strong>Escalatie:</strong> Onafhankelijke geschillencommissie indien nodig</li>
+            <li><strong>{t('contactLegal.section6.step1')}:</strong> {t('contactLegal.section6.step1Text')}</li>
+            <li><strong>{t('contactLegal.section6.step2')}:</strong> {t('contactLegal.section6.step2Text')}</li>
+            <li><strong>{t('contactLegal.section6.step3')}:</strong> {t('contactLegal.section6.step3Text')}</li>
+            <li><strong>{t('contactLegal.section6.step4')}:</strong> {t('contactLegal.section6.step4Text')}</li>
+            <li><strong>{t('contactLegal.section6.step5')}:</strong> {t('contactLegal.section6.step5Text')}</li>
           </ol>
         </section>
 
         <section>
-          <h2>7. Intellectuele eigendom</h2>
+          <h2>{t('contactLegal.section7.title')}</h2>
           <p>
-            Alle rechten voorbehouden. Niets uit deze website of onze marketingmaterialen mag worden 
-            verveelvoudigd, opgeslagen in een geautomatiseerd gegevensbestand, of openbaar gemaakt, 
-            in enige vorm of op enige wijze, hetzij elektronisch, mechanisch, door fotokopieën, 
-            opnamen, of op enige andere manier, zonder voorafgaande schriftelijke toestemming van 
-            Spectra AutoArt.
+            {t('contactLegal.section7.intro')}
           </p>
           <p>
-            <strong>Merken:</strong> Spectra AutoArt™ is een handelsnaam van ons bedrijf. 
-            Alle andere merken en handelsnamen zijn eigendom van hun respectieve eigenaren.
+            <strong>{t('contactLegal.section7.trademarks')}:</strong> {t('contactLegal.section7.trademarksText')}
           </p>
         </section>
 
         <section>
-          <h2>8. Privacy en gegevensbescherming</h2>
+          <h2>{t('contactLegal.section8.title')}</h2>
           <p>
-            Spectra AutoArt is geregistreerd bij de Autoriteit Persoonsgegevens als 
-            verwerkingsverantwoordelijke. Ons registratienummer wordt vermeld zodra de registratie 
-            is voltooid.
+            {t('contactLegal.section8.intro')}
           </p>
           <p>
-            Voor meer informatie over hoe wij omgaan met uw persoonsgegevens, zie onze 
-            <a href="/privacy">privacyverklaring</a> en <a href="/gdpr">AVG-informatie</a>.
+            {t('contactLegal.section8.moreInfo')} <a href="/privacy">privacy policy</a> and <a href="/gdpr">GDPR policy</a>.
           </p>
         </section>
 
         <section>
-          <h2>9. Toepasselijk recht</h2>
+          <h2>{t('contactLegal.section9.title')}</h2>
           <p>
-            Op alle overeenkomsten en diensten van Spectra AutoArt is Nederlands recht van toepassing. 
-            Geschillen worden voorgelegd aan de bevoegde rechter in Tilburg, tenzij dwingend recht 
-            een andere bevoegde rechter aanwijst.
+            {t('contactLegal.section9.content')}
           </p>
         </section>
 
         <section>
-          <h2>10. Wijzigingen</h2>
+          <h2>{t('contactLegal.section10.title')}</h2>
           <p>
-            Deze juridische informatie kan worden gewijzigd. Wijzigingen worden via onze website 
-            bekend gemaakt. De meest actuele versie is altijd beschikbaar op deze pagina.
+            {t('contactLegal.section10.content')}
           </p>
         </section>
       </div>

@@ -491,6 +491,148 @@ const resources = {
         }
       },
       
+      // Contact & Legal Information page translations
+      contactLegal: {
+        title: 'Contact & Juridische Informatie',
+        lastUpdated: 'Laatst bijgewerkt: 27 november 2025',
+        
+        section1: {
+          title: '1. Bedrijfsinformatie',
+          companyName: 'Bedrijfsnaam',
+          tradeName: 'Handelsnaam',
+          legalForm: 'Rechtsvorm',
+          located: 'Gevestigd',
+          kvkNumber: 'KvK-nummer',
+          vatNumber: 'BTW-nummer',
+          companyNameValue: 'Spectra AutoArt',
+          tradeNameValue: 'Spectra AutoArt',
+          legalFormValue: 'Eenmanszaak',
+          locatedValue: 'Tilburg, Nederland',
+          kvkNumberValue: '[Wordt geregistreerd]',
+          vatNumberValue: '[Wordt geregistreerd]'
+        },
+        
+        section2: {
+          title: '2. Contactgegevens',
+          generalContact: '2.1 Algemene contactgegevens',
+          address: 'Adres',
+          communicationChannels: '2.2 Communicatiekanalen',
+          phone: 'Telefoon',
+          emailGeneral: 'Email algemeen',
+          emailAppointments: 'Email afspraken',
+          emailSupport: 'Email support',
+          whatsappBusiness: '2.3 WhatsApp Business',
+          whatsapp: 'WhatsApp',
+          availability: 'Bereikbaarheid',
+          socialMedia: '2.4 Social Media',
+          instagram: 'Instagram',
+          facebook: 'Facebook',
+          linkedin: 'LinkedIn',
+          addressValue: 'Spectra AutoArt<br>Tilburg Stadscentrum<br>[Straatnaam wordt vermeld bij registratie]<br>[Postcode] Tilburg<br>Nederland',
+          phoneValue: '+31 6 12345678',
+          emailGeneralValue: 'info@spectraautoart.nl',
+          emailAppointmentsValue: 'bookings@spectraautoart.nl',
+          emailSupportValue: 'support@spectraautoart.nl',
+          whatsappValue: '+31 6 12345678',
+          availabilityValue: 'Maandag t/m zaterdag, 9:00 - 18:00 uur',
+          instagramValue: '@spectraautoart',
+          facebookValue: 'Spectra AutoArt',
+          linkedinValue: 'Spectra AutoArt'
+        },
+        
+        section3: {
+          title: '3. Openingstijden',
+          monday: 'Maandag',
+          tuesday: 'Dinsdag',
+          wednesday: 'Woensdag',
+          thursday: 'Donderdag',
+          friday: 'Vrijdag',
+          saturday: 'Zaterdag',
+          sunday: 'Zondag',
+          closed: 'Gesloten',
+          hoursValue: '9:00 - 18:00 uur',
+          saturdayHours: '9:00 - 16:00 uur',
+          note: 'Let op',
+          noteText: 'Buiten openingstijden zijn afspraken op afspraak mogelijk. Neem contact op voor de mogelijkheden.'
+        },
+        
+        section4: {
+          title: '4. Diensten en specialisaties',
+          intro: 'Spectra AutoArt is gespecialiseerd in premium auto detailing en styling diensten:',
+          interiorDetailing: 'Interieur Detailing',
+          exteriorDetailing: 'Exterieur Detailing',
+          ambientLighting: 'Ambient Verlichting',
+          starlightCeiling: 'Sterrenhemel Plafond',
+          ceilingRestoration: 'Plafon Retapitatie',
+          chromeDelete: 'Chrome Delete',
+          trimWrapping: 'Trim Colantare',
+          autoPolish: 'Auto Polijsten',
+          ceramicProtection: 'Keramische Bescherming',
+          interiorDetailingDesc: 'Complete reiniging en bescherming van interieur',
+          exteriorDetailingDesc: 'Wasbeurt, polijsten en bescherming van lak',
+          ambientLightingDesc: 'Installatie van sfeerverlichting in interieur',
+          starlightCeilingDesc: 'Luxe plafondverlichting met LED-sterren',
+          ceilingRestorationDesc: 'Herstel en vernieuwing van hoofdlining',
+          chromeDeleteDesc: 'Matzwarte afwerking van chromen delen',
+          trimWrappingDesc: 'Wrapping van interieur- en exterieurtrim',
+          autoPolishDesc: 'Lakcorrectie en glansherstel',
+          ceramicProtectionDesc: 'Duurzame coating voor lakbescherming'
+        },
+        
+        section5: {
+          title: '5. Juridische aansprakelijkheid',
+          generalLiability: '5.1 Algemene aansprakelijkheid',
+          generalLiabilityText: 'Spectra AutoArt is aansprakelijk voor schade veroorzaakt tijdens het uitvoeren van onze diensten, met een maximum van de factuurwaarde van de betreffende dienst, tenzij er sprake is van opzet of grove schuld.',
+          exclusions: '5.2 Uitsluitingen',
+          exclusionsText: 'Wij zijn niet aansprakelijk voor:',
+          existingDefects: 'Schade veroorzaakt door bestaande gebreken aan het voertuig',
+          valueDepreciation: 'Waardevermindering van het voertuig',
+          indirectDamage: 'Indirecte schade of gevolgschade',
+          postLocationDamage: 'Schade ontstaan na het verlaten van onze locatie',
+          personalItemsLoss: 'Verlies van persoonlijke bezittingen uit het voertuig',
+          insurance: '5.3 Verzekering',
+          insuranceText: 'Spectra AutoArt is verzekerd tegen bedrijfsaansprakelijkheid. Onze verzekeringspolis dekt schades tot €1.000.000 per gebeurtenis.'
+        },
+        
+        section6: {
+          title: '6. Klachtenprocedure',
+          intro: 'Bent u niet tevreden over onze dienstverlening? Volg dan onze klachtenprocedure:',
+          step1: 'Melding',
+          step1Text: 'Binnen 7 dagen na voltooiing van de dienst',
+          step2: 'Schriftelijk',
+          step2Text: 'Via email naar complaints@spectraautoart.nl',
+          step3: 'Behandeling',
+          step3Text: 'Wij nemen binnen 5 werkdagen contact op',
+          step4: 'Oplossing',
+          step4Text: 'Wij streven naar een passende oplossing binnen 30 dagen',
+          step5: 'Escalatie',
+          step5Text: 'Onafhankelijke geschillencommissie indien nodig'
+        },
+        
+        section7: {
+          title: '7. Intellectuele eigendom',
+          intro: 'Alle rechten voorbehouden. Niets uit deze website of onze marketingmaterialen mag worden verveelvoudigd, opgeslagen in een geautomatiseerd gegevensbestand, of openbaar gemaakt, in enige vorm of op enige wijze, hetzij elektronisch, mechanisch, door fotokopieën, opnamen, of op enige andere manier, zonder voorafgaande schriftelijke toestemming van Spectra AutoArt.',
+          trademarks: 'Merken',
+          trademarksText: 'Spectra AutoArt™ is een handelsnaam van ons bedrijf. Alle andere merken en handelsnamen zijn eigendom van hun respectieve eigenaren.'
+        },
+        
+        section8: {
+          title: '8. Privacy en gegevensbescherming',
+          intro: 'Spectra AutoArt is geregistreerd bij de Autoriteit Persoonsgegevens als verwerkingsverantwoordelijke. Ons registratienummer wordt vermeld zodra de registratie is voltooid.',
+          moreInfo: 'Voor meer informatie over hoe wij omgaan met uw persoonsgegevens, zie onze'
+        },
+        
+        section9: {
+          title: '9. Toepasselijk recht',
+          content: 'Op alle overeenkomsten en diensten van Spectra AutoArt is Nederlands recht van toepassing. Geschillen worden voorgelegd aan de bevoegde rechter in Tilburg, tenzij dwingend recht een andere bevoegde rechter aanwijst.'
+        },
+        
+        section10: {
+          title: '10. Wijzigingen',
+          content: 'Deze juridische informatie kan worden gewijzigd. Wijzigingen worden via onze website bekend gemaakt. De meest actuele versie is altijd beschikbaar op deze pagina.'
+        }
+      },
+      
       // Privacy Policy page translations
       privacyPolicy: {
         title: 'Privacybeleid',
@@ -1560,6 +1702,148 @@ const resources = {
           intro: 'For questions about this cookie policy you can contact:',
           contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Phone: +31 6 12345678'
         }
+      },
+      
+      // Contact & Legal Information page translations
+      contactLegal: {
+        title: 'Contact & Legal Information',
+        lastUpdated: 'Last updated: November 27, 2025',
+        
+        section1: {
+          title: '1. Company Information',
+          companyName: 'Company Name',
+          tradeName: 'Trade Name',
+          legalForm: 'Legal Form',
+          located: 'Located',
+          kvkNumber: 'Chamber of Commerce Number',
+          vatNumber: 'VAT Number',
+          companyNameValue: 'Spectra AutoArt',
+          tradeNameValue: 'Spectra AutoArt',
+          legalFormValue: 'Sole Proprietorship',
+          locatedValue: 'Tilburg, Netherlands',
+          kvkNumberValue: '[To be registered]',
+          vatNumberValue: '[To be registered]'
+        },
+        
+        section2: {
+          title: '2. Contact Information',
+          generalContact: '2.1 General Contact Information',
+          address: 'Address',
+          communicationChannels: '2.2 Communication Channels',
+          phone: 'Phone',
+          emailGeneral: 'General Email',
+          emailAppointments: 'Appointments Email',
+          emailSupport: 'Support Email',
+          whatsappBusiness: '2.3 WhatsApp Business',
+          whatsapp: 'WhatsApp',
+          availability: 'Availability',
+          socialMedia: '2.4 Social Media',
+          instagram: 'Instagram',
+          facebook: 'Facebook',
+          linkedin: 'LinkedIn',
+          addressValue: 'Spectra AutoArt<br>Tilburg City Center<br>[Street name to be provided upon registration]<br>[Postal Code] Tilburg<br>Netherlands',
+          phoneValue: '+31 6 12345678',
+          emailGeneralValue: 'info@spectraautoart.nl',
+          emailAppointmentsValue: 'bookings@spectraautoart.nl',
+          emailSupportValue: 'support@spectraautoart.nl',
+          whatsappValue: '+31 6 12345678',
+          availabilityValue: 'Monday through Saturday, 9:00 AM - 6:00 PM',
+          instagramValue: '@spectraautoart',
+          facebookValue: 'Spectra AutoArt',
+          linkedinValue: 'Spectra AutoArt'
+        },
+        
+        section3: {
+          title: '3. Opening Hours',
+          monday: 'Monday',
+          tuesday: 'Tuesday',
+          wednesday: 'Wednesday',
+          thursday: 'Thursday',
+          friday: 'Friday',
+          saturday: 'Saturday',
+          sunday: 'Sunday',
+          closed: 'Closed',
+          hoursValue: '9:00 AM - 6:00 PM',
+          saturdayHours: '9:00 AM - 4:00 PM',
+          note: 'Note',
+          noteText: 'Appointments outside opening hours are available by arrangement. Please contact us for possibilities.'
+        },
+        
+        section4: {
+          title: '4. Services and Specializations',
+          intro: 'Spectra AutoArt specializes in premium auto detailing and styling services:',
+          interiorDetailing: 'Interior Detailing',
+          exteriorDetailing: 'Exterior Detailing',
+          ambientLighting: 'Ambient Lighting',
+          starlightCeiling: 'Starlight Ceiling',
+          ceilingRestoration: 'Ceiling Restoration',
+          chromeDelete: 'Chrome Delete',
+          trimWrapping: 'Trim Wrapping',
+          autoPolish: 'Auto Polish',
+          ceramicProtection: 'Ceramic Protection',
+          interiorDetailingDesc: 'Complete cleaning and protection of interior',
+          exteriorDetailingDesc: 'Washing, polishing and protection of paint',
+          ambientLightingDesc: 'Installation of ambient lighting in interior',
+          starlightCeilingDesc: 'Luxury ceiling lighting with LED stars',
+          ceilingRestorationDesc: 'Repair and renewal of headlining',
+          chromeDeleteDesc: 'Matte black finish of chrome parts',
+          trimWrappingDesc: 'Wrapping of interior and exterior trim',
+          autoPolishDesc: 'Paint correction and gloss restoration',
+          ceramicProtectionDesc: 'Durable coating for paint protection'
+        },
+        
+        section5: {
+          title: '5. Legal Liability',
+          generalLiability: '5.1 General Liability',
+          generalLiabilityText: 'Spectra AutoArt is liable for damage caused during the performance of our services, with a maximum of the invoice value of the relevant service, unless there is intent or gross negligence.',
+          exclusions: '5.2 Exclusions',
+          exclusionsText: 'We are not liable for:',
+          existingDefects: 'Damage caused by existing defects to the vehicle',
+          valueDepreciation: 'Depreciation of the vehicle value',
+          indirectDamage: 'Indirect damage or consequential damage',
+          postLocationDamage: 'Damage occurring after leaving our location',
+          personalItemsLoss: 'Loss of personal belongings from the vehicle',
+          insurance: '5.3 Insurance',
+          insuranceText: 'Spectra AutoArt is insured against business liability. Our insurance policy covers damages up to €1,000,000 per event.'
+        },
+        
+        section6: {
+          title: '6. Complaints Procedure',
+          intro: 'Are you not satisfied with our service? Please follow our complaints procedure:',
+          step1: 'Notification',
+          step1Text: 'Within 7 days after completion of the service',
+          step2: 'Written',
+          step2Text: 'Via email to complaints@spectraautoart.nl',
+          step3: 'Processing',
+          step3Text: 'We will contact you within 5 working days',
+          step4: 'Solution',
+          step4Text: 'We strive for an appropriate solution within 30 days',
+          step5: 'Escalation',
+          step5Text: 'Independent disputes committee if necessary'
+        },
+        
+        section7: {
+          title: '7. Intellectual Property',
+          intro: 'All rights reserved. No part of this website or our marketing materials may be reproduced, stored in an automated database, or made public, in any form or in any way, whether electronic, mechanical, by photocopies, recordings, or in any other way, without prior written permission from Spectra AutoArt.',
+          trademarks: 'Trademarks',
+          trademarksText: 'Spectra AutoArt™ is a trade name of our company. All other brands and trade names are the property of their respective owners.'
+        },
+        
+        section8: {
+          title: '8. Privacy and Data Protection',
+          intro: 'Spectra AutoArt is registered with the Dutch Data Protection Authority as the data controller. Our registration number will be provided once the registration is completed.',
+          moreInfo: 'For more information about how we handle your personal data, see our'
+        },
+        
+        section9: {
+          title: '9. Applicable Law',
+          content: 'All agreements and services of Spectra AutoArt are subject to Dutch law. Disputes will be submitted to the competent court in Tilburg, unless mandatory law designates another competent court.'
+        },
+        
+        section10: {
+          title: '10. Changes',
+          content: 'This legal information may be changed. Changes will be announced via our website. The most current version is always available on this page.'
+        }
       }
     }
   },
@@ -2147,6 +2431,148 @@ const resources = {
           intro: 'Para preguntas sobre esta política de cookies puede contactar:',
           contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Teléfono: +31 6 12345678'
         }
+      },
+      
+      // Contact & Legal Information page translations
+      contactLegal: {
+        title: 'Información de Contacto y Legal',
+        lastUpdated: 'Última actualización: 27 de noviembre de 2025',
+        
+        section1: {
+          title: '1. Información de la Empresa',
+          companyName: 'Nombre de la Empresa',
+          tradeName: 'Nombre Comercial',
+          legalForm: 'Forma Jurídica',
+          located: 'Ubicación',
+          kvkNumber: 'Número de Cámara de Comercio',
+          vatNumber: 'Número de IVA',
+          companyNameValue: 'Spectra AutoArt',
+          tradeNameValue: 'Spectra AutoArt',
+          legalFormValue: 'Empresa Individual',
+          locatedValue: 'Tilburg, Países Bajos',
+          kvkNumberValue: '[Por registrarse]',
+          vatNumberValue: '[Por registrarse]'
+        },
+        
+        section2: {
+          title: '2. Información de Contacto',
+          generalContact: '2.1 Información de Contacto General',
+          address: 'Dirección',
+          communicationChannels: '2.2 Canales de Comunicación',
+          phone: 'Teléfono',
+          emailGeneral: 'Email General',
+          emailAppointments: 'Email de Citas',
+          emailSupport: 'Email de Soporte',
+          whatsappBusiness: '2.3 WhatsApp Business',
+          whatsapp: 'WhatsApp',
+          availability: 'Disponibilidad',
+          socialMedia: '2.4 Redes Sociales',
+          instagram: 'Instagram',
+          facebook: 'Facebook',
+          linkedin: 'LinkedIn',
+          addressValue: 'Spectra AutoArt<br>Centro de la Ciudad de Tilburg<br>[Nombre de la calle se proporcionará al registrarse]<br>[Código Postal] Tilburg<br>Países Bajos',
+          phoneValue: '+31 6 12345678',
+          emailGeneralValue: 'info@spectraautoart.nl',
+          emailAppointmentsValue: 'bookings@spectraautoart.nl',
+          emailSupportValue: 'support@spectraautoart.nl',
+          whatsappValue: '+31 6 12345678',
+          availabilityValue: 'De lunes a sábado, 9:00 - 18:00 horas',
+          instagramValue: '@spectraautoart',
+          facebookValue: 'Spectra AutoArt',
+          linkedinValue: 'Spectra AutoArt'
+        },
+        
+        section3: {
+          title: '3. Horario de Atención',
+          monday: 'Lunes',
+          tuesday: 'Martes',
+          wednesday: 'Miércoles',
+          thursday: 'Jueves',
+          friday: 'Viernes',
+          saturday: 'Sábado',
+          sunday: 'Domingo',
+          closed: 'Cerrado',
+          hoursValue: '9:00 - 18:00 horas',
+          saturdayHours: '9:00 - 16:00 horas',
+          note: 'Nota',
+          noteText: 'Las citas fuera del horario de atención están disponibles bajo previa cita. Por favor contáctenos para posibilidades.'
+        },
+        
+        section4: {
+          title: '4. Servicios y Especializaciones',
+          intro: 'Spectra AutoArt se especializa en servicios premium de detailing y estilización de autos:',
+          interiorDetailing: 'Detailing de Interior',
+          exteriorDetailing: 'Detailing de Exterior',
+          ambientLighting: 'Iluminación Ambiental',
+          starlightCeiling: 'Techo de Estrellas',
+          ceilingRestoration: 'Restauración de Techo',
+          chromeDelete: 'Chrome Delete',
+          trimWrapping: 'Envoltura de Molduras',
+          autoPolish: 'Pulido de Auto',
+          ceramicProtection: 'Protección Cerámica',
+          interiorDetailingDesc: 'Limpieza y protección completa del interior',
+          exteriorDetailingDesc: 'Lavado, pulido y protección de la pintura',
+          ambientLightingDesc: 'Instalación de iluminación ambiental en el interior',
+          starlightCeilingDesc: 'Iluminación de techo de lujo con estrellas LED',
+          ceilingRestorationDesc: 'Reparación y renovación del forro del techo',
+          chromeDeleteDesc: 'Acabado negro mate de partes cromadas',
+          trimWrappingDesc: 'Envoltura de molduras interiores y exteriores',
+          autoPolishDesc: 'Corrección de pintura y restauración del brillo',
+          ceramicProtectionDesc: 'Revestimiento duradero para protección de pintura'
+        },
+        
+        section5: {
+          title: '5. Responsabilidad Legal',
+          generalLiability: '5.1 Responsabilidad General',
+          generalLiabilityText: 'Spectra AutoArt es responsable por daños causados durante la realización de nuestros servicios, con un máximo del valor de la factura del servicio relevante, a menos que haya intención o negligencia grave.',
+          exclusions: '5.2 Exclusiones',
+          exclusionsText: 'No somos responsables por:',
+          existingDefects: 'Daños causados por defectos existentes en el vehículo',
+          valueDepreciation: 'Depreciación del valor del vehículo',
+          indirectDamage: 'Daños indirectos o consecuentes',
+          postLocationDamage: 'Daños que ocurran después de dejar nuestra ubicación',
+          personalItemsLoss: 'Pérdida de pertenencias personales del vehículo',
+          insurance: '5.3 Seguro',
+          insuranceText: 'Spectra AutoArt está asegurado contra responsabilidad comercial. Nuestra póliza de seguro cubre daños hasta €1.000.000 por evento.'
+        },
+        
+        section6: {
+          title: '6. Procedimiento de Quejas',
+          intro: '¿No está satisfecho con nuestro servicio? Por favor siga nuestro procedimiento de quejas:',
+          step1: 'Notificación',
+          step1Text: 'Dentro de los 7 días después de la finalización del servicio',
+          step2: 'Por Escrito',
+          step2Text: 'Por email a complaints@spectraautoart.nl',
+          step3: 'Procesamiento',
+          step3Text: 'Nos pondremos en contacto dentro de 5 días laborables',
+          step4: 'Solución',
+          step4Text: 'Nos esforzamos por una solución apropiada dentro de 30 días',
+          step5: 'Escalación',
+          step5Text: 'Comisión independiente de disputas si es necesario'
+        },
+        
+        section7: {
+          title: '7. Propiedad Intelectual',
+          intro: 'Todos los derechos reservados. Ninguna parte de este sitio web o nuestros materiales de marketing puede ser reproducida, almacenada en una base de datos automatizada, o hecha pública, en cualquier forma o de cualquier manera, ya sea electrónica, mecánica, por fotocopias, grabaciones, o de cualquier otra forma, sin permiso previo por escrito de Spectra AutoArt.',
+          trademarks: 'Marcas Comerciales',
+          trademarksText: 'Spectra AutoArt™ es un nombre comercial de nuestra empresa. Todas las demás marcas y nombres comerciales son propiedad de sus respectivos dueños.'
+        },
+        
+        section8: {
+          title: '8. Privacidad y Protección de Datos',
+          intro: 'Spectra AutoArt está registrado con la Autoridad de Protección de Datos de los Países Bajos como responsable del tratamiento. Nuestro número de registro se proporcionará una vez que se complete el registro.',
+          moreInfo: 'Para más información sobre cómo manejamos sus datos personales, vea nuestro'
+        },
+        
+        section9: {
+          title: '9. Derecho Aplicable',
+          content: 'Todos los acuerdos y servicios de Spectra AutoArt están sujetos al derecho neerlandés. Las disputas serán sometidas al tribunal competente en Tilburg, a menos que el derecho imperativo designe otro tribunal competente.'
+        },
+        
+        section10: {
+          title: '10. Cambios',
+          content: 'Esta información legal puede ser modificada. Los cambios se anunciarán a través de nuestro sitio web. La versión más actual siempre está disponible en esta página.'
+        }
       }
     }
   },
@@ -2729,6 +3155,148 @@ const resources = {
           title: '8. Kontakt',
           intro: 'W przypadku pytań o tę politykę cookies możesz się z nami skontaktować:',
           contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Telefon: +31 6 12345678'
+        }
+      },
+      
+      // Contact & Legal Information page translations
+      contactLegal: {
+        title: 'Informacje Kontaktowe i Prawne',
+        lastUpdated: 'Ostatnia aktualizacja: 27 listopada 2025',
+        
+        section1: {
+          title: '1. Informacje o Firmie',
+          companyName: 'Nazwa Firmy',
+          tradeName: 'Nazwa Handlowa',
+          legalForm: 'Forma Prawna',
+          located: 'Lokalizacja',
+          kvkNumber: 'Numer Izby Handlowej',
+          vatNumber: 'Numer VAT',
+          companyNameValue: 'Spectra AutoArt',
+          tradeNameValue: 'Spectra AutoArt',
+          legalFormValue: 'Jednoosobowa działalność gospodarcza',
+          locatedValue: 'Tilburg, Holandia',
+          kvkNumberValue: '[Do zarejestrowania]',
+          vatNumberValue: '[Do zarejestrowania]'
+        },
+        
+        section2: {
+          title: '2. Informacje Kontaktowe',
+          generalContact: '2.1 Ogólne Informacje Kontaktowe',
+          address: 'Adres',
+          communicationChannels: '2.2 Kanały Komunikacji',
+          phone: 'Telefon',
+          emailGeneral: 'Email Ogólny',
+          emailAppointments: 'Email Wizyt',
+          emailSupport: 'Email Wsparcia',
+          whatsappBusiness: '2.3 WhatsApp Business',
+          whatsapp: 'WhatsApp',
+          availability: 'Dostępność',
+          socialMedia: '2.4 Media Społecznościowe',
+          instagram: 'Instagram',
+          facebook: 'Facebook',
+          linkedin: 'LinkedIn',
+          addressValue: 'Spectra AutoArt<br>Centrum Miasta Tilburg<br>[Nazwa ulicy zostanie podana po rejestracji]<br>[Kod Pocztowy] Tilburg<br>Holandia',
+          phoneValue: '+31 6 12345678',
+          emailGeneralValue: 'info@spectraautoart.nl',
+          emailAppointmentsValue: 'bookings@spectraautoart.nl',
+          emailSupportValue: 'support@spectraautoart.nl',
+          whatsappValue: '+31 6 12345678',
+          availabilityValue: 'Poniedziałek do soboty, 9:00 - 18:00',
+          instagramValue: '@spectraautoart',
+          facebookValue: 'Spectra AutoArt',
+          linkedinValue: 'Spectra AutoArt'
+        },
+        
+        section3: {
+          title: '3. Godziny Otwarcia',
+          monday: 'Poniedziałek',
+          tuesday: 'Wtorek',
+          wednesday: 'Środa',
+          thursday: 'Czwartek',
+          friday: 'Piątek',
+          saturday: 'Sobota',
+          sunday: 'Niedziela',
+          closed: 'Zamknięte',
+          hoursValue: '9:00 - 18:00',
+          saturdayHours: '9:00 - 16:00',
+          note: 'Uwaga',
+          noteText: 'Wizyty poza godzinami otwarcia są dostępne po wcześniejszym uzgodnieniu. Prosimy o kontakt w celu omówienia możliwości.'
+        },
+        
+        section4: {
+          title: '4. Usługi i Specjalizacje',
+          intro: 'Spectra AutoArt specjalizuje się w premium detailing i styling usługach samochodowych:',
+          interiorDetailing: 'Detailing Wnętrza',
+          exteriorDetailing: 'Detailing Zewnętrzny',
+          ambientLighting: 'Oświetlenie Ambient',
+          starlightCeiling: 'Sufit Gwiezdny',
+          ceilingRestoration: 'Restauracja Podsufitki',
+          chromeDelete: 'Chrome Delete',
+          trimWrapping: 'Oklejanie Listew',
+          autoPolish: 'Polerowanie Auta',
+          ceramicProtection: 'Ochrona Ceramiczna',
+          interiorDetailingDesc: 'Kompletne czyszczenie i ochrona wnętrza',
+          exteriorDetailingDesc: 'Mycie, polerowanie i ochrona lakieru',
+          ambientLightingDesc: 'Instalacja oświetlenia ambient w wnętrzu',
+          starlightCeilingDesc: 'Luksusowe oświetlenie sufitu z LED gwiazdami',
+          ceilingRestorationDesc: 'Naprawa i odnowienie podsufitki',
+          chromeDeleteDesc: 'Matowe czarne wykończenie chromowanych elementów',
+          trimWrappingDesc: 'Oklejanie listew wewnętrznych i zewnętrznych',
+          autoPolishDesc: 'Korekta lakieru i przywrócenie połysku',
+          ceramicProtectionDesc: 'Trwała powłoka do ochrony lakieru'
+        },
+        
+        section5: {
+          title: '5. Odpowiedzialność Prawna',
+          generalLiability: '5.1 Odpowiedzialność Ogólna',
+          generalLiabilityText: 'Spectra AutoArt ponosi odpowiedzialność za szkody wyrządzone podczas wykonywania naszych usług, z maksymalną wartością faktury za daną usługę, chyba że występuje zamiar lub rażące niedbalstwo.',
+          exclusions: '5.2 Wykluczenia',
+          exclusionsText: 'Nie ponosimy odpowiedzialności za:',
+          existingDefects: 'Szkody spowodowane przez istniejące wady pojazdu',
+          valueDepreciation: 'Utratę wartości pojazdu',
+          indirectDamage: 'Szkody pośrednie lub wtórne',
+          postLocationDamage: 'Szkody powstałe po opuszczeniu naszej lokalizacji',
+          personalItemsLoss: 'Utratę rzeczy osobistych z pojazdu',
+          insurance: '5.3 Ubezpieczenie',
+          insuranceText: 'Spectra AutoArt jest ubezpieczone od odpowiedzialności biznesowej. Nasza polisa ubezpieczeniowa pokrywa szkody do €1.000.000 za zdarzenie.'
+        },
+        
+        section6: {
+          title: '6. Procedura Skarg',
+          intro: 'Nie jesteś zadowolony z naszej usługi? Prosimy o przestrzeganie naszej procedury skarg:',
+          step1: 'Zgłoszenie',
+          step1Text: 'W ciągu 7 dni po zakończeniu usługi',
+          step2: 'Pisemnie',
+          step2Text: 'Poprzez email na complaints@spectraautoart.nl',
+          step3: 'Przetwarzanie',
+          step3Text: 'Skontaktujemy się w ciągu 5 dni roboczych',
+          step4: 'Rozwiązanie',
+          step4Text: 'Dążymy do odpowiedniego rozwiązania w ciągu 30 dni',
+          step5: 'Eskalacja',
+          step5Text: 'Niezależna komisja ds. sporów w razie potrzeby'
+        },
+        
+        section7: {
+          title: '7. Własność Intelektualna',
+          intro: 'Wszelkie prawa zastrzeżone. Żadna część tej strony internetowej ani naszych materiałów marketingowych nie może być powielana, przechowywana w zautomatyzowanej bazie danych ani udostępniana publicznie, w jakiejkolwiek formie lub w jakikolwiek sposób, czy to elektroniczny, mechaniczny, poprzez fotokopie, nagrania lub w jakikolwiek inny sposób, bez wcześniejszej pisemnej zgody Spectra AutoArt.',
+          trademarks: 'Znaki Towarowe',
+          trademarksText: 'Spectra AutoArt™ to nazwa handlowa naszej firmy. Wszystkie inne marki i nazwy handlowe są własnością ich odpowiednich właścicieli.'
+        },
+        
+        section8: {
+          title: '8. Prywatność i Ochrona Danych',
+          intro: 'Spectra AutoArt jest zarejestrowany w Holenderskim Urzędzie Ochrony Danych jako administrator danych. Nasz numer rejestracyjny zostanie podany po zakończeniu rejestracji.',
+          moreInfo: 'Aby uzyskać więcej informacji o tym, jak postępujemy z Twoimi danymi osobowymi, zobacz naszą'
+        },
+        
+        section9: {
+          title: '9. Prawo Właściwe',
+          content: 'Wszystkie umowy i usługi Spectra AutoArt podlegają prawu holenderskiemu. Spory będą przedstawiane właściwemu sądowi w Tilburgu, chyba że prawo bezwzględnie wyznaczy inny właściwy sąd.'
+        },
+        
+        section10: {
+          title: '10. Zmiany',
+          content: 'Te informacje prawne mogą ulec zmianie. Zmiany będą ogłaszane za pośrednictwem naszej strony internetowej. Najbardziej aktualna wersja jest zawsze dostępna na tej stronie.'
         }
       }
     }
@@ -3410,6 +3978,148 @@ const resources = {
           title: '8. Contact',
           intro: 'Pentru întrebări despre această politică de cookie-uri ne puteți contacta:',
           contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Telefon: +31 6 12345678'
+        }
+      },
+      
+      // Contact & Legal Information page translations
+      contactLegal: {
+        title: 'Informații de Contact și Legale',
+        lastUpdated: 'Ultima actualizare: 27 noiembrie 2025',
+        
+        section1: {
+          title: '1. Informații despre Companie',
+          companyName: 'Numele Companiei',
+          tradeName: 'Numele Comercial',
+          legalForm: 'Forma Juridică',
+          located: 'Localizare',
+          kvkNumber: 'Numărul Camerei de Comerț',
+          vatNumber: 'Numărul TVA',
+          companyNameValue: 'Spectra AutoArt',
+          tradeNameValue: 'Spectra AutoArt',
+          legalFormValue: 'Întreprindere Individuală',
+          locatedValue: 'Tilburg, Olanda',
+          kvkNumberValue: '[Urmează să fie înregistrat]',
+          vatNumberValue: '[Urmează să fie înregistrat]'
+        },
+        
+        section2: {
+          title: '2. Informații de Contact',
+          generalContact: '2.1 Informații Generale de Contact',
+          address: 'Adresă',
+          communicationChannels: '2.2 Canale de Comunicare',
+          phone: 'Telefon',
+          emailGeneral: 'Email General',
+          emailAppointments: 'Email Programări',
+          emailSupport: 'Email Suport',
+          whatsappBusiness: '2.3 WhatsApp Business',
+          whatsapp: 'WhatsApp',
+          availability: 'Disponibilitate',
+          socialMedia: '2.4 Social Media',
+          instagram: 'Instagram',
+          facebook: 'Facebook',
+          linkedin: 'LinkedIn',
+          addressValue: 'Spectra AutoArt<br>Centrul Orașului Tilburg<br>[Numele străzii va fi furnizat la înregistrare]<br>[Cod Poștal] Tilburg<br>Olanda',
+          phoneValue: '+31 6 12345678',
+          emailGeneralValue: 'info@spectraautoart.nl',
+          emailAppointmentsValue: 'bookings@spectraautoart.nl',
+          emailSupportValue: 'support@spectraautoart.nl',
+          whatsappValue: '+31 6 12345678',
+          availabilityValue: 'Luni până sâmbătă, 9:00 - 18:00',
+          instagramValue: '@spectraautoart',
+          facebookValue: 'Spectra AutoArt',
+          linkedinValue: 'Spectra AutoArt'
+        },
+        
+        section3: {
+          title: '3. Program de Lucru',
+          monday: 'Luni',
+          tuesday: 'Marți',
+          wednesday: 'Miercuri',
+          thursday: 'Joi',
+          friday: 'Vineri',
+          saturday: 'Sâmbătă',
+          sunday: 'Duminică',
+          closed: 'Închis',
+          hoursValue: '9:00 - 18:00',
+          saturdayHours: '9:00 - 16:00',
+          note: 'Notă',
+          noteText: 'Programările în afara orelor de lucru sunt disponibile prin aranjament. Vă rugăm să ne contactați pentru posibilități.'
+        },
+        
+        section4: {
+          title: '4. Servicii și Specializări',
+          intro: 'Spectra AutoArt se specializează în servicii premium de detailing și styling auto:',
+          interiorDetailing: 'Detailing Interior',
+          exteriorDetailing: 'Detailing Exterior',
+          ambientLighting: 'Iluminat Ambient',
+          starlightCeiling: 'Tavan cu Stele',
+          ceilingRestoration: 'Restaurare Tavan',
+          chromeDelete: 'Chrome Delete',
+          trimWrapping: 'Înfășurare Trims',
+          autoPolish: 'Polish Auto',
+          ceramicProtection: 'Protecție Ceramică',
+          interiorDetailingDesc: 'Curățare și protecție completă a interiorului',
+          exteriorDetailingDesc: 'Spălare, polish și protecție a vopselei',
+          ambientLightingDesc: 'Instalare iluminat ambient în interior',
+          starlightCeilingDesc: 'Iluminat de tavan de lux cu stele LED',
+          ceilingRestorationDesc: 'Reparație și reînnoire a tavanului',
+          chromeDeleteDesc: 'Finisaj negru mat al pieselor cromate',
+          trimWrappingDesc: 'Înfășurare de trim-uri interioare și exterioare',
+          autoPolishDesc: 'Corecție vopsea și restaurare luciu',
+          ceramicProtectionDesc: 'Acoperire durabilă pentru protecția vopselei'
+        },
+        
+        section5: {
+          title: '5. Răspundere Legală',
+          generalLiability: '5.1 Răspundere Generală',
+          generalLiabilityText: 'Spectra AutoArt este răspunzător pentru daunele cauzate în timpul efectuării serviciilor noastre, cu un maxim al valorii facturii serviciului respectiv, cu excepția cazului în care există intenție sau neglijență gravă.',
+          exclusions: '5.2 Excluderi',
+          exclusionsText: 'Nu suntem răspunzători pentru:',
+          existingDefects: 'Daune cauzate de defecte existente ale vehiculului',
+          valueDepreciation: 'Deprecierea valorii vehiculului',
+          indirectDamage: 'Daune indirecte sau consecințiale',
+          postLocationDamage: 'Daune care apar după părăsirea locației noastre',
+          personalItemsLoss: 'Pierderea obiectelor personale din vehicul',
+          insurance: '5.3 Asigurare',
+          insuranceText: 'Spectra AutoArt este asigurat împotriva răspunderii comerciale. Polița noastră de asigurare acoperă daune până la €1.000.000 per eveniment.'
+        },
+        
+        section6: {
+          title: '6. Procedura de Plângeri',
+          intro: 'Nu sunteți mulțumit de serviciul nostru? Vă rugăm să urmați procedura noastră de plângeri:',
+          step1: 'Notificare',
+          step1Text: 'În termen de 7 zile de la finalizarea serviciului',
+          step2: 'În Scris',
+          step2Text: 'Prin email la complaints@spectraautoart.nl',
+          step3: 'Procesare',
+          step3Text: 'Vă vom contacta în termen de 5 zile lucrătoare',
+          step4: 'Soluție',
+          step4Text: 'Ne străduim pentru o soluție adecvată în termen de 30 de zile',
+          step5: 'Escaladare',
+          step5Text: 'Comisie independentă de dispute dacă este necesar'
+        },
+        
+        section7: {
+          title: '7. Proprietate Intelectuală',
+          intro: 'Toate drepturile rezervate. Nicio parte a acestui site web sau a materialelor noastre de marketing nu poate fi reprodusă, stocată într-o bază de date automatizată sau făcută publică, în orice formă sau în orice mod, fie electronic, mecanic, prin fotocopii, înregistrări sau în orice alt mod, fără permisiunea scrisă prealabilă a Spectra AutoArt.',
+          trademarks: 'Mărci Comerciale',
+          trademarksText: 'Spectra AutoArt™ este o denumire comercială a companiei noastre. Toate celelalte mărci și denumiri comerciale sunt proprietatea proprietarilor lor respectivi.'
+        },
+        
+        section8: {
+          title: '8. Confidențialitate și Protecția Datelor',
+          intro: 'Spectra AutoArt este înregistrat la Autoritatea Olandeză pentru Protecția Datelor ca operator de date. Numărul nostru de înregistrare va fi furnizat odată ce înregistrarea este finalizată.',
+          moreInfo: 'Pentru mai multe informații despre modul în care gestionăm datele dvs. personale, consultați'
+        },
+        
+        section9: {
+          title: '9. Legea Aplicabilă',
+          content: 'Toate acordurile și serviciile Spectra AutoArt sunt supuse legii olandeze. Disputele vor fi prezentate instanței competente din Tilburg, cu excepția cazului în care legea imperativă desemnează o altă instanță competentă.'
+        },
+        
+        section10: {
+          title: '10. Modificări',
+          content: 'Aceste informații legale pot fi modificate. Modificările vor fi anunțate prin intermediul site-ului nostru web. Cea mai actuală versiune este întotdeauna disponibilă pe această pagină.'
         }
       }
     }
