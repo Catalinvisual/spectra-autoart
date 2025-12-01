@@ -938,6 +938,193 @@ const resources = {
           title: '8. Contact',
           intro: 'Voor vragen over dit cookiebeleid kunt u contact opnemen:',
           contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Telefoon: +31 6 12345678'
+        },
+        
+        // GDPR page translations
+        gdpr: {
+          title: 'AVG / GDPR Informatie',
+          lastUpdated: 'Laatst bijgewerkt: 27 november 2025',
+          
+          section1: {
+            title: '1. Algemene Verordening Gegevensbescherming (AVG)',
+            content: 'Spectra AutoArt voldoet volledig aan de Algemene Verordening Gegevensbescherming (AVG), ook wel bekend als GDPR (General Data Protection Regulation). Deze verordening is van toepassing op alle bedrijven binnen de Europese Unie die persoonsgegevens verwerken.'
+          },
+          
+          section2: {
+            title: '2. Verwerkingsverantwoordelijke',
+            companyName: 'Bedrijfsnaam',
+            companyNameValue: 'Spectra AutoArt',
+            address: 'Adres',
+            addressValue: 'Tilburg Centraal',
+            email: 'E-mail',
+            emailValue: 'privacy@spectraautoart.nl',
+            kvkNumber: 'Kamer van Koophandel Nummer',
+            kvkNumberValue: '[nog te registreren]',
+            phone: 'Telefoon',
+            phoneValue: '+31 6 12345678'
+          },
+          
+          section3: {
+            title: '3. Functionaris Gegevensbescherming (FG)',
+            intro: 'Voor al uw vragen en verzoeken met betrekking tot gegevensbescherming kunt u contact opnemen met onze Functionaris Gegevensbescherming:',
+            email: 'E-mail',
+            emailValue: 'fg@spectraautoart.nl',
+            phone: 'Telefoon',
+            phoneValue: '+31 6 12345678'
+          },
+          
+          section4: {
+            title: '4. Verwerkingsdoeleinden en Rechtsgrondslagen',
+            intro: 'Wij verwerken persoonsgegevens voor de volgende doeleinden:',
+            
+            serviceProvision: {
+              title: '4.1 Dienstverlening',
+              purpose: 'Doel: Uitvoeren van auto detailing en styling diensten',
+              legalBasis: 'Rechtsgrondslag: Contract (Art. 6(1)(b) AVG)',
+              data: 'Gegevens: Contactgegevens, voertuiginformatie, afspraakgegevens'
+            },
+            
+            customerCommunication: {
+              title: '4.2 Klantencommunicatie',
+              purpose: 'Doel: Communicatie over afspraken, diensten en nazorg',
+              legalBasis: 'Rechtsgrondslag: Contract (Art. 6(1)(b) AVG)',
+              data: 'Gegevens: Naam, e-mail, telefoonnummer'
+            },
+            
+            billing: {
+              title: '4.3 Facturatie en Administratie',
+              purpose: 'Doel: Financiële administratie en belastingaangiften',
+              legalBasis: 'Rechtsgrondslag: Wettelijke verplichting (Art. 6(1)(c) AVG)',
+              data: 'Gegevens: Factuuradres, betaalgegevens, transactiegeschiedenis'
+            },
+            
+            marketing: {
+              title: '4.4 Marketing (optioneel)',
+              purpose: 'Doel: Nieuwsbrieven en promotieactiviteiten',
+              legalBasis: 'Rechtsgrondslag: Toestemming (Art. 6(1)(a) AVG)',
+              data: 'Gegevens: E-mailadres, naam, voorkeuren'
+            }
+          },
+          
+          section5: {
+            title: '5. Categorieën van Persoonsgegevens',
+            intro: 'Wij verwerken de volgende categorieën van persoonsgegevens:',
+            items: [
+              'Identificatiegegevens: Naam, adres, contactgegevens',
+              'Voertuiggegevens: Kenteken, merk, model, bouwjaar',
+              'Financiële gegevens: Factuuradres, betaalgegevens',
+              'Communicatiegegevens: E-mailcorrespondentie, telefoongesprekken',
+              'Websitegegevens: IP-adres, cookies, gebruikersgedrag'
+            ]
+          },
+          
+          section6: {
+            title: '6. Bewaartermijnen',
+            intro: 'Wij hanteren de volgende bewaartermijnen voor verschillende categorieën van gegevens:',
+            
+            customerData: {
+              title: '6.1 Klantgegevens',
+              period: 'Periode: 7 jaar na laatste transactie',
+              reason: 'Reden: Wettelijke verplichting belastingwet'
+            },
+            
+            invoiceData: {
+              title: '6.2 Factuur- en Boekhoudgegevens',
+              period: 'Periode: 7 jaar',
+              reason: 'Reden: Artikel 52 Wet op de omzetbelasting'
+            },
+            
+            marketingData: {
+              title: '6.3 Marketinggegevens',
+              period: 'Periode: 2 jaar na laatste interactie of tot afmelding',
+              reason: 'Reden: Toestemming kan te allen tijde worden ingetrokken'
+            },
+            
+            websiteLogs: {
+              title: '6.4 Website Logs',
+              period: 'Periode: 1 jaar',
+              reason: 'Reden: Veiligheid en analyse'
+            }
+          },
+          
+          section7: {
+            title: '7. Uw Rechten onder de AVG',
+            intro: 'Als betrokkene heeft u de volgende rechten:',
+            
+            rightOfAccess: {
+              title: '7.1 Recht op Inzage (Art. 15 AVG)',
+              content: 'U heeft het recht te weten of wij uw persoonsgegevens verwerken en zo ja, welke gegevens dit zijn.'
+            },
+            
+            rightToRectification: {
+              title: '7.2 Recht op Rectificatie (Art. 16 AVG)',
+              content: 'U kunt verzoeken om correctie van onjuiste of onvolledige persoonsgegevens.'
+            },
+            
+            rightToErasure: {
+              title: '7.3 Recht op Verwijdering (Art. 17 AVG)',
+              content: 'Onder bepaalde omstandigheden kunt u verzoeken om verwijdering van uw persoonsgegevens.'
+            },
+            
+            rightToRestriction: {
+              title: '7.4 Recht op Beperking van Verwerking (Art. 18 AVG)',
+              content: 'U kunt verzoeken om tijdelijke beperking van de verwerking van uw gegevens.'
+            },
+            
+            rightToPortability: {
+              title: '7.5 Recht op Gegevensoverdraagbaarheid (Art. 20 AVG)',
+              content: 'U heeft het recht om uw gegevens te ontvangen in een gestructureerde, gangbare en machineleesbare vorm.'
+            },
+            
+            rightToObject: {
+              title: '7.6 Recht van Verzet (Art. 21 AVG)',
+              content: 'U kunt bezwaar maken tegen de verwerking van uw persoonsgegevens.'
+            },
+            
+            rightToWithdraw: {
+              title: '7.7 Recht op Intrekking van Toestemming',
+              content: 'U kunt uw toestemming voor gegevensverwerking te allen tijde intrekken.'
+            }
+          },
+          
+          section8: {
+            title: '8. Uitoefening van Uw Rechten',
+            intro: 'U kunt uw rechten uitoefenen door contact op te nemen met onze Functionaris Gegevensbescherming:',
+            email: 'E-mail: fg@spectraautoart.nl',
+            phone: 'Telefoon: +31 6 12345678',
+            address: 'Adres: Spectra AutoArt, Tilburg',
+            responseTime: 'Wij reageren binnen 1 maand op uw verzoek. Voor complexe verzoeken kunnen wij deze termijn met 2 maanden verlengen.'
+          },
+          
+          section9: {
+            title: '9. Recht op Klacht Indienen',
+            intro: 'Heeft u klachten over de verwerking van uw persoonsgegevens? U kunt contact opnemen met onze Functionaris Gegevensbescherming. U heeft ook het recht om een klacht in te dienen bij de Autoriteit Persoonsgegevens:',
+            authority: 'Autoriteit Persoonsgegevens',
+            authorityAddress: 'Postbus 93374, 2509 AJ Den Haag, Tel: 088 - 1805 250, Website: autoriteitpersoonsgegevens.nl'
+          },
+          
+          section10: {
+            title: '10. Beveiliging van Persoonsgegevens',
+            intro: 'Wij nemen passende technische en organisatorische maatregelen om uw gegevens te beveiligen:',
+            items: [
+              'Gegevensversleuteling tijdens vervoer (SSL/TLS)',
+              'Toegangscontrole en authenticatie',
+              'Regelmatige beveiligingssoftware updates',
+              'Back-up en herstelprocedures',
+              'Medewerkersopleiding over privacy en beveiliging',
+              'Beveiligde opslag van fysieke documenten'
+            ]
+          },
+          
+          section11: {
+            title: '11. Gegevensoverdracht Buiten de EU',
+            content: 'Wij verwerken uw gegevens uitsluitend binnen de Europese Unie. Mocht er toch sprake zijn van overdracht buiten de EU, dan zorgen wij voor passende waarborgen zoals standaardcontractbepalingen of adequaatheidsbesluiten.'
+          },
+          
+          section12: {
+            title: '12. Wijzigingen aan Dit Beleid',
+            content: 'Deze AVG-beleid kan worden gewijzigd. Wijzigingen worden aangekondigd via onze website. Voor significante wijzigingen zullen wij actief communiceren naar onze klanten.'
+          }
         }
       }
     }
@@ -1844,6 +2031,193 @@ const resources = {
           title: '10. Changes',
           content: 'This legal information may be changed. Changes will be announced via our website. The most current version is always available on this page.'
         }
+      },
+      
+      // GDPR/AVG Information page translations
+      gdpr: {
+        title: 'AVG / GDPR Information',
+        lastUpdated: 'Last updated: November 27, 2025',
+        
+        section1: {
+          title: '1. General Data Protection Regulation (GDPR)',
+          content: 'Spectra AutoArt fully complies with the General Data Protection Regulation (GDPR), also known as AVG (Algemene Verordening Gegevensbescherming). This regulation applies to all companies within the European Union that process personal data.'
+        },
+        
+        section2: {
+          title: '2. Data Controller',
+          companyName: 'Company Name',
+          companyNameValue: 'Spectra AutoArt',
+          address: 'Address',
+          addressValue: 'Tilburg City Center',
+          email: 'Email',
+          emailValue: 'privacy@spectraautoart.nl',
+          kvkNumber: 'Chamber of Commerce Number',
+          kvkNumberValue: '[to be registered]',
+          phone: 'Phone',
+          phoneValue: '+31 6 12345678'
+        },
+        
+        section3: {
+          title: '3. Data Protection Officer (DPO)',
+          intro: 'For all your questions and requests regarding data protection, you can contact our Data Protection Officer:',
+          email: 'Email',
+          emailValue: 'dpo@spectraautoart.nl',
+          phone: 'Phone',
+          phoneValue: '+31 6 12345678'
+        },
+        
+        section4: {
+          title: '4. Processing Purposes and Legal Bases',
+          intro: 'We process personal data for the following purposes:',
+          
+          serviceProvision: {
+            title: '4.1 Service Provision',
+            purpose: 'Purpose: Performing auto detailing and styling services',
+            legalBasis: 'Legal Basis: Contract (Art. 6(1)(b) GDPR)',
+            data: 'Data: Contact details, vehicle information, appointment data'
+          },
+          
+          customerCommunication: {
+            title: '4.2 Customer Communication',
+            purpose: 'Purpose: Communication about appointments, services and aftercare',
+            legalBasis: 'Legal Basis: Contract (Art. 6(1)(b) GDPR)',
+            data: 'Data: Name, email, phone number'
+          },
+          
+          billing: {
+            title: '4.3 Billing and Administration',
+            purpose: 'Purpose: Financial administration and tax returns',
+            legalBasis: 'Legal Basis: Legal obligation (Art. 6(1)(c) GDPR)',
+            data: 'Data: Billing address, payment data, transaction history'
+          },
+          
+          marketing: {
+            title: '4.4 Marketing (optional)',
+            purpose: 'Purpose: Newsletters and promotional activities',
+            legalBasis: 'Legal Basis: Consent (Art. 6(1)(a) GDPR)',
+            data: 'Data: Email address, name, preferences'
+          }
+        },
+        
+        section5: {
+          title: '5. Categories of Personal Data',
+          intro: 'We process the following categories of personal data:',
+          items: [
+            'Identification data: Name, address, contact details',
+            'Vehicle data: License plate, brand, model, year of manufacture',
+            'Financial data: Billing address, payment data',
+            'Communication data: Email correspondence, phone calls',
+            'Website data: IP address, cookies, user behavior'
+          ]
+        },
+        
+        section6: {
+          title: '6. Retention Periods',
+          intro: 'We apply the following retention periods for different categories of data:',
+          
+          customerData: {
+            title: '6.1 Customer Data',
+            period: 'Period: 7 years after last transaction',
+            reason: 'Reason: Legal obligation tax law'
+          },
+          
+          invoiceData: {
+            title: '6.2 Invoice and Accounting Data',
+            period: 'Period: 7 years',
+            reason: 'Reason: Article 52 Turnover Tax Act'
+          },
+          
+          marketingData: {
+            title: '6.3 Marketing Data',
+            period: 'Period: 2 years after last interaction or until unsubscribe',
+            reason: 'Reason: Consent can be withdrawn at any time'
+          },
+          
+          websiteLogs: {
+            title: '6.4 Website Logs',
+            period: 'Period: 1 year',
+            reason: 'Reason: Security and analysis'
+          }
+        },
+        
+        section7: {
+          title: '7. Your Rights under GDPR',
+          intro: 'As a data subject, you have the following rights:',
+          
+          rightOfAccess: {
+            title: '7.1 Right of Access (Art. 15 GDPR)',
+            content: 'You have the right to know whether we process your personal data and if so, which data this is.'
+          },
+          
+          rightToRectification: {
+            title: '7.2 Right to Rectification (Art. 16 GDPR)',
+            content: 'You can request correction of incorrect or incomplete personal data.'
+          },
+          
+          rightToErasure: {
+            title: '7.3 Right to Erasure (Art. 17 GDPR)',
+            content: 'Under certain circumstances, you can request deletion of your personal data.'
+          },
+          
+          rightToRestriction: {
+            title: '7.4 Right to Restriction of Processing (Art. 18 GDPR)',
+            content: 'You can request temporary restriction of the processing of your data.'
+          },
+          
+          rightToPortability: {
+            title: '7.5 Right to Data Portability (Art. 20 GDPR)',
+            content: 'You have the right to receive your data in a structured, commonly used and machine-readable format.'
+          },
+          
+          rightToObject: {
+            title: '7.6 Right to Object (Art. 21 GDPR)',
+            content: 'You can object to the processing of your personal data.'
+          },
+          
+          rightToWithdraw: {
+            title: '7.7 Right to Withdraw Consent',
+            content: 'You can withdraw your consent for data processing at any time.'
+          }
+        },
+        
+        section8: {
+          title: '8. Exercising Your Rights',
+          intro: 'You can exercise your rights by contacting our Data Protection Officer:',
+          email: 'Email: dpo@spectraautoart.nl',
+          phone: 'Phone: +31 6 12345678',
+          address: 'Address: Spectra AutoArt, Tilburg',
+          responseTime: 'We respond to your request within 1 month. For complex requests, we may extend this period by 2 months.'
+        },
+        
+        section9: {
+          title: '9. Right to Lodge a Complaint',
+          intro: 'Do you have complaints about the processing of your personal data? You can contact our Data Protection Officer. You also have the right to file a complaint with the Dutch Data Protection Authority:',
+          authority: 'Dutch Data Protection Authority',
+          authorityAddress: 'PO Box 93374, 2509 AJ The Hague, Tel: 088 - 1805 250, Website: autoriteitpersoonsgegevens.nl'
+        },
+        
+        section10: {
+          title: '10. Security of Personal Data',
+          intro: 'We take appropriate technical and organizational measures to secure your data:',
+          items: [
+            'Data encryption in transit (SSL/TLS)',
+            'Access control and authentication',
+            'Regular security software updates',
+            'Backup and recovery procedures',
+            'Staff training on privacy and security',
+            'Secure storage of physical documents'
+          ]
+        },
+        
+        section11: {
+          title: '11. Data Transfer Outside the EU',
+          content: 'We process your data exclusively within the European Union. Should there nevertheless be transfer outside the EU, we ensure appropriate safeguards such as standard contractual clauses or adequacy decisions.'
+        },
+        
+        section12: {
+          title: '12. Changes to This Policy',
+          content: 'This GDPR policy may be changed. Changes will be announced via our website. For significant changes, we will actively communicate to our customers.'
+        }
       }
     }
   },
@@ -2572,6 +2946,193 @@ const resources = {
         section10: {
           title: '10. Cambios',
           content: 'Esta información legal puede ser modificada. Los cambios se anunciarán a través de nuestro sitio web. La versión más actual siempre está disponible en esta página.'
+        },
+        
+        // GDPR page translations
+        gdpr: {
+          title: 'Información AVG / GDPR',
+          lastUpdated: 'Última actualización: 27 de noviembre de 2025',
+          
+          section1: {
+            title: '1. Reglamento General de Protección de Datos (GDPR)',
+            content: 'Spectra AutoArt cumple plenamente con el Reglamento General de Protección de Datos (GDPR), también conocido como AVG (Algemene Verordening Gegevensbescherming). Este reglamento se aplica a todas las empresas dentro de la Unión Europea que procesan datos personales.'
+          },
+          
+          section2: {
+            title: '2. Responsable del Tratamiento',
+            companyName: 'Nombre de la Empresa',
+            companyNameValue: 'Spectra AutoArt',
+            address: 'Dirección',
+            addressValue: 'Centro de Tilburg',
+            email: 'Correo Electrónico',
+            emailValue: 'privacy@spectraautoart.nl',
+            kvkNumber: 'Número de Cámara de Comercio',
+            kvkNumberValue: '[pendiente de registro]',
+            phone: 'Teléfono',
+            phoneValue: '+31 6 12345678'
+          },
+          
+          section3: {
+            title: '3. Delegado de Protección de Datos (DPO)',
+            intro: 'Para todas sus preguntas y solicitudes relacionadas con la protección de datos, puede contactar con nuestro Delegado de Protección de Datos:',
+            email: 'Correo Electrónico',
+            emailValue: 'dpo@spectraautoart.nl',
+            phone: 'Teléfono',
+            phoneValue: '+31 6 12345678'
+          },
+          
+          section4: {
+            title: '4. Finalidades del Tratamiento y Bases Legales',
+            intro: 'Procesamos datos personales para los siguientes fines:',
+            
+            serviceProvision: {
+              title: '4.1 Prestación de Servicios',
+              purpose: 'Finalidad: Realización de servicios de detailing y estilismo de autos',
+              legalBasis: 'Base Legal: Contrato (Art. 6(1)(b) GDPR)',
+              data: 'Datos: Datos de contacto, información del vehículo, datos de citas'
+            },
+            
+            customerCommunication: {
+              title: '4.2 Comunicación con Clientes',
+              purpose: 'Finalidad: Comunicación sobre citas, servicios y postventa',
+              legalBasis: 'Base Legal: Contrato (Art. 6(1)(b) GDPR)',
+              data: 'Datos: Nombre, email, número de teléfono'
+            },
+            
+            billing: {
+              title: '4.3 Facturación y Administración',
+              purpose: 'Finalidad: Administración financiera y declaraciones de impuestos',
+              legalBasis: 'Base Legal: Obligación legal (Art. 6(1)(c) GDPR)',
+              data: 'Datos: Dirección de facturación, datos de pago, historial de transacciones'
+            },
+            
+            marketing: {
+              title: '4.4 Marketing (opcional)',
+              purpose: 'Finalidad: Boletines informativos y actividades promocionales',
+              legalBasis: 'Base Legal: Consentimiento (Art. 6(1)(a) GDPR)',
+              data: 'Datos: Dirección de email, nombre, preferencias'
+            }
+          },
+          
+          section5: {
+            title: '5. Categorías de Datos Personales',
+            intro: 'Procesamos las siguientes categorías de datos personales:',
+            items: [
+              'Datos de identificación: Nombre, dirección, datos de contacto',
+              'Datos del vehículo: Matrícula, marca, modelo, año de fabricación',
+              'Datos financieros: Dirección de facturación, datos de pago',
+              'Datos de comunicación: Correspondencia por email, llamadas telefónicas',
+              'Datos del sitio web: Dirección IP, cookies, comportamiento del usuario'
+            ]
+          },
+          
+          section6: {
+            title: '6. Períodos de Conservación',
+            intro: 'Aplicamos los siguientes períodos de conservación para diferentes categorías de datos:',
+            
+            customerData: {
+              title: '6.1 Datos de Clientes',
+              period: 'Período: 7 años después de la última transacción',
+              reason: 'Razón: Obligación legal de la ley fiscal'
+            },
+            
+            invoiceData: {
+              title: '6.2 Datos de Facturación y Contabilidad',
+              period: 'Período: 7 años',
+              reason: 'Razón: Artículo 52 de la Ley del Impuesto sobre el Valor Añadido'
+            },
+            
+            marketingData: {
+              title: '6.3 Datos de Marketing',
+              period: 'Período: 2 años después de la última interacción o hasta darse de baja',
+              reason: 'Razón: El consentimiento puede ser retirado en cualquier momento'
+            },
+            
+            websiteLogs: {
+              title: '6.4 Registros del Sitio Web',
+              period: 'Período: 1 año',
+              reason: 'Razón: Seguridad y análisis'
+            }
+          },
+          
+          section7: {
+            title: '7. Sus Derechos bajo el GDPR',
+            intro: 'Como interesado, usted tiene los siguientes derechos:',
+            
+            rightOfAccess: {
+              title: '7.1 Derecho de Acceso (Art. 15 GDPR)',
+              content: 'Tiene derecho a saber si procesamos sus datos personales y, en caso afirmativo, qué datos son.'
+            },
+            
+            rightToRectification: {
+              title: '7.2 Derecho de Rectificación (Art. 16 GDPR)',
+              content: 'Puede solicitar la corrección de datos personales incorrectos o incompletos.'
+            },
+            
+            rightToErasure: {
+              title: '7.3 Derecho de Supresión (Art. 17 GDPR)',
+              content: 'Bajo ciertas circunstancias, puede solicitar la eliminación de sus datos personales.'
+            },
+            
+            rightToRestriction: {
+              title: '7.4 Derecho a la Limitación del Tratamiento (Art. 18 GDPR)',
+              content: 'Puede solicitar la limitación temporal del tratamiento de sus datos.'
+            },
+            
+            rightToPortability: {
+              title: '7.5 Derecho a la Portabilidad de los Datos (Art. 20 GDPR)',
+              content: 'Tiene derecho a recibir sus datos en un formato estructurado, de uso común y legible por máquina.'
+            },
+            
+            rightToObject: {
+              title: '7.6 Derecho de Oposición (Art. 21 GDPR)',
+              content: 'Puede oponerse al tratamiento de sus datos personales.'
+            },
+            
+            rightToWithdraw: {
+              title: '7.7 Derecho a Retirar el Consentimiento',
+              content: 'Puede retirar su consentimiento para el tratamiento de datos en cualquier momento.'
+            }
+          },
+          
+          section8: {
+            title: '8. Ejercicio de Sus Derechos',
+            intro: 'Puede ejercer sus derechos contactando con nuestro Delegado de Protección de Datos:',
+            email: 'Correo Electrónico: dpo@spectraautoart.nl',
+            phone: 'Teléfono: +31 6 12345678',
+            address: 'Dirección: Spectra AutoArt, Tilburg',
+            responseTime: 'Respondemos a su solicitud dentro de 1 mes. Para solicitudes complejas, podemos ampliar este plazo en 2 meses.'
+          },
+          
+          section9: {
+            title: '9. Derecho a Presentar una Queja',
+            intro: '¿Tiene quejas sobre el tratamiento de sus datos personales? Puede contactar con nuestro Delegado de Protección de Datos. También tiene derecho a presentar una queja ante la Autoridad de Protección de Datos:',
+            authority: 'Autoridad de Protección de Datos',
+            authorityAddress: 'Apartado de Correos 93374, 2509 AJ La Haya, Tel: 088 - 1805 250, Sitio web: autoriteitpersoonsgegevens.nl'
+          },
+          
+          section10: {
+            title: '10. Seguridad de los Datos Personales',
+            intro: 'Tomamos medidas técnicas y organizativas apropiadas para proteger sus datos:',
+            items: [
+              'Cifrado de datos en tránsito (SSL/TLS)',
+              'Control de acceso y autenticación',
+              'Actualizaciones regulares de software de seguridad',
+              'Procedimientos de respaldo y recuperación',
+              'Formación del personal sobre privacidad y seguridad',
+              'Almacenamiento seguro de documentos físicos'
+            ]
+          },
+          
+          section11: {
+            title: '11. Transferencia de Datos Fuera de la UE',
+            content: 'Procesamos sus datos exclusivamente dentro de la Unión Europea. Si hubiera una transferencia fuera de la UE, garantizamos salvaguardas apropiadas como cláusulas contractuales estándar o decisiones de adecuación.'
+          },
+          
+          section12: {
+            title: '12. Cambios en Esta Política',
+            content: 'Esta política de GDPR puede ser modificada. Los cambios se anunciarán a través de nuestro sitio web. Para cambios significativos, nos comunicaremos activamente con nuestros clientes.'
+          }
         }
       }
     }
@@ -3297,6 +3858,193 @@ const resources = {
         section10: {
           title: '10. Zmiany',
           content: 'Te informacje prawne mogą ulec zmianie. Zmiany będą ogłaszane za pośrednictwem naszej strony internetowej. Najbardziej aktualna wersja jest zawsze dostępna na tej stronie.'
+        },
+        
+        // GDPR page translations
+        gdpr: {
+          title: 'Informacje AVG / GDPR',
+          lastUpdated: 'Ostatnia aktualizacja: 27 listopada 2025',
+          
+          section1: {
+            title: '1. Ogólne Rozporządzenie o Ochronie Danych (RODO)',
+            content: 'Spectra AutoArt w pełni przestrzega Ogólnego Rozporządzenia o Ochronie Danych (RODO), znanego również jako GDPR (General Data Protection Regulation). To rozporządzenie ma zastosowanie do wszystkich firm w Unii Europejskiej, które przetwarzają dane osobowe.'
+          },
+          
+          section2: {
+            title: '2. Administrator Danych',
+            companyName: 'Nazwa Firmy',
+            companyNameValue: 'Spectra AutoArt',
+            address: 'Adres',
+            addressValue: 'Centrum Tilburg',
+            email: 'Email',
+            emailValue: 'privacy@spectraautoart.nl',
+            kvkNumber: 'Numer Krajowego Rejestru Sądowego',
+            kvkNumberValue: '[do zarejestrowania]',
+            phone: 'Telefon',
+            phoneValue: '+31 6 12345678'
+          },
+          
+          section3: {
+            title: '3. Inspektor Ochrony Danych (IOD)',
+            intro: 'W sprawach związanych z ochroną danych osobowych można kontaktować się z naszym Inspektorem Ochrony Danych:',
+            email: 'Email',
+            emailValue: 'iod@spectraautoart.nl',
+            phone: 'Telefon',
+            phoneValue: '+31 6 12345678'
+          },
+          
+          section4: {
+            title: '4. Cele Przetwarzania i Podstawy Prawne',
+            intro: 'Przetwarzamy dane osobowe w następujących celach:',
+            
+            serviceProvision: {
+              title: '4.1 Świadczenie Usług',
+              purpose: 'Cel: Wykonywanie usług detailingu i stylizacji samochodów',
+              legalBasis: 'Podstawa Prawna: Umowa (Art. 6(1)(b) RODO)',
+              data: 'Dane: Dane kontaktowe, informacje o pojeździe, dane o spotkaniach'
+            },
+            
+            customerCommunication: {
+              title: '4.2 Komunikacja z Klientami',
+              purpose: 'Cel: Komunikacja w sprawie spotkań, usług i obsługi posprzedażowej',
+              legalBasis: 'Podstawa Prawna: Umowa (Art. 6(1)(b) RODO)',
+              data: 'Dane: Imię, email, numer telefonu'
+            },
+            
+            billing: {
+              title: '4.3 Fakturowanie i Administracja',
+              purpose: 'Cel: Administracja finansowa i deklaracje podatkowe',
+              legalBasis: 'Podstawa Prawna: Obowiązek prawny (Art. 6(1)(c) RODO)',
+              data: 'Dane: Adres rozliczeniowy, dane płatności, historia transakcji'
+            },
+            
+            marketing: {
+              title: '4.4 Marketing (opcjonalny)',
+              purpose: 'Cel: Biuletyny informacyjne i działania promocyjne',
+              legalBasis: 'Podstawa Prawna: Zgoda (Art. 6(1)(a) RODO)',
+              data: 'Dane: Adres email, imię, preferencje'
+            }
+          },
+          
+          section5: {
+            title: '5. Kategorie Danych Osobowych',
+            intro: 'Przetwarzamy następujące kategorie danych osobowych:',
+            items: [
+              'Dane identyfikacyjne: Imię, adres, dane kontaktowe',
+              'Dane pojazdu: Tablica rejestracyjna, marka, model, rok produkcji',
+              'Dane finansowe: Adres rozliczeniowy, dane płatności',
+              'Dane komunikacyjne: Korespondencja email, rozmowy telefoniczne',
+              'Dane strony internetowej: Adres IP, pliki cookie, zachowanie użytkownika'
+            ]
+          },
+          
+          section6: {
+            title: '6. Okresy Przechowywania',
+            intro: 'Stosujemy następujące okresy przechowywania dla różnych kategorii danych:',
+            
+            customerData: {
+              title: '6.1 Dane Klientów',
+              period: 'Okres: 7 lat po ostatniej transakcji',
+              reason: 'Powód: Obowiązek prawny ustawy podatkowej'
+            },
+            
+            invoiceData: {
+              title: '6.2 Dane Fakturowe i Księgowe',
+              period: 'Okres: 7 lat',
+              reason: 'Powód: Artykuł 52 Ustawy o podatku od wartości dodanej'
+            },
+            
+            marketingData: {
+              title: '6.3 Dane Marketingowe',
+              period: 'Okres: 2 lata po ostatniej interakcji lub do wypisania się',
+              reason: 'Powód: Zgoda może być wycofana w każdym czasie'
+            },
+            
+            websiteLogs: {
+              title: '6.4 Logi Strony Internetowej',
+              period: 'Okres: 1 rok',
+              reason: 'Powód: Bezpieczeństwo i analiza'
+            }
+          },
+          
+          section7: {
+            title: '7. Twoje Prawa zgodnie z RODO',
+            intro: 'Jako osoba, której dane dotyczą, masz następujące prawa:',
+            
+            rightOfAccess: {
+              title: '7.1 Prawo dostępu (Art. 15 RODO)',
+              content: 'Masz prawo wiedzieć, czy przetwarzamy Twoje dane osobowe i jeśli tak, to jakie dane to są.'
+            },
+            
+            rightToRectification: {
+              title: '7.2 Prawo do sprostowania (Art. 16 RODO)',
+              content: 'Możesz żądać poprawienia nieprawidłowych lub niekompletnych danych osobowych.'
+            },
+            
+            rightToErasure: {
+              title: '7.3 Prawo do usunięcia (Art. 17 RODO)',
+              content: 'W pewnych okolicznościach możesz żądać usunięcia swoich danych osobowych.'
+            },
+            
+            rightToRestriction: {
+              title: '7.4 Prawo do ograniczenia przetwarzania (Art. 18 RODO)',
+              content: 'Możesz żądać czasowego ograniczenia przetwarzania swoich danych.'
+            },
+            
+            rightToPortability: {
+              title: '7.5 Prawo do przenoszenia danych (Art. 20 RODO)',
+              content: 'Masz prawo otrzymać swoje dane w ustrukturyzowanym, powszechnie używanym formacie nadającym się do odczytu maszynowego.'
+            },
+            
+            rightToObject: {
+              title: '7.6 Prawo sprzeciwu (Art. 21 RODO)',
+              content: 'Możesz sprzeciwić się przetwarzaniu swoich danych osobowych.'
+            },
+            
+            rightToWithdraw: {
+              title: '7.7 Prawo do wycofania zgody',
+              content: 'Możesz wycofać swoją zgodę na przetwarzanie danych w każdym czasie.'
+            }
+          },
+          
+          section8: {
+            title: '8. Wykonywanie Twoich Praw',
+            intro: 'Możesz wykonywać swoje prawa kontaktując się z naszym Inspektorem Ochrony Danych:',
+            email: 'Email: iod@spectraautoart.nl',
+            phone: 'Telefon: +31 6 12345678',
+            address: 'Adres: Spectra AutoArt, Tilburg',
+            responseTime: 'Odpowiadamy na Twoją prośbę w ciągu 1 miesiąca. W przypadku złożonych próśb możemy przedłużyć ten okres o 2 miesiące.'
+          },
+          
+          section9: {
+            title: '9. Prawo do Złożenia Skargi',
+            intro: 'Masz skargi dotyczące przetwarzania Twoich danych osobowych? Możesz skontaktować się z naszym Inspektorem Ochrony Danych. Masz również prawo złożyć skargę do Holenderskiego Urzędu Ochrony Danych:',
+            authority: 'Holenderski Urząd Ochrony Danych',
+            authorityAddress: 'Skrytka pocztowa 93374, 2509 AJ Haga, Tel: 088 - 1805 250, Strona internetowa: autoriteitpersoonsgegevens.nl'
+          },
+          
+          section10: {
+            title: '10. Bezpieczeństwo Danych Osobowych',
+            intro: 'Podejmujemy odpowiednie środki techniczne i organizacyjne, aby zabezpieczyć Twoje dane:',
+            items: [
+              'Szyfrowanie danych podczas przesyłania (SSL/TLS)',
+              'Kontrola dostępu i uwierzytelnianie',
+              'Regularne aktualizacje oprogramowania bezpieczeństwa',
+              'Procedury tworzenia kopii zapasowych i odzyskiwania',
+              'Szkolenie personelu w zakresie prywatności i bezpieczeństwa',
+              'Bezpieczne przechowywanie dokumentów fizycznych'
+            ]
+          },
+          
+          section11: {
+            title: '11. Przekazywanie Danych Poza UE',
+            content: 'Przetwarzamy Twoje dane wyłącznie w Unii Europejskiej. Jeśli mimo to dojdzie do przekazania poza UE, zapewniamy odpowiednie zabezpieczenia, takie jak standardowe klauzule umowne lub decyzje stosowności.'
+          },
+          
+          section12: {
+            title: '12. Zmiany w Niniejszej Polityce',
+            content: 'Niniejsza polityka RODO może ulec zmianie. Zmiany będą ogłaszane za pośrednictwem naszej strony internetowej. W przypadku istotnych zmian będziemy aktywnie komunikować się z naszymi klientami.'
+          }
         }
       }
     }
@@ -4120,6 +4868,205 @@ const resources = {
         section10: {
           title: '10. Modificări',
           content: 'Aceste informații legale pot fi modificate. Modificările vor fi anunțate prin intermediul site-ului nostru web. Cea mai actuală versiune este întotdeauna disponibilă pe această pagină.'
+        }
+      },
+      
+      // AVG/GDPR Information page translations
+      gdpr: {
+        title: 'Informații AVG/GDPR',
+        lastUpdated: 'Ultima actualizare: 27 noiembrie 2025',
+        
+        section1: {
+          title: '1. Regulamentul General privind Protecția Datelor (GDPR)',
+          content: 'Spectra AutoArt respectă pe deplin Regulamentul General privind Protecția Datelor (GDPR), cunoscut și ca GDPR (General Data Protection Regulation). Acest regulament se aplică tuturor companiilor din Uniunea Europeană care procesează date personale.'
+        },
+        
+        section2: {
+          title: '2. Operatorul de Date',
+          companyName: 'Numele Companiei',
+          companyNameValue: 'Spectra AutoArt',
+          address: 'Adresă',
+          addressValue: 'Centrul orașului Tilburg',
+          email: 'Email',
+          emailValue: 'privacy@spectraautoart.nl',
+          kvkNumber: 'Număr Cameră de Comerț',
+          kvkNumberValue: '[înregistrare în curs]',
+          phone: 'Telefon',
+          phoneValue: '+31 6 12345678'
+        },
+        
+        section3: {
+          title: '3. Ofițerul pentru Protecția Datelor (DPO)',
+          intro: 'Pentru toate întrebările și solicitările dvs. privind protecția datelor, puteți contacta Ofițerul nostru pentru Protecția Datelor:',
+          email: 'Email',
+          emailValue: 'dpo@spectraautoart.nl',
+          phone: 'Telefon',
+          phoneValue: '+31 6 12345678'
+        },
+        
+        section4: {
+          title: '4. Scopuri ale procesării și baze legale',
+          intro: 'Procesăm datele dvs. personale pentru următoarele scopuri:',
+          
+          serviceProvision: {
+            title: '4.1 Furnizare servicii',
+            purpose: 'Scop:',
+            purposeValue: 'Executarea serviciilor de detailing și styling auto',
+            legalBasis: 'Bază legală:',
+            legalBasisValue: 'Contract (art. 6 alin. 1 lit. b GDPR)',
+            data: 'Date:',
+            dataValue: 'Date de contact, informații despre vehicul, date de programare'
+          },
+          
+          customerCommunication: {
+            title: '4.2 Comunicare cu clienții',
+            purpose: 'Scop:',
+            purposeValue: 'Comunicare despre programări, servicii și post-vânzare',
+            legalBasis: 'Bază legală:',
+            legalBasisValue: 'Contract (art. 6 alin. 1 lit. b GDPR)',
+            data: 'Date:',
+            dataValue: 'Nume, email, număr de telefon'
+          },
+          
+          billingAdministration: {
+            title: '4.3 Facturare și administrare',
+            purpose: 'Scop:',
+            purposeValue: 'Administrare financiară și declarații fiscale',
+            legalBasis: 'Bază legală:',
+            legalBasisValue: 'Obligație legală (art. 6 alin. 1 lit. c GDPR)',
+            data: 'Date:',
+            dataValue: 'Adresă de facturare, date de plată, istoric tranzacții'
+          },
+          
+          marketing: {
+            title: '4.4 Marketing (opțional)',
+            purpose: 'Scop:',
+            purposeValue: 'Newslettere și promoții',
+            legalBasis: 'Bază legală:',
+            legalBasisValue: 'Consimțământ (art. 6 alin. 1 lit. a GDPR)',
+            data: 'Date:',
+            dataValue: 'Adresă email, nume, preferințe'
+          }
+        },
+        
+        section5: {
+          title: '5. Categorii de date personale',
+          intro: 'Procesăm următoarele categorii de date personale:',
+          items: [
+            'Date de identificare: Nume, adresă, date de contact',
+            'Date despre vehicul: Număr de înmatriculare, marcă, model, an fabricație',
+            'Date financiare: Adresă de facturare, date de plată',
+            'Date de comunicare: Corespondență email, conversații telefonice',
+            'Date website: Adresă IP, cookie-uri, comportament utilizator'
+          ]
+        },
+        
+        section6: {
+          title: '6. Perioade de păstrare',
+          intro: 'Aplicăm următoarele perioade de păstrare pentru diferite categorii de date:',
+          
+          customerData: {
+            title: '6.1 Date despre clienți',
+            period: 'Perioadă: 7 ani de la ultima tranzacție',
+            reason: 'Motiv: Obligație legală fiscală'
+          },
+          
+          invoiceData: {
+            title: '6.2 Date de facturare și contabilitate',
+            period: 'Perioadă: 7 ani',
+            reason: 'Motiv: Articolul 52 din Legea privind taxa pe valoare adăugată'
+          },
+          
+          marketingData: {
+            title: '6.3 Date de marketing',
+            period: 'Perioadă: 2 ani de la ultima interacțiune sau până la dezabonare',
+            reason: 'Motiv: Consimțământul poate fi retras oricând'
+          },
+          
+          websiteLogs: {
+            title: '6.4 Log-uri website',
+            period: 'Perioadă: 1 an',
+            reason: 'Motiv: Securitate și analiză'
+          }
+        },
+        
+        section7: {
+          title: '7. Drepturile dvs. conform GDPR',
+          intro: 'Ca persoană vizată, aveți următoarele drepturi:',
+          
+          rightOfAccess: {
+            title: '7.1 Dreptul la acces (art. 15 GDPR)',
+            content: 'Aveți dreptul să știți dacă procesăm datele dvs. personale și, dacă da, care sunt aceste date.'
+          },
+          
+          rightToRectification: {
+            title: '7.2 Dreptul la rectificare (art. 16 GDPR)',
+            content: 'Puteți solicita corectarea datelor personale incorecte sau incomplete.'
+          },
+          
+          rightToErasure: {
+            title: '7.3 Dreptul la ștergere (art. 17 GDPR)',
+            content: 'În anumite circumstanțe, puteți solicita ștergerea datelor dvs. personale.'
+          },
+          
+          rightToRestriction: {
+            title: '7.4 Dreptul la restricționarea procesării (art. 18 GDPR)',
+            content: 'Puteți solicita restricționarea temporară a procesării datelor dvs.'
+          },
+          
+          rightToPortability: {
+            title: '7.5 Dreptul la portabilitatea datelor (art. 20 GDPR)',
+            content: 'Aveți dreptul să primiți datele dvs. într-un format structurat, utilizat în mod obișnuit și care poate fi citit automat.'
+          },
+          
+          rightToObject: {
+            title: '7.6 Dreptul la obiecție (art. 21 GDPR)',
+            content: 'Puteți obiecta la procesarea datelor dvs. personale.'
+          },
+          
+          rightToWithdraw: {
+            title: '7.7 Dreptul de retragere a consimțământului',
+            content: 'Puteți retrage oricând consimțământul dvs. pentru procesarea datelor.'
+          }
+        },
+        
+        section8: {
+          title: '8. Exercitarea drepturilor dvs.',
+          intro: 'Puteți exercita drepturile dvs. contactând Ofițerul nostru pentru Protecția Datelor:',
+          email: 'Email: dpo@spectraautoart.nl',
+          phone: 'Telefon: +31 6 12345678',
+          address: 'Adresă: Spectra AutoArt, Tilburg',
+          responseTime: 'Răspundem în termen de 1 lună la solicitarea dvs. Pentru solicitări complexe, putem prelungi acest termen cu 2 luni.'
+        },
+        
+        section9: {
+          title: '9. Dreptul la plângere',
+          intro: 'Aveți reclamații privind procesarea datelor dvs. personale? Puteți contacta Ofițerul nostru pentru Protecția Daten. De asemenea, aveți dreptul să depuneți o plângere la Autoritatea pentru Protecția Datelor:',
+          authority: 'Autoritatea pentru Protecția Datelor',
+          authorityAddress: 'Olanda<br>Telefon: 088 - 1805 250<br>Website: autoriteitpersoonsgegevens.nl'
+        },
+        
+        section10: {
+          title: '10. Securitatea datelor personale',
+          intro: 'Luăm măsuri tehnice și organizatorice adecvate pentru a vă securiza datele:',
+          items: [
+            'Criptarea datelor în tranzit (SSL/TLS)',
+            'Controlul accesului și autentificare',
+            'Actualizări regulate ale software-ului de securitate',
+            'Proceduri de backup și recuperare',
+            'Instruirea angajaților despre confidențialitate și securitate',
+            'Stocare securizată a documentelor fizice'
+          ]
+        },
+        
+        section11: {
+          title: '11. Transferul datelor în afara UE',
+          content: 'Procesăm datele dvs. exclusiv în cadrul Uniunii Europene. Dacă totuși există un transfer în afara UE, vom asigura garanții adecvate precum clauze contractuale standard sau decizii de adecvare.'
+        },
+        
+        section12: {
+          title: '12. Modificări ale acestei politici',
+          content: 'Această politică GDPR poate fi modificată. Modificările vor fi anunțate prin intermediul site-ului nostru web. Pentru modificări semnificative, vom comunica activ către clienții noștri.'
         }
       }
     }

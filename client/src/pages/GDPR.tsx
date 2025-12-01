@@ -1,193 +1,187 @@
-import React from 'react'
-import './LegalPages.css'
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import './LegalPages.css';
 
 const GDPR: React.FC = () => {
+  const { t } = useTranslation();
 
   return (
     <div className="legal-page">
-      <div className="legal-container">
-        <h1>AVG / GDPR Informatie</h1>
-        <p className="last-updated">Laatst bijgewerkt: 27 november 2025</p>
-        
+      <div className="legal-content">
+        <h1>{t('gdpr.title')}</h1>
+        <p className="last-updated">{t('gdpr.lastUpdated')}</p>
+
         <section>
-          <h2>1. Algemene Verordening Gegevensbescherming (AVG/GDPR)</h2>
-          <p>
-            Spectra AutoArt voldoet volledig aan de Algemene Verordening Gegevensbescherming (AVG), 
-            ook wel bekend als GDPR (General Data Protection Regulation). Deze verordening is van toepassing 
-            op alle bedrijven binnen de Europese Unie die persoonsgegevens verwerken.
-          </p>
+          <h2>{t('gdpr.section1.title')}</h2>
+          <p>{t('gdpr.section1.content')}</p>
         </section>
 
         <section>
-          <h2>2. Verwerkingsverantwoordelijke</h2>
-          <p>
-            <strong>Naam:</strong> Spectra AutoArt<br />
-            <strong>Adres:</strong> Tilburg Stadscentrum<br />
-            <strong>Email:</strong> privacy@spectraautoart.nl<br />
-            <strong>KvK-nummer:</strong> [te registreren]<br />
-            <strong>Telefoon:</strong> +31 6 12345678
-          </p>
+          <h2>{t('gdpr.section2.title')}</h2>
+          <p><strong>{t('gdpr.section2.companyName')}:</strong> {t('gdpr.section2.companyNameValue')}</p>
+          <p><strong>{t('gdpr.section2.address')}:</strong> {t('gdpr.section2.addressValue')}</p>
+          <p><strong>{t('gdpr.section2.email')}:</strong> {t('gdpr.section2.emailValue')}</p>
+          <p><strong>{t('gdpr.section2.kvkNumber')}:</strong> {t('gdpr.section2.kvkNumberValue')}</p>
+          <p><strong>{t('gdpr.section2.phone')}:</strong> {t('gdpr.section2.phoneValue')}</p>
         </section>
 
         <section>
-          <h2>3. Functionaris Gegevensbescherming (FG)</h2>
-          <p>
-            Voor al uw vragen en verzoeken met betrekking tot gegevensbescherming kunt u contact opnemen met 
-            onze Functionaris Gegevensbescherming:
-          </p>
-          <p>
-            <strong>Email:</strong> dpo@spectraautoart.nl<br />
-            <strong>Telefoon:</strong> +31 6 12345678
-          </p>
+          <h2>{t('gdpr.section3.title')}</h2>
+          <p>{t('gdpr.section3.intro')}</p>
+          <p><strong>{t('gdpr.section3.email')}:</strong> {t('gdpr.section3.emailValue')}</p>
+          <p><strong>{t('gdpr.section3.phone')}:</strong> {t('gdpr.section3.phoneValue')}</p>
         </section>
 
         <section>
-          <h2>4. Verwerkingsdoeleinden en rechtsgrondslagen</h2>
+          <h2>{t('gdpr.section4.title')}</h2>
+          <p>{t('gdpr.section4.intro')}</p>
           
-          <h3>4.1 Dienstverlening</h3>
-          <p><strong>Doel:</strong> Het uitvoeren van auto detailing en styling diensten</p>
-          <p><strong>Rechtsgrond:</strong> Overeenkomst (art. 6 lid 1 sub b AVG)</p>
-          <p><strong>Gegevens:</strong> Contactgegevens, voertuiginformatie, afspraakgegevens</p>
+          <div className="subsection">
+            <h3>{t('gdpr.section4.serviceProvision.title')}</h3>
+            <p><strong>{t('gdpr.section4.serviceProvision.purpose')}</strong></p>
+            <p><strong>{t('gdpr.section4.serviceProvision.legalBasis')}</strong></p>
+            <p><strong>{t('gdpr.section4.serviceProvision.data')}</strong></p>
+          </div>
 
-          <h3>4.2 Klantcommunicatie</h3>
-          <p><strong>Doel:</strong> Communicatie over afspraken, services en nazorg</p>
-          <p><strong>Rechtsgrond:</strong> Overeenkomst (art. 6 lid 1 sub b AVG)</p>
-          <p><strong>Gegevens:</strong> Naam, email, telefoonnummer</p>
+          <div className="subsection">
+            <h3>{t('gdpr.section4.customerCommunication.title')}</h3>
+            <p><strong>{t('gdpr.section4.customerCommunication.purpose')}</strong></p>
+            <p><strong>{t('gdpr.section4.customerCommunication.legalBasis')}</strong></p>
+            <p><strong>{t('gdpr.section4.customerCommunication.data')}</strong></p>
+          </div>
 
-          <h3>4.3 Facturering en administratie</h3>
-          <p><strong>Doel:</strong> Financiële administratie en belastingaangiften</p>
-          <p><strong>Rechtsgrond:</strong> Wettelijke verplichting (art. 6 lid 1 sub c AVG)</p>
-          <p><strong>Gegevens:</strong> Factuuradres, betalingsgegevens, transactiehistorie</p>
+          <div className="subsection">
+            <h3>{t('gdpr.section4.billing.title')}</h3>
+            <p><strong>{t('gdpr.section4.billing.purpose')}</strong></p>
+            <p><strong>{t('gdpr.section4.billing.legalBasis')}</strong></p>
+            <p><strong>{t('gdpr.section4.billing.data')}</strong></p>
+          </div>
 
-          <h3>4.4 Marketing (optioneel)</h3>
-          <p><strong>Doel:</strong> Nieuwsbrieven en promotieacties</p>
-          <p><strong>Rechtsgrond:</strong> Toestemming (art. 6 lid 1 sub a AVG)</p>
-          <p><strong>Gegevens:</strong> Emailadres, naam, voorkeuren</p>
+          <div className="subsection">
+            <h3>{t('gdpr.section4.marketing.title')}</h3>
+            <p><strong>{t('gdpr.section4.marketing.purpose')}</strong></p>
+            <p><strong>{t('gdpr.section4.marketing.legalBasis')}</strong></p>
+            <p><strong>{t('gdpr.section4.marketing.data')}</strong></p>
+          </div>
         </section>
 
         <section>
-          <h2>5. Categorieën persoonsgegevens</h2>
-          <p>Wij verwerken de volgende categorieën persoonsgegevens:</p>
+          <h2>{t('gdpr.section5.title')}</h2>
+          <p>{t('gdpr.section5.intro')}</p>
           <ul>
-            <li><strong>Identificatiegegevens:</strong> Naam, adres, contactgegevens</li>
-            <li><strong>Voertuiggegevens:</strong> Kenteken, merk, model, bouwjaar</li>
-            <li><strong>Financiële gegevens:</strong> Factuuradres, betalingsgegevens</li>
-            <li><strong>Communicatiegegevens:</strong> Email correspondentie, telefoongesprekken</li>
-            <li><strong>Websitegegevens:</strong> IP-adres, cookies, gebruikersgedrag</li>
+            {(t('gdpr.section5.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
           </ul>
         </section>
 
         <section>
-          <h2>6. Bewaartermijnen</h2>
-          <p>Wij hanteren de volgende bewaartermijnen voor verschillende categorieën gegevens:</p>
+          <h2>{t('gdpr.section6.title')}</h2>
+          <p>{t('gdpr.section6.intro')}</p>
           
-          <h3>6.1 Klantgegevens</h3>
-          <p><strong>Termijn:</strong> 7 jaar na laatste transactie<br />
-          <strong>Reden:</strong> Wettelijke verplichting belastingwet</p>
+          <div className="subsection">
+            <h3>{t('gdpr.section6.customerData.title')}</h3>
+            <p><strong>{t('gdpr.section6.customerData.period')}</strong></p>
+            <p><strong>{t('gdpr.section6.customerData.reason')}</strong></p>
+          </div>
 
-          <h3>6.2 Factuur- en boekhoudgegevens</h3>
-          <p><strong>Termijn:</strong> 7 jaar<br />
-          <strong>Reden:</strong> Artikel 52 Wet op de omzetbelasting</p>
+          <div className="subsection">
+            <h3>{t('gdpr.section6.invoiceData.title')}</h3>
+            <p><strong>{t('gdpr.section6.invoiceData.period')}</strong></p>
+            <p><strong>{t('gdpr.section6.invoiceData.reason')}</strong></p>
+          </div>
 
-          <h3>6.3 Marketinggegevens</h3>
-          <p><strong>Termijn:</strong> 2 jaar na laatste interactie of tot uitschrijving<br />
-          <strong>Reden:</strong> Toestemming kan te allen tijde worden ingetrokken</p>
+          <div className="subsection">
+            <h3>{t('gdpr.section6.marketingData.title')}</h3>
+            <p><strong>{t('gdpr.section6.marketingData.period')}</strong></p>
+            <p><strong>{t('gdpr.section6.marketingData.reason')}</strong></p>
+          </div>
 
-          <h3>6.4 Website logs</h3>
-          <p><strong>Termijn:</strong> 1 jaar<br />
-          <strong>Reden:</strong> Beveiliging en analyse</p>
+          <div className="subsection">
+            <h3>{t('gdpr.section6.websiteLogs.title')}</h3>
+            <p><strong>{t('gdpr.section6.websiteLogs.period')}</strong></p>
+            <p><strong>{t('gdpr.section6.websiteLogs.reason')}</strong></p>
+          </div>
         </section>
 
         <section>
-          <h2>7. Uw rechten onder de AVG</h2>
-          <p>Als betrokkene heeft u de volgende rechten:</p>
+          <h2>{t('gdpr.section7.title')}</h2>
+          <p>{t('gdpr.section7.intro')}</p>
           
-          <h3>7.1 Recht op inzage (art. 15 AVG)</h3>
-          <p>U heeft het recht om te weten of wij uw persoonsgegevens verwerken en zo ja, welke gegevens dit zijn.</p>
+          <div className="subsection">
+            <h3>{t('gdpr.section7.rightOfAccess.title')}</h3>
+            <p>{t('gdpr.section7.rightOfAccess.content')}</p>
+          </div>
 
-          <h3>7.2 Recht op rectificatie (art. 16 AVG)</h3>
-          <p>U kunt verzoeken om correctie van onjuiste of onvolledige persoonsgegevens.</p>
+          <div className="subsection">
+            <h3>{t('gdpr.section7.rightToRectification.title')}</h3>
+            <p>{t('gdpr.section7.rightToRectification.content')}</p>
+          </div>
 
-          <h3>7.3 Recht op verwijdering (art. 17 AVG)</h3>
-          <p>Onder bepaalde omstandigheden kunt u verzoeken om verwijdering van uw persoonsgegevens.</p>
+          <div className="subsection">
+            <h3>{t('gdpr.section7.rightToErasure.title')}</h3>
+            <p>{t('gdpr.section7.rightToErasure.content')}</p>
+          </div>
 
-          <h3>7.4 Recht op beperking van verwerking (art. 18 AVG)</h3>
-          <p>U kunt verzoeken om tijdelijke beperking van de verwerking van uw gegevens.</p>
+          <div className="subsection">
+            <h3>{t('gdpr.section7.rightToRestriction.title')}</h3>
+            <p>{t('gdpr.section7.rightToRestriction.content')}</p>
+          </div>
 
-          <h3>7.5 Recht op dataportabiliteit (art. 20 AVG)</h3>
-          <p>U heeft het recht om uw gegevens in een gestructureerd, gangbaar en machineleesbaar formaat te ontvangen.</p>
+          <div className="subsection">
+            <h3>{t('gdpr.section7.rightToPortability.title')}</h3>
+            <p>{t('gdpr.section7.rightToPortability.content')}</p>
+          </div>
 
-          <h3>7.6 Recht van bezwaar (art. 21 AVG)</h3>
-          <p>U kunt bezwaar maken tegen de verwerking van uw persoonsgegevens.</p>
+          <div className="subsection">
+            <h3>{t('gdpr.section7.rightToObject.title')}</h3>
+            <p>{t('gdpr.section7.rightToObject.content')}</p>
+          </div>
 
-          <h3>7.7 Recht op intrekking van toestemming</h3>
-          <p>U kunt te allen tijde uw toestemming voor gegevensverwerking intrekken.</p>
+          <div className="subsection">
+            <h3>{t('gdpr.section7.rightToWithdraw.title')}</h3>
+            <p>{t('gdpr.section7.rightToWithdraw.content')}</p>
+          </div>
         </section>
 
         <section>
-          <h2>8. Het uitoefenen van uw rechten</h2>
-          <p>
-            U kunt uw rechten uitoefenen door contact op te nemen met onze Functionaris Gegevensbescherming:
-          </p>
-          <p>
-            <strong>Email:</strong> dpo@spectraautoart.nl<br />
-            <strong>Telefoon:</strong> +31 6 12345678<br />
-            <strong>Adres:</strong> Spectra AutoArt, Tilburg
-          </p>
-          <p>
-            Wij reageren binnen 1 maand op uw verzoek. Bij complexe verzoeken kunnen wij deze termijn 
-            verlengen met 2 maanden.
-          </p>
+          <h2>{t('gdpr.section8.title')}</h2>
+          <p>{t('gdpr.section8.intro')}</p>
+          <p>{t('gdpr.section8.email')}</p>
+          <p>{t('gdpr.section8.phone')}</p>
+          <p>{t('gdpr.section8.address')}</p>
+          <p>{t('gdpr.section8.responseTime')}</p>
         </section>
 
         <section>
-          <h2>9. Klachtrecht</h2>
-          <p>
-            Heeft u klachten over de verwerking van uw persoonsgegevens? Dan kunt u contact opnemen 
-            met onze Functionaris Gegevensbescherming. U heeft ook het recht om een klacht in te dienen 
-            bij de Autoriteit Persoonsgegevens:
-          </p>
-          <p>
-            <strong>Autoriteit Persoonsgegevens</strong><br />
-            Postbus 93374<br />
-            2509 AJ Den Haag<br />
-            Tel: 088 - 1805 250<br />
-            Website: <a href="https://autoriteitpersoonsgegevens.nl" target="_blank" rel="noopener noreferrer">autoriteitpersoonsgegevens.nl</a>
-          </p>
+          <h2>{t('gdpr.section9.title')}</h2>
+          <p>{t('gdpr.section9.intro')}</p>
+          <p><strong>{t('gdpr.section9.authority')}:</strong></p>
+          <p dangerouslySetInnerHTML={{ __html: t('gdpr.section9.authorityAddress') }} />
         </section>
 
         <section>
-          <h2>10. Beveiliging van persoonsgegevens</h2>
-          <p>Wij nemen passende technische en organisatorische maatregelen om uw gegevens te beveiligen:</p>
+          <h2>{t('gdpr.section10.title')}</h2>
+          <p>{t('gdpr.section10.intro')}</p>
           <ul>
-            <li>Versleuteling van data in transit (SSL/TLS)</li>
-            <li>Toegangscontrole en authenticatie</li>
-            <li>Regelmatige beveiligingssoftware updates</li>
-            <li>Back-up en herstelprocedures</li>
-            <li>Medewerkersscholing over privacy en beveiliging</li>
-            <li>Beveiligde opslag van fysieke documenten</li>
+            {(t('gdpr.section10.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
           </ul>
         </section>
 
         <section>
-          <h2>11. Gegevensoverdracht buiten de EU</h2>
-          <p>
-            Wij verwerken uw gegevens uitsluitend binnen de Europese Unie. Mocht er toch sprake zijn 
-            van overdracht buiten de EU, dan zorgen wij voor passende waarborgen zoals 
-            standaardcontractbepalingen of adequaatheidsbesluiten.
-          </p>
+          <h2>{t('gdpr.section11.title')}</h2>
+          <p>{t('gdpr.section11.content')}</p>
         </section>
 
         <section>
-          <h2>12. Wijzigingen in dit beleid</h2>
-          <p>
-            Dit AVG-beleid kan worden gewijzigd. Wijzigingen worden via onze website bekend gemaakt. 
-            Voor significante wijzigingen zullen wij actief communiceren naar onze klanten.
-          </p>
+          <h2>{t('gdpr.section12.title')}</h2>
+          <p>{t('gdpr.section12.content')}</p>
         </section>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default GDPR
+export default GDPR;
