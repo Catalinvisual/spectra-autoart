@@ -1,194 +1,154 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import './LegalPages.css'
 
 const PrivacyPolicy: React.FC = () => {
+  const { t } = useTranslation()
 
   return (
     <div className="legal-page">
       <div className="legal-container">
-        <h1>Privacybeleid</h1>
-        <p className="last-updated">Laatst bijgewerkt: 27 november 2025</p>
+        <h1>{t('privacyPolicy.title')}</h1>
+        <p className="last-updated">{t('privacyPolicy.lastUpdated')}</p>
         
         <section>
-          <h2>1. Inleiding</h2>
-          <p>
-            Bij Spectra AutoArt hechten wij groot belang aan uw privacy en de bescherming van uw persoonsgegevens. 
-            Dit privacybeleid beschrijft hoe wij omgaan met uw persoonsgegevens in overeenstemming met de 
-            Algemene Verordening Gegevensbescherming (AVG).
-          </p>
+          <h2>{t('privacyPolicy.section1.title')}</h2>
+          <p>{t('privacyPolicy.section1.content')}</p>
         </section>
 
         <section>
-          <h2>2. Verwerkingsverantwoordelijke</h2>
-          <p>
-            <strong>Spectra AutoArt</strong><br />
-            Gevestigd te Tilburg<br />
-            KvK-nummer: [te registreren]<br />
-            Email: privacy@spectraautoart.nl
-          </p>
+          <h2>{t('privacyPolicy.section2.title')}</h2>
+          <div dangerouslySetInnerHTML={{ __html: t('privacyPolicy.section2.content') }} />
         </section>
 
         <section>
-          <h2>3. Welke gegevens verzamelen wij?</h2>
-          <p>Wij verzamelen de volgende categorieën persoonsgegevens:</p>
+          <h2>{t('privacyPolicy.section3.title')}</h2>
+          <p>{t('privacyPolicy.section3.intro')}</p>
           
-          <h3>3.1 Contactgegevens</h3>
+          <h3>{t('privacyPolicy.section3.subsection1.title')}</h3>
           <ul>
-            <li>Naam en achternaam</li>
-            <li>Emailadres</li>
-            <li>Telefoonnummer</li>
-            <li>Adresgegevens</li>
+            {(t('privacyPolicy.section3.subsection1.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
           </ul>
 
-          <h3>3.2 Voertuiggegevens</h3>
+          <h3>{t('privacyPolicy.section3.subsection2.title')}</h3>
           <ul>
-            <li>Kentekennummer</li>
-            <li>Voertuigmerk en model</li>
-            <li>Bouwjaar</li>
-            <li>Carrosserietype</li>
+            {(t('privacyPolicy.section3.subsection2.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
           </ul>
 
-          <h3>3.3 Dienstverleningsgegevens</h3>
+          <h3>{t('privacyPolicy.section3.subsection3.title')}</h3>
           <ul>
-            <li>Geboekte services</li>
-            <li>Afspraakgegevens</li>
-            <li>Betaalgegevens</li>
-            <li>Servicegeschiedenis</li>
+            {(t('privacyPolicy.section3.subsection3.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
           </ul>
 
-          <h3>3.4 Websitegebruik</h3>
+          <h3>{t('privacyPolicy.section3.subsection4.title')}</h3>
           <ul>
-            <li>IP-adres</li>
-            <li>Browserinformatie</li>
-            <li>Cookies (zie ons cookiebeleid)</li>
-            <li>Bezoekgedrag op onze website</li>
+            {(t('privacyPolicy.section3.subsection4.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
           </ul>
         </section>
 
         <section>
-          <h2>4. Doeleinden van gegevensverwerking</h2>
-          <p>Wij verwerken uw gegevens voor de volgende doeleinden:</p>
+          <h2>{t('privacyPolicy.section4.title')}</h2>
+          <p>{t('privacyPolicy.section4.intro')}</p>
           
-          <h3>4.1 Dienstverlening</h3>
+          <h3>{t('privacyPolicy.section4.subsection1.title')}</h3>
           <ul>
-            <li>Het uitvoeren van afspraken en services</li>
-            <li>Communicatie over uw afspraken</li>
-            <li>Facturering en betaling</li>
-            <li>Kwaliteitsborging en garantie</li>
+            {(t('privacyPolicy.section4.subsection1.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
           </ul>
 
-          <h3>4.2 Klantenservice</h3>
+          <h3>{t('privacyPolicy.section4.subsection2.title')}</h3>
           <ul>
-            <li>Beantwoorden van vragen</li>
-            <li>Verwerken van klachten</li>
-            <li>Nazorg en ondersteuning</li>
+            {(t('privacyPolicy.section4.subsection2.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
           </ul>
 
-          <h3>4.3 Marketing (met toestemming)</h3>
+          <h3>{t('privacyPolicy.section4.subsection3.title')}</h3>
           <ul>
-            <li>Nieuwsbrieven versturen</li>
-            <li>Acties en aanbiedingen communiceren</li>
-            <li>Geïsoleerde marktonderzoek</li>
+            {(t('privacyPolicy.section4.subsection3.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
           </ul>
 
-          <h3>4.4 Wettelijke verplichtingen</h3>
+          <h3>{t('privacyPolicy.section4.subsection4.title')}</h3>
           <ul>
-            <li>Belastingaangiften</li>
-            <li>Administratieverplichtingen</li>
-            <li>Juridische procedures</li>
-          </ul>
-        </section>
-
-        <section>
-          <h2>5. Rechtsgrond voor verwerking</h2>
-          <p>Wij verwerken uw gegevens op basis van:</p>
-          <ul>
-            <li><strong>Overeenkomst:</strong> Voor het uitvoeren van onze dienstverlening</li>
-            <li><strong>Wettelijke verplichting:</strong> Voor belasting en administratie</li>
-            <li><strong>Gerechtvaardigd belang:</strong> Voor bedrijfsvoering en fraudepreventie</li>
-            <li><strong>Toestemming:</strong> Voor marketingactiviteiten</li>
+            {(t('privacyPolicy.section4.subsection4.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
           </ul>
         </section>
 
         <section>
-          <h2>6. Bewaartermijnen</h2>
-          <p>Wij bewaren uw gegevens niet langer dan noodzakelijk:</p>
+          <h2>{t('privacyPolicy.section5.title')}</h2>
+          <p>{t('privacyPolicy.section5.intro')}</p>
           <ul>
-            <li><strong>Klantgegevens:</strong> 7 jaar na laatste transactie (belastingwet)</li>
-            <li><strong>Factuurgegevens:</strong> 7 jaar (belastingwet)</li>
-            <li><strong>Marketinggegevens:</strong> Tot uitschrijving of 2 jaar na laatste interactie</li>
-            <li><strong>Websitelogs:</strong> 1 jaar</li>
-            <li><strong>Cookies:</strong> Zie cookiebeleid</li>
+            {(t('privacyPolicy.section5.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index} dangerouslySetInnerHTML={{ __html: item }} />
+            ))}
           </ul>
         </section>
 
         <section>
-          <h2>7. Delen van gegevens</h2>
-          <p>Wij delen uw gegevens alleen met:</p>
+          <h2>{t('privacyPolicy.section6.title')}</h2>
+          <p>{t('privacyPolicy.section6.intro')}</p>
           <ul>
-            <li>IT-dienstverleners (hosting, email, software)</li>
-            <li>Boekhoudsoftware en accountants</li>
-            <li>Betaalproviders</li>
-            <li>Overheidsinstanties bij wettelijke verplichting</li>
-          </ul>
-          <p>
-            Al onze verwerkers zijn gebonden aan verwerkersovereenkomsten en mogen uw gegevens 
-            alleen gebruiken voor het afgesproken doel.
-          </p>
-        </section>
-
-        <section>
-          <h2>8. Beveiliging</h2>
-          <p>Wij nemen passende technische en organisatorische maatregelen om uw gegevens te beveiligen:</p>
-          <ul>
-            <li>Versleuteling van data (SSL/TLS)</li>
-            <li>Toegangscontrole en authenticatie</li>
-            <li>Regelmatige backups</li>
-            <li>Beveiligingssoftware en firewalls</li>
-            <li>Medewerkersscholing over privacy</li>
+            {(t('privacyPolicy.section6.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index} dangerouslySetInnerHTML={{ __html: item }} />
+            ))}
           </ul>
         </section>
 
         <section>
-          <h2>9. Uw rechten</h2>
-          <p>U heeft de volgende rechten onder de AVG:</p>
+          <h2>{t('privacyPolicy.section7.title')}</h2>
+          <p>{t('privacyPolicy.section7.intro')}</p>
           <ul>
-            <li><strong>Recht op inzage:</strong> Inzien welke gegevens wij van u hebben</li>
-            <li><strong>Recht op rectificatie:</strong> Correctie van onjuiste gegevens</li>
-            <li><strong>Recht op verwijdering:</strong> Verwijdering van uw gegevens (onder voorwaarden)</li>
-            <li><strong>Recht op beperking:</strong> Beperking van verwerking</li>
-            <li><strong>Recht op dataportabiliteit:</strong> Overdracht van uw gegevens</li>
-            <li><strong>Recht van bezwaar:</strong> Bezwaar maken tegen verwerking</li>
-            <li><strong>Recht op intrekking:</strong> Intrekken van toestemming</li>
+            {(t('privacyPolicy.section7.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+          <p>{t('privacyPolicy.section7.outro')}</p>
+        </section>
+
+        <section>
+          <h2>{t('privacyPolicy.section8.title')}</h2>
+          <p>{t('privacyPolicy.section8.intro')}</p>
+          <ul>
+            {(t('privacyPolicy.section8.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
           </ul>
         </section>
 
         <section>
-          <h2>10. Cookies</h2>
-          <p>
-            Wij gebruiken cookies voor een optimale website-ervaring. Zie ons 
-            <a href="/cookies">cookiebeleid</a> voor meer informatie.
-          </p>
+          <h2>{t('privacyPolicy.section9.title')}</h2>
+          <p>{t('privacyPolicy.section9.intro')}</p>
+          <ul>
+            {(t('privacyPolicy.section9.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+              <li key={index} dangerouslySetInnerHTML={{ __html: item }} />
+            ))}
+          </ul>
         </section>
 
         <section>
-          <h2>11. Contact</h2>
-          <p>
-            Voor vragen over dit privacybeleid of uw rechten kunt u contact opnemen:
-          </p>
-          <p>
-            <strong>Spectra AutoArt</strong><br />
-            Email: privacy@spectraautoart.nl<br />
-            Telefoon: +31 6 12345678
-          </p>
-          <p>
-            U heeft ook het recht om een klacht in te dienen bij de Autoriteit Persoonsgegevens:
-            <br />
-            Autoriteit Persoonsgegevens<br />
-            Postbus 93374<br />
-            2509 AJ Den Haag<br />
-            Tel: 088 - 1805 250
-          </p>
+          <h2>{t('privacyPolicy.section10.title')}</h2>
+          <p dangerouslySetInnerHTML={{ __html: t('privacyPolicy.section10.content') }} />
+        </section>
+
+        <section>
+          <h2>{t('privacyPolicy.section11.title')}</h2>
+          <p>{t('privacyPolicy.section11.intro')}</p>
+          <div dangerouslySetInnerHTML={{ __html: t('privacyPolicy.section11.contact') }} />
+          <p>{t('privacyPolicy.section11.authority')}</p>
+          <div dangerouslySetInnerHTML={{ __html: t('privacyPolicy.section11.authorityAddress') }} />
         </section>
       </div>
     </div>

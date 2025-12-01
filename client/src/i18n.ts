@@ -489,6 +489,183 @@ const resources = {
           email: 'Email: spectraautoart@gmail.com',
           phone: 'Telefoon: 0031685300906'
         }
+      },
+      
+      // Privacy Policy page translations
+      privacyPolicy: {
+        title: 'Privacybeleid',
+        lastUpdated: 'Laatst bijgewerkt: 27 november 2025',
+        
+        section1: {
+          title: '1. Inleiding',
+          content: 'Bij Spectra AutoArt hechten wij groot belang aan uw privacy en de bescherming van uw persoonsgegevens. Dit privacybeleid beschrijft hoe wij omgaan met uw persoonsgegevens in overeenstemming met de Algemene Verordening Gegevensbescherming (AVG).'
+        },
+        
+        section2: {
+          title: '2. Verwerkingsverantwoordelijke',
+          content: 'Spectra AutoArt<br>Gevestigd te Tilburg<br>KvK-nummer: [te registreren]<br>Email: privacy@spectraautoart.nl'
+        },
+        
+        section3: {
+          title: '3. Welke gegevens verzamelen wij?',
+          intro: 'Wij verzamelen de volgende categorieën persoonsgegevens:',
+          
+          subsection1: {
+            title: '3.1 Contactgegevens',
+            items: [
+              'Naam en achternaam',
+              'Emailadres',
+              'Telefoonnummer',
+              'Adresgegevens'
+            ]
+          },
+          
+          subsection2: {
+            title: '3.2 Voertuiggegevens',
+            items: [
+              'Kentekennummer',
+              'Voertuigmerk en model',
+              'Bouwjaar',
+              'Carrosserietype'
+            ]
+          },
+          
+          subsection3: {
+            title: '3.3 Dienstverleningsgegevens',
+            items: [
+              'Geboekte services',
+              'Afspraakgegevens',
+              'Betaalgegevens',
+              'Servicegeschiedenis'
+            ]
+          },
+          
+          subsection4: {
+            title: '3.4 Websitegebruik',
+            items: [
+              'IP-adres',
+              'Browserinformatie',
+              'Cookies (zie ons cookiebeleid)',
+              'Bezoekgedrag op onze website'
+            ]
+          }
+        },
+        
+        section4: {
+          title: '4. Doeleinden van gegevensverwerking',
+          intro: 'Wij verwerken uw gegevens voor de volgende doeleinden:',
+          
+          subsection1: {
+            title: '4.1 Dienstverlening',
+            items: [
+              'Het uitvoeren van afspraken en services',
+              'Communicatie over uw afspraken',
+              'Facturering en betaling',
+              'Kwaliteitsborging en garantie'
+            ]
+          },
+          
+          subsection2: {
+            title: '4.2 Klantenservice',
+            items: [
+              'Beantwoorden van vragen',
+              'Verwerken van klachten',
+              'Nazorg en ondersteuning'
+            ]
+          },
+          
+          subsection3: {
+            title: '4.3 Marketing (met toestemming)',
+            items: [
+              'Nieuwsbrieven versturen',
+              'Acties en aanbiedingen communiceren',
+              'Geïsoleerde marktonderzoek'
+            ]
+          },
+          
+          subsection4: {
+            title: '4.4 Wettelijke verplichtingen',
+            items: [
+              'Belastingaangiften',
+              'Administratieverplichtingen',
+              'Juridische procedures'
+            ]
+          }
+        },
+        
+        section5: {
+          title: '5. Rechtsgrond voor verwerking',
+          intro: 'Wij verwerken uw gegevens op basis van:',
+          items: [
+            '<strong>Overeenkomst:</strong> Voor het uitvoeren van onze dienstverlening',
+            '<strong>Wettelijke verplichting:</strong> Voor belasting en administratie',
+            '<strong>Gerechtvaardigd belang:</strong> Voor bedrijfsvoering en fraudepreventie',
+            '<strong>Toestemming:</strong> Voor marketingactiviteiten'
+          ]
+        },
+        
+        section6: {
+          title: '6. Bewaartermijnen',
+          intro: 'Wij bewaren uw gegevens niet langer dan noodzakelijk:',
+          items: [
+            '<strong>Klantgegevens:</strong> 7 jaar na laatste transactie (belastingwet)',
+            '<strong>Factuurgegevens:</strong> 7 jaar (belastingwet)',
+            '<strong>Marketinggegevens:</strong> Tot uitschrijving of 2 jaar na laatste interactie',
+            '<strong>Websitelogs:</strong> 1 jaar',
+            '<strong>Cookies:</strong> Zie cookiebeleid'
+          ]
+        },
+        
+        section7: {
+          title: '7. Delen van gegevens',
+          intro: 'Wij delen uw gegevens alleen met:',
+          items: [
+            'IT-dienstverleners (hosting, email, software)',
+            'Boekhoudsoftware en accountants',
+            'Betaalproviders',
+            'Overheidsinstanties bij wettelijke verplichting'
+          ],
+          outro: 'Al onze verwerkers zijn gebonden aan verwerkersovereenkomsten en mogen uw gegevens alleen gebruiken voor het afgesproken doel.'
+        },
+        
+        section8: {
+          title: '8. Beveiliging',
+          intro: 'Wij nemen passende technische en organisatorische maatregelen om uw gegevens te beveiligen:',
+          items: [
+            'Versleuteling van data (SSL/TLS)',
+            'Toegangscontrole en authenticatie',
+            'Regelmatige backups',
+            'Beveiligingssoftware en firewalls',
+            'Medewerkersscholing over privacy'
+          ]
+        },
+        
+        section9: {
+          title: '9. Uw rechten',
+          intro: 'U heeft de volgende rechten onder de AVG:',
+          items: [
+            '<strong>Recht op inzage:</strong> Inzien welke gegevens wij van u hebben',
+            '<strong>Recht op rectificatie:</strong> Correctie van onjuiste gegevens',
+            '<strong>Recht op verwijdering:</strong> Verwijdering van uw gegevens (onder voorwaarden)',
+            '<strong>Recht op beperking:</strong> Beperking van verwerking',
+            '<strong>Recht op dataportabiliteit:</strong> Overdracht van uw gegevens',
+            '<strong>Recht van bezwaar:</strong> Bezwaar maken tegen verwerking',
+            '<strong>Recht op intrekking:</strong> Intrekken van toestemming'
+          ]
+        },
+        
+        section10: {
+          title: '10. Cookies',
+          content: 'Wij gebruiken cookies voor een optimale website-ervaring. Zie ons <a href="/cookiebeleid">cookiebeleid</a> voor meer informatie.'
+        },
+        
+        section11: {
+          title: '11. Contact',
+          intro: 'Voor vragen over dit privacybeleid of uw rechten kunt u contact opnemen:',
+          contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Telefoon: +31 6 12345678',
+          authority: 'U heeft ook het recht om een klacht in te dienen bij de Autoriteit Persoonsgegevens:',
+          authorityAddress: 'Autoriteit Persoonsgegevens<br>Postbus 93374<br>2509 AJ Den Haag<br>Tel: 088 - 1805 250'
+        }
       }
     }
   },
@@ -944,6 +1121,183 @@ const resources = {
           email: 'Email: spectraautoart@gmail.com',
           phone: 'Phone: 0031685300906'
         }
+      },
+      
+      // Privacy Policy page translations
+      privacyPolicy: {
+        title: 'Privacy Policy',
+        lastUpdated: 'Last updated: November 27, 2025',
+        
+        section1: {
+          title: '1. Introduction',
+          content: 'At Spectra AutoArt, we attach great importance to your privacy and the protection of your personal data. This privacy policy describes how we handle your personal data in accordance with the General Data Protection Regulation (GDPR).'
+        },
+        
+        section2: {
+          title: '2. Data Controller',
+          content: 'Spectra AutoArt<br>Located in Tilburg<br>Chamber of Commerce number: [to be registered]<br>Email: privacy@spectraautoart.nl'
+        },
+        
+        section3: {
+          title: '3. What data do we collect?',
+          intro: 'We collect the following categories of personal data:',
+          
+          subsection1: {
+            title: '3.1 Contact Details',
+            items: [
+              'First and last name',
+              'Email address',
+              'Phone number',
+              'Address details'
+            ]
+          },
+          
+          subsection2: {
+            title: '3.2 Vehicle Data',
+            items: [
+              'License plate number',
+              'Vehicle brand and model',
+              'Year of construction',
+              'Body type'
+            ]
+          },
+          
+          subsection3: {
+            title: '3.3 Service Data',
+            items: [
+              'Booked services',
+              'Appointment details',
+              'Payment details',
+              'Service history'
+            ]
+          },
+          
+          subsection4: {
+            title: '3.4 Website Usage',
+            items: [
+              'IP address',
+              'Browser information',
+              'Cookies (see our cookie policy)',
+              'Visit behavior on our website'
+            ]
+          }
+        },
+        
+        section4: {
+          title: '4. Purposes of data processing',
+          intro: 'We process your data for the following purposes:',
+          
+          subsection1: {
+            title: '4.1 Service Provision',
+            items: [
+              'Executing appointments and services',
+              'Communication about your appointments',
+              'Invoicing and payment',
+              'Quality assurance and warranty'
+            ]
+          },
+          
+          subsection2: {
+            title: '4.2 Customer Service',
+            items: [
+              'Answering questions',
+              'Processing complaints',
+              'Aftercare and support'
+            ]
+          },
+          
+          subsection3: {
+            title: '4.3 Marketing (with consent)',
+            items: [
+              'Sending newsletters',
+              'Communicating promotions and offers',
+              'Isolated market research'
+            ]
+          },
+          
+          subsection4: {
+            title: '4.4 Legal obligations',
+            items: [
+              'Tax returns',
+              'Administrative obligations',
+              'Legal procedures'
+            ]
+          }
+        },
+        
+        section5: {
+          title: '5. Legal basis for processing',
+          intro: 'We process your data on the basis of:',
+          items: [
+            '<strong>Agreement:</strong> For the execution of our services',
+            '<strong>Legal obligation:</strong> For taxes and administration',
+            '<strong>Legitimate interest:</strong> For business operations and fraud prevention',
+            '<strong>Consent:</strong> For marketing activities'
+          ]
+        },
+        
+        section6: {
+          title: '6. Retention periods',
+          intro: 'We do not keep your data longer than necessary:',
+          items: [
+            '<strong>Customer data:</strong> 7 years after last transaction (tax law)',
+            '<strong>Invoice data:</strong> 7 years (tax law)',
+            '<strong>Marketing data:</strong> Until unsubscribing or 2 years after last interaction',
+            '<strong>Website logs:</strong> 1 year',
+            '<strong>Cookies:</strong> See cookie policy'
+          ]
+        },
+        
+        section7: {
+          title: '7. Sharing of data',
+          intro: 'We only share your data with:',
+          items: [
+            'IT service providers (hosting, email, software)',
+            'Accounting software and accountants',
+            'Payment providers',
+            'Government agencies when legally required'
+          ],
+          outro: 'All our processors are bound by processor agreements and may only use your data for the agreed purpose.'
+        },
+        
+        section8: {
+          title: '8. Security',
+          intro: 'We take appropriate technical and organizational measures to secure your data:',
+          items: [
+            'Data encryption (SSL/TLS)',
+            'Access control and authentication',
+            'Regular backups',
+            'Security software and firewalls',
+            'Employee training on privacy'
+          ]
+        },
+        
+        section9: {
+          title: '9. Your rights',
+          intro: 'You have the following rights under the GDPR:',
+          items: [
+            '<strong>Right of access:</strong> View what data we have about you',
+            '<strong>Right to rectification:</strong> Correction of incorrect data',
+            '<strong>Right to erasure:</strong> Deletion of your data (under conditions)',
+            '<strong>Right to restriction:</strong> Restriction of processing',
+            '<strong>Right to data portability:</strong> Transfer of your data',
+            '<strong>Right to object:</strong> Object to processing',
+            '<strong>Right to withdraw:</strong> Withdraw consent'
+          ]
+        },
+        
+        section10: {
+          title: '10. Cookies',
+          content: 'We use cookies for an optimal website experience. See our <a href="/cookie-policy">cookie policy</a> for more information.'
+        },
+        
+        section11: {
+          title: '11. Contact',
+          intro: 'For questions about this privacy policy or your rights, you can contact:',
+          contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Phone: +31 6 12345678',
+          authority: 'You also have the right to file a complaint with the Dutch Data Protection Authority:',
+          authorityAddress: 'Dutch Data Protection Authority<br>PO Box 93374<br>2509 AJ The Hague<br>Tel: 088 - 1805 250'
+        }
       }
     }
   },
@@ -1223,6 +1577,183 @@ const resources = {
           email: 'Email: spectraautoart@gmail.com',
           phone: 'Teléfono: 0031685300906'
         }
+      },
+      
+      // Privacy Policy page translations
+      privacyPolicy: {
+        title: 'Política de Privacidad',
+        lastUpdated: 'Última actualización: 27 de noviembre de 2025',
+        
+        section1: {
+          title: '1. Introducción',
+          content: 'En Spectra AutoArt, concedemos gran importancia a su privacidad y la protección de sus datos personales. Esta política de privacidad describe cómo manejamos sus datos personales de conformidad con el Reglamento General de Protección de Datos (RGPD).'
+        },
+        
+        section2: {
+          title: '2. Responsable del Tratamiento',
+          content: 'Spectra AutoArt<br>Ubicado en Tilburg<br>Número de Cámara de Comercio: [a registrar]<br>Email: privacy@spectraautoart.nl'
+        },
+        
+        section3: {
+          title: '3. ¿Qué datos recopilamos?',
+          intro: 'Recopilamos las siguientes categorías de datos personales:',
+          
+          subsection1: {
+            title: '3.1 Datos de Contacto',
+            items: [
+              'Nombre y apellidos',
+              'Dirección de correo electrónico',
+              'Número de teléfono',
+              'Datos de dirección'
+            ]
+          },
+          
+          subsection2: {
+            title: '3.2 Datos del Vehículo',
+            items: [
+              'Número de matrícula',
+              'Marca y modelo del vehículo',
+              'Año de construcción',
+              'Tipo de carrocería'
+            ]
+          },
+          
+          subsection3: {
+            title: '3.3 Datos de Servicios',
+            items: [
+              'Servicios reservados',
+              'Datos de citas',
+              'Datos de pago',
+              'Historial de servicios'
+            ]
+          },
+          
+          subsection4: {
+            title: '3.4 Uso del Sitio Web',
+            items: [
+              'Dirección IP',
+              'Información del navegador',
+              'Cookies (vea nuestra política de cookies)',
+              'Comportamiento de visitas en nuestro sitio web'
+            ]
+          }
+        },
+        
+        section4: {
+          title: '4. Propósitos del procesamiento de datos',
+          intro: 'Procesamos sus datos para los siguientes propósitos:',
+          
+          subsection1: {
+            title: '4.1 Prestación de Servicios',
+            items: [
+              'Ejecución de citas y servicios',
+              'Comunicación sobre sus citas',
+              'Facturación y pago',
+              'Garantía de calidad y garantía'
+            ]
+          },
+          
+          subsection2: {
+            title: '4.2 Servicio al Cliente',
+            items: [
+              'Responder preguntas',
+              'Procesar quejas',
+              'Atención y soporte postventa'
+            ]
+          },
+          
+          subsection3: {
+            title: '4.3 Marketing (con consentimiento)',
+            items: [
+              'Envío de boletines',
+              'Comunicar promociones y ofertas',
+              'Investigación de mercado aislada'
+            ]
+          },
+          
+          subsection4: {
+            title: '4.4 Obligaciones legales',
+            items: [
+              'Declaraciones de impuestos',
+              'Obligaciones administrativas',
+              'Procedimientos legales'
+            ]
+          }
+        },
+        
+        section5: {
+          title: '5. Base legal para el tratamiento',
+          intro: 'Procesamos sus datos sobre la base de:',
+          items: [
+            '<strong>Contrato:</strong> Para la ejecución de nuestros servicios',
+            '<strong>Obligación legal:</strong> Para impuestos y administración',
+            '<strong>Interés legítimo:</strong> Para operaciones comerciales y prevención de fraude',
+            '<strong>Consentimiento:</strong> Para actividades de marketing'
+          ]
+        },
+        
+        section6: {
+          title: '6. Plazos de conservación',
+          intro: 'No conservamos sus datos durante más tiempo del necesario:',
+          items: [
+            '<strong>Datos de clientes:</strong> 7 años después de la última transacción (ley fiscal)',
+            '<strong>Datos de facturas:</strong> 7 años (ley fiscal)',
+            '<strong>Datos de marketing:</strong> Hasta la cancelación o 2 años después de la última interacción',
+            '<strong>Registros del sitio web:</strong> 1 año',
+            '<strong>Cookies:</strong> Vea política de cookies'
+          ]
+        },
+        
+        section7: {
+          title: '7. Compartición de datos',
+          intro: 'Solo compartimos sus datos con:',
+          items: [
+            'Proveedores de servicios IT (alojamiento, email, software)',
+            'Software de contabilidad y contables',
+            'Proveedores de pago',
+            'Agencias gubernamentales cuando sea legalmente requerido'
+          ],
+          outro: 'Todos nuestros procesadores están obligados por acuerdos de procesamiento y solo pueden usar sus datos para el propósito acordado.'
+        },
+        
+        section8: {
+          title: '8. Seguridad',
+          intro: 'Tomamos medidas técnicas y organizativas apropiadas para proteger sus datos:',
+          items: [
+            'Cifrado de datos (SSL/TLS)',
+            'Control de acceso y autenticación',
+            'Copias de seguridad regulares',
+            'Software de seguridad y cortafuegos',
+            'Capacitación de empleados sobre privacidad'
+          ]
+        },
+        
+        section9: {
+          title: '9. Sus derechos',
+          intro: 'Usted tiene los siguientes derechos bajo el RGPD:',
+          items: [
+            '<strong>Derecho de acceso:</strong> Ver qué datos tenemos sobre usted',
+            '<strong>Derecho a la rectificación:</strong> Corrección de datos incorrectos',
+            '<strong>Derecho al olvido:</strong> Eliminación de sus datos (bajo condiciones)',
+            '<strong>Derecho a la limitación:</strong> Limitación del tratamiento',
+            '<strong>Derecho a la portabilidad:</strong> Transferencia de sus datos',
+            '<strong>Derecho de oposición:</strong> Oponerse al tratamiento',
+            '<strong>Derecho a retirar:</strong> Retirar el consentimiento'
+          ]
+        },
+        
+        section10: {
+          title: '10. Cookies',
+          content: 'Usamos cookies para una experiencia óptima del sitio web. Vea nuestra <a href="/politica-cookies">política de cookies</a> para más información.'
+        },
+        
+        section11: {
+          title: '11. Contacto',
+          intro: 'Para preguntas sobre esta política de privacidad o sus derechos, puede contactar:',
+          contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Teléfono: +31 6 12345678',
+          authority: 'También tiene derecho a presentar una queja ante la Autoridad de Protección de Datos:',
+          authorityAddress: 'Autoridad de Protección de Datos<br>Apartado de Correos 93374<br>2509 AJ La Haya<br>Tel: 088 - 1805 250'
+        }
       }
     }
   },
@@ -1497,6 +2028,183 @@ const resources = {
         contact: {
           title: 'Kontakt',
           content: 'Masz pytania dotyczące niniejszego regulaminu? Skontaktuj się z nami: Spectra AutoArt Tilburg Centrum Miasta Email: spectraautoart@gmail.com Telefon: 0031685300906'
+        }
+      },
+      
+      // Privacy Policy page translations
+      privacyPolicy: {
+        title: 'Polityka Prywatności',
+        lastUpdated: 'Ostatnia aktualizacja: 27 listopada 2025',
+        
+        section1: {
+          title: '1. Wprowadzenie',
+          content: 'W Spectra AutoArt przywiązujemy dużą wagę do Twojej prywatności i ochrony Twoich danych osobowych. Niniejsza polityka prywatności opisuje, jak postępujemy z Twoimi danymi osobowymi zgodnie z Ogólnym Rozporządzeniem o Ochronie Danych (RODO).'
+        },
+        
+        section2: {
+          title: '2. Administrator Danych',
+          content: 'Spectra AutoArt<br>Z siedzibą w Tilburgu<br>Numer KRS: [do zarejestrowania]<br>Email: privacy@spectraautoart.nl'
+        },
+        
+        section3: {
+          title: '3. Jakie dane zbieramy?',
+          intro: 'Zbieramy następujące kategorie danych osobowych:',
+          
+          subsection1: {
+            title: '3.1 Dane Kontaktowe',
+            items: [
+              'Imię i nazwisko',
+              'Adres email',
+              'Numer telefonu',
+              'Dane adresowe'
+            ]
+          },
+          
+          subsection2: {
+            title: '3.2 Dane Pojazdu',
+            items: [
+              'Numer rejestracyjny',
+              'Marka i model pojazdu',
+              'Rok produkcji',
+              'Typ nadwozia'
+            ]
+          },
+          
+          subsection3: {
+            title: '3.3 Dane Świadczenia Usług',
+            items: [
+              'Zarezerwowane usługi',
+              'Dane spotkań',
+              'Dane płatności',
+              'Historia usług'
+            ]
+          },
+          
+          subsection4: {
+            title: '3.4 Korzystanie ze Strony Internetowej',
+            items: [
+              'Adres IP',
+              'Informacje o przeglądarce',
+              'Pliki cookie (zobacz naszą politykę cookies)',
+              'Zachowanie podczas wizyty na naszej stronie internetowej'
+            ]
+          }
+        },
+        
+        section4: {
+          title: '4. Cele przetwarzania danych',
+          intro: 'Przetwarzamy Twoje dane w następujących celach:',
+          
+          subsection1: {
+            title: '4.1 Świadczenie Usług',
+            items: [
+              'Realizacja spotkań i usług',
+              'Komunikacja o Twoich spotkaniach',
+              'Fakturowanie i płatność',
+              'Zapewnienie jakości i gwarancja'
+            ]
+          },
+          
+          subsection2: {
+            title: '4.2 Obsługa Klienta',
+            items: [
+              'Odpowiadanie na pytania',
+              'Przetwarzanie reklamacji',
+              'Pogwarancyjna opieka i wsparcie'
+            ]
+          },
+          
+          subsection3: {
+            title: '4.3 Marketing (za zgodą)',
+            items: [
+              'Wysyłanie newsletterów',
+              'Komunikowanie promocji i ofert',
+              'Izolowane badania rynku'
+            ]
+          },
+          
+          subsection4: {
+            title: '4.4 Obowiązki prawne',
+            items: [
+              'Deklaracje podatkowe',
+              'Obowiązki administracyjne',
+              'Procedury prawne'
+            ]
+          }
+        },
+        
+        section5: {
+          title: '5. Podstawa prawna przetwarzania',
+          intro: 'Przetwarzamy Twoje dane na podstawie:',
+          items: [
+            '<strong>Umowy:</strong> Dla wykonania naszych usług',
+            '<strong>Obowiązku prawnego:</strong> Dla podatków i administracji',
+            '<strong>Uzasadnionego interesu:</strong> Dla działalności biznesowej i zapobiegania oszustwom',
+            '<strong>Zgody:</strong> Dla działań marketingowych'
+          ]
+        },
+        
+        section6: {
+          title: '6. Okresy przechowywania',
+          intro: 'Nie przechowujemy Twoich danych dłużej niż to konieczne:',
+          items: [
+            '<strong>Dane klientów:</strong> 7 lat po ostatniej transakcji (prawo podatkowe)',
+            '<strong>Dane faktur:</strong> 7 lat (prawo podatkowe)',
+            '<strong>Dane marketingowe:</strong> Do wypisania się lub 2 lata po ostatniej interakcji',
+            '<strong>Logi strony internetowej:</strong> 1 rok',
+            '<strong>Pliki cookie:</strong> Zobacz politykę cookies'
+          ]
+        },
+        
+        section7: {
+          title: '7. Udostępnianie danych',
+          intro: 'Udostępniamy Twoje dane tylko:',
+          items: [
+            'Dostawcom usług IT (hosting, email, oprogramowanie)',
+            'Oprogramowaniu księgowemu i księgowym',
+            'Dostawcom płatności',
+            'Agencjom rządowym, gdy jest to wymagane prawnie'
+          ],
+          outro: 'Wszyscy nasi procesorzy są związani umowami powierzenia przetwarzania danych i mogą używać Twoich danych tylko do uzgodnionego celu.'
+        },
+        
+        section8: {
+          title: '8. Bezpieczeństwo',
+          intro: 'Podejmujemy odpowiednie środki techniczne i organizacyjne, aby zabezpieczyć Twoje dane:',
+          items: [
+            'Szyfrowanie danych (SSL/TLS)',
+            'Kontrola dostępu i uwierzytelnianie',
+            'Regularne kopie zapasowe',
+            'Oprogramowanie bezpieczeństwa i firewalle',
+            'Szkolenia pracowników o prywatności'
+          ]
+        },
+        
+        section9: {
+          title: '9. Twoje prawa',
+          intro: 'Masz następujące prawa zgodnie z RODO:',
+          items: [
+            '<strong>Prawo dostępu:</strong> Przegląd danych, które mamy na Twój temat',
+            '<strong>Prawo do sprostowania:</strong> Poprawa nieprawidłowych danych',
+            '<strong>Prawo do usunięcia:</strong> Usunięcie Twoich danych (pod pewnymi warunkami)',
+            '<strong>Prawo do ograniczenia:</strong> Ograniczenie przetwarzania',
+            '<strong>Prawo do przenoszenia:</strong> Przeniesienie Twoich danych',
+            '<strong>Prawo sprzeciwu:</strong> Wniesienie sprzeciwu wobec przetwarzania',
+            '<strong>Prawo do wycofania:</strong> Wycofanie zgody'
+          ]
+        },
+        
+        section10: {
+          title: '10. Pliki cookie',
+          content: 'Używamy plików cookie dla optymalnego doświadczenia na stronie internetowej. Zobacz naszą <a href="/polityka-cookies">politykę cookies</a> dla więcej informacji.'
+        },
+        
+        section11: {
+          title: '11. Kontakt',
+          intro: 'W przypadku pytań o niniejszą politykę prywatności lub Twoje prawa, możesz się z nami skontaktować:',
+          contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Telefon: +31 6 12345678',
+          authority: 'Masz również prawo złożyć skargę do Urzędu Ochrony Danych Osobowych:',
+          authorityAddress: 'Urząd Ochrony Danych Osobowych<br>Skrytka pocztowa 93374<br>2509 AJ Haga<br>Tel: 088 - 1805 250'
         }
       }
     }
@@ -1870,6 +2578,183 @@ const resources = {
         contact: {
           title: 'Contact',
           content: 'Aveți întrebări despre acești termeni și condiții? Contactați-ne: Spectra AutoArt Tilburg Centrul orașului Email: spectraautoart@gmail.com Telefon: 0031685300906'
+        }
+      },
+      
+      // Privacy Policy page translations
+      privacyPolicy: {
+        title: 'Politica de Confidențialitate',
+        lastUpdated: 'Ultima actualizare: 27 noiembrie 2025',
+        
+        section1: {
+          title: '1. Introducere',
+          content: 'La Spectra AutoArt, acordăm o mare importanță confidențialității dvs. și protejării datelor dvs. personale. Această politică de confidențialitate descrie cum gestionăm datele dvs. personale în conformitate cu Regulamentul General privind Protecția Datelor (GDPR).'
+        },
+        
+        section2: {
+          title: '2. Operatorul de date',
+          content: 'Spectra AutoArt<br>Situat în Tilburg<br>Număr Cameră de Comerț: [înregistrare în curs]<br>Email: privacy@spectraautoart.nl'
+        },
+        
+        section3: {
+          title: '3. Ce date colectăm?',
+          intro: 'Colectăm următoarele categorii de date personale:',
+          
+          subsection1: {
+            title: '3.1 Date de contact',
+            items: [
+              'Nume și prenume',
+              'Adresă de email',
+              'Număr de telefon',
+              'Adresă fizică'
+            ]
+          },
+          
+          subsection2: {
+            title: '3.2 Date despre vehicul',
+            items: [
+              'Număr de înmatriculare',
+              'Marcă și model vehicul',
+              'Anul fabricației',
+              'Tip caroserie'
+            ]
+          },
+          
+          subsection3: {
+            title: '3.3 Date despre servicii',
+            items: [
+              'Servicii rezervate',
+              'Detalii programări',
+              'Detalii plată',
+              'Istoric servicii'
+            ]
+          },
+          
+          subsection4: {
+            title: '3.4 Utilizare website',
+            items: [
+              'Adresă IP',
+              'Informații browser',
+              'Cookie-uri (vezi politica noastră de cookie-uri)',
+              'Comportament vizitatori pe website-ul nostru'
+            ]
+          }
+        },
+        
+        section4: {
+          title: '4. Scopuri ale procesării datelor',
+          intro: 'Procesăm datele dvs. pentru următoarele scopuri:',
+          
+          subsection1: {
+            title: '4.1 Furnizare servicii',
+            items: [
+              'Executarea programărilor și serviciilor',
+              'Comunicare despre programările dvs.',
+              'Facturare și plată',
+              'Asigurare calitate și garanție'
+            ]
+          },
+          
+          subsection2: {
+            title: '4.2 Servicii clienți',
+            items: [
+              'Răspuns la întrebări',
+              'Procesarea reclamațiilor',
+              'Asistență post-servicii'
+            ]
+          },
+          
+          subsection3: {
+            title: '4.3 Marketing (cu consimțământ)',
+            items: [
+              'Trimitere newslettere',
+              'Comunicare promoții și oferte',
+              'Cercetări de piață izolate'
+            ]
+          },
+          
+          subsection4: {
+            title: '4.4 Obligații legale',
+            items: [
+              'Declarații fiscale',
+              'Obligații administrative',
+              'Proceduri legale'
+            ]
+          }
+        },
+        
+        section5: {
+          title: '5. Bază legală pentru procesare',
+          intro: 'Procesăm datele dvs. pe baza:',
+          items: [
+            '<strong>Contract:</strong> Pentru executarea serviciilor noastre',
+            '<strong>Obligație legală:</strong> Pentru taxe și administrare',
+            '<strong>Interes legitim:</strong> Pentru operațiuni comerciale și prevenire fraudă',
+            '<strong>Consimțământ:</strong> Pentru activități de marketing'
+          ]
+        },
+        
+        section6: {
+          title: '6. Perioade de păstrare',
+          intro: 'Nu păstrăm datele dvs. mai mult decât este necesar:',
+          items: [
+            '<strong>Date clienți:</strong> 7 ani după ultima tranzacție (lege fiscală)',
+            '<strong>Date facturare:</strong> 7 ani (lege fiscală)',
+            '<strong>Date marketing:</strong> Până la dezabonare sau 2 ani după ultima interacțiune',
+            '<strong>Log-uri website:</strong> 1 an',
+            '<strong>Cookie-uri:</strong> Vezi politica de cookie-uri'
+          ]
+        },
+        
+        section7: {
+          title: '7. Partajarea datelor',
+          intro: 'Partajăm datele dvs. doar cu:',
+          items: [
+            'Furnizori IT (găzduire, email, software)',
+            'Software contabilitate și contabili',
+            'Furnizori plăți',
+            'Agenții guvernamentale când este legal necesar'
+          ],
+          outro: 'Toți procesatorii noștri sunt legați prin acorduri de procesare și pot folosi datele dvs. doar pentru scopul convenit.'
+        },
+        
+        section8: {
+          title: '8. Securitate',
+          intro: 'Luăm măsuri tehnice și organizatorice adecvate pentru a securiza datele dvs.:',
+          items: [
+            'Criptare date (SSL/TLS)',
+            'Control acces și autentificare',
+            'Backup-uri regulate',
+            'Software securitate și firewall-uri',
+            'Training angajați despre confidențialitate'
+          ]
+        },
+        
+        section9: {
+          title: '9. Drepturile dvs.',
+          intro: 'Aveți următoarele drepturi conform GDPR:',
+          items: [
+            '<strong>Drept de acces:</strong> Vizualizați ce date avem despre dvs.',
+            '<strong>Drept la rectificare:</strong> Corectarea datelor incorecte',
+            '<strong>Drept la ștergere:</strong> Ștergerea datelor dvs. (în anumite condiții)',
+            '<strong>Drept la restricționare:</strong> Restricționarea procesării',
+            '<strong>Drept la portabilitate:</strong> Transferul datelor dvs.',
+            '<strong>Drept de opoziție:</strong> Obiecție la procesare',
+            '<strong>Drept de retragere:</strong> Retragerea consimțământului'
+          ]
+        },
+        
+        section10: {
+          title: '10. Cookies',
+          content: 'Folosim cookie-uri pentru o experiență optimă pe website. Vezi <a href="/cookie-policy">politica noastră de cookie-uri</a> pentru mai multe informații.'
+        },
+        
+        section11: {
+          title: '11. Contact',
+          intro: 'Pentru întrebări despre această politică de confidențialitate sau despre drepturile dvs., ne puteți contacta:',
+          contact: 'Spectra AutoArt<br>Email: privacy@spectraautoart.nl<br>Telefon: +31 6 12345678',
+          authority: 'De asemenea, aveți dreptul să depuneți o plângere la Autoritatea Olandeză pentru Protecția Datelor:',
+          authorityAddress: 'Autoritatea Olandeză pentru Protecția Datelor<br>PO Box 93374<br>2509 AJ Haga<br>Tel: 088 - 1805 250'
         }
       }
     }
