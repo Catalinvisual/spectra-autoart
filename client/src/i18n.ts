@@ -409,6 +409,86 @@ const resources = {
         description: 'Door onze website te gebruiken, gaat u akkoord met onze algemene voorwaarden en privacybeleid. Wij waarderen uw privacy en zijn toegewijd aan het beschermen van uw persoonlijke gegevens.',
         accept: 'Accepteren',
         decline: 'Afwijzen'
+      },
+      
+      // Terms and Conditions page translations
+      termsConditions: {
+        title: 'Algemene Voorwaarden',
+        lastUpdated: 'Laatst bijgewerkt: 27 november 2025',
+        
+        section1: {
+          title: '1. Algemene Bepalingen',
+          content: 'Deze algemene voorwaarden zijn van toepassing op alle diensten die worden aangeboden door Spectra AutoArt, gevestigd te Tilburg. Door gebruik te maken van onze diensten gaat u akkoord met deze voorwaarden.'
+        },
+        
+        section2: {
+          title: '2. Diensten',
+          content: 'Spectra AutoArt biedt premium auto detailing en styling diensten aan, waaronder:',
+          services: [
+            'Interieur en exterieur detailing',
+            'Lumini ambient verlichting installatie',
+            'Sterrenhemel plafond installatie',
+            'Plafon retapitatie',
+            'Chrome delete services',
+            'Trim colantare',
+            'Auto polijsten',
+            'Keramische beschermingscoating'
+          ]
+        },
+        
+        section3: {
+          title: '3. Afspraken en Annulering',
+          content: '3.1 Afspraken kunnen online worden gemaakt via onze website of telefonisch. 3.2 Voor annuleringen dient u minimaal 24 uur van tevoren contact op te nemen. Bij late annuleringen behouden wij ons het recht voor om 50% van de servicekosten in rekening te brengen. 3.3 Bij het niet verschijnen zonder annulering (no-show) wordt het volledige bedrag van de gereserveerde service in rekening gebracht.'
+        },
+        
+        section4: {
+          title: '4. Prijzen en Betaling',
+          content: '4.1 Alle prijzen zijn inclusief BTW, tenzij anders vermeld. 4.2 Betaling vindt plaats na voltooiing van de dienst, tenzij anders is overeengekomen. 4.3 Wij accepteren contante betaling, pinbetaling en bankoverschrijving. 4.4 Prijzen kunnen wijzigen zonder voorafgaande kennisgeving. De prijs die geldt op het moment van boeking is bindend.'
+        },
+        
+        section5: {
+          title: '5. Garantie en Klachten',
+          content: '5.1 Spectra AutoArt staat garant voor de kwaliteit van haar werkzaamheden gedurende 30 dagen na voltooiing, met uitzondering van normale slijtage. 5.2 Klachten dienen binnen 7 dagen na voltooiing van de dienst schriftelijk te worden gemeld. 5.3 Wij behouden ons het recht voor om klachten te onderzoeken en passende oplossingen te bieden, waaronder herstelwerkzaamheden of gedeeltelijke terugbetaling.'
+        },
+        
+        section6: {
+          title: '6. Aansprakelijkheid',
+          content: '6.1 Spectra AutoArt is aansprakelijk voor schade die ontstaat tijdens het uitvoeren van onze diensten, met een maximum van de factuurwaarde van de betreffende dienst. 6.2 Wij zijn niet aansprakelijk voor: schade veroorzaakt door bestaande gebreken aan het voertuig, schade die ontstaat door extreme weersomstandigheden na het uitvoeren van de dienst, waardevermindering van het voertuig, en indirecte schade of gevolgschade.'
+        },
+        
+        section7: {
+          title: '7. Voertuig Inname',
+          content: '7.1 Bij inname van het voertuig wordt een inspectie uitgevoerd en eventuele bestaande schade wordt genoteerd. 7.2 Persoonlijke bezittingen dienen vooraf te worden verwijderd. Spectra AutoArt is niet aansprakelijk voor verloren of beschadigde persoonlijke items. 7.3 Het voertuig dient op de afgesproken tijd en datum te worden afgeleverd en opgehaald. Bij late ophaling kunnen extra kosten in rekening worden gebracht.'
+        },
+        
+        section8: {
+          title: '8. Intellectueel Eigendom',
+          content: 'Alle afbeeldingen, teksten en andere content op onze website en marketingmateriaal zijn eigendom van Spectra AutoArt en mogen niet zonder toestemming worden gebruikt.'
+        },
+        
+        section9: {
+          title: '9. Privacy en Gegevensbescherming',
+          content: 'Wij behandelen uw persoonlijke gegevens vertrouwelijk volgens onze privacyverklaring en de Algemene Verordening Gegevensbescherming (AVG).'
+        },
+        
+        section10: {
+          title: '10. Wijzigingen in Voorwaarden',
+          content: 'Spectra AutoArt behoudt zich het recht voor om deze algemene voorwaarden te wijzigen. Wijzigingen worden via onze website bekend gemaakt.'
+        },
+        
+        section11: {
+          title: '11. Toepasselijk Recht',
+          content: 'Op deze algemene voorwaarden is Nederlands recht van toepassing. Geschillen worden voorgelegd aan de bevoegde rechter in Tilburg.'
+        },
+        
+        contact: {
+          title: 'Contact',
+          content: 'Heeft u vragen over deze algemene voorwaarden? Neem dan contact met ons op:',
+          companyName: 'Spectra AutoArt',
+          address: 'Tilburg Stadscentrum',
+          email: 'Email: spectraautoart@gmail.com',
+          phone: 'Telefoon: 0031685300906'
+        }
       }
     }
   },
@@ -794,6 +874,76 @@ const resources = {
       customerInformation: 'Customer Information',
       bookingInformation: 'Booking Information',
       notSpecified: 'Not Specified'
+      },
+      
+      // Terms and Conditions page translations
+      termsConditions: {
+        title: 'Terms & Conditions',
+        lastUpdated: 'Last updated: November 27, 2025',
+        
+        section1: {
+          title: '1. General Provisions',
+          content: 'These general terms and conditions apply to all services offered by Spectra AutoArt, located in Tilburg. By using our services, you agree to these terms and conditions.'
+        },
+        
+        section2: {
+          title: '2. Services',
+          content: 'Spectra AutoArt offers premium car detailing and styling services, including: Interior and exterior detailing, Ambient lighting installation, Starlight ceiling installation, Ceiling reupholstery, Chrome delete services, Trim wrapping, Car polishing, Ceramic protective coating'
+        },
+        
+        section3: {
+          title: '3. Appointments and Cancellations',
+          content: '3.1 Appointments can be made online via our website or by telephone. 3.2 For cancellations, you must contact us at least 24 hours in advance. In case of late cancellations, we reserve the right to charge 50% of the service costs. 3.3 In case of no-show without cancellation, the full amount of the reserved service will be charged.'
+        },
+        
+        section4: {
+          title: '4. Prices and Payment',
+          content: '4.1 All prices include VAT, unless otherwise stated. 4.2 Payment takes place after completion of the service, unless otherwise agreed. 4.3 We accept cash payment, card payment and bank transfer. 4.4 Prices may change without prior notice. The price applicable at the time of booking is binding.'
+        },
+        
+        section5: {
+          title: '5. Warranty and Complaints',
+          content: '5.1 Spectra AutoArt guarantees the quality of its work for 30 days after completion, with the exception of normal wear and tear. 5.2 Complaints must be reported in writing within 7 days of completion of the service. 5.3 We reserve the right to investigate complaints and offer appropriate solutions, including repair work or partial refund.'
+        },
+        
+        section6: {
+          title: '6. Liability',
+          content: '6.1 Spectra AutoArt is liable for damage that occurs during the performance of our services, with a maximum of the invoice value of the relevant service. 6.2 We are not liable for: damage caused by existing defects in the vehicle, damage caused by extreme weather conditions after the service has been performed, depreciation of the vehicle, and indirect damage or consequential damage.'
+        },
+        
+        section7: {
+          title: '7. Vehicle Collection',
+          content: '7.1 When the vehicle is collected, an inspection is carried out and any existing damage is noted. 7.2 Personal belongings must be removed in advance. Spectra AutoArt is not liable for lost or damaged personal items. 7.3 The vehicle must be delivered and collected at the agreed time and date. Late collection may incur additional charges.'
+        },
+        
+        section8: {
+          title: '8. Intellectual Property',
+          content: 'All images, texts and other content on our website and marketing material are the property of Spectra AutoArt and may not be used without permission.'
+        },
+        
+        section9: {
+          title: '9. Privacy and Data Protection',
+          content: 'We treat your personal data confidentially in accordance with our privacy statement and the General Data Protection Regulation (GDPR).'
+        },
+        
+        section10: {
+          title: '10. Changes to Terms',
+          content: 'Spectra AutoArt reserves the right to change these general terms and conditions. Changes will be announced via our website.'
+        },
+        
+        section11: {
+          title: '11. Applicable Law',
+          content: 'Dutch law applies to these general terms and conditions. Disputes will be submitted to the competent court in Tilburg.'
+        },
+        
+        contact: {
+          title: 'Contact',
+          content: 'Do you have questions about these general terms and conditions? Please contact us:',
+          companyName: 'Spectra AutoArt',
+          address: 'Tilburg City Center',
+          email: 'Email: spectraautoart@gmail.com',
+          phone: 'Phone: 0031685300906'
+        }
       }
     }
   },
@@ -1003,6 +1153,76 @@ const resources = {
         cookies: 'Política de Cookies',
         contact: 'Contacto y Legal',
         gdpr: 'GDPR'
+      },
+      
+      // Terms and Conditions page translations
+      termsConditions: {
+        title: 'Términos y Condiciones',
+        lastUpdated: 'Última actualización: 27 de noviembre de 2025',
+        
+        section1: {
+          title: '1. Disposiciones Generales',
+          content: 'Estos términos y condiciones generales se aplican a todos los servicios ofrecidos por Spectra AutoArt, con sede en Tilburg. Al utilizar nuestros servicios, usted acepta estos términos y condiciones.'
+        },
+        
+        section2: {
+          title: '2. Servicios',
+          content: 'Spectra AutoArt ofrece servicios premium de detailing y estilizado de autos, incluyendo: Detailing de interiores y exteriores, Instalación de iluminación ambiental, Instalación de techo de estrellas, Revestimiento de techo, Servicios de eliminación de cromado, Envoltura de molduras, Pulido de autos, Revestimiento de protección cerámica'
+        },
+        
+        section3: {
+          title: '3. Citas y Cancelaciones',
+          content: '3.1 Las citas pueden realizarse en línea a través de nuestro sitio web o por teléfono. 3.2 Para cancelaciones, debe contactarnos al menos 24 horas antes. En caso de cancelaciones tardías, nos reservamos el derecho de cobrar el 50% de los costos del servicio. 3.3 En caso de no presentarse sin cancelación, se cobrará el monto completo del servicio reservado.'
+        },
+        
+        section4: {
+          title: '4. Precios y Pago',
+          content: '4.1 Todos los precios incluyen IVA, a menos que se indique lo contrario. 4.2 El pago se realiza después de la finalización del servicio, a menos que se acuerde lo contrario. 4.3 Aceptamos pagos en efectivo, pagos con tarjeta y transferencia bancaria. 4.4 Los precios pueden cambiar sin previo aviso. El precio aplicable en el momento de la reserva es vinculante.'
+        },
+        
+        section5: {
+          title: '5. Garantía y Reclamaciones',
+          content: '5.1 Spectra AutoArt garantiza la calidad de su trabajo durante 30 días después de la finalización, con excepción del desgaste normal. 5.2 Las reclamaciones deben ser notificadas por escrito dentro de los 7 días posteriores a la finalización del servicio. 5.3 Nos reservamos el derecho de investigar las reclamaciones y ofrecer soluciones apropiadas, incluyendo trabajos de reparación o reembolso parcial.'
+        },
+        
+        section6: {
+          title: '6. Responsabilidad',
+          content: '6.1 Spectra AutoArt es responsable por daños que ocurran durante la realización de nuestros servicios, con un máximo del valor de la factura del servicio correspondiente. 6.2 No somos responsables por: daños causados por defectos existentes en el vehículo, daños causados por condiciones climáticas extremas después de realizado el servicio, depreciación del vehículo, y daños indirectos o consecuentes.'
+        },
+        
+        section7: {
+          title: '7. Entrega del Vehículo',
+          content: '7.1 Cuando se entrega el vehículo, se realiza una inspección y se anota cualquier daño existente. 7.2 Los pertenencias personales deben ser retiradas con anticipación. Spectra AutoArt no es responsable por artículos personales perdidos o dañados. 7.3 El vehículo debe ser entregado y retirado en el tiempo y fecha acordados. La recolección tardía puede generar cargos adicionales.'
+        },
+        
+        section8: {
+          title: '8. Propiedad Intelectual',
+          content: 'Todas las imágenes, textos y otro contenido en nuestro sitio web y material de marketing son propiedad de Spectra AutoArt y no pueden ser utilizados sin permiso.'
+        },
+        
+        section9: {
+          title: '9. Privacidad y Protección de Datos',
+          content: 'Tratamos sus datos personales confidencialmente de acuerdo con nuestra declaración de privacidad y el Reglamento General de Protección de Datos (GDPR).'
+        },
+        
+        section10: {
+          title: '10. Cambios en los Términos',
+          content: 'Spectra AutoArt se reserva el derecho de cambiar estos términos y condiciones generales. Los cambios serán anunciados a través de nuestro sitio web.'
+        },
+        
+        section11: {
+          title: '11. Ley Aplicable',
+          content: 'El derecho neerlandés se aplica a estos términos y condiciones generales. Las disputas serán sometidas al tribunal competente en Tilburg.'
+        },
+        
+        contact: {
+          title: 'Contacto',
+          content: '¿Tiene preguntas sobre estos términos y condiciones generales? Por favor contáctenos:',
+          companyName: 'Spectra AutoArt',
+          address: 'Centro de la Ciudad de Tilburg',
+          email: 'Email: spectraautoart@gmail.com',
+          phone: 'Teléfono: 0031685300906'
+        }
       }
     }
   },
@@ -1212,6 +1432,72 @@ const resources = {
         cookies: 'Polityka Cookies',
         contact: 'Kontakt i Prawne',
         gdpr: 'GDPR'
+      },
+      
+      // Terms and Conditions page translations
+      termsConditions: {
+        title: 'Regulamin',
+        lastUpdated: 'Ostatnia aktualizacja: 27 listopada 2025',
+        
+        section1: {
+          title: '1. Postanowienia Ogólne',
+          content: 'Niniejszy regulamin ma zastosowanie do wszystkich usług oferowanych przez Spectra AutoArt, z siedzibą w Tilburgu. Korzystając z naszych usług, akceptujesz niniejsze warunki.'
+        },
+        
+        section2: {
+          title: '2. Usługi',
+          content: 'Spectra AutoArt oferuje premium auto detailing i usługi stylizacji, w tym: Detailing wnętrza i zewnątrz Montaż oświetlenia ambientowego Montaż sufitu z gwiazdami Renowacja podsufitki Usługi usuwania chromu Oklejanie elementów trim Polerowanie samochodów Ceramiczna powłoka ochronna'
+        },
+        
+        section3: {
+          title: '3. Wizyty i Anulowanie',
+          content: '3.1 Wizyty mogą być umówione online przez naszą stronę internetową lub telefonicznie. 3.2 Aby anulować wizytę, należy skontaktować się co najmniej 24 godziny wcześniej. W przypadku późnego anulowania zastrzegamy sobie prawo do pobrania 50% kosztów usługi. 3.3 W przypadku niepojawienia się bez anulowania (no-show) zostanie pobrana pełna kwota zarezerwowanej usługi.'
+        },
+        
+        section4: {
+          title: '4. Ceny i Płatność',
+          content: '4.1 Wszystkie ceny zawierają VAT, chyba że podano inaczej. 4.2 Płatność następuje po wykonaniu usługi, chyba że uzgodniono inaczej. 4.3 Akceptujemy płatność gotówką, kartą i przelewem bankowym. 4.4 Ceny mogą ulec zmianie bez powiadomienia. Cena obowiązująca w momencie rezerwacji jest wiążąca.'
+        },
+        
+        section5: {
+          title: '5. Gwarancja i Reklamacje',
+          content: '5.1 Spectra AutoArt udziela gwarancji na jakość swoich prac przez 30 dni od wykonania, z wyłączeniem normalnego zużycia. 5.2 Reklamacje muszą być zgłoszone na piśmie w ciągu 7 dni od wykonania usługi. 5.3 Zastrzegamy sobie prawo do zbadania reklamacji i zaoferowania odpowiednich rozwiązań, w tym napraw lub częściowego zwrotu kosztów.'
+        },
+        
+        section6: {
+          title: '6. Odpowiedzialność',
+          content: '6.1 Spectra AutoArt ponosi odpowiedzialność za szkody powstałe podczas wykonywania naszych usług, do maksymalnej wysokości wartości faktury za daną usługę. 6.2 Nie ponosimy odpowiedzialności za: Szkody spowodowane istniejącymi wadami pojazdu Szkody powstałe w wyniku ekstremalnych warunków pogodowych po wykonaniu usłuby Utratę wartości pojazdu Pośrednie szkody lub szkody wynikowe'
+        },
+        
+        section7: {
+          title: '7. Przekazywanie Pojazdu',
+          content: '7.1 Podczas przekazywania pojazdu przeprowadzana jest inspekcja i notowane są ewentualne istniejące uszkodzenia. 7.2 Rzeczy osobiste muszą być usunięte wcześniej. Spectra AutoArt nie ponosi odpowiedzialności za zgubione lub uszkodzone przedmioty osobiste. 7.3 Pojazd musi być dostarczony i odebrany w umówionym terminie. W przypadku późnego odbioru mogą być pobrane dodatkowe opłaty.'
+        },
+        
+        section8: {
+          title: '8. Własność Intelektualna',
+          content: 'Wszystkie zdjęcia, teksty i inne treści na naszej stronie internetowej i materiałach marketingowych są własnością Spectra AutoArt i nie mogą być używane bez zgody.'
+        },
+        
+        section9: {
+          title: '9. Prywatność i Ochrona Danych',
+          content: 'Traktujemy Twoje dane osobowe poufnie zgodnie z naszą polityką prywatności i Ogólnym Rozporządzeniem o Ochronie Danych (RODO).'
+        },
+        
+        section10: {
+          title: '10. Zmiany w Regulaminie',
+          content: 'Spectra AutoArt zastrzega sobie prawo do zmiany niniejszego regulaminu. Zmiany będą publikowane na naszej stronie internetowej.'
+        },
+        
+        section11: {
+          title: '11. Prawo Właściwe',
+          content: 'Niniejszy regulamin podlega prawu holenderskiemu. Spory będą rozpatrywane przez właściwy sąd w Tilburgu.'
+        },
+        
+        contact: {
+          title: 'Kontakt',
+          content: 'Masz pytania dotyczące niniejszego regulaminu? Skontaktuj się z nami: Spectra AutoArt Tilburg Centrum Miasta Email: spectraautoart@gmail.com Telefon: 0031685300906'
+        }
       }
     }
   },
@@ -1519,6 +1805,72 @@ const resources = {
         cookies: 'Politica Cookies',
         contact: 'Contact și Legal',
         gdpr: 'GDPR'
+      },
+      
+      // Terms and Conditions page translations
+      termsConditions: {
+        title: 'Termeni și Condiții',
+        lastUpdated: 'Ultima actualizare: 27 noiembrie 2025',
+        
+        section1: {
+          title: '1. Dispoziții Generale',
+          content: 'Acești termeni și condiții generale se aplică tuturor serviciilor oferite de Spectra AutoArt, cu sediul în Tilburg. Prin utilizarea serviciilor noastre, sunteți de acord cu acești termeni și condiții.'
+        },
+        
+        section2: {
+          title: '2. Servicii',
+          content: 'Spectra AutoArt oferă servicii premium de detailing și styling auto, inclusiv: Detailing interior și exterior Instalare iluminat ambiental Instalare tavan cu stele Refacerea tavanului Servicii de eliminare crom Înfășurare elemente trim Polish auto Acoperire ceramică de protecție'
+        },
+        
+        section3: {
+          title: '3. Programări și Anulări',
+          content: '3.1 Programările pot fi făcute online prin intermediul site-ului nostru web sau telefonic. 3.2 Pentru anulări, trebuie să ne contactați cu cel puțin 24 de ore înainte. În cazul anulărilor târzii, ne rezervăm dreptul de a percepe 50% din costurile serviciului. 3.3 În cazul neprezentării fără anulare (no-show), va fi percepută suma completă a serviciului rezervat.'
+        },
+        
+        section4: {
+          title: '4. Prețuri și Plată',
+          content: '4.1 Toate prețurile includ TVA, cu excepția cazului în care se specifică altfel. 4.2 Plata se face la finalizarea serviciului, cu excepția cazului în care s-a convenit altfel. 4.3 Acceptăm plata numerar, cu cardul și prin transfer bancar. 4.4 Prețurile pot fi modificate fără notificare prealabilă. Prețul valabil în momentul rezervării este obligatoriu.'
+        },
+        
+        section5: {
+          title: '5. Garanție și Reclamații',
+          content: '5.1 Spectra AutoArt garantează pentru calitatea lucrărilor sale timp de 30 de zile de la finalizare, cu excepția uzurii normale. 5.2 Reclamațiile trebuie raportate în scris în termen de 7 zile de la finalizarea serviciului. 5.3 Ne rezervăm dreptul de a investiga reclamațiile și de a oferi soluții adecvate, inclusiv lucrări de reparație sau rambursări parțiale.'
+        },
+        
+        section6: {
+          title: '6. Răspundere',
+          content: '6.1 Spectra AutoArt este răspunzător pentru daunele care apar în timpul executării serviciilor noastre, până la o valoare maximă egală cu valoarea facturii pentru serviciul respectiv. 6.2 Nu suntem răspunzători pentru: Daune cauzate de defecte existente ale vehiculului Daune care apar din cauza condițiilor meteo extreme după executarea serviciului Deprecierea valorii vehiculului Daune indirecte sau consecințiale'
+        },
+        
+        section7: {
+          title: '7. Predarea Vehiculului',
+          content: '7.1 La predarea vehiculului se efectuează o inspecție și se notează eventualele daune existente. 7.2 Obiectele personale trebuie îndepărtate în prealabil. Spectra AutoArt nu este răspunzător pentru obiectele personale pierdute sau deteriorate. 7.3 Vehiculul trebuie predat și ridicat la data și ora programate. În cazul ridicării întârziate pot fi percepute costuri suplimentare.'
+        },
+        
+        section8: {
+          title: '8. Proprietate Intelectuală',
+          content: 'Toate imaginile, textele și alte conținuturi de pe site-ul nostru web și din materialele de marketing sunt proprietatea Spectra AutoArt și nu pot fi utilizate fără permisiune.'
+        },
+        
+        section9: {
+          title: '9. Confidențialitate și Protecția Datelor',
+          content: 'Tratăm datele dvs. personale cu confidențialitate, conform politicii noastre de confidențialitate și Regulamentului General privind Protecția Datelor (GDPR).'
+        },
+        
+        section10: {
+          title: '10. Modificări ale Termenilor și Condițiilor',
+          content: 'Spectra AutoArt își rezervă dreptul de a modifica acești termeni și condiții. Modificările vor fi publicate pe site-ul nostru web.'
+        },
+        
+        section11: {
+          title: '11. Legea Aplicabilă',
+          content: 'Acești termeni și condiții sunt supuși legii olandeze. Disputele vor fi soluționate de instanța competentă din Tilburg.'
+        },
+        
+        contact: {
+          title: 'Contact',
+          content: 'Aveți întrebări despre acești termeni și condiții? Contactați-ne: Spectra AutoArt Tilburg Centrul orașului Email: spectraautoart@gmail.com Telefon: 0031685300906'
+        }
       }
     }
   }
