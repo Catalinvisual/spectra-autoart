@@ -1,5 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import CloseButton from '../components/CloseButton'
 import './LegalPages.css'
 
 const PrivacyPolicy: React.FC = () => {
@@ -7,6 +8,7 @@ const PrivacyPolicy: React.FC = () => {
 
   return (
     <div className="legal-page">
+      <CloseButton />
       <div className="legal-container">
         <h1>{t('privacyPolicy.title')}</h1>
         <p className="last-updated">{t('privacyPolicy.lastUpdated')}</p>

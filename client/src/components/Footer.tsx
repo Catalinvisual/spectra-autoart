@@ -42,7 +42,7 @@ const Footer = () => {
       <div className="footer-content">
         <div className="footer-section">
           <h3>Spectra AutoArt</h3>
-          <p>Premium auto detailing and styling services. Transform your vehicle with our expert care and attention to detail.</p>
+          <p>{t('footer.description')}</p>
           <div className="social-links">
             <a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">

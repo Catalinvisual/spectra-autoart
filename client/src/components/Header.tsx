@@ -21,8 +21,10 @@ const Header = () => {
     { code: 'ro', name: 'Română', flag: '🇷🇴' }
   ]
 
-  const handleLanguageChange = async (languageCode: string) => {
-    await setLanguage(languageCode)
+  const handleLanguageChange = (languageCode: string, event?: React.MouseEvent) => {
+    event?.preventDefault()
+    event?.stopPropagation()
+    setLanguage(languageCode)
     setIsMenuOpen(false)
   }
 
@@ -128,7 +130,7 @@ const Header = () => {
                 <button
                   key={lang.code}
                   className="language-option"
-                  onClick={() => handleLanguageChange(lang.code)}
+                  onClick={(e) => handleLanguageChange(lang.code, e)}
                 >
                   <span className="language-flag">{lang.flag}</span>
                   <span className="language-name">{lang.name}</span>

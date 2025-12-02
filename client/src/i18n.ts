@@ -396,6 +396,7 @@ const resources = {
       
       // Footer translations
       footer: {
+        description: 'Premium auto detailing and styling services. Transform your vehicle with our expert care and attention to detail.',
         terms: 'Algemene Voorwaarden',
         privacy: 'Privacybeleid',
         cookies: 'Cookiebeleid',
@@ -1357,6 +1358,7 @@ const resources = {
       
       // Footer translations
       footer: {
+        description: 'Premium auto detailing and styling services. Transform your vehicle with our expert care and attention to detail.',
         terms: 'Terms & Conditions',
         privacy: 'Privacy Policy',
         cookies: 'Cookie Policy',
@@ -2422,6 +2424,7 @@ const resources = {
       
       // Footer translations
       footer: {
+        description: 'Servicios premium de detailing y estilizado de autos. Transforma tu vehículo con nuestro cuidado experto y atención al detalle.',
         terms: 'Términos y Condiciones',
         privacy: 'Política de Privacidad',
         cookies: 'Política de Cookies',
@@ -3338,6 +3341,7 @@ const resources = {
       
       // Footer translations
       footer: {
+        description: 'Premium usługi detailingu i stylizacji samochodów. Przekształć swój pojazd dzięki naszej eksperckiej opiece i dbałości o szczegóły.',
         terms: 'Regulamin',
         privacy: 'Polityka Prywatności',
         cookies: 'Polityka Cookies',
@@ -4348,6 +4352,7 @@ const resources = {
       
       // Footer translations
       footer: {
+        description: 'Servicii premium de detailing și styling auto. Transformă-ți vehiculul cu îngrijirea noastră expertă și atenția la detalii.',
         terms: 'Termeni și Condiții',
         privacy: 'Politica de Confidențialitate',
         cookies: 'Politica Cookies',

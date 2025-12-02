@@ -1,0 +1,129 @@
+/* Close Button Styles */
+.close-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #ffffff;
+  border: 2px solid #333;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.close-button:hover {
+  background: #fff;
+  border-color: #999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: scale(1.1);
+}
+
+.close-button:active {
+  transform: scale(0.95);
+}
+
+.close-icon {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  line-height: 1;
+  display: block;
+  user-select: none;
+  transition: color 0.3s ease;
+}
+
+.close-button:hover .close-icon {
+  color: #000;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .close-button {
+    background: rgba(50, 50, 50, 0.9);
+    border-color: #555;
+  }
+  
+  .close-button:hover {
+    background: #444;
+    border-color: #777;
+  }
+  
+  .close-button svg {
+    color: #ccc;
+  }
+  
+  .close-button:hover svg {
+    color: #fff;
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .close-button {
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Alternative positions */
+.close-button.top-left {
+  top: 20px;
+  right: auto;
+  left: 20px;
+}
+
+.close-button.bottom-right {
+  top: auto;
+  bottom: 20px;
+}
+
+.close-button.bottom-left {
+  top: auto;
+  right: auto;
+  bottom: 20px;
+  left: 20px;
+}
+
+/* Inside legal pages styling */
+.legal-page .close-button {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.legal-page .close-button {
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.legal-page .close-button .close-icon {
+  color: #333;
+}
+
+.legal-page .close-button:hover {
+  background: #fff;
+  border-color: #fff;
+}
+
+.legal-page .close-button:hover .close-icon {
+  color: #000;
+}
+
+@media (max-width: 768px) {
+  .legal-page .close-button {
+    top: 20px;
+    right: 20px;
+  }
+}

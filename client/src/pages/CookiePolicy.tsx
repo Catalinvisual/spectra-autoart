@@ -1,5 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import CloseButton from '../components/CloseButton'
 import './LegalPages.css'
 
 const CookiePolicy: React.FC = () => {
@@ -18,6 +19,7 @@ const CookiePolicy: React.FC = () => {
 
   return (
     <div className="legal-page">
+      <CloseButton />
       <div className="legal-container">
         <h1>{t('cookiePolicy.title')}</h1>
         <p className="last-updated">{t('cookiePolicy.lastUpdated')}</p>

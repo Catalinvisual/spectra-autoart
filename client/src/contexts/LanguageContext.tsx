@@ -29,26 +29,18 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       i18n.changeLanguage(initialLang);
     }
     setCurrentLanguage(initialLang);
-
-    // Sync with i18next language changes
-    const handleLanguageChange = (lng: string) => {
-      setCurrentLanguage(lng);
-    };
-
-    i18n.on('languageChanged', handleLanguageChange);
-    return () => {
-      i18n.off('languageChanged', handleLanguageChange);
-    };
-  }, [i18n]);
+  }, []); // Only run once on mount
 
   const setLanguage = async (lang: string) => {
     try {
-      // Change i18next language (for static content)
-      await i18n.changeLanguage(lang);
+      // Update local state immediately for responsive UI
       setCurrentLanguage(lang);
       
       // Store in localStorage for persistence
       localStorage.setItem('selectedLanguage', lang);
+      
+      // Change i18next language (for static content) - no need to await
+      i18n.changeLanguage(lang);
       
       console.log(`🌍 Language changed to: ${lang}`);
     } catch (error) {

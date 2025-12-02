@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import CloseButton from '../components/CloseButton';
 import './LegalPages.css';
 
 const GDPR: React.FC = () => {
@@ -7,6 +8,7 @@ const GDPR: React.FC = () => {
 
   return (
     <div className="legal-page">
+      <CloseButton />
       <div className="legal-content">
         <h1>{t('gdpr.title')}</h1>
         <p className="last-updated">{t('gdpr.lastUpdated')}</p>
