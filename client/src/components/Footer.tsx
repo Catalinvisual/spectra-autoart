@@ -5,7 +5,7 @@ import { publicAPI } from '../services/api'
 import './Footer.css'
 
 const Footer = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -20,8 +20,8 @@ const Footer = () => {
 
     try {
       setLoading(true)
-      await publicAPI.subscribeNewsletter({ email })
-      setMessage('Thank you for subscribing!')
+      const response = await publicAPI.subscribeNewsletter({ email, locale: i18n.language })
+      setMessage(response.data.message || t('newsletterSubscribeSuccess') || 'Thank you for subscribing!')
       setEmail('')
     } catch (error: any) {
       setMessage(error.response?.data?.error || 'Failed to subscribe')

@@ -145,7 +145,7 @@ export const publicAPI = {
   getTestimonials: (lang?: string) => api.get('/public/testimonials' + (lang ? `?lang=${lang}` : '')),
   submitTestimonial: (data: { name: string; rating: number; comment: string }) => api.post('/public/testimonials', data),
   createBooking: (data: BookingData) => api.post('/public/bookings', data),
-  subscribeNewsletter: (data: { email: string }) => api.post('/public/newsletter', data),
+  subscribeNewsletter: (data: { email: string; locale?: string }) => api.post('/public/newsletter/subscribe', data),
   translateText: (data: { text: string; target: string; source?: string }) => api.post('/translate', data),
   translateBatch: (data: { texts: string[]; target: string; source?: string }) => api.post('/translate/batch', data),
   getAvailability: (date?: string) => api.get(`/public/bookings/availability${date ? `?date=${date}` : ''}`)
@@ -157,10 +157,7 @@ export const adminAPI = {
   getBookings: () => api.get('/admin/bookings'),
   updateBooking: (id: string, data: any) => api.put(`/admin/bookings/${id}`, data),
   deleteBooking: (id: string) => api.delete(`/admin/bookings/${id}`),
-  getServices: () => api.get('/admin/services'),
-  createService: (data: any) => api.post('/admin/services', data),
-  updateService: (id: string, data: any) => api.put(`/admin/services/${id}`, data),
-  deleteService: (id: string) => api.delete(`/admin/services/${id}`),
+
   getVehicleServices: () => api.get('/admin/vehicle-services'),
   createVehicleService: (data: any) => api.post('/admin/vehicle-services', data),
   updateVehicleService: (id: string, data: any) => api.put(`/admin/vehicle-services/${id}`, data),

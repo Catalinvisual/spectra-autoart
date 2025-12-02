@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { adminAPI } from '../services/api'
 import api from '../services/api'
 import { useToast } from '../contexts/ToastContext'
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal'
 import './Admin.css'
 import i18n from '../i18n'
 
@@ -28,13 +29,7 @@ interface Booking {
   locale?: string
 }
 
-interface Service {
-  id: string
-  name: string | { nl: string; en: string; es: string; pl: string; ro: string }
-  description: string | { nl: string; en: string; es: string; pl: string; ro: string }
-  price: number
-  active?: boolean
-}
+
 
 interface Subscriber {
   email: string
@@ -122,7 +117,6 @@ const Admin: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
     if (token) {
-      console.log('Found existing token, setting authenticated')
       setIsAuthenticated(true)
     }
   }, [])
@@ -132,13 +126,10 @@ const Admin: React.FC = () => {
     setLoading(true)
 
     try {
-      console.log('Login attempt with:', loginForm.email, loginForm.password)
-      
       // Always use API login to get a proper JWT token
       const response = await adminAPI.login({ email: loginForm.email, password: loginForm.password })
       localStorage.setItem('adminToken', response.data.token)
       setIsAuthenticated(true)
-      console.log('API login successful')
       
     } catch (error) {
       console.error('Login error:', error)
@@ -318,12 +309,7 @@ const Admin: React.FC = () => {
           >
             {t('bookings')}
           </button>
-          <button 
-            className={`nav-btn ${activeTab === 'services' ? 'active' : ''}`}
-            onClick={() => setActiveTab('services')}
-          >
-            {t('services')}
-          </button>
+
           <button 
             className={`nav-btn ${activeTab === 'vehicle-services' ? 'active' : ''}`}
             onClick={() => setActiveTab('vehicle-services')}
@@ -347,7 +333,7 @@ const Admin: React.FC = () => {
         <main className="admin-main">
           {activeTab === 'dashboard' && <Dashboard />}
           {activeTab === 'bookings' && <BookingsManagement onDeleteBooking={deleteBooking} refreshKey={bookingsRefreshKey} />}
-          {activeTab === 'services' && <ServicesManagement />}
+
           {activeTab === 'vehicle-services' && <VehicleServicesManagement />}
           {activeTab === 'gallery' && <GalleryManagement />}
           {activeTab === 'newsletter' && <NewsletterManagement />}
@@ -390,7 +376,6 @@ const Dashboard: React.FC = () => {
   const [stats, setStats] = useState({
     totalBookings: 0,
     pendingBookings: 0,
-    totalServices: 0,
     totalSubscribers: 0
   })
 
@@ -399,14 +384,12 @@ const Dashboard: React.FC = () => {
     const loadStats = async () => {
       try {
         const bookingsResponse = await adminAPI.getBookings()
-        const servicesResponse = await adminAPI.getServices()
         const subscribersResponse = await adminAPI.getNewsletterSubscribers()
 
         const bookings = bookingsResponse.data
         setStats({
           totalBookings: bookings.length,
           pendingBookings: bookings.filter((b: any) => b.status === 'pending').length,
-          totalServices: servicesResponse.data.length,
           totalSubscribers: subscribersResponse.data.length
         })
       } catch (error) {
@@ -429,10 +412,7 @@ const Dashboard: React.FC = () => {
           <h3>{t('admin.pendingBookings')}</h3>
           <p className="stat-number">{stats.pendingBookings}</p>
         </div>
-        <div className="stat-card">
-          <h3>{t('admin.totalServices')}</h3>
-          <p className="stat-number">{stats.totalServices}</p>
-        </div>
+
         <div className="stat-card">
           <h3>{t('admin.newsletterSubscribers')}</h3>
           <p className="stat-number">{stats.totalSubscribers}</p>
@@ -470,13 +450,9 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
   const loadBookings = async () => {
     try {
       const response = await adminAPI.getBookings()
-      console.log('📊 API Response:', response)
-      console.log('📋 Bookings data:', response.data)
-      console.log('🔍 First booking sample:', response.data?.[0])
       
       // Transform server data to match frontend structure
       const transformedBookings = response.data.map((booking: any) => {
-        console.log('🔍 Processing booking:', booking.id, 'services:', booking.services, 'type:', typeof booking.services)
         return {
           id: booking.id,
           user: {
@@ -497,8 +473,6 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
         }
       })
       
-      console.log('🔄 Transformed bookings:', transformedBookings)
-      console.log('🔍 First transformed booking:', transformedBookings?.[0])
       setBookings(transformedBookings)
     } catch (error) {
       console.error('Error loading bookings:', error)
@@ -535,7 +509,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
       })
       
       return `${datePart} • ${timePart}`
-    } catch (error) {
+    } catch {
       return t('admin.invalidDate') || 'Invalid date'
     }
   }
@@ -861,191 +835,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
 }
 
 // Services Management Component
-const ServicesManagement: React.FC = () => {
-  const { t } = useTranslation()
-  const { showSuccess, showError } = useToast()
-  const [services, setServices] = useState<Service[]>([])
-  const [showForm, setShowForm] = useState(false)
-  const [editingService, setEditingService] = useState<Service | null>(null)
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: ''
-  })
 
-  const loadServices = async () => {
-    try {
-      const response = await adminAPI.getServices()
-      console.log('🔍 API Response:', response)
-      console.log('📋 Services data:', response.data)
-      setServices(response.data)
-    } catch (error) {
-      console.error('Error loading services:', error)
-    }
-  }
-
-  useEffect(() => {
-    loadServices()
-  }, [])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      // Prepare multilingual data for server
-      const serviceData = {
-        name: {
-          nl: formData.name,
-          en: formData.name,
-          es: formData.name,
-          pl: formData.name,
-          ro: formData.name
-        },
-        description: {
-          nl: formData.description,
-          en: formData.description,
-          es: formData.description,
-          pl: formData.description,
-          ro: formData.description
-        },
-        price: parseFloat(formData.price) || 0,
-        active: true
-      }
-      
-      if (editingService) {
-        await adminAPI.updateService(editingService.id, serviceData)
-        showSuccess(t('admin.serviceUpdated'))
-      } else {
-        await adminAPI.createService(serviceData)
-        showSuccess(t('admin.serviceCreated'))
-      }
-      setShowForm(false)
-      setEditingService(null)
-      setFormData({ name: '', description: '', price: '' })
-      loadServices()
-    } catch (error) {
-      console.error('Error saving service:', error)
-      showError(t('admin.errorSavingService', { message: error instanceof Error ? error.message : 'Unknown error' }))
-    }
-  }
-
-  const editService = (service: Service) => {
-    setEditingService(service)
-    // Handle both string and object name/description formats
-    const name = typeof service.name === 'object' ? service.name.nl : service.name
-    const description = typeof service.description === 'object' ? service.description.nl : service.description
-    
-    setFormData({
-      name: name,
-      description: description,
-      price: String(service.price)
-    })
-    setShowForm(true)
-  }
-
-  const deleteService = async (id: string) => {
-    if (window.confirm(t('admin.areYouSureDeleteService'))) {
-      try {
-        await adminAPI.deleteService(id)
-        loadServices()
-      } catch (error) {
-        console.error('Error deleting service:', error)
-      }
-    }
-  }
-
-  return (
-    <div className="services-management">
-      <div className="management-header">
-        <h2>{t('admin.servicesManagement')}</h2>
-        <button onClick={() => setShowForm(true)} className="add-btn">
-          {t('admin.addService')}
-        </button>
-      </div>
-
-      {showForm && (
-        <div className="form-modal">
-          <div className="form-container">
-            <h3>{editingService ? t('admin.editService') : t('admin.addService')}</h3>
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>{t('admin.name')}</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>{t('admin.description')}</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>{t('admin.price')} (€)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                  required
-                />
-              </div>
-              <div className="form-actions">
-                <button type="submit">{t('admin.save')}</button>
-                <button type="button" onClick={() => {
-                  setShowForm(false)
-                  setEditingService(null)
-                  setFormData({ name: '', description: '', price: '' })
-                }}>
-                  {t('admin.cancel')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      <div className="services-list">
-        {Array.isArray(services) && services.map((service: any) => {
-          // Handle multilingual service data
-          console.log('🔍 Processing service:', service)
-          console.log('🔍 Service name type:', typeof service.name)
-          console.log('🔍 Service name value:', service.name)
-          console.log('🔍 Service description type:', typeof service.description)
-          console.log('🔍 Service description value:', service.description)
-          
-          const serviceName = typeof service.name === 'object' ? service.name.nl : service.name
-          const serviceDescription = typeof service.description === 'object' ? service.description.nl : service.description
-          
-          console.log('🔍 Final serviceName:', serviceName)
-          console.log('🔍 Final serviceDescription:', serviceDescription)
-          
-          return (
-            <div key={service.id} className="service-item">
-              <div className="service-info">
-                <h4>{serviceName}</h4>
-                <p>{serviceDescription}</p>
-                <p className="price">€{service.price}</p>
-              </div>
-              <div className="service-actions">
-                <button onClick={() => editService(service)} className="edit-btn">
-                  {t('admin.edit')}
-                </button>
-                <button onClick={() => deleteService(service.id)} className="delete-btn" title={t('admin.delete')}>
-                  🗑️
-                </button>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
 
 // Vehicle Services Management Component
 const VehicleServicesManagement: React.FC = () => {
@@ -1057,6 +847,17 @@ const VehicleServicesManagement: React.FC = () => {
   const [editingService, setEditingService] = useState<VehicleService | null>(null)
   const [showBodyTypesForm, setShowBodyTypesForm] = useState(false)
   const [editingBodyType, setEditingBodyType] = useState<BodyType | null>(null)
+  const [deleteModalState, setDeleteModalState] = useState<{
+    isOpen: boolean
+    type: 'vehicleService' | 'bodyType' | null
+    itemId: string | null
+    itemName: string | null
+  }>({
+    isOpen: false,
+    type: null,
+    itemId: null,
+    itemName: null
+  })
   
   const [formData, setFormData] = useState({
     name: '',
@@ -1081,10 +882,9 @@ const VehicleServicesManagement: React.FC = () => {
     prices: [] as ServicePrice[]
   })
 
-  // Debug effect to track price changes
+  // Track price changes
   useEffect(() => {
-    console.log('=== FORM DATA PRICES CHANGED ===');
-    console.log('Current prices:', JSON.parse(JSON.stringify(formData.prices)));
+    // Prices tracking logic
   }, [formData.prices])
 
   const [bodyTypeFormData, setBodyTypeFormData] = useState({
@@ -1272,29 +1072,66 @@ const VehicleServicesManagement: React.FC = () => {
   }
 
   const deleteVehicleService = async (id: string) => {
-    if (window.confirm(t('admin.areYouSureDeleteVehicleService'))) {
-      try {
-        await adminAPI.deleteVehicleService(id)
-        showSuccess(t('admin.vehicleServiceDeleted'))
-        loadVehicleServices()
-      } catch (error) {
-        console.error('Error deleting vehicle service:', error)
-        showError(t('admin.errorDeletingVehicleService'))
-      }
+    const service = vehicleServices.find(s => s.id === id)
+    if (service) {
+      setDeleteModalState({
+        isOpen: true,
+        type: 'vehicleService',
+        itemId: id,
+        itemName: service.name
+      })
     }
   }
 
   const deleteBodyType = async (id: string) => {
-    if (window.confirm(t('admin.areYouSureDeleteBodyType'))) {
-      try {
-        await adminAPI.deleteBodyType(id)
+    const bodyType = bodyTypes.find(bt => bt.id === id)
+    if (bodyType) {
+      setDeleteModalState({
+        isOpen: true,
+        type: 'bodyType',
+        itemId: id,
+        itemName: bodyType.name
+      })
+    }
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deleteModalState.itemId || !deleteModalState.type) return
+
+    try {
+      if (deleteModalState.type === 'vehicleService') {
+        await adminAPI.deleteVehicleService(deleteModalState.itemId)
+        showSuccess(t('admin.vehicleServiceDeleted'))
+        loadVehicleServices()
+      } else if (deleteModalState.type === 'bodyType') {
+        await adminAPI.deleteBodyType(deleteModalState.itemId)
         showSuccess(t('admin.bodyTypeDeleted'))
         loadBodyTypes()
-      } catch (error) {
-        console.error('Error deleting body type:', error)
+      }
+    } catch (error) {
+      console.error(`Error deleting ${deleteModalState.type}:`, error)
+      if (deleteModalState.type === 'vehicleService') {
+        showError(t('admin.errorDeletingVehicleService'))
+      } else {
         showError(t('admin.errorDeletingBodyType'))
       }
+    } finally {
+      setDeleteModalState({
+        isOpen: false,
+        type: null,
+        itemId: null,
+        itemName: null
+      })
     }
+  }
+
+  const closeDeleteModal = () => {
+    setDeleteModalState({
+      isOpen: false,
+      type: null,
+      itemId: null,
+      itemName: null
+    })
   }
 
   const getBodyTypeName = (bodyTypeKey: string) => {
@@ -1449,8 +1286,7 @@ const VehicleServicesManagement: React.FC = () => {
                                   });
                                 }
                                 
-                                console.log(`All prices after update:`, JSON.parse(JSON.stringify(newPrices)));
-                                console.log(`=== END PRICE UPDATE ===`);
+
                                 
                                 setFormData(prev => ({ 
                                   ...prev, 
@@ -1650,6 +1486,22 @@ const VehicleServicesManagement: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModalState.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title={deleteModalState.type === 'vehicleService' ? t('admin.deleteVehicleService') : t('admin.deleteBodyType')}
+        message={deleteModalState.type === 'vehicleService' 
+          ? t('admin.areYouSureDeleteVehicleService') 
+          : t('admin.areYouSureDeleteBodyType')
+        }
+        itemName={deleteModalState.itemName || undefined}
+        cancelText={t('admin.cancel')}
+        confirmText={t('admin.delete')}
+        warningText={t('admin.thisActionCannotBeUndone')}
+      />
     </div>
   )
 }
@@ -1701,13 +1553,6 @@ const GalleryManagement: React.FC = () => {
             finalUrl = `${baseUrl}${normalizedPath}`
           }
           
-          console.log('🔍 Admin gallery image URL processing:', {
-            original: image.url,
-            cleanUrl: cleanUrl,
-            finalUrl: finalUrl,
-            id: image.id
-          })
-          
           return {
             ...image,
             url: finalUrl
@@ -1720,7 +1565,6 @@ const GalleryManagement: React.FC = () => {
         index === self.findIndex((i: any) => i.id === image.id)
       )
       
-      console.log(`✅ Loaded ${uniqueImages.length} unique images from ${processedImages.length} total`)
       setImages(uniqueImages)
     } catch (error) {
       console.error('Error loading gallery images:', error)
