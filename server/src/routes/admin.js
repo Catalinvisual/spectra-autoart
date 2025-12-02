@@ -701,6 +701,185 @@ router.get('/vehicle-services', requireAuth, async (req, res) => {
   }
 })
 
+// Create vehicle service
+router.post('/vehicle-services', requireAuth, async (req, res) => {
+  try {
+    const { name, description, price, duration, category, isActive } = req.body;
+    
+    // Validate required fields
+    if (!name || !description || !category) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Name, description, and category are required' 
+      });
+    }
+
+    // Generate unique ID
+    const id = `vehicle_service_${Date.now()}`;
+    
+    // Prepare data for Google Sheets (matching the column structure)
+    const serviceData = [
+      id,
+      name,
+      description,
+      price || '0',
+      duration || '60',
+      category,
+      isActive !== false ? 'true' : 'false'
+    ];
+
+    // Append to Google Sheets
+    await GoogleSheetsService.appendData('Vehicle_Services', serviceData);
+    
+    console.log('✅ Vehicle service created successfully:', id);
+    res.json({ 
+      success: true, 
+      message: 'Vehicle service created successfully',
+      service: {
+        id,
+        name,
+        description,
+        price: price || '0',
+        duration: duration || '60',
+        category,
+        isActive: isActive !== false
+      }
+    });
+  } catch (error) {
+    console.error('Create vehicle service error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to create vehicle service' 
+    });
+  }
+});
+
+// Update vehicle service
+router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, price, duration, category, isActive } = req.body;
+    
+    console.log('✏️ Attempting to update vehicle service with ID:', id);
+
+    // Get all vehicle services to find the one to update
+    const data = await GoogleSheetsService.getData('Vehicle_Services');
+    
+    if (data.length <= 1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'No vehicle services found' 
+      });
+    }
+
+    // Find the vehicle service by ID
+    let serviceIndex = -1;
+    const targetId = String(id).trim();
+    
+    for (let i = 1; i < data.length; i++) {
+      const serviceId = String(data[i][0] || '').trim();
+      if (serviceId === targetId) {
+        serviceIndex = i;
+        break;
+      }
+    }
+
+    if (serviceIndex === -1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Vehicle service not found' 
+      });
+    }
+
+    // Prepare updated data
+    const updatedData = [
+      targetId,
+      name || data[serviceIndex][1],
+      description || data[serviceIndex][2],
+      price !== undefined ? price : data[serviceIndex][3],
+      duration !== undefined ? duration : data[serviceIndex][4],
+      category || data[serviceIndex][5],
+      isActive !== undefined ? (isActive ? 'true' : 'false') : data[serviceIndex][6]
+    ];
+
+    // Update in Google Sheets (rowIndex is 1-based for Google Sheets)
+    await GoogleSheetsService.updateData('Vehicle_Services', serviceIndex + 1, updatedData);
+    
+    console.log('✅ Vehicle service updated successfully');
+    res.json({ 
+      success: true, 
+      message: 'Vehicle service updated successfully',
+      service: {
+        id: targetId,
+        name: updatedData[1],
+        description: updatedData[2],
+        price: updatedData[3],
+        duration: updatedData[4],
+        category: updatedData[5],
+        isActive: updatedData[6] === 'true'
+      }
+    });
+  } catch (error) {
+    console.error('Update vehicle service error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to update vehicle service' 
+    });
+  }
+});
+
+// Delete vehicle service
+router.delete('/vehicle-services/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log('🗑️ Attempting to delete vehicle service with ID:', id);
+
+    // Get all vehicle services to find the one to delete
+    const data = await GoogleSheetsService.getData('Vehicle_Services');
+    
+    if (data.length <= 1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'No vehicle services found' 
+      });
+    }
+
+    // Find the vehicle service by ID
+    let serviceIndex = -1;
+    const targetId = String(id).trim();
+    
+    for (let i = 1; i < data.length; i++) {
+      const serviceId = String(data[i][0] || '').trim();
+      if (serviceId === targetId) {
+        serviceIndex = i;
+        break;
+      }
+    }
+
+    if (serviceIndex === -1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Vehicle service not found' 
+      });
+    }
+
+    // Delete the vehicle service from Google Sheets (rowIndex is 1-based for Google Sheets)
+    await GoogleSheetsService.deleteData('Vehicle_Services', serviceIndex + 1);
+    
+    console.log('✅ Vehicle service deleted successfully');
+    res.json({ 
+      success: true, 
+      message: 'Vehicle service deleted successfully' 
+    });
+  } catch (error) {
+    console.error('Delete vehicle service error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to delete vehicle service' 
+    });
+  }
+});
+
 // Get body types
 router.get('/body-types', requireAuth, async (req, res) => {
   try {
@@ -725,21 +904,197 @@ router.get('/body-types', requireAuth, async (req, res) => {
   }
 })
 
+// Create body type
+router.post('/body-types', requireAuth, async (req, res) => {
+  try {
+    const { key, name, description, image, isActive } = req.body;
+    
+    // Validate required fields
+    if (!key || !name) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Key and name are required' 
+      });
+    }
+
+    // Generate unique ID
+    const id = `body_type_${Date.now()}`;
+    
+    // Prepare data for Google Sheets (matching the column structure)
+    const bodyTypeData = [
+      id,
+      name,
+      description || '',
+      image || '',
+      isActive !== false ? 'true' : 'false'
+    ];
+
+    // Append to Google Sheets
+    await GoogleSheetsService.appendData('Body_Types', bodyTypeData);
+    
+    console.log('✅ Body type created successfully:', id);
+    res.json({ 
+      success: true, 
+      message: 'Body type created successfully',
+      bodyType: {
+        id,
+        key,
+        name,
+        description: description || '',
+        image: image || '',
+        isActive: isActive !== false
+      }
+    });
+  } catch (error) {
+    console.error('Create body type error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to create body type' 
+    });
+  }
+});
+
+// Update body type
+router.put('/body-types/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { key, name, description, image, isActive } = req.body;
+    
+    console.log('✏️ Attempting to update body type with ID:', id);
+
+    // Get all body types to find the one to update
+    const data = await GoogleSheetsService.getData('Body_Types');
+    
+    if (data.length <= 1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'No body types found' 
+      });
+    }
+
+    // Find the body type by ID
+    let bodyTypeIndex = -1;
+    const targetId = String(id).trim();
+    
+    for (let i = 1; i < data.length; i++) {
+      const bodyTypeId = String(data[i][0] || '').trim();
+      if (bodyTypeId === targetId) {
+        bodyTypeIndex = i;
+        break;
+      }
+    }
+
+    if (bodyTypeIndex === -1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Body type not found' 
+      });
+    }
+
+    // Prepare updated data
+    const updatedData = [
+      targetId,
+      name || data[bodyTypeIndex][1],
+      description !== undefined ? description : data[bodyTypeIndex][2],
+      image !== undefined ? image : data[bodyTypeIndex][3],
+      isActive !== undefined ? (isActive ? 'true' : 'false') : data[bodyTypeIndex][4]
+    ];
+
+    // Update in Google Sheets (rowIndex is 1-based for Google Sheets)
+    await GoogleSheetsService.updateData('Body_Types', bodyTypeIndex + 1, updatedData);
+    
+    console.log('✅ Body type updated successfully');
+    res.json({ 
+      success: true, 
+      message: 'Body type updated successfully',
+      bodyType: {
+        id: targetId,
+        name: updatedData[1],
+        description: updatedData[2],
+        image: updatedData[3],
+        isActive: updatedData[4] === 'true'
+      }
+    });
+  } catch (error) {
+    console.error('Update body type error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to update body type' 
+    });
+  }
+});
+
+// Delete body type
+router.delete('/body-types/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log('🗑️ Attempting to delete body type with ID:', id);
+
+    // Get all body types to find the one to delete
+    const data = await GoogleSheetsService.getData('Body_Types');
+    
+    if (data.length <= 1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'No body types found' 
+      });
+    }
+
+    // Find the body type by ID
+    let bodyTypeIndex = -1;
+    const targetId = String(id).trim();
+    
+    for (let i = 1; i < data.length; i++) {
+      const bodyTypeId = String(data[i][0] || '').trim();
+      if (bodyTypeId === targetId) {
+        bodyTypeIndex = i;
+        break;
+      }
+    }
+
+    if (bodyTypeIndex === -1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Body type not found' 
+      });
+    }
+
+    // Delete the body type from Google Sheets (rowIndex is 1-based for Google Sheets)
+    await GoogleSheetsService.deleteData('Body_Types', bodyTypeIndex + 1);
+    
+    console.log('✅ Body type deleted successfully');
+    res.json({ 
+      success: true, 
+      message: 'Body type deleted successfully' 
+    });
+  } catch (error) {
+    console.error('Delete body type error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to delete body type' 
+    });
+  }
+});
+
 // Get newsletter subscribers
 router.get('/newsletter-subscribers', requireAuth, async (req, res) => {
   try {
-    const data = await GoogleSheetsService.getData('Newsletter')
+    const data = await GoogleSheetsService.getData('Newsletter_subscribers')
     
     if (data.length <= 1) {
       return res.json([])
     }
 
-    // Convert rows to subscriber objects
+    // Convert rows to subscriber objects based on Newsletter_subscribers structure
+    // Coloane: Email, Name, Locale, IP, Subscribed At
     const subscribers = data.slice(1).map((row, index) => ({
-      id: row[0] || `subscriber_${index + 1}`,
-      email: row[1] || '',
-      subscribedAt: row[2] || new Date().toISOString(),
-      status: row[3] || 'active'
+      id: `subscriber_${index + 1}`,
+      email: row[0] || '',
+      name: row[1] || '',
+      locale: row[2] || 'en',
+      ip: row[3] || '',
+      subscribedAt: row[4] || new Date().toISOString(),
+      status: 'active'
     }))
 
     res.json(subscribers)
@@ -761,12 +1116,9 @@ router.post('/newsletter/send', requireAuth, async (req, res) => {
       })
     }
 
-    // Get all active subscribers
-    const data = await GoogleSheetsService.getData('Newsletter')
-    const subscribers = data.slice(1).filter(row => {
-      const status = row[3] || 'active'
-      return status === 'active'
-    }).map(row => row[1]) // Email is in column 1
+    // Get all active subscribers from Newsletter_subscribers
+    const data = await GoogleSheetsService.getData('Newsletter_subscribers')
+    const subscribers = data.slice(1).map(row => row[0]).filter(email => email && email !== '') // Email is in column 0
 
     if (subscribers.length === 0) {
       return res.status(400).json({ 

@@ -905,6 +905,15 @@ router.post('/bookings', async (req, res) => {
   }
 })
 
+// Newsletter success messages in different languages
+const newsletterSuccessMessages = {
+  nl: 'Bedankt voor uw abonnement!',
+  en: 'Thank you for subscribing!',
+  es: '¡Gracias por suscribirte!',
+  pl: 'Dziękujemy za zapisanie się!',
+  ro: 'Vă mulțumim pentru abonare!'
+}
+
 router.post('/newsletter/subscribe', async (req, res) => {
   try {
     const { email, locale } = req.body
@@ -929,9 +938,13 @@ router.post('/newsletter/subscribe', async (req, res) => {
       throw new Error('Failed to save newsletter subscription');
     }
     
+    // Get the success message based on locale, default to Dutch
+    const userLocale = locale || 'nl';
+    const successMessage = newsletterSuccessMessages[userLocale] || newsletterSuccessMessages['nl'];
+    
     res.json({ 
       success: true,
-      message: 'Vă mulțumim pentru abonare!'
+      message: successMessage
     })
   } catch (error) {
     console.error('❌ Error subscribing to newsletter:', error)
