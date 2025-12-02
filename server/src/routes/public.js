@@ -521,31 +521,103 @@ router.get('/bookings/availability', async (req, res) => {
   try {
     const { date } = req.query;
     
-    // Return demo availability data
     if (date) {
-      // For demo purposes, consider all dates available except weekends
+      // Check if the specific date has any bookings
       const checkDate = new Date(date);
-      const isWeekend = checkDate.getDay() === 0 || checkDate.getDay() === 6;
+      const dateString = date; // Format: YYYY-MM-DD
       
-      res.json({ 
-        success: true,
-        available: !isWeekend,
-        date: date
-      });
+      try {
+        // Get all bookings from Google Sheets
+        const data = await GoogleSheetsService.getData('Bookings');
+        
+        if (data.length <= 1) {
+          // No bookings found, date is available
+          res.json({ 
+            success: true,
+            available: true,
+            date: date,
+            message: 'No bookings found for this date'
+          });
+          return;
+        }
+
+        // Check if any booking exists for this date
+        const hasBookingForDate = data.slice(1).some((row) => {
+          const bookingDate = row[4] || ''; // Date column
+          const bookingStatus = row[8] || 'pending'; // Status column
+          
+          // Remove any single quotes from date and normalize format
+          const cleanBookingDate = bookingDate.replace(/^'/, '');
+          
+          // Check if this booking is for the requested date and is not cancelled
+          return cleanBookingDate === dateString && bookingStatus !== 'cancelled';
+        });
+
+        res.json({ 
+          success: true,
+          available: !hasBookingForDate,
+          date: date,
+          hasBooking: hasBookingForDate
+        });
+        
+      } catch (sheetsError) {
+        console.error('Error reading from Google Sheets:', sheetsError);
+        // Fallback: consider date available if Sheets error
+        res.json({ 
+          success: true,
+          available: true,
+          date: date,
+          error: 'Could not check bookings, assuming available'
+        });
+      }
     } else {
-      // Return empty booked dates for demo
-      res.json({ 
-        success: true,
-        bookedDates: [],
-        available: true
-      });
+      // Get all booked dates (for calendar coloring)
+      try {
+        const data = await GoogleSheetsService.getData('Bookings');
+        
+        if (data.length <= 1) {
+          res.json({ 
+            success: true,
+            bookedDates: [],
+            available: true
+          });
+          return;
+        }
+
+        // Extract all booked dates
+        const bookedDates = data.slice(1)
+          .filter((row) => {
+            const bookingDate = row[4] || '';
+            const bookingStatus = row[8] || 'pending';
+            return bookingDate && bookingStatus !== 'cancelled';
+          })
+          .map((row) => {
+            const bookingDate = row[4] || '';
+            return bookingDate.replace(/^'/, ''); // Remove single quotes
+          })
+          .filter((date, index, array) => array.indexOf(date) === index); // Remove duplicates
+
+        res.json({ 
+          success: true,
+          bookedDates: bookedDates,
+          available: true
+        });
+        
+      } catch (sheetsError) {
+        console.error('Error reading booked dates from Google Sheets:', sheetsError);
+        res.json({ 
+          success: true,
+          bookedDates: [],
+          available: true,
+          error: 'Could not retrieve booked dates'
+        });
+      }
     }
   } catch (error) {
     console.error('Error checking availability:', error);
     res.status(500).json({ 
       success: false, 
-      error: 'Failed to check availability',
-      demo: true 
+      error: 'Failed to check availability'
     });
   }
 })

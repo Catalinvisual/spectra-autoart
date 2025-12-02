@@ -97,7 +97,7 @@ router.get('/bookings', requireAuth, async (req, res) => {
       const phone = row[3] || ''
       const date = row[4] || ''
       const time = row[5] || ''
-      const services = row[6] || ''
+      const servicesString = row[6] || ''
       const totalRaw = row[7] || '0'
       const status = row[8] || 'pending'
       const createdAt = row[9] || new Date().toISOString()
@@ -110,6 +110,29 @@ router.get('/bookings', requireAuth, async (req, res) => {
         total = parseFloat(totalRaw) || 0
       }
       
+      // Combine date and time for frontend compatibility
+      let combinedDateTime = date
+      if (date && time) {
+        // Remove any single quotes that might be added for Google Sheets formatting
+        const cleanDate = date.replace(/^'/, '')
+        const cleanTime = time.replace(/^'/, '')
+        combinedDateTime = `${cleanDate}T${cleanTime}:00`
+      }
+      
+      // Parse services string into array of objects
+      let servicesArray = []
+      if (servicesString && typeof servicesString === 'string') {
+        // Remove any single quotes and split by comma
+        const cleanServices = servicesString.replace(/^'/, '').replace(/'$/, '')
+        servicesArray = cleanServices.split(',').map(serviceName => {
+          const trimmedName = serviceName.trim()
+          return {
+            id: trimmedName.toLowerCase().replace(/\s+/g, '_'),
+            name: trimmedName
+          }
+        }).filter(service => service.name.length > 0)
+      }
+      
       // Extract make/model from services or use defaults
       const make = ''
       const model = ''
@@ -118,13 +141,13 @@ router.get('/bookings', requireAuth, async (req, res) => {
       
       return {
         id: id,
-        date: date,
+        date: combinedDateTime,
         time: time,
         make: make,
         model: model,
         type: type,
         body: body,
-        services: services,
+        services: servicesArray,
         total: total,
         user: {
           name: name,

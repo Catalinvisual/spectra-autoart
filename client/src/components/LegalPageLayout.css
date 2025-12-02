@@ -1,0 +1,59 @@
+.legal-close-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.legal-close-button:hover {
+  background-color: #f0f0f0;
+  color: #000;
+  transform: scale(1.1);
+}
+
+.legal-close-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Ensure the legal-container has relative positioning for the absolute button */
+.legal-container {
+  position: relative;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .legal-close-button {
+    color: #ccc;
+  }
+  
+  .legal-close-button:hover {
+    background-color: #444;
+    color: #fff;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .legal-close-button {
+    top: 15px;
+    right: 15px;
+    font-size: 20px;
+    width: 35px;
+    height: 35px;
+  }
+}

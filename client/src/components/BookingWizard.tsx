@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useState, useEffect } from 'react'
 import { publicAPI } from '../services/api'
 import { useToast } from '../contexts/ToastContext'
+import SummaryCard from './SummaryCard'
 import './BookingWizard.css'
 
 export interface VehicleData {
@@ -82,9 +83,8 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
   const [bodyTypes, setBodyTypes] = useState<BodyType[]>([])
   const [makes, setMakes] = useState<string[]>(['BMW', 'Mercedes-Benz', 'Audi', 'Volkswagen', 'Porsche'])
   const [models, setModels] = useState<string[]>([])
-  // Eliminat loading state pentru performanță instantă
-  const [loadingModels, setLoadingModels] = useState(false)
   const [error, setError] = useState('')
+  const [bookedDates, setBookedDates] = useState<string[]>([])
   const [bookingData, setBookingData] = useState<BookingData>({
     make: '',
     model: '',
@@ -129,6 +129,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
 
   useEffect(() => {
     loadInitialData()
+    loadAvailabilityData()
   }, [])
 
   // Re-încărcăm serviciile când se schimbă bodyType pentru a avea prețurile corecte
@@ -148,6 +149,23 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       setServices([]);
     }
   }
+
+  const loadAvailabilityData = async () => {
+    try {
+      const response = await publicAPI.getAvailability();
+      console.log('📅 Availability response:', response);
+      
+      if (response.data && response.data.success && response.data.bookedDates) {
+        setBookedDates(response.data.bookedDates);
+      }
+    } catch (error) {
+      console.error('Error loading availability data:', error);
+      // Fallback: allow all dates if error
+      setBookedDates([]);
+    }
+  }
+
+
 
   const loadInitialData = async () => {
     try {
@@ -262,14 +280,11 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
 
   const loadModelsForMake = async (make: string) => {
     try {
-      setLoadingModels(true)
       const modelsRes = await publicAPI.getVehicleModels(make)
       setModels(modelsRes.data)
     } catch (error) {
       console.error('Error loading models:', error)
       setModels([])
-    } finally {
-      setLoadingModels(false)
     }
   }
 
@@ -301,6 +316,10 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
         [field]: value
       }))
     }
+  }
+
+  const handleDateSelect = (date: string) => {
+    handleInputChange('date', date)
   }
 
   const handleServiceToggle = (serviceId: string) => {
@@ -404,11 +423,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                   <option key={make} value={make}>{make}</option>
                 ))}
               </select>
-              {loadingModels && (
-                <div className="loading-indicator">
-                  <span>Se încarcă modelele...</span>
-                </div>
-              )}
+
             </div>
           </div>
         )
@@ -515,30 +530,27 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               })}
             </div>
             
-            {/* Newsletter & Checkout Card */}
-            <div className="newsletter-checkout-card">
-              <div className="card-header">
-                <i className="icon-newsletter">📧</i>
-                <h4>{t('newsletterSubscription') || 'Nieuwsbrief Abonnement'}</h4>
+            {/* Newsletter Card */}
+            <div className="newsletter-card">
+              <div className="newsletter-header">
+                <i className="newsletter-icon">📧</i>
+                <h4 className="newsletter-title">{t('newsletterSubscription') || 'Nieuwsbrief Abonnement'}</h4>
               </div>
-              <div className="card-content">
-                <p className="newsletter-description">
-                  {t('newsletterDescription') || 'Blijf op de hoogte van onze nieuwste diensten en aanbiedingen!'}
-                </p>
-                <div className="newsletter-checkbox-wrapper">
-                  <label className="newsletter-label">
-                    <input
-                      type="checkbox"
-                      className="form-checkbox"
-                      checked={bookingData.newsletter}
-                      onChange={(e) => handleInputChange('newsletter', e.target.checked)}
-                    />
-                    <span className="checkmark"></span>
-                    <span className="newsletter-text">
-                      {t('subscribeNewsletter') || 'Schrijf me in voor de nieuwsbrief'}
-                    </span>
-                  </label>
-                </div>
+              <p className="newsletter-description">
+                {t('newsletterDescription') || 'Blijf op de hoogte van onze nieuwste diensten en aanbiedingen!'}
+              </p>
+              <div className="newsletter-checkbox-wrapper">
+                <label className="newsletter-label">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox"
+                    checked={bookingData.newsletter}
+                    onChange={(e) => handleInputChange('newsletter', e.target.checked)}
+                  />
+                  <span className="newsletter-text">
+                    {t('subscribeNewsletter') || 'Schrijf me in voor de nieuwsbrief'}
+                  </span>
+                </label>
               </div>
             </div>
           </div>
@@ -578,13 +590,10 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               </div>
               <div className="form-group">
                 <label className="form-label">{t('selectDate')}</label>
-                <input
-                  type="date"
-                  className="form-input date-input-instant"
-                  value={bookingData.date}
-                  onChange={(e) => handleInputChange('date', e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  onClick={(e) => e.currentTarget.showPicker?.()}
+                <CalendarComponent
+                  selectedDate={bookingData.date}
+                  onDateSelect={handleDateSelect}
+                  bookedDates={bookedDates}
                 />
               </div>
               <div className="form-group">
@@ -600,44 +609,30 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               </div>
               
               {/* Booking Summary Card */}
-              <div className="booking-summary-card">
-                <div className="summary-card-header">
-                  <i className="icon-summary">📋</i>
-                  <h4>{t('summary')}</h4>
-                </div>
-                <div className="summary-card-content">
-                  <div className="summary-item">
-                    <span className="summary-label">{t('vehicleBrand')}:</span>
-                    <span className="summary-value">{bookingData.make}</span>
-                  </div>
-                  <div className="summary-item">
-                    <span className="summary-label">{t('vehicleModel')}:</span>
-                    <span className="summary-value">{bookingData.model}</span>
-                  </div>
-                  <div className="summary-item">
-                    <span className="summary-label">{t('vehicleBody')}:</span>
-                    <span className="summary-value">{bookingData.body}</span>
-                  </div>
-                  <div className="summary-item">
-                    <span className="summary-label">{t('service')}:</span>
-                    <span className="summary-value services-list">
-                      {Array.isArray(bookingData.services) && bookingData.services.length > 0 ? bookingData.services.map(serviceId => {
-                        const service = services.find(s => s.id === serviceId)
-                        const serviceName = service ? (i18n.language === 'en' && service.name_en ? service.name_en : service.name) : ''
-                        return serviceName
-                      }).join(', ') : 'Niciun serviciu selectat'}
-                    </span>
-                  </div>
-                  <div className="summary-total">
-                    <span className="summary-label total-label">{t('total')}:</span>
-                    <span className="summary-value total-value">€{bookingData.services.reduce((total, serviceId) => {
-                      const service = services.find(s => s.id === serviceId)
-                      const servicePrice = service && bookingData.body ? getServicePriceForBodyType(service, bookingData.body) : null
-                      return total + (servicePrice?.price_min || 0)
-                    }, 0)}</span>
-                  </div>
-                </div>
-              </div>
+              <SummaryCard
+                title={t('summary')}
+                items={[
+                  { label: `${t('vehicleBrand')}:`, value: bookingData.make },
+                  { label: `${t('vehicleModel')}:`, value: bookingData.model },
+                  { label: `${t('vehicleBody')}:`, value: bookingData.body },
+                  { 
+                    label: `${t('service')}:`, 
+                    value: Array.isArray(bookingData.services) && bookingData.services.length > 0 
+                      ? bookingData.services.map(serviceId => {
+                          const service = services.find(s => s.id === serviceId)
+                          const serviceName = service ? (i18n.language === 'en' && service.name_en ? service.name_en : service.name) : ''
+                          return serviceName
+                        }).join(', ')
+                      : 'Niciun serviciu selectat'
+                  }
+                ]}
+                totalLabel={`${t('total')}:`}
+                totalValue={`€${bookingData.services.reduce((total, serviceId) => {
+                  const service = services.find(s => s.id === serviceId)
+                  const servicePrice = service && bookingData.body ? getServicePriceForBodyType(service, bookingData.body) : null
+                  return total + (servicePrice?.price_min || 0)
+                }, 0)}`}
+              />
             </div>
           </div>
         )
@@ -685,6 +680,197 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               {t('confirm')}
             </button>
           )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Componenta CalendarComponent pentru calendarul vizual
+interface CalendarComponentProps {
+  selectedDate: string
+  onDateSelect: (date: string) => void
+  bookedDates: string[]
+  loading?: boolean
+}
+
+const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onDateSelect, bookedDates, loading }) => {
+  const { t } = useTranslation()
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [availabilityMap, setAvailabilityMap] = useState<Record<string, boolean>>({})
+
+  // Verifică disponibilitatea pentru toate zilele lunii curente
+  useEffect(() => {
+    const checkMonthAvailability = async () => {
+      const year = currentDate.getFullYear()
+      const month = currentDate.getMonth()
+      const daysInMonth = new Date(year, month + 1, 0).getDate()
+      
+      const availability: Record<string, boolean> = {}
+      
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day)
+        const dateString = date.toISOString().split('T')[0]
+        
+        // Duminica este mereu indisponibilă
+        if (date.getDay() === 0) {
+          availability[dateString] = false
+        } else {
+          // Verificăm dacă data este deja în lista de bookedDates
+          availability[dateString] = !bookedDates.includes(dateString)
+        }
+      }
+      
+      setAvailabilityMap(availability)
+    }
+    
+    checkMonthAvailability()
+  }, [currentDate, bookedDates])
+
+  const getDaysInMonth = () => {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const daysInMonth = lastDay.getDate()
+    const startingDayOfWeek = firstDay.getDay()
+    
+    const days = []
+    
+    // Zilele goale de la începutul lunii
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(null)
+    }
+    
+    // Zilele lunii
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day)
+      const dateString = date.toISOString().split('T')[0]
+      days.push({
+        day,
+        dateString,
+        isAvailable: availabilityMap[dateString] !== false,
+        isSunday: date.getDay() === 0,
+        isToday: dateString === new Date().toISOString().split('T')[0],
+        isSelected: dateString === selectedDate
+      })
+    }
+    
+    return days
+  }
+
+  const handleDayClick = (dayInfo: any) => {
+    if (!dayInfo || dayInfo.isSunday || !dayInfo.isAvailable) return
+    onDateSelect(dayInfo.dateString)
+  }
+
+  const changeMonth = (direction: number) => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1))
+  }
+
+  const monthNames = [
+    t('january') || 'Ianuarie',
+    t('february') || 'Februarie',
+    t('march') || 'Martie',
+    t('april') || 'Aprilie',
+    t('may') || 'Mai',
+    t('june') || 'Iunie',
+    t('july') || 'Iulie',
+    t('august') || 'August',
+    t('september') || 'Septembrie',
+    t('october') || 'Octombrie',
+    t('november') || 'Noiembrie',
+    t('december') || 'Decembrie'
+  ]
+
+  const weekDays = [
+    t('sunday') || 'Dum',
+    t('monday') || 'Lun',
+    t('tuesday') || 'Mar',
+    t('wednesday') || 'Mie',
+    t('thursday') || 'Joi',
+    t('friday') || 'Vin',
+    t('saturday') || 'Sâm'
+  ]
+
+  const days = getDaysInMonth()
+
+  return (
+    <div className="calendar-component">
+      {loading && (
+        <div className="calendar-loading">
+          {t('checkingAvailability') || 'Se verifică disponibilitatea...'}
+        </div>
+      )}
+      
+      <div className="calendar-header">
+        <button 
+          className="calendar-nav-btn" 
+          onClick={() => changeMonth(-1)}
+          disabled={loading}
+        >
+          ‹
+        </button>
+        <div className="calendar-month-year">
+          {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+        </div>
+        <button 
+          className="calendar-nav-btn" 
+          onClick={() => changeMonth(1)}
+          disabled={loading}
+        >
+          ›
+        </button>
+      </div>
+
+      <div className="calendar-weekdays">
+        {weekDays.map((day, index) => (
+          <div key={index} className={`weekday ${index === 0 ? 'sunday' : ''}`}>
+            {day}
+          </div>
+        ))}
+      </div>
+
+      <div className="calendar-days">
+        {days.map((dayInfo, index) => (
+          <div
+            key={index}
+            className={`calendar-day ${
+              !dayInfo ? 'empty' :
+              dayInfo.isSunday ? 'sunday disabled' :
+              !dayInfo.isAvailable ? 'unavailable disabled' :
+              dayInfo.isSelected ? 'selected' :
+              dayInfo.isToday ? 'today' :
+              'available'
+            }`}
+            onClick={() => handleDayClick(dayInfo)}
+          >
+            {dayInfo && (
+              <>
+                <span className="day-number">{dayInfo.day}</span>
+                <span className="day-status">
+                  {dayInfo.isSunday ? '✗' :
+                   !dayInfo.isAvailable ? '✗' :
+                   dayInfo.isSelected ? '✓' : ''}
+                </span>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="calendar-legend">
+        <div className="legend-item">
+          <span className="legend-color available"></span>
+          <span>{t('available') || 'Disponibil'}</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-color unavailable"></span>
+          <span>{t('occupied') || 'Ocupat'}</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-color sunday"></span>
+          <span>{t('closed') || 'Închis'}</span>
         </div>
       </div>
     </div>

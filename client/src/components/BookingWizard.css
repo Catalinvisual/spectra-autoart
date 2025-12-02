@@ -1,918 +1,482 @@
-.booking-wizard-modal {
-  background: #1a1a1a; /* Fundal închis pentru a preveni flash-ul alb */
-  border-radius: 8px;
-  padding: 0;
-  position: relative;
-  width: auto;
-}
-
-/* Info message for body type selection */
-.info-message {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+/* Calendar Component Styles */
+.calendar-component {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
   padding: 1rem;
-  margin-bottom: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.calendar-loading {
   text-align: center;
-  color: #ffffff;
-  font-size: 0.9rem;
+  padding: 2rem;
+  color: #64ffda;
+  font-size: 1rem;
 }
 
-.info-message p {
-  margin: 0;
-  opacity: 0.9;
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0 0.25rem;
 }
 
-.modal-close-btn {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: none;
-  border: none;
-  font-size: 32px;
+.calendar-nav-btn {
+  background: rgba(100, 255, 218, 0.1);
+  border: 1px solid rgba(100, 255, 218, 0.3);
+  color: #64ffda;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 1rem;
   cursor: pointer;
-  color: #ffffff;
-  width: 40px;
-  height: 40px;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-  z-index: 10;
-  font-weight: 300;
+}
+
+.calendar-nav-btn:hover:not(:disabled) {
+  background: rgba(100, 255, 218, 0.2);
+  transform: scale(1.05);
+}
+
+.calendar-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.calendar-month-year {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ccd6f6;
+  text-align: center;
+  flex: 1;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #8892b0;
+  padding: 0.3rem 0;
+  text-transform: uppercase;
+}
+
+.weekday.sunday {
+  color: #f44336;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  position: relative;
+  min-height: 36px;
+}
+
+.calendar-day.empty {
+  background: transparent;
+  cursor: default;
+  border: none;
+}
+
+.calendar-day.available {
+  background: rgba(76, 175, 80, 0.1);
+  border-color: rgba(76, 175, 80, 0.3);
+  color: #4caf50;
+}
+
+.calendar-day.available:hover:not(.disabled) {
+  background: rgba(76, 175, 80, 0.2);
+  border-color: rgba(76, 175, 80, 0.5);
+  transform: scale(1.05);
+}
+
+.calendar-day.unavailable {
+  background: rgba(244, 67, 54, 0.1);
+  border-color: rgba(244, 67, 54, 0.3);
+  color: #f44336;
+}
+
+.calendar-day.sunday {
+  background: rgba(158, 158, 158, 0.1);
+  border-color: rgba(158, 158, 158, 0.3);
+  color: #9e9e9e;
+}
+
+.calendar-day.selected {
+  background: rgba(100, 255, 218, 0.2);
+  border-color: #64ffda;
+  color: #64ffda;
+  transform: scale(1.05);
+  box-shadow: 0 0 0 3px rgba(100, 255, 218, 0.3);
+}
+
+.calendar-day.today {
+  border-color: rgba(100, 255, 218, 0.5);
+  background: rgba(100, 255, 218, 0.1);
+}
+
+.calendar-day.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.calendar-day.disabled:hover {
+  transform: none;
+}
+
+.day-number {
+  font-size: 0.85rem;
+  font-weight: 600;
   line-height: 1;
 }
 
-/* Service unavailable state */
-.service-price .unavailable {
-  color: #ff6b6b;
-  font-size: 0.9rem;
-  font-style: italic;
-}
-
-/* Service duration in price */
-.service-duration {
+.day-status {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 0.25rem;
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-weight: bold;
 }
 
-/* Responsive design pentru mobil */
+.calendar-legend {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #8892b0;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 2px solid;
+}
+
+.legend-color.available {
+  background: rgba(76, 175, 80, 0.1);
+  border-color: rgba(76, 175, 80, 0.3);
+}
+
+.legend-color.unavailable {
+  background: rgba(244, 67, 54, 0.1);
+  border-color: rgba(244, 67, 54, 0.3);
+}
+
+.legend-color.sunday {
+  background: rgba(158, 158, 158, 0.1);
+  border-color: rgba(158, 158, 158, 0.3);
+}
+
+/* Responsive Calendar Styles */
 @media (max-width: 768px) {
-  .booking-wizard-modal {
-    border-radius: 0;
-    background: #12161d;
-    width: auto!important;
-    padding: 0 20px 30px 20px;
-    margin: 20px;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    max-height: 90vh;
-    overflow-y: auto;
+  .calendar-component {
+    padding: 1rem;
   }
   
-  .modal-close-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    font-size: 24px;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    color: #ffffff;
-    background: rgba(0, 0, 0, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 50%;
-    opacity: 1;
-    visibility: visible;
-    padding: 0;
-    line-height: 1;
-  }
-  
-  /* Reduce distance between wizard progress and modal border for 768px */
-  .wizard-progress-circles {
-    padding: 8px 16px;
-    border-radius: 8px 8px 0 0;
-  }
-  
-  .info-message {
-    padding: 0.75rem;
-    margin-bottom: 0.75rem;
-    font-size: 0.85rem;
-  }
-  
-  .newsletter-checkout-card {
-    padding: 1.5rem;
-    margin-top: 1.5rem;
-  }
-  
-  .newsletter-checkout-card .card-header {
+  .calendar-header {
     margin-bottom: 1rem;
   }
   
-  .newsletter-checkout-card .icon-newsletter {
-    font-size: 1.5rem;
-    margin-right: 0.75rem;
+  .calendar-nav-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
   }
   
-  .newsletter-checkout-card .card-header h4 {
-    font-size: 1.2rem;
+  .calendar-month-year {
+    font-size: 1rem;
   }
   
-  .newsletter-checkout-card .newsletter-description {
+  .weekday {
+    font-size: 0.75rem;
+    padding: 0.3rem 0;
+  }
+  
+  .calendar-day {
+    min-height: 40px;
+  }
+  
+  .day-number {
     font-size: 0.9rem;
-    margin-bottom: 1rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .booking-wizard-modal {
-    padding: 0 20px 30px 20px;
-    margin: 10px 20px;
-    width: calc(100% - 20px);
-    max-width: none;
   }
   
-  /* Crește înălțimea pentru select-urile de marcă și model */
-  .wizard-step:nth-child(1) .form-select, /* Select marca */
-  .wizard-step:nth-child(2) .form-select { /* Select model */
-    min-height: 50px; /* Mai înalt pentru a încăpea continutul */
-    padding: 12px 2.5rem 12px 1rem; /* Padding vertical mărit */
-    line-height: 1.5; /* Spațiu între linii */
-    font-size: 16px; /* Mărime font optimă pentru mobile */
+  .day-status {
+    font-size: 0.7rem;
+  }
+  
+  .calendar-legend {
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .legend-item {
+    font-size: 0.75rem;
+  }
+  
+  .legend-color {
+    width: 14px;
+    height: 14px;
   }
 }
 
 @media (max-width: 480px) {
-  .booking-wizard-modal {
-    padding: 0 15px 20px 15px;
-    border-radius: 12px;
-    width: auto!important;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    max-height: 90vh;
-    overflow-y: auto;
-    margin: 20px;
-  }
-  
-  /* Position close button directly on wizard-progress-circles */
-  .modal-close-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    font-size: 20px;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    color: #ffffff;
-    background: rgba(0, 0, 0, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 50%;
-    opacity: 1;
-    visibility: visible;
-    padding: 0;
-    line-height: 1;
-  }
-  
-  /* Reduce distance between wizard progress and modal border */
-  .wizard-progress-circles {
-    padding: 8px 16px;
-    border-radius: 12px 12px 0 0;
-  }
-  
-  /* Reguli suplimentare pentru form-select pe ecrane foarte mici */
-  .form-input,
-  .form-select {
-    font-size: 16px; /* Importânt pentru iOS */
-    padding-right: 1.8rem; /* Mai mult spațiu pentru iconiță */
-  }
-  
-  .form-select {
-    background-position: right 0.2rem center;
-    background-size: 0.8rem;
-    padding-right: 1.8rem; /* Spațiu pentru iconiță */
-  }
-  
-  .info-message {
+  .calendar-component {
     padding: 0.75rem;
-    font-size: 0.9rem;
-    background-color: rgba(59, 130, 246, 0.1);
-    border-left: 3px solid #3b82f6;
-    color: #1e40af;
-    margin: 0.5rem 0;
-    border-radius: 0 4px 4px 0;
-    font-weight: 500;
   }
   
-  .newsletter-checkout-card {
-    padding: 1rem;
+  .calendar-days {
+    gap: 0.3rem;
   }
   
-  .newsletter-checkout-card .card-header h4 {
-    font-size: 1.1rem;
+  .calendar-day {
+    min-height: 35px;
   }
   
-  .newsletter-checkout-card .newsletter-description {
-    font-size: 0.85rem;
+  .day-number {
+    font-size: 0.8rem;
+  }
+  
+  .calendar-legend {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
   }
 }
 
-/* Newsletter Checkout Card */
-.newsletter-checkout-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 16px;
-  padding: 2rem;
-  margin-top: 2rem;
-  color: white;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.newsletter-checkout-card .card-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.newsletter-checkout-card .icon-newsletter {
-  font-size: 2rem;
-  margin-right: 1rem;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-}
-
-.newsletter-checkout-card .card-header h4 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.newsletter-checkout-card .card-content {
-  padding: 0;
-}
-
-.newsletter-checkout-card .newsletter-description {
-  font-size: 1rem;
-  opacity: 0.9;
-  margin-bottom: 1.5rem;
-  line-height: 1.5;
-}
-
-.newsletter-checkout-card .newsletter-checkbox-wrapper {
-  display: flex;
-  align-items: center;
-}
-
-.newsletter-checkout-card .newsletter-label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  font-size: 1.1rem;
-  font-weight: 500;
-  position: relative;
-  padding-left: 2.5rem;
-}
-
-.newsletter-checkout-card .form-checkbox {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.newsletter-checkout-card .checkmark {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.newsletter-checkout-card .form-checkbox:checked ~ .checkmark {
-  background: #28a745;
-  border-color: #28a745;
-}
-
-.newsletter-checkout-card .checkmark::after {
-  content: '';
-  position: absolute;
-  left: 6px;
-  top: 2px;
-  width: 6px;
-  height: 12px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.newsletter-checkout-card .form-checkbox:checked ~ .checkmark::after {
-  opacity: 1;
-}
-
-.newsletter-checkout-card .newsletter-text {
-  margin-left: 0.5rem;
-  transition: color 0.2s ease;
-}
-
-.newsletter-checkout-card .newsletter-label:hover .newsletter-text {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.modal-close-btn:hover {
-  background: none;
-  color: #ffffff;
-}
-
-/* Booking Summary Card */
-.booking-summary-card {
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-  border-radius: 16px;
-  padding: 2rem;
-  margin-top: 2rem;
-  color: white;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.booking-summary-card .summary-card-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.booking-summary-card .icon-summary {
-  font-size: 2rem;
-  margin-right: 1rem;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-}
-
-.booking-summary-card .summary-card-header h4 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.booking-summary-card .summary-card-content {
-  padding: 0;
-}
-
-.booking-summary-card .summary-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.booking-summary-card .summary-item:last-child {
-  border-bottom: none;
-}
-
-.booking-summary-card .summary-label {
-  font-weight: 500;
-  opacity: 0.8;
-  font-size: 0.95rem;
-}
-
-.booking-summary-card .summary-value {
-  font-weight: 600;
-  text-align: right;
-  font-size: 0.95rem;
-}
-
-.booking-wizard-content {
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  height: calc(100% - 80px); /* Account for progress circles */
-}
-
-.booking-wizard-content.step-6-content {
-  height: calc(100% - 120px); /* More space for step 6 */
-}
-
-/* Step 6 specific styles for invisible scroll */
-.step-6-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.step-6-scroll-content {
-  flex: 1;
-  overflow: visible; /* Eliminat overflow-y pentru a preveni dublul scrollbar */
-  overflow-x: hidden;
-  padding-right: 20px;
-  margin-right: -20px;
-  /* Eliminat max-height pentru a permite scroll-ul principal să funcționeze */
-}
-
-/* Eliminat regula pentru scrollbar ascuns deoarece nu mai avem overflow */
-
-.step-6-scroll-content .form-group:last-child {
-  margin-bottom: 2rem;
-}
-
-/* Smooth transitions for form elements */
-.form-select {
-  transition: all 0.2s ease-in-out;
-  transform: translateZ(0); /* Hardware acceleration */
-  will-change: transform;
-  backface-visibility: hidden; /* Previne flicker */
-  -webkit-backface-visibility: hidden;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 0.5rem center;
-  background-size: 1rem;
-  padding-right: 2.5rem;
-  overflow: hidden; /* Previnte overflow-ul textului */
-  text-overflow: ellipsis; /* Adaugă ... dacă textul este prea lung */
-  white-space: nowrap; /* Impiedică wrap-ul textului */
-}
-
-/* Date input optimization for instant selection */
-.date-input-instant {
-  cursor: pointer;
-  position: relative;
-}
-
-.date-input-instant::-webkit-calendar-picker-indicator {
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  cursor: pointer;
-  opacity: 0;
-}
-
-.date-input-instant:focus {
-  outline: none;
-  border-color: var(--cyan);
-  box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.1);
-}
-
-.form-select:focus {
-  transition: all 0.2s ease-in-out;
-  transform: translateZ(0);
-}
-
-/* Prevent layout shift during loading */
-.wizard-step {
-  min-height: 120px;
-  transition: opacity 0.2s ease-in-out;
-}
-
-.wizard-step.loading {
-  opacity: 0.7;
-}
-
-/* Loading indicator */
-.loading-indicator {
-  margin-top: 8px;
-  font-size: 12px;
-  color: #6c757d;
-  text-align: center;
-  animation: fadeIn 0.3s ease-in;
-  height: 16px; /* Previne layout shift */
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Progress circles styles */
-.wizard-progress-circles {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  padding: 24px;
-  background: #12161d;
-  border-bottom: 1px solid #e0e0e0;
-  border-radius: 8px 8px 0 0;
-}
-
-.progress-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.progress-circle.completed {
-  background-color: #28a745;
-  color: white;
-  border: 3px solid #28a745;
-}
-
-.progress-circle.active {
-  background-color: #00bcd4;
-  color: white;
-  border: 3px solid #00bcd4;
-  box-shadow: 0 0 0 4px rgba(0, 188, 212, 0.3);
-  transform: scale(1.1);
-}
-
-.progress-circle.pending {
-  background-color: white;
-  color: #6c757d;
-  border: 3px solid #e0e0e0;
-}
-
-.progress-circle:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  right: -20px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 2px;
-  background-color: #e0e0e0;
-  transition: background-color 0.3s ease;
-}
-
-.progress-circle.completed:not(:last-child)::after {
-  background-color: #28a745;
-}
-
-/* Updated wizard actions with buttons positioned left/right */
+/* Navigation Buttons Positioning */
 .wizard-actions {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e0e0e0;
+  padding: 0 1rem;
+  position: relative;
 }
 
 .wizard-back-btn {
-  margin-left: 0;
+  order: 1;
 }
 
 .wizard-next-btn {
+  order: 2;
   margin-left: auto;
 }
 
-/* Summary total section styling */
-.booking-summary-card .summary-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 0;
-  margin-top: 1rem;
-  border-top: 2px solid rgba(255, 255, 255, 0.2);
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.booking-summary-card .total-label {
-  font-size: 1.1rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.booking-summary-card .total-value {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #00e5ff;
-  text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
-}
-
-
-
-/* Keep existing wizard styles */
-.booking-wizard {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 0 2rem;
-}
-
-.wizard-step {
-  margin-bottom: 2rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.wizard-step.step-6-container {
-  margin-bottom: 0;
-  height: 100%;
-}
-
-.wizard-step h3 {
-  color: var(--cyan);
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
-}
-
-.wizard-progress {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 2rem;
+/* Close Button Positioning */
+.booking-wizard-modal {
   position: relative;
 }
 
-.wizard-progress::before {
-  content: '';
+.modal-close-btn {
   position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--border);
-  z-index: 1;
-  transform: translateY(-50%);
-}
-
-.progress-step {
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--card-bg);
-  border: 2px solid var(--border);
+  font-size: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  position: relative;
-  z-index: 2;
+  cursor: pointer;
   transition: all 0.3s ease;
-  color: var(--muted);
+  backdrop-filter: blur(10px);
 }
 
-.progress-step.active {
-  border-color: var(--cyan);
-  color: var(--cyan);
+.modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
   transform: scale(1.1);
 }
 
-.progress-step.completed {
-  background: var(--cyan);
-  border-color: var(--cyan);
-  color: var(--bg);
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .wizard-actions {
+    padding: 0 0.5rem;
+  }
+  
+  .modal-close-btn {
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 35px;
+    height: 35px;
+    font-size: 20px;
+  }
 }
 
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--text);
-  font-size: 1rem;
-}
-
-.form-input,
-.form-select {
-  width: 100%;
-  padding: 0.75rem 1rem; /* Padding mărit pentru text mai vizibil */
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  font-size: 1rem;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  height: 3rem; /* Înălțime mărită pentru vizibilitate mai bună */
-  box-sizing: border-box; /* Include padding și border în width */
-  max-width: 100%; /* Asigură că nu depășește containerul */
-}
-
-.form-input:focus,
-.form-select:focus {
-  outline: none;
-  border-color: var(--cyan);
-  box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.1);
-}
-
-.form-checkbox {
-  margin-right: 0.5rem;
-  width: 16px;
-  height: 16px;
-  accent-color: var(--cyan);
-}
-
-.form-label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.service-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin: 1rem 0;
-}
-
-.service-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.5rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.service-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--gradient);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: 1;
-}
-
-.service-card:hover {
-  border-color: var(--cyan);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 229, 255, 0.2);
-}
-
-.service-card.selected {
-  border: 2px solid var(--cyan); /* Border cyan gros pentru vizibilitate */
-  background: rgba(0, 229, 255, 0.05); /* Background cyan foarte subtil */
-  position: relative; /* Pentru poziționarea accentului */
-}
-
-.service-card.selected::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--gradient); /* Accent gradient în partea de sus */
-  border-radius: 8px 8px 0 0;
-}
-
-.service-card.selected:hover {
-  border-color: #00e5ff; /* Cyan mai luminos la hover */
-  box-shadow: 0 10px 25px rgba(0, 229, 255, 0.3); /* Shadow cyan intens */
-  transform: translateY(-2px); /* Efect de ridicare */
-}
-
-.service-card.selected::before {
-  opacity: 0.1;
-}
-
-.service-card > * {
-  position: relative;
-  z-index: 2;
-}
-
-.service-card h4 {
-  color: var(--text);
-  margin-bottom: 0.5rem;
-  font-size: 1.1rem;
-}
-
-.service-card p {
-  color: var(--muted);
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-.service-price {
-  color: var(--cyan);
-  font-weight: 600;
-  font-size: 1.2rem;
-  text-align: right;
-}
-
-.booking-summary {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-top: 1rem;
-}
-
-.booking-summary h4 {
-  color: var(--cyan);
-  margin-bottom: 1rem;
-  font-size: 1.2rem;
-}
-
-.booking-summary p {
-  margin-bottom: 0.5rem;
-  color: var(--text);
-}
-
-.booking-summary strong {
-  color: var(--muted);
-}
-
-.wizard-actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
+/* Newsletter Card Styles */
+.newsletter-card {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.05) 0%, rgba(10, 25, 47, 0.5) 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   margin-top: 2rem;
 }
 
-.error-message {
-  background: rgba(255, 0, 0, 0.1);
-  border: 1px solid rgba(255, 0, 0, 0.3);
-  color: #ff6b6b;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  text-align: center;
+.newsletter-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-.loading {
-  text-align: center;
-  padding: 2rem;
-  color: var(--muted);
+.newsletter-icon {
+  font-size: 2rem;
+  color: #00e5ff;
+  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.5));
+}
+
+.newsletter-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #00e5ff;
+  margin: 0;
+  text-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+}
+
+.newsletter-description {
   font-size: 1.1rem;
+  color: #8892b0;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  text-align: center;
 }
 
-/* Responsive */
+.newsletter-checkbox-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.newsletter-label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.newsletter-label:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(0, 229, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.form-checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: #00e5ff;
+  cursor: pointer;
+}
+
+.newsletter-text {
+  font-size: 1rem;
+  color: #ccd6f6;
+  font-weight: 500;
+}
+
+/* Responsive Newsletter Card */
 @media (max-width: 768px) {
-  .booking-wizard {
-    padding: 0 1rem;
+  .newsletter-card {
+    padding: 1.5rem;
+    margin-top: 1.5rem;
   }
   
-  .wizard-progress {
+  .newsletter-header {
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .newsletter-icon {
+    font-size: 1.5rem;
+  }
+  
+  .newsletter-title {
+    font-size: 1.2rem;
+  }
+  
+  .newsletter-description {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .newsletter-label {
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+  
+  .newsletter-text {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .newsletter-card {
+    padding: 1rem;
+  }
+  
+  .newsletter-header {
+    flex-direction: column;
+    text-align: center;
     gap: 0.5rem;
   }
   
-  .progress-step {
-    width: 35px;
-    height: 35px;
+  .newsletter-description {
     font-size: 0.9rem;
   }
   
-  .service-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .wizard-actions {
-    flex-direction: column;
-  }
-  
-  .btn {
+  .newsletter-checkbox-wrapper {
     width: 100%;
   }
   
-  /* Asigură că form-select nu depășește containerul */
-  .form-input,
-  .form-select {
-    font-size: 16px; /* Previnte zoom pe iOS */
-    padding-right: 2rem; /* Reduce padding-ul pe mobil */
-  }
-  
-  .form-select {
-    background-position: right 0.3rem center; /* Ajustează poziția iconiței */
-    background-size: 0.9rem; /* Reduce dimensiunea iconiței */
+  .newsletter-label {
+    width: 100%;
+    justify-content: center;
   }
 }

@@ -147,7 +147,8 @@ export const publicAPI = {
   createBooking: (data: BookingData) => api.post('/public/bookings', data),
   subscribeNewsletter: (data: { email: string }) => api.post('/public/newsletter', data),
   translateText: (data: { text: string; target: string; source?: string }) => api.post('/translate', data),
-  translateBatch: (data: { texts: string[]; target: string; source?: string }) => api.post('/translate/batch', data)
+  translateBatch: (data: { texts: string[]; target: string; source?: string }) => api.post('/translate/batch', data),
+  getAvailability: (date?: string) => api.get(`/public/bookings/availability${date ? `?date=${date}` : ''}`)
 }
 
 // Admin API endpoints
