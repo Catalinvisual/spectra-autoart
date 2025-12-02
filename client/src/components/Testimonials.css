@@ -4,6 +4,7 @@
   background: linear-gradient(135deg, #0b0f14 0%, #12161d 100%);
   position: relative;
   overflow: hidden;
+  z-index: 1; /* Ensure modal overlay can appear above this */
 }
 
 .testimonials-section::before {

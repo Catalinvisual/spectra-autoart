@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useTestimonialTranslations } from '../hooks/useGoogleTranslation'
 import { publicAPI } from '../services/api'
 import { useToast } from '../contexts/ToastContext'
@@ -20,6 +21,20 @@ const TestimonialModal: React.FC<TestimonialModalProps> = ({ isOpen, onClose, on
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  // Manage body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('modal-open')
+    } else {
+      document.body.classList.remove('modal-open')
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('modal-open')
+    }
+  }, [isOpen])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -75,7 +90,7 @@ const TestimonialModal: React.FC<TestimonialModalProps> = ({ isOpen, onClose, on
 
   if (!isOpen) return null
 
-  return (
+  const modalContent = (
     <div className="testimonial-modal-overlay" onClick={onClose}>
       <div className="testimonial-modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
@@ -147,6 +162,9 @@ const TestimonialModal: React.FC<TestimonialModalProps> = ({ isOpen, onClose, on
       </div>
     </div>
   )
+
+  // Render modal using React Portal to ensure it's outside the normal DOM hierarchy
+  return createPortal(modalContent, document.body)
 }
 
 export default TestimonialModal
