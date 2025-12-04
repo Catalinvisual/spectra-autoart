@@ -26,21 +26,24 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Set the initial language on mount
     const initialLang = getInitialLanguage();
     if (initialLang !== i18n.language) {
-      i18n.changeLanguage(initialLang);
+      i18n.changeLanguage(initialLang).then(() => {
+        setCurrentLanguage(initialLang);
+      });
+    } else {
+      setCurrentLanguage(initialLang);
     }
-    setCurrentLanguage(initialLang);
   }, []); // Only run once on mount
 
   const setLanguage = async (lang: string) => {
     try {
-      // Update local state immediately for responsive UI
-      setCurrentLanguage(lang);
-      
-      // Store in localStorage for persistence
+      // Store in localStorage for persistence first
       localStorage.setItem('selectedLanguage', lang);
       
-      // Change i18next language (for static content) - no need to await
-      i18n.changeLanguage(lang);
+      // Change i18next language (for static content)
+      await i18n.changeLanguage(lang);
+      
+      // Update local state after language change is complete
+      setCurrentLanguage(lang);
       
       console.log(`🌍 Language changed to: ${lang}`);
     } catch (error) {

@@ -111,7 +111,6 @@ const Footer = () => {
           <Link to="/privacy">{t('footer.privacy')}</Link>
           <Link to="/cookies">{t('footer.cookies')}</Link>
           <Link to="/contact-legal">{t('footer.contact')}</Link>
-          <Link to="/gdpr">{t('footer.gdpr')}</Link>
         </div>
       </div>
       

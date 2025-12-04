@@ -146,7 +146,7 @@ const ContactLegal: React.FC = () => {
             {t('contactLegal.section8.intro')}
           </p>
           <p>
-            {t('contactLegal.section8.moreInfo')} <a href="/privacy">privacy policy</a> and <a href="/gdpr">GDPR policy</a>.
+            {t('contactLegal.section8.moreInfo')} <a href="/privacy">privacy policy</a>.
           </p>
         </section>
 
