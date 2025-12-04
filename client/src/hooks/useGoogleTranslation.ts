@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
-import { publicAPI } from '../services/api'
 import { isTextInI18n, getI18nKeyForText } from '../utils/i18nChecker'
 import i18n from '../i18n'
 
@@ -188,80 +187,27 @@ export const useGoogleTranslations = (texts: string[], dependencies: any[] = [])
 }
 
 /**
- * Hook for translating testimonial-specific content using Argos Translate API
+ * Hook for translating testimonial-specific content using i18n translations
  */
 export const useTestimonialTranslations = () => {
-  const { currentLanguage } = useLanguage()
-  
-  // Base Dutch texts for testimonials - these will be translated via Argos Translate API
-  const testimonialTexts = {
-    title: 'Wat klanten zeggen',
-    subtitle: 'De ervaringen van onze tevreden klanten',
-    noTestimonials: 'Er zijn nog geen testimonials beschikbaar.',
-    writeReview: 'Schrijf een recensie',
-    yourName: 'Uw naam',
-    yourRating: 'Uw beoordeling',
-    yourReview: 'Uw recensie',
-    namePlaceholder: 'Vul uw naam in',
-    reviewPlaceholder: 'Vertel ons over uw ervaring...',
-    submitReview: 'Recensie versturen',
-    errorSubmit: 'Fout bij het versturen van de recensie',
-    submitting: 'Bezig met versturen...',
-    cancel: 'Annuleren',
-    reviewSubmittedSuccessfully: 'Recensie succesvol verzonden!'
+  // Use i18n translations for testimonial page content
+  const t = (key: string) => {
+    // Map the keys to i18n paths
+    const i18nKey = `testimonialPage.${key}`
+    const translation = i18n.t(i18nKey)
+    
+    // If translation is not found, return the key itself
+    return translation || key
   }
-
-  // Always use the translation hook to maintain consistent hook order
-  const textsArray = Object.values(testimonialTexts)
-  const keysArray = Object.keys(testimonialTexts)
-  
-  const { translatedTexts, isTranslating, error } = useGoogleTranslations(textsArray, [currentLanguage])
-  
-  // For Dutch language, return the Dutch texts directly without using translations
-  if (currentLanguage === 'nl') {
-    return {
-      t: (key: string) => testimonialTexts[key as keyof typeof testimonialTexts] || key,
-      isTranslating: false,
-      error: null,
-      translateMultiple: (texts: string[]) => Promise.resolve(texts)
-    }
-  }
-
-  // For other languages, use the translated texts
-  const translatedObject = keysArray.reduce((acc, key, index) => {
-    if (!translatedTexts[index] || error) {
-      // If translation failed, fallback to Dutch
-      acc[key] = testimonialTexts[key as keyof typeof testimonialTexts]
-    } else {
-      // Use the translated text
-      acc[key] = translatedTexts[index]
-    }
-    return acc
-  }, {} as Record<string, string>)
 
   return {
-    t: (key: string) => translatedObject[key] || testimonialTexts[key as keyof typeof testimonialTexts] || key,
-    isTranslating,
-    error,
+    t,
+    isTranslating: false,
+    error: null,
     translateMultiple: async (texts: string[]) => {
-      // For Dutch, return texts as-is
-      if (currentLanguage === 'nl') {
-        return texts
-      }
-      
-      try {
-        // Use the translate batch endpoint via publicAPI
-      const response = await publicAPI.translateBatch({
-        texts,
-        target: currentLanguage,
-        source: 'nl'
-      })
-        
-        return response.data?.translatedTexts || texts
-      } catch (error) {
-        console.error('Error translating multiple texts:', error)
-        return texts // Fallback to original texts
-      }
+      // For testimonial translations, we don't need to translate multiple texts
+      // since we're using static i18n translations
+      return texts
     }
   }
 }

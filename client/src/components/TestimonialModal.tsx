@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { useTestimonialTranslations } from '../hooks/useGoogleTranslation'
+import { useTranslation } from 'react-i18next'
 import { publicAPI } from '../services/api'
 import { useToast } from '../contexts/ToastContext'
 import './TestimonialModal.css'
@@ -12,7 +12,7 @@ interface TestimonialModalProps {
 }
 
 const TestimonialModal: React.FC<TestimonialModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const { t, isTranslating } = useTestimonialTranslations()
+  const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
   const [formData, setFormData] = useState({
     name: '',
@@ -53,7 +53,7 @@ const TestimonialModal: React.FC<TestimonialModalProps> = ({ isOpen, onClose, on
       await publicAPI.submitTestimonial(formData)
       
       // Show success notification
-      showSuccess(t('reviewSubmittedSuccessfully') || 'Recenzia a fost trimisă cu succes!')
+      showSuccess(t('testimonialPage.reviewSubmittedSuccessfully'))
       
       // Call the success callback to reload testimonials
       onSuccess()
@@ -67,7 +67,7 @@ const TestimonialModal: React.FC<TestimonialModalProps> = ({ isOpen, onClose, on
       }, 2000)
       
     } catch (err) {
-      const errorMessage = t('errorSubmit') || 'Error submitting testimonial'
+      const errorMessage = t('testimonialPage.errorSubmit')
       setError(errorMessage)
       showError(errorMessage)
       console.error('Error submitting testimonial:', err)
@@ -95,8 +95,7 @@ const TestimonialModal: React.FC<TestimonialModalProps> = ({ isOpen, onClose, on
       <div className="testimonial-modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h3>
-            {t('writeReview')}
-            {isTranslating && <span className="translation-indicator-modal"> 🌐</span>}
+            {t('testimonialPage.writeReview')}
           </h3>
           <button className="close-btn" onClick={onClose}>
             ×
@@ -105,7 +104,7 @@ const TestimonialModal: React.FC<TestimonialModalProps> = ({ isOpen, onClose, on
 
         <form onSubmit={handleSubmit} className="testimonial-form">
           <div className="form-group">
-            <label htmlFor="name">{t('yourName')}</label>
+            <label htmlFor="name">{t('testimonialPage.yourName')}</label>
             <input
               type="text"
               id="name"
@@ -113,27 +112,27 @@ const TestimonialModal: React.FC<TestimonialModalProps> = ({ isOpen, onClose, on
               value={formData.name}
               onChange={handleInputChange}
               required
-              placeholder={t('namePlaceholder')}
+              placeholder={t('testimonialPage.namePlaceholder')}
               className="form-input"
             />
           </div>
 
           <div className="form-group">
-            <label>{t('yourRating')}</label>
+            <label>{t('testimonialPage.yourRating')}</label>
             <div className="star-rating-input">
               {renderStars()}
             </div>
           </div>
 
           <div className="form-group">
-            <label htmlFor="comment">{t('yourReview')}</label>
+            <label htmlFor="comment">{t('testimonialPage.yourReview')}</label>
             <textarea
               id="comment"
               name="comment"
               value={formData.comment}
               onChange={handleInputChange}
               required
-              placeholder={t('reviewPlaceholder')}
+              placeholder={t('testimonialPage.reviewPlaceholder')}
               rows={4}
               className="form-textarea"
             />
@@ -148,14 +147,14 @@ const TestimonialModal: React.FC<TestimonialModalProps> = ({ isOpen, onClose, on
               className="btn btn-secondary"
               disabled={isSubmitting}
             >
-              {t('cancel')}
+              {t('testimonialPage.cancel')}
             </button>
             <button
               type="submit"
               className="btn btn-primary"
               disabled={isSubmitting}
             >
-              {isSubmitting ? t('submitting') : t('submitReview')}
+              {isSubmitting ? t('testimonialPage.submitting') : t('testimonialPage.submitReview')}
             </button>
           </div>
         </form>

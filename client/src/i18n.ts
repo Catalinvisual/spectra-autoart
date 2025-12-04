@@ -2039,6 +2039,22 @@ const resources = {
         fromPrice: 'Desde',
         minimumPrice: 'Precio mínimo'
       },
+      testimonialPage: {
+        title: 'Lo que dicen los clientes',
+        subtitle: 'Las experiencias de nuestros clientes satisfechos',
+        noTestimonials: 'Aún no hay testimonios disponibles.',
+        writeReview: 'Escribir una reseña',
+        yourName: 'Su nombre',
+        yourRating: 'Su calificación',
+        yourReview: 'Su reseña',
+        namePlaceholder: 'Ingrese su nombre',
+        reviewPlaceholder: 'Cuéntenos sobre su experiencia...',
+        submitReview: 'Enviar reseña',
+        errorSubmit: 'Error al enviar la reseña',
+        submitting: 'Enviando...',
+        cancel: 'Cancelar',
+        reviewSubmittedSuccessfully: '¡Reseña enviada con éxito!'
+      },
       contact: 'Contacto',
       selectLanguage: 'Seleccionar Idioma',
       vehicleBrand: 'Marca',
@@ -2844,6 +2860,22 @@ const resources = {
         fromPrice: 'Od',
         minimumPrice: 'Cena minimalna'
       },
+      testimonialPage: {
+        title: 'Co mówią klienci',
+        subtitle: 'Doświadczenia naszych zadowolonych klientów',
+        noTestimonials: 'Brak dostępnych opinii.',
+        writeReview: 'Napisz recenzję',
+        yourName: 'Twoje imię',
+        yourRating: 'Twoja ocena',
+        yourReview: 'Twoja recenzja',
+        namePlaceholder: 'Wprowadź swoje imię',
+        reviewPlaceholder: 'Opowiedz nam o swoim doświadczeniu...',
+        submitReview: 'Wyślij recenzję',
+        errorSubmit: 'Błąd podczas wysyłania recenzji',
+        submitting: 'Wysyłanie...',
+        cancel: 'Anuluj',
+        reviewSubmittedSuccessfully: 'Recenzja została wysłana pomyślnie!'
+      },
       contact: 'Kontakt',
       selectLanguage: 'Wybierz Język',
       vehicleBrand: 'Marka',
@@ -3645,6 +3677,22 @@ const resources = {
       servicesPage: {
         fromPrice: 'De la',
         minimumPrice: 'Preț minim'
+      },
+      testimonialPage: {
+        title: 'Ce spun clienții',
+        subtitle: 'Experiențele clienților noștri mulțumiți',
+        noTestimonials: 'Nu există testimoniale disponibile încă.',
+        writeReview: 'Scrieți o recenzie',
+        yourName: 'Numele dumneavoastră',
+        yourRating: 'Evaluarea dumneavoastră',
+        yourReview: 'Recenzia dumneavoastră',
+        namePlaceholder: 'Introduceți numele dumneavoastră',
+        reviewPlaceholder: 'Spuneți-ne despre experiența dumneavoastră...',
+        submitReview: 'Trimite recenzia',
+        errorSubmit: 'Eroare la trimiterea recenziei',
+        submitting: 'Se trimite...',
+        cancel: 'Anulează',
+        reviewSubmittedSuccessfully: 'Recenzia a fost trimisă cu succes!'
       },
       contact: 'Contact',
       selectLanguage: 'Selectează Limba',

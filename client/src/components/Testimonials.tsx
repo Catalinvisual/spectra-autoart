@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { publicAPI } from '../services/api'
 import { useScrollAnimation } from '../hooks/useAnimations'
 import { useLanguage } from '../contexts/LanguageContext'
@@ -17,7 +18,8 @@ interface Testimonial {
 
 const Testimonials: React.FC = () => {
   const { currentLanguage } = useLanguage()
-  const { t, translateMultiple } = useTestimonialTranslations()
+  const { t } = useTranslation()
+  const { translateMultiple } = useTestimonialTranslations()
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [translatedTestimonials, setTranslatedTestimonials] = useState<Testimonial[]>([])
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -146,15 +148,15 @@ const Testimonials: React.FC = () => {
       <section id="testimonials" className="testimonials-section" ref={setAnimationElement}>
         <div className="container">
           <div className="section-header">
-            <h2 className="section-title">{t('title')}</h2>
-            <p className="section-subtitle">{t('subtitle')}</p>
+            <h2 className="section-title">{t('testimonialPage.title')}</h2>
+            <p className="section-subtitle">{t('testimonialPage.subtitle')}</p>
           </div>
           <div className="no-testimonials">
-            <p>{t('noTestimonials') || 'No testimonials available yet.'}</p>
+            <p>{t('testimonialPage.noTestimonials')}</p>
           </div>
           <div className="testimonial-actions">
             <button className="write-review-btn" onClick={openModal}>
-              {t('writeReview') || 'Write a Review'}
+              {t('testimonialPage.writeReview')}
             </button>
           </div>
           <TestimonialModal
@@ -171,8 +173,8 @@ const Testimonials: React.FC = () => {
     <section id="testimonials" className="testimonials-section" ref={setAnimationElement}>
       <div className="container">
         <div className="section-header">
-          <h2 className="section-title">{t('title')}</h2>
-          <p className="section-subtitle">{t('subtitle')}</p>
+          <h2 className="section-title">{t('testimonialPage.title')}</h2>
+          <p className="section-subtitle">{t('testimonialPage.subtitle')}</p>
         </div>
 
         <div className="testimonials-slider">
@@ -221,7 +223,7 @@ const Testimonials: React.FC = () => {
 
         <div className="testimonial-actions">
           <button className="write-review-btn" onClick={openModal}>
-            {t('writeReview')}
+            {t('testimonialPage.writeReview')}
           </button>
         </div>
       </div>
