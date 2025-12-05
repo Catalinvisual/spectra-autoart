@@ -33,21 +33,29 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const envLocalPath = path.join(__dirname, '..', '.env.local')
 const envPath = path.join(__dirname, '..', '.env')
+const envProductionPath = path.join(__dirname, '..', '.env.production')
 
 console.log('📂 __dirname:', __dirname)
 console.log('🎯 __filename:', __filename)
 
-// Încearcă să încarce fișierul .env.local, apoi .env ca fallback
+// Încearcă să încarce fișierul .env.local, apoi .env.production, apoi .env ca fallback
 try {
   const result = dotenv.config({ path: envLocalPath })
   if (result.error) {
-    console.log('⚠️  Fișierul .env.local nu a putut fi încărcat, încerc .env:', result.error.message)
-    // Fallback la .env dacă .env.local nu există
-    const fallbackResult = dotenv.config({ path: envPath })
-    if (fallbackResult.error) {
-      console.log('⚠️  Nici fișierul .env nu a putut fi încărcat, dar serverul va continua:', fallbackResult.error.message)
+    console.log('⚠️  Fișierul .env.local nu a putut fi încărcat, încerc .env.production:', result.error.message)
+    // Fallback la .env.production dacă .env.local nu există
+    const productionResult = dotenv.config({ path: envProductionPath })
+    if (productionResult.error) {
+      console.log('⚠️  Fișierul .env.production nu a putut fi încărcat, încerc .env:', productionResult.error.message)
+      // Fallback la .env dacă .env.production nu există
+      const fallbackResult = dotenv.config({ path: envPath })
+      if (fallbackResult.error) {
+        console.log('⚠️  Nici fișierul .env nu a putut fi încărcat, dar serverul va continua:', fallbackResult.error.message)
+      } else {
+        console.log('✅ Fișierul .env a fost încărcat cu succes (fallback)')
+      }
     } else {
-      console.log('✅ Fișierul .env a fost încărcat cu succes (fallback)')
+      console.log('✅ Fișierul .env.production a fost încărcat cu succes')
     }
   } else {
     console.log('✅ Fișierul .env.local a fost încărcat cu succes')

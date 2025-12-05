@@ -339,72 +339,10 @@ router.get('/services', async (req, res) => {
     const { lang = 'nl' } = req.query
     let services = []
     
-    // Try to fetch services from Google Sheets first with DeepL Translate integration
+    // Try to fetch services from Google Sheets with proper price linking
     try {
-      // Use the new DeepL Translate method for services
-      if (lang !== 'nl') {
-        console.log(`🔄 Using DeepL Translate for services in language: ${lang}`)
-        services = await GoogleSheetsService.getServicesWithDeepLTranslation(lang, true, true)
-      } else {
-        // For Dutch, use the standard method
-        const servicesData = await GoogleSheetsService.getData('Services')
-        console.log(`📊 Raw services data from Google Sheets:`, servicesData.length, 'rows')
-        
-        if (servicesData.length > 1) { // Has headers and data
-          const headers = servicesData[0]
-          console.log(`📋 Services headers found:`, headers)
-          
-          // Use multilingual columns based on the requested language
-          const langSuffix = lang.toUpperCase()
-          const idIndex = headers.indexOf('ID')
-          const nameIndex = headers.indexOf(`Name_${langSuffix}`)
-          const descIndex = headers.indexOf(`Description_${langSuffix}`)
-          const priceIndex = headers.indexOf('Price')
-          const categoryIndex = headers.indexOf('Category')
-          const durationIndex = headers.indexOf('Duration_Minutes')
-          const isActiveIndex = headers.indexOf('Is_Active')
-          
-          console.log(`🔍 Services column indices - ID:${idIndex}, Name_${langSuffix}:${nameIndex}, Description_${langSuffix}:${descIndex}`)
-          
-          if (idIndex === -1 || nameIndex === -1 || descIndex === -1) {
-            console.log('❌ Missing required multilingual columns, trying fallback to NL columns')
-            // Fallback to Dutch (NL) if requested language columns don't exist
-            const nlNameIndex = headers.indexOf('Name_NL')
-            const nlDescIndex = headers.indexOf('Description_NL')
-            
-            if (nlNameIndex === -1 || nlDescIndex === -1) {
-              console.log('❌ Missing required NL columns, throwing error')
-              throw new Error('Missing required columns in Google Sheets Services')
-            }
-            
-            // Use NL columns and translate if needed
-            services = servicesData.slice(1)
-              .filter(row => row[isActiveIndex] === 'true') // Only active services
-              .map(row => ({
-                id: row[idIndex] || '',
-                name: row[nlNameIndex] || '',
-                description: row[nlDescIndex] || '',
-                price: parseFloat(row[priceIndex]) || 0,
-                duration: row[durationIndex] ? `${row[durationIndex]} minutes` : '',
-                category: row[categoryIndex] || 'general'
-              }))
-              .filter(service => service.name && service.description) // Filter out empty services
-          } else {
-            // Use requested language columns directly
-            services = servicesData.slice(1)
-              .filter(row => row[isActiveIndex] === 'true') // Only active services
-              .map(row => ({
-                id: row[idIndex] || '',
-                name: row[nameIndex] || '',
-                description: row[descIndex] || '',
-                price: parseFloat(row[priceIndex]) || 0,
-                duration: row[durationIndex] ? `${row[durationIndex]} minutes` : '',
-                category: row[categoryIndex] || 'general'
-              }))
-              .filter(service => service.name && service.description) // Filter out empty services
-          }
-        }
-      }
+      console.log(`🔄 Fetching services with prices for language: ${lang}`)
+      services = await GoogleSheetsService.getServicesWithPrices(lang)
       
       console.log(`✅ Parsed ${services.length} services from Google Sheets`)
       console.log(`📋 First 3 services:`, services.slice(0, 3))

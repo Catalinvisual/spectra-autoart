@@ -331,12 +331,12 @@ const Admin: React.FC = () => {
         </nav>
 
         <main className="admin-main">
-          {activeTab === 'dashboard' && <Dashboard />}
-          {activeTab === 'bookings' && <BookingsManagement onDeleteBooking={deleteBooking} refreshKey={bookingsRefreshKey} />}
+          {activeTab === 'dashboard' && <Dashboard isAuthenticated={isAuthenticated} />}
+          {activeTab === 'bookings' && <BookingsManagement onDeleteBooking={deleteBooking} refreshKey={bookingsRefreshKey} isAuthenticated={isAuthenticated} />}
 
-          {activeTab === 'vehicle-services' && <VehicleServicesManagement />}
-          {activeTab === 'gallery' && <GalleryManagement />}
-          {activeTab === 'newsletter' && <NewsletterManagement />}
+          {activeTab === 'vehicle-services' && <VehicleServicesManagement isAuthenticated={isAuthenticated} />}
+          {activeTab === 'gallery' && <GalleryManagement isAuthenticated={isAuthenticated} />}
+          {activeTab === 'newsletter' && <NewsletterManagement isAuthenticated={isAuthenticated} />}
         </main>
       </div>
 
@@ -371,7 +371,11 @@ const Admin: React.FC = () => {
 }
 
 // Dashboard Component
-const Dashboard: React.FC = () => {
+interface DashboardProps {
+  isAuthenticated: boolean
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ isAuthenticated }) => {
   const { t } = useTranslation()
   const [stats, setStats] = useState({
     totalBookings: 0,
@@ -397,8 +401,10 @@ const Dashboard: React.FC = () => {
       }
     }
 
-    loadStats()
-  }, [])
+    if (isAuthenticated) {
+      loadStats()
+    }
+  }, [isAuthenticated])
 
   return (
     <div className="dashboard">
@@ -426,9 +432,10 @@ const Dashboard: React.FC = () => {
 interface BookingsManagementProps {
   onDeleteBooking: (id: string) => void
   refreshKey?: number
+  isAuthenticated: boolean
 }
 
-const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking, refreshKey }) => {
+const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking, refreshKey, isAuthenticated }) => {
   const { t } = useTranslation()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
@@ -438,8 +445,10 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
   const [showEditModal, setShowEditModal] = useState(false)
 
   useEffect(() => {
-    loadBookings()
-  }, [])
+    if (isAuthenticated) {
+      loadBookings()
+    }
+  }, [isAuthenticated])
 
   useEffect(() => {
     if (refreshKey && refreshKey > 0) {
@@ -729,7 +738,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
                 <div className="services-list">
                   {Array.isArray(selectedBooking.services) && selectedBooking.services.length > 0 ? (
                     selectedBooking.services.map((service: any, index: number) => (
-                      <div key={index} className="service-item-detail">
+                      <div key={service.id || service.name || `service-${index}`} className="service-item-detail">
                         {typeof service.name === 'object' 
                           ? service.name[i18n.language] || service.name.nl || service.name.en || service.name
                           : service.name
@@ -838,7 +847,11 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
 
 
 // Vehicle Services Management Component
-const VehicleServicesManagement: React.FC = () => {
+interface VehicleServicesManagementProps {
+  isAuthenticated: boolean
+}
+
+const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ isAuthenticated }) => {
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
   const [vehicleServices, setVehicleServices] = useState<VehicleService[]>([])
@@ -918,7 +931,34 @@ const VehicleServicesManagement: React.FC = () => {
   const loadBodyTypes = async () => {
     try {
       const response = await adminAPI.getBodyTypes()
-      setBodyTypes(response.data)
+      console.log('🔍 BodyTypes API Response:', response.data)
+      
+      // Log detailed structure of each body type
+      response.data.forEach((bt: any, index: number) => {
+        console.log(`📋 BodyType[${index}]:`, {
+          id: bt?.id,
+          key: bt?.key,
+          name: bt?.name,
+          name_en: bt?.name_en,
+          name_nl: bt?.name_nl,
+          keys: Object.keys(bt || {}),
+          fullObject: bt
+        })
+      })
+      
+      // Filter out invalid body types (missing id or key)
+      const validBodyTypes = response.data.filter((bt: any) => bt && (bt.key || bt.id))
+      console.log('✅ Valid body types:', validBodyTypes)
+      console.log('❌ Invalid body types filtered out:', response.data.length - validBodyTypes.length)
+      
+      // Check for duplicates among valid ids/keys
+      const keys = validBodyTypes.map((bt: any) => bt.key || bt.id)
+      const duplicates = keys.filter((key: string, index: number) => keys.indexOf(key) !== index)
+      if (duplicates.length > 0) {
+        console.warn('⚠️ Duplicate body type keys found:', duplicates)
+      }
+      
+      setBodyTypes(validBodyTypes)
     } catch (error) {
       console.error('Error loading body types:', error)
       showError(t('admin.errorLoadingBodyTypes'))
@@ -926,9 +966,11 @@ const VehicleServicesManagement: React.FC = () => {
   }
 
   useEffect(() => {
-    loadVehicleServices()
-    loadBodyTypes()
-  }, [])
+    if (isAuthenticated) {
+      loadVehicleServices()
+      loadBodyTypes()
+    }
+  }, [isAuthenticated])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -1023,6 +1065,28 @@ const VehicleServicesManagement: React.FC = () => {
   }
 
   const editVehicleService = (service: VehicleService) => {
+    // Ensure all body types have price entries (preserve existing ones)
+    const completePrices = [...(service.prices || [])];
+    
+    // Add missing body types with empty prices
+    bodyTypes.forEach(bodyType => {
+      const bodyTypeIdentifier = bodyType?.key || bodyType?.id;
+      if (bodyTypeIdentifier) {
+        const existingPrice = completePrices.find(p => p.body_type_key === bodyTypeIdentifier);
+        if (!existingPrice) {
+          completePrices.push({
+          id: '',
+          service_id: service.id,
+          body_type_key: bodyTypeIdentifier,
+          price_min: 0,
+          price_max: 0,
+          duration_minutes: 60,
+          is_active: true
+        });
+        }
+      }
+    });
+    
     setEditingService(service)
     setFormData({
       name: service.name,
@@ -1044,7 +1108,7 @@ const VehicleServicesManagement: React.FC = () => {
       category_pl: service.category_pl || '',
       category_ro: service.category_ro || '',
       is_active: service.is_active,
-      prices: service.prices || []
+      prices: completePrices
     })
     setShowForm(true)
   }
@@ -1052,7 +1116,7 @@ const VehicleServicesManagement: React.FC = () => {
   const editBodyType = (bodyType: BodyType) => {
     setEditingBodyType(bodyType)
     setBodyTypeFormData({
-      key: bodyType.key,
+      key: bodyType.key || bodyType.id || '',
       name: bodyType.name,
       name_en: bodyType.name_en || '',
       name_nl: bodyType.name_nl || '',
@@ -1164,6 +1228,20 @@ const VehicleServicesManagement: React.FC = () => {
     return service[`description_${currentLang}` as keyof VehicleService] as string || service.description
   }
 
+  // Car icons for different body types
+  const getBodyTypeIcon = (key: string) => {
+    switch (key) {
+      case 'suv': return '🚙';
+      case 'berlina': return '🚗';
+      case 'break': return '🚗';
+      case 'hatchback': return '🚗';
+      case 'coupe': return '🏎️';
+      case 'cabrio': return '🚘';
+      case 'van': return '🚐';
+      default: return '🚗';
+    }
+  };
+
   return (
     <div className="vehicle-services-management">
       <div className="management-header">
@@ -1229,27 +1307,22 @@ const VehicleServicesManagement: React.FC = () => {
               <div className="form-section">
                 <h4>{t('admin.pricingPerBodyType')}</h4>
                 <div className="body-type-prices">
-                  {Array.isArray(bodyTypes) && bodyTypes.map((bodyType) => {
-                    const existingPrice = formData.prices?.find(p => p.body_type_key === bodyType.key);
+                  {Array.isArray(bodyTypes) && bodyTypes.map((bodyType, index) => {
+                    console.log(`🔍 Processing bodyType[${index}]:`, bodyType)
                     
-                    // Car icons for different body types
-                    const getBodyTypeIcon = (key: string) => {
-                      switch (key) {
-                        case 'suv': return '🚙';
-                        case 'berlina': return '🚗';
-                        case 'break': return '🚗';
-                        case 'hatchback': return '🚗';
-                        case 'coupe': return '🏎️';
-                        case 'cabrio': return '🚘';
-                        case 'van': return '🚐';
-                        default: return '🚗';
-                      }
-                    };
+                    // Use key or id for validation
+                    const bodyTypeIdentifier = bodyType?.key || bodyType?.id
+                    if (!bodyType || !bodyTypeIdentifier) {
+                      console.warn(`⚠️ Invalid bodyType at index ${index}:`, bodyType)
+                      return null
+                    }
+                    
+                    const existingPrice = formData.prices?.find(p => p.body_type_key === bodyTypeIdentifier)
                     
                     return (
-                      <div key={bodyType.key} className="price-input-group">
+                      <div key={bodyTypeIdentifier} className="price-input-group">
                         <label>
-                          <span className="body-type-icon">{getBodyTypeIcon(bodyType.key)}</span>
+                          <span className="body-type-icon">{getBodyTypeIcon(bodyTypeIdentifier)}</span>
                           {bodyType.name}
                         </label>
                         <div className="price-inputs">
@@ -1257,16 +1330,16 @@ const VehicleServicesManagement: React.FC = () => {
                             <span className="currency-symbol">€</span>
                             <input
                               type="number"
-                              placeholder={`Minim - ${bodyType.key}`}
+                              placeholder={`Minim - ${bodyTypeIdentifier}`}
                               value={existingPrice?.price_min || ''}
-                              data-body-type={bodyType.key}
-                              id={`price-min-${bodyType.key}`}
+                              data-body-type={bodyTypeIdentifier}
+                              id={`price-min-${bodyTypeIdentifier}`}
                               onChange={(e) => {
-                                // Capture the current bodyType key to avoid closure issues
-                                const currentBodyTypeKey = bodyType.key;
+                                // Capture the current bodyType identifier to avoid closure issues
+                                const currentBodyTypeIdentifier = bodyTypeIdentifier;
                                 
                                 const newPrices = [...(formData.prices || [])];
-                                const priceIndex = newPrices.findIndex(p => p.body_type_key === currentBodyTypeKey);
+                                const priceIndex = newPrices.findIndex(p => p.body_type_key === currentBodyTypeIdentifier);
                                 const priceValue = e.target.value ? parseFloat(e.target.value) : 0;
                                 
                                 if (priceIndex >= 0) {
@@ -1278,7 +1351,7 @@ const VehicleServicesManagement: React.FC = () => {
                                   newPrices.push({
                                     id: '',
                                     service_id: '',
-                                    body_type_key: currentBodyTypeKey,
+                                    body_type_key: currentBodyTypeIdentifier,
                                     price_min: priceValue,
                                     price_max: undefined,
                                     duration_minutes: 60,
@@ -1301,16 +1374,16 @@ const VehicleServicesManagement: React.FC = () => {
                             <span className="currency-symbol">€</span>
                             <input
                               type="number"
-                              placeholder={`Maxim - ${bodyType.key}`}
+                              placeholder={`Maxim - ${bodyTypeIdentifier}`}
                               value={existingPrice?.price_max || ''}
-                              data-body-type={bodyType.key}
-                              id={`price-max-${bodyType.key}`}
+                              data-body-type={bodyTypeIdentifier}
+                              id={`price-max-${bodyTypeIdentifier}`}
                               onChange={(e) => {
-                                // Capture the current bodyType key to avoid closure issues
-                                const currentBodyTypeKey = bodyType.key;
+                                // Capture the current bodyType identifier to avoid closure issues
+                                const currentBodyTypeIdentifier = bodyTypeIdentifier;
                                 
                                 const newPrices = [...(formData.prices || [])];
-                                const priceIndex = newPrices.findIndex(p => p.body_type_key === currentBodyTypeKey);
+                                const priceIndex = newPrices.findIndex(p => p.body_type_key === currentBodyTypeIdentifier);
                                 const priceValue = e.target.value ? parseFloat(e.target.value) : undefined;
                                 
                                 if (priceIndex >= 0) {
@@ -1322,7 +1395,7 @@ const VehicleServicesManagement: React.FC = () => {
                                   newPrices.push({
                                     id: '',
                                     service_id: '',
-                                    body_type_key: currentBodyTypeKey,
+                                    body_type_key: currentBodyTypeIdentifier,
                                     price_min: 0,
                                     price_max: priceValue,
                                     duration_minutes: 60,
@@ -1433,8 +1506,8 @@ const VehicleServicesManagement: React.FC = () => {
 
               <div className="prices-info">
                 <h5>{t('admin.prices')}:</h5>
-                {Array.isArray(service.prices) && service.prices.map((price) => (
-                  <div key={price.id} className="price-item">
+                {Array.isArray(service.prices) && service.prices.map((price, index) => (
+                  <div key={price.id || `${price.body_type_key}-${index}`} className="price-item">
                     <span>{getBodyTypeName(price.body_type_key)}: €{price.price_min}</span>
                     {price.price_max && <span> - €{price.price_max}</span>}
 
@@ -1467,9 +1540,9 @@ const VehicleServicesManagement: React.FC = () => {
           {Array.isArray(bodyTypes) && bodyTypes.map((bodyType) => (
             <div key={bodyType.id} className="body-type-item">
               <div className="body-type-info">
-                <h4>{getBodyTypeName(bodyType.key)}</h4>
+                <h4>{getBodyTypeName(bodyType.key || bodyType.id)}</h4>
                 <p>{getBodyTypeDescription(bodyType)}</p>
-                <p className="key">{t('admin.key')}: {bodyType.key}</p>
+                <p className="key">{t('admin.key')}: {bodyType.key || bodyType.id}</p>
                 <p className={bodyType.is_active ? 'active' : 'inactive'}>
                   {bodyType.is_active ? t('admin.active') : t('admin.inactive')}
                 </p>
@@ -1515,7 +1588,11 @@ interface GalleryImage {
   active: boolean
 }
 
-const GalleryManagement: React.FC = () => {
+interface GalleryManagementProps {
+  isAuthenticated: boolean
+}
+
+const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }) => {
   const { t } = useTranslation()
   const { showSuccess, showError, showWarning } = useToast()
   const [images, setImages] = useState<GalleryImage[]>([])
@@ -1530,8 +1607,10 @@ const GalleryManagement: React.FC = () => {
   const [previewUrl, setPreviewUrl] = useState<string>('')
 
   useEffect(() => {
-    loadImages()
-  }, [])
+    if (isAuthenticated) {
+      loadImages()
+    }
+  }, [isAuthenticated])
 
   const loadImages = async () => {
     try {
@@ -1854,7 +1933,11 @@ const GalleryManagement: React.FC = () => {
 }
 
 // Newsletter Management Component
-const NewsletterManagement: React.FC = () => {
+interface NewsletterManagementProps {
+  isAuthenticated: boolean
+}
+
+const NewsletterManagement: React.FC<NewsletterManagementProps> = ({ isAuthenticated }) => {
   const { t } = useTranslation()
   const { showSuccess, showError, showWarning } = useToast()
   const [subscribers, setSubscribers] = useState<Subscriber[]>([])
@@ -1864,8 +1947,10 @@ const NewsletterManagement: React.FC = () => {
   const [sending, setSending] = useState(false)
 
   useEffect(() => {
-    loadSubscribers()
-  }, [])
+    if (isAuthenticated) {
+      loadSubscribers()
+    }
+  }, [isAuthenticated])
 
   const loadSubscribers = async () => {
     try {

@@ -684,15 +684,48 @@ router.get('/vehicle-services', requireAuth, async (req, res) => {
       return res.json([])
     }
 
-    const vehicleServices = data.slice(1).map((row, index) => ({
-      id: row[0] || `vehicle_service_${index + 1}`,
-      name: row[1] || '',
-      description: row[2] || '',
-      price: row[3] || '0',
-      duration: row[4] || '0',
-      category: row[5] || 'general',
-      isActive: row[6] !== 'false'
-    }))
+    // Get all service prices
+    const pricesData = await GoogleSheetsService.getData('Vehicle_Service_Prices')
+    const servicePrices = {};
+    
+    if (pricesData.length > 1) {
+      pricesData.slice(1).forEach(priceRow => {
+        const serviceId = String(priceRow[1] || '').trim();
+        if (serviceId) {
+          if (!servicePrices[serviceId]) {
+            servicePrices[serviceId] = [];
+          }
+          servicePrices[serviceId].push({
+            id: priceRow[0] || '',
+            service_id: serviceId,
+            body_type_key: priceRow[2] || '',
+            price_min: priceRow[3] || '0',
+            price_max: priceRow[4] || priceRow[3] || '0',
+            duration_minutes: priceRow[5] || '60',
+            is_active: priceRow[6] !== 'false'
+          });
+        }
+      });
+    }
+
+    const vehicleServices = data.slice(1).map((row, index) => {
+      const serviceId = row[0] || `vehicle_service_${index + 1}`;
+      return {
+        id: serviceId,
+        name: row[1] || '',
+        name_en: row[2] || '',
+        name_nl: row[3] || '',
+        description: row[4] || '',
+        description_en: row[5] || '',
+        description_nl: row[6] || '',
+        category: row[7] || 'general',
+        category_en: row[8] || '',
+        category_nl: row[9] || '',
+        duration: row[10] || '0',
+        isActive: row[11] !== 'false',
+        prices: servicePrices[serviceId] || []
+      };
+    })
 
     res.json(vehicleServices)
   } catch (error) {
@@ -704,7 +737,35 @@ router.get('/vehicle-services', requireAuth, async (req, res) => {
 // Create vehicle service
 router.post('/vehicle-services', requireAuth, async (req, res) => {
   try {
-    const { name, description, price, duration, category, isActive } = req.body;
+    const { 
+      name, 
+      description, 
+      price, 
+      duration, 
+      category, 
+      is_active, 
+      isActive, 
+      prices,
+      // Multilingual fields
+      name_en,
+      name_nl, 
+      name_es,
+      name_pl,
+      name_ro,
+      description_en,
+      description_nl,
+      description_es,
+      description_pl,
+      description_ro,
+      category_en,
+      category_nl,
+      category_es,
+      category_pl,
+      category_ro
+    } = req.body;
+    
+    // Handle both is_active (camelCase) and isActive (PascalCase) from client
+    const activeStatus = is_active !== undefined ? is_active : isActive;
     
     // Validate required fields
     if (!name || !description || !category) {
@@ -714,22 +775,91 @@ router.post('/vehicle-services', requireAuth, async (req, res) => {
       });
     }
 
-    // Generate unique ID
-    const id = `vehicle_service_${Date.now()}`;
+    // Get the next available service ID
+    const existingServices = await GoogleSheetsService.getData('Vehicle_Services');
+    let nextServiceId = 1;
     
-    // Prepare data for Google Sheets (matching the column structure)
+    if (existingServices.length > 1) {
+      // Find the highest numeric ID from existing services
+      const existingIds = existingServices.slice(1).map(row => {
+        const id = row[0];
+        // Extract numeric part from IDs like "service_1", "1", "vehicle_service_123456"
+        if (typeof id === 'string') {
+          const numericMatch = id.match(/\d+$/);
+          return numericMatch ? parseInt(numericMatch[0]) : 0;
+        }
+        return parseInt(id) || 0;
+      }).filter(id => id > 0);
+      
+      nextServiceId = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
+    }
+    
+    // Use simple numeric ID format for consistency
+    const id = `service_${nextServiceId}`;
+    const createdAt = new Date().toISOString();
+    
+    // Prepare data for Google Sheets (matching the complete column structure)
     const serviceData = [
-      id,
-      name,
-      description,
-      price || '0',
-      duration || '60',
-      category,
-      isActive !== false ? 'true' : 'false'
+      id,                                    // ID
+      name,                                  // Name
+      name_en || name,                       // Name_EN
+      name_nl || name,                       // Name_NL
+      name_es || name,                       // Name_ES
+      name_pl || name,                       // Name_PL
+      name_ro || name,                       // Name_RO
+      description,                           // Description
+      description_en || description,           // Description_EN
+      description_nl || description,           // Description_NL
+      description_es || description,           // Description_ES
+      description_pl || description,           // Description_PL
+      description_ro || description,           // Description_RO
+      category,                              // Category
+      category_en || category,               // Category_EN
+      category_nl || category,               // Category_NL
+      category_es || category,               // Category_ES
+      category_pl || category,               // Category_PL
+      category_ro || category,               // Category_RO
+      duration || '60',                      // Duration_Minutes
+      activeStatus !== false ? 'true' : 'false', // Is_Active
+      createdAt                              // Created_At
     ];
 
     // Append to Google Sheets
     await GoogleSheetsService.appendData('Vehicle_Services', serviceData);
+    
+    // Handle prices if provided
+    if (prices && Array.isArray(prices) && prices.length > 0) {
+      console.log('💰 Processing prices for new service:', prices);
+      
+      for (const priceData of prices) {
+        if (priceData.body_type_key && (priceData.price_min !== undefined || priceData.price_max !== undefined)) {
+          // Determine the price value to use (prefer price_min, fallback to price, then price_max)
+          const priceValue = priceData.price_min !== undefined ? priceData.price_min : 
+                            (priceData.price !== undefined ? priceData.price : priceData.price_max);
+          
+          if (priceValue === undefined || priceValue === null || priceValue === '') {
+            console.log(`⚠️ Skipping price for body type ${priceData.body_type_key} - no valid price value`);
+            continue;
+          }
+          
+          const priceId = `service_price_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          const priceRowData = [
+            priceId,                                    // ID
+            id,                                         // Service_ID
+            priceData.body_type_key,                    // Body_Type_Key
+            priceValue.toString(),                      // Price_Min
+            priceData.price_max !== undefined ? priceData.price_max.toString() : priceValue.toString(), // Price_Max
+            priceData.currency || 'EUR',                // Currency
+            priceData.duration_minutes || duration || '60', // Duration_Minutes
+            priceData.promo_percent || '0',             // Promo_Percent
+            priceData.is_active !== undefined ? (priceData.is_active ? 'true' : 'false') : 'true' // Is_Active
+          ];
+          
+          await GoogleSheetsService.appendData('Vehicle_Service_Prices', priceRowData);
+          console.log('✅ Price added for body type:', priceData.body_type_key, 'with value:', priceValue);
+        }
+      }
+    }
     
     console.log('✅ Vehicle service created successfully:', id);
     res.json({ 
@@ -738,11 +868,17 @@ router.post('/vehicle-services', requireAuth, async (req, res) => {
       service: {
         id,
         name,
+        name_en: name,
+        name_nl: name,
         description,
-        price: price || '0',
-        duration: duration || '60',
+        description_en: description,
+        description_nl: description,
         category,
-        isActive: isActive !== false
+        category_en: category,
+        category_nl: category,
+        duration: duration || '60',
+        isActive: activeStatus !== false,
+        prices: prices || []
       }
     });
   } catch (error) {
@@ -758,9 +894,35 @@ router.post('/vehicle-services', requireAuth, async (req, res) => {
 router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, price, duration, category, isActive } = req.body;
+    const { 
+      name, 
+      description, 
+      price, 
+      duration, 
+      category, 
+      is_active, 
+      isActive, 
+      prices,
+      // Multilingual fields
+      name_en,
+      name_nl, 
+      name_es,
+      name_pl,
+      name_ro,
+      description_en,
+      description_nl,
+      description_es,
+      description_pl,
+      description_ro,
+      category_en,
+      category_nl,
+      category_es,
+      category_pl,
+      category_ro
+    } = req.body;
     
     console.log('✏️ Attempting to update vehicle service with ID:', id);
+    console.log('📋 Update data received:', { name, description, duration, category, is_active, isActive, prices });
 
     // Get all vehicle services to find the one to update
     const data = await GoogleSheetsService.getData('Vehicle_Services');
@@ -791,19 +953,127 @@ router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
       });
     }
 
-    // Prepare updated data
+    // Handle both is_active (camelCase) and isActive (PascalCase) from client
+    const activeStatus = is_active !== undefined ? is_active : isActive;
+    
+    // Prepare updated data with all columns
     const updatedData = [
-      targetId,
-      name || data[serviceIndex][1],
-      description || data[serviceIndex][2],
-      price !== undefined ? price : data[serviceIndex][3],
-      duration !== undefined ? duration : data[serviceIndex][4],
-      category || data[serviceIndex][5],
-      isActive !== undefined ? (isActive ? 'true' : 'false') : data[serviceIndex][6]
+      targetId,                                                               // ID
+      name || data[serviceIndex][1],                                         // Name
+      name_en || name || data[serviceIndex][2],                              // Name_EN
+      name_nl || name || data[serviceIndex][3],                              // Name_NL
+      name_es || name || data[serviceIndex][4],                              // Name_ES
+      name_pl || name || data[serviceIndex][5],                              // Name_PL
+      name_ro || name || data[serviceIndex][6],                              // Name_RO
+      description || data[serviceIndex][7],                                 // Description
+      description_en || description || data[serviceIndex][8],                // Description_EN
+      description_nl || description || data[serviceIndex][9],                // Description_NL
+      description_es || description || data[serviceIndex][10],               // Description_ES
+      description_pl || description || data[serviceIndex][11],               // Description_PL
+      description_ro || description || data[serviceIndex][12],               // Description_RO
+      category || data[serviceIndex][13],                                  // Category
+      category_en || category || data[serviceIndex][14],                     // Category_EN
+      category_nl || category || data[serviceIndex][15],                     // Category_NL
+      category_es || category || data[serviceIndex][16],                     // Category_ES
+      category_pl || category || data[serviceIndex][17],                     // Category_PL
+      category_ro || category || data[serviceIndex][18],                     // Category_RO
+      duration !== undefined ? duration : data[serviceIndex][19],            // Duration_Minutes
+      activeStatus !== undefined ? (activeStatus ? 'true' : 'false') : data[serviceIndex][20], // Is_Active
+      data[serviceIndex][21] || new Date().toISOString()                     // Created_At (keep existing or set new)
     ];
 
     // Update in Google Sheets (rowIndex is 1-based for Google Sheets)
     await GoogleSheetsService.updateData('Vehicle_Services', serviceIndex + 1, updatedData);
+    
+    // Handle prices if provided
+    if (prices && Array.isArray(prices)) {
+      console.log('💰 Processing prices update for service:', targetId);
+      
+      // Get existing prices for this service
+      const existingPricesData = await GoogleSheetsService.getData('Vehicle_Service_Prices');
+      const existingPriceMap = {};
+      const existingPriceRows = [];
+      
+      if (existingPricesData.length > 1) {
+        for (let i = 1; i < existingPricesData.length; i++) {
+          const priceServiceId = String(existingPricesData[i][1] || '').trim();
+          if (priceServiceId === targetId) {
+            const bodyTypeKey = existingPricesData[i][2] || '';
+            existingPriceMap[bodyTypeKey] = {
+              rowIndex: i - 1,
+              data: existingPricesData[i],
+              id: existingPricesData[i][0] || ''
+            };
+            existingPriceRows.push(bodyTypeKey);
+          }
+        }
+      }
+      
+      console.log('📊 Found existing prices:', existingPriceRows.length);
+      console.log('📋 New prices received:', prices.length);
+      
+      // Process each new price - only if it has a valid value
+      for (const priceData of prices) {
+        if (priceData.body_type_key) {
+          const bodyTypeKey = priceData.body_type_key;
+          
+          // Determine the price value to use (prefer price_min, fallback to price, then price_max)
+          const priceValue = priceData.price_min !== undefined ? priceData.price_min : 
+                            (priceData.price !== undefined ? priceData.price : priceData.price_max);
+          
+          // Only process if there's a valid price value (not undefined, null, empty, or 0 if you want to allow 0)
+          if (priceValue === undefined || priceValue === null || priceValue === '') {
+            console.log(`⚠️ Skipping price for body type ${bodyTypeKey} - no valid price value`);
+            continue;
+          }
+          
+          if (existingPriceMap[bodyTypeKey]) {
+            // Update existing price
+            const existingPrice = existingPriceMap[bodyTypeKey];
+            const updatedPriceData = [
+              existingPrice.id, // Keep existing ID
+              targetId, // service_id
+              bodyTypeKey, // body_type_key
+              priceValue.toString(), // price_min
+              priceValue.toString(), // price_max (same as price_min for now)
+              priceData.currency || existingPrice.data[5] || 'EUR', // currency
+              priceData.duration_minutes || duration || existingPrice.data[6] || '60', // duration_minutes
+              priceData.promo_percent || existingPrice.data[7] || '0', // promo_percent
+              priceData.is_active !== undefined ? (priceData.is_active ? 'true' : 'false') : (existingPrice.data[8] || 'true') // is_active
+            ];
+            
+            await GoogleSheetsService.updateData('Vehicle_Service_Prices', existingPrice.rowIndex + 1, updatedPriceData);
+            console.log('✅ Price updated for body type:', bodyTypeKey, 'with value:', priceValue);
+            
+            // Remove from map to track processed items
+            delete existingPriceMap[bodyTypeKey];
+          } else {
+            // Add new price
+            const priceId = `service_price_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            const priceRowData = [
+              priceId,
+              targetId, // service_id
+              bodyTypeKey, // body_type_key
+              priceValue.toString(), // price_min
+              priceValue.toString(), // price_max (same as price_min for now)
+              priceData.currency || 'EUR', // currency
+              priceData.duration_minutes || duration || '60', // duration_minutes
+              priceData.promo_percent || '0', // promo_percent
+              priceData.is_active !== undefined ? (priceData.is_active ? 'true' : 'false') : 'true' // is_active
+            ];
+            
+            await GoogleSheetsService.appendData('Vehicle_Service_Prices', priceRowData);
+            console.log('✅ New price added for body type:', bodyTypeKey, 'with value:', priceValue);
+          }
+        }
+      }
+      
+      // Keep existing prices that weren't modified (don't delete them)
+      const remainingPrices = Object.keys(existingPriceMap);
+      if (remainingPrices.length > 0) {
+        console.log('💾 Preserved unmodified prices for body types:', remainingPrices);
+      }
+    }
     
     console.log('✅ Vehicle service updated successfully');
     res.json({ 
@@ -812,11 +1082,17 @@ router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
       service: {
         id: targetId,
         name: updatedData[1],
-        description: updatedData[2],
-        price: updatedData[3],
-        duration: updatedData[4],
-        category: updatedData[5],
-        isActive: updatedData[6] === 'true'
+        name_en: updatedData[2],
+        name_nl: updatedData[3],
+        description: updatedData[4],
+        description_en: updatedData[5],
+        description_nl: updatedData[6],
+        category: updatedData[7],
+        category_en: updatedData[8],
+        category_nl: updatedData[9],
+        duration: updatedData[10],
+        isActive: updatedData[11] === 'true',
+        prices: prices || []
       }
     });
   } catch (error) {
@@ -863,8 +1139,12 @@ router.delete('/vehicle-services/:id', requireAuth, async (req, res) => {
       });
     }
 
-    // Delete the vehicle service from Google Sheets (rowIndex is 1-based for Google Sheets)
-    await GoogleSheetsService.deleteData('Vehicle_Services', serviceIndex + 1);
+    console.log(`🔍 Found service at array index: ${serviceIndex}, Google Sheets row index: ${serviceIndex - 1}`);
+    console.log(`🔍 Service data before deletion:`, data[serviceIndex]);
+    
+    // Delete the vehicle service from Google Sheets
+    // serviceIndex is the array index (1-based, skipping header), but Google Sheets deleteData expects 0-based index
+    await GoogleSheetsService.deleteData('Vehicle_Services', serviceIndex - 1);
     
     console.log('✅ Vehicle service deleted successfully');
     res.json({ 
@@ -1355,6 +1635,82 @@ router.post('/email/send', requireAuth, async (req, res) => {
       success: false,
       error: 'Failed to send test email',
       details: error.message
+    });
+  }
+});
+
+// Test route to validate Google Sheets structure and data consistency
+router.get('/test-sheets-structure', async (req, res) => {
+  try {
+    console.log('📊 Testing Google Sheets structure...');
+    
+    // Get services data
+    const servicesData = await GoogleSheetsService.getData('Vehicle_Services');
+    console.log('✅ Vehicle_Services sheet data:', {
+      rowCount: servicesData ? servicesData.length : 0,
+      headers: servicesData && servicesData.length > 0 ? Object.keys(servicesData[0]) : 'No data',
+      sampleData: servicesData ? servicesData.slice(0, 2) : 'No data'
+    });
+    
+    // Get prices data
+    const pricesData = await GoogleSheetsService.getData('Vehicle_Service_Prices');
+    console.log('✅ Vehicle_Service_Prices sheet data:', {
+      rowCount: pricesData ? pricesData.length : 0,
+      headers: pricesData && pricesData.length > 0 ? Object.keys(pricesData[0]) : 'No data',
+      sampleData: pricesData ? pricesData.slice(0, 2) : 'No data'
+    });
+    
+    // Get services with prices
+    const servicesWithPrices = await GoogleSheetsService.getServicesWithPrices();
+    console.log('✅ Services with prices:', {
+      serviceCount: servicesWithPrices ? servicesWithPrices.length : 0,
+      sampleService: servicesWithPrices && servicesWithPrices.length > 0 ? {
+        id: servicesWithPrices[0].id,
+        name: servicesWithPrices[0].name,
+        prices: servicesWithPrices[0].prices
+      } : 'No services'
+    });
+    
+    // Test specific service price loading
+    if (servicesData && servicesData.length > 0) {
+      const testService = servicesData[0];
+      console.log('🧪 Testing service price loading for:', testService.id);
+      
+      // Find prices for this service
+      const servicePrices = pricesData ? pricesData.filter(price => 
+        price.service_id === testService.id || price.Service_ID === testService.id
+      ) : [];
+      
+      console.log('🔍 Found prices for test service:', {
+        serviceId: testService.id,
+        priceCount: servicePrices.length,
+        prices: servicePrices
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: {
+        servicesCount: servicesData ? servicesData.length : 0,
+        pricesCount: pricesData ? pricesData.length : 0,
+        servicesWithPricesCount: servicesWithPrices ? servicesWithPrices.length : 0,
+        servicesHeaders: servicesData && servicesData.length > 0 ? Object.keys(servicesData[0]) : [],
+        pricesHeaders: pricesData && pricesData.length > 0 ? Object.keys(pricesData[0]) : [],
+        sampleServices: servicesData ? servicesData.slice(0, 3) : [],
+        samplePrices: pricesData ? pricesData.slice(0, 3) : [],
+        sampleServicesWithPrices: servicesWithPrices ? servicesWithPrices.slice(0, 2) : []
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Test failed:', error.message);
+    console.error('Error stack:', error.stack);
+    
+    res.status(500).json({
+      success: false,
+      error: 'Test failed',
+      details: error.message,
+      stack: error.stack
     });
   }
 });

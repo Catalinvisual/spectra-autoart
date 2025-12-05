@@ -349,6 +349,7 @@ const resources = {
         vehicleServiceDeleted: 'Voertuig service verwijderd!',
         errorDeletingVehicleService: 'Fout bij het verwijderen van voertuig service',
         bodyTypeDeleted: 'Carrosserie type verwijderd!',
+        deleteBodyType: 'Carrosserie Type Verwijderen',
         errorDeletingBodyType: 'Fout bij het verwijderen van carrosserie type',
         editVehicleService: 'Voertuig Service Bewerken',
         basicInfo: 'Basis Informatie',
@@ -406,7 +407,16 @@ const resources = {
         customerName: 'Klant Naam',
         customerInformation: 'Klant Informatie',
         bookingInformation: 'Afspraak Informatie',
-        notSpecified: 'Niet Gespecificeerd'
+        notSpecified: 'Niet Gespecificeerd',
+        bookingDetails: 'Afspraak Details',
+        save: 'Opslaan',
+        cancel: 'Annuleren',
+        subscribedToNewsletter: 'Ingeschreven voor nieuwsbrief',
+        newsletter: 'Nieuwsbrief',
+        email: 'Email',
+        phone: 'Telefoon',
+        bookingDeleted: 'Afspraak verwijderd!',
+        errorDeletingBooking: 'Fout bij het verwijderen van afspraak'
       },
       
       // Chatbot translations
@@ -1418,7 +1428,14 @@ const resources = {
       customerName: 'Customer Name',
       customerInformation: 'Customer Information',
       bookingInformation: 'Booking Information',
-      notSpecified: 'Not Specified'
+      notSpecified: 'Not Specified',
+      bookingDetails: 'Booking Details',
+      subscribedToNewsletter: 'Subscribed to Newsletter',
+      newsletter: 'Newsletter',
+      email: 'Email',
+      phone: 'Phone',
+      bookingDeleted: 'Booking Deleted!',
+      errorDeletingBooking: 'Error deleting booking'
       },
       
       // Terms and Conditions page translations
@@ -2814,6 +2831,24 @@ const resources = {
           description: 'Por favor, revisa y acepta nuestros términos y condiciones antes de continuar.',
           accept: 'Aceptar',
           decline: 'Rechazar'
+        },
+        
+        // Admin translations
+        admin: {
+          notSpecified: 'No Especificado',
+          bookingDetails: 'Detalles de Reserva',
+          save: 'Guardar',
+          cancel: 'Cancelar',
+          subscribedToNewsletter: 'Suscrito al Boletín',
+          newsletter: 'Boletín',
+          email: 'Email',
+          phone: 'Teléfono',
+          edit: 'Editar',
+          delete: 'Eliminar',
+          bookingDeleted: '¡Reserva Eliminada!',
+          errorDeletingBooking: 'Error al eliminar reserva',
+          passwordResetInstructions: 'Si olvidaste tu contraseña, por favor contacta al administrador del sistema.',
+          passwordResetFailed: 'Error al restablecer contraseña.'
         }
       }
     }
@@ -3632,6 +3667,24 @@ const resources = {
           description: 'Przeczytaj i zaakceptuj nasz regulamin przed kontynuowaniem.',
           accept: 'Akceptuj',
           decline: 'Odrzuć'
+        },
+        
+        // Admin translations
+        admin: {
+          notSpecified: 'Nie Określono',
+          bookingDetails: 'Szczegóły Rezerwacji',
+          save: 'Zapisz',
+          cancel: 'Anuluj',
+          subscribedToNewsletter: 'Zapisany do Newslettera',
+          newsletter: 'Newsletter',
+          email: 'Email',
+          phone: 'Telefon',
+          edit: 'Edytuj',
+          delete: 'Usuń',
+          bookingDeleted: 'Rezerwacja Usunięta!',
+          errorDeletingBooking: 'Błąd podczas usuwania rezerwacji',
+          passwordResetInstructions: 'Jeśli zapomniałeś hasła, skontaktuj się z administratorem systemu.',
+          passwordResetFailed: 'Resetowanie hasła nie powiodło się.'
         }
       }
     }
@@ -4552,6 +4605,24 @@ const resources = {
         description: 'Prin utilizarea site-ului nostru web, sunteți de acord cu termenii și condițiile noastre și cu politica de confidențialitate. Vă respectăm intimitatea și suntem dedicați protejării datelor dvs. personale.',
         accept: 'Accept',
         decline: 'Refuz'
+      },
+      
+      // Admin translations
+      admin: {
+        notSpecified: 'Nespecificat',
+        bookingDetails: 'Detalii Programare',
+        save: 'Salvează',
+        cancel: 'Anulează',
+        subscribedToNewsletter: 'Abonat la Newsletter',
+        newsletter: 'Newsletter',
+        email: 'Email',
+        phone: 'Telefon',
+        edit: 'Editează',
+        delete: 'Șterge',
+        bookingDeleted: 'Programare Ștearsă!',
+        errorDeletingBooking: 'Eroare la ștergerea programării',
+        passwordResetInstructions: 'Dacă ai uitat parola, te rugăm să contactezi administratorul sistemului.',
+        passwordResetFailed: 'Resetarea parolei a eșuat.'
       }
     }
   }

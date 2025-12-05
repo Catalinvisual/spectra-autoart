@@ -2,6 +2,7 @@ import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 import { GOOGLE_SHEETS_STRUCTURE } from '../config/googleSheetsStructure.js';
 import { translateMultipleWithDeepL, detectLanguageWithDeepL } from './deeplTranslationService.js';
+import { BODY_TYPES } from '../config/bodyTypesConfig.js';
 
 class GoogleSheetsService {
   constructor() {
@@ -501,6 +502,42 @@ class GoogleSheetsService {
       .trim();
   }
 
+  // Helper function to map body type ID to key
+  getBodyTypeKeyById(bodyTypeId) {
+    console.log(`DEBUG getBodyTypeKeyById: input="${bodyTypeId}", type=${typeof bodyTypeId}`);
+    if (!bodyTypeId) return 'default';
+    
+    // If it's already a string key, return it
+    if (typeof bodyTypeId === 'string' && !/^\d+$/.test(bodyTypeId)) {
+      console.log(`DEBUG getBodyTypeKeyById: returning string key "${bodyTypeId}"`);
+      return bodyTypeId;
+    }
+    
+    // If it's a numeric ID, find the corresponding body type
+    const numericId = parseInt(bodyTypeId);
+    console.log(`DEBUG getBodyTypeKeyById: looking for numeric ID ${numericId}`);
+    const bodyType = BODY_TYPES.find(bt => bt.id === numericId);
+    const result = bodyType ? bodyType.key : 'default';
+    console.log(`DEBUG getBodyTypeKeyById: found body type`, bodyType, 'returning key:', result);
+    return result;
+  }
+
+  // Helper function to get body type name by ID
+  getBodyTypeNameById(bodyTypeId) {
+    if (!bodyTypeId) return 'Default';
+    
+    // If it's already a string key, find the name
+    if (typeof bodyTypeId === 'string' && !/^\d+$/.test(bodyTypeId)) {
+      const bodyType = BODY_TYPES.find(bt => bt.key === bodyTypeId);
+      return bodyType ? bodyType.name : bodyTypeId;
+    }
+    
+    // If it's a numeric ID, find the corresponding body type
+    const numericId = parseInt(bodyTypeId);
+    const bodyType = BODY_TYPES.find(bt => bt.id === numericId);
+    return bodyType ? bodyType.name : `Type ${bodyTypeId}`;
+  }
+
   async getServicesWithPrices(lang = 'nl') {
     try {
       const servicesData = await this.getData('Vehicle_Services');
@@ -546,20 +583,30 @@ class GoogleSheetsService {
       });
     });
     
+    console.log(`DEBUG: Prices data length: ${pricesData.length}`);
     if (pricesData.length > 1) {
+      console.log(`DEBUG: Processing ${pricesData.length - 1} price rows`);
       pricesData.slice(1).forEach((row, index) => {
         const serviceId = row[pricesHeaders.indexOf('Service_ID')];
-        const bodyTypeId = row[pricesHeaders.indexOf('Body_Type_ID')];
-        const isActive = row[pricesHeaders.indexOf('Is_Active')] === 'true';
+        const bodyTypeId = row[pricesHeaders.indexOf('Body_Type_Key')]; // This could be numeric ID or string key
+        const isActive = row[pricesHeaders.indexOf('Is_Active')] === 'true' || row[pricesHeaders.indexOf('Is_Active')] === true || row[pricesHeaders.indexOf('Is_Active')] === '' || row[pricesHeaders.indexOf('Is_Active')] === null || row[pricesHeaders.indexOf('Is_Active')] === undefined;
         
-        console.log(`DEBUG: Price row ${index + 1} - Service_ID: "${serviceId}", Body_Type_ID: "${bodyTypeId}", Is_Active: ${isActive}`);
+        console.log(`DEBUG: Price row ${index + 1} - Service_ID: "${serviceId}", Body_Type_Key: "${bodyTypeId}", Is_Active: ${isActive}`);
+        console.log(`DEBUG: BODY_TYPES loaded:`, BODY_TYPES.length, 'types');
+        console.log(`DEBUG: BODY_TYPES sample:`, BODY_TYPES.slice(0, 2));
         
-        if (isActive && serviceId && bodyTypeId) {
-          const key = `${serviceId}_${bodyTypeId}`;
+        // Allow prices with empty Body_Type_Key to be linked to services
+        if (isActive && serviceId) {
+          // Map body type ID to key for frontend compatibility
+          const bodyTypeKey = this.getBodyTypeKeyById(bodyTypeId);
+          const bodyTypeName = this.getBodyTypeNameById(bodyTypeId);
+          
+          const key = bodyTypeId ? `${serviceId}_${bodyTypeKey}` : `${serviceId}_default`;
           pricesMap[key] = {
             id: parseInt(row[pricesHeaders.indexOf('ID')]) || 0,
-            body_type_id: bodyTypeId,
-            bodyTypeName: bodyTypeId, // Use ID as name since we don't have separate body types sheet
+            body_type_id: bodyTypeKey, // Use the mapped key for frontend
+            body_type_key: bodyTypeKey, // Add body_type_key for frontend compatibility
+            bodyTypeName: bodyTypeName, // Use the proper name
             price_min: parseFloat(row[pricesHeaders.indexOf('Price_Min')]) || 0,
             price_max: parseFloat(row[pricesHeaders.indexOf('Price_Max')]) || null,
             currency: row[pricesHeaders.indexOf('Currency')] || 'EUR',
@@ -567,7 +614,8 @@ class GoogleSheetsService {
             promo_percent: parseInt(row[pricesHeaders.indexOf('Promo_Percent')]) || 0,
             is_active: isActive
           };
-          console.log(`DEBUG: Added price to map for service ${serviceId}, body type ${bodyTypeId}`);
+          console.log(`DEBUG: Added price to map with key: ${key}`);
+          console.log(`DEBUG: Price details: service=${serviceId}, body_type=${bodyTypeKey}, price_min=${pricesMap[key].price_min}`);
         }
       });
     }
@@ -719,14 +767,14 @@ class GoogleSheetsService {
           }
 
           return {
-            id: parseInt(serviceId) || 0,
+            id: serviceId,
             slug: this.createSlug(finalName),
             name: finalName,
             description: finalDescription,
             category: finalCategory,
             image_url: '',
             duration_minutes: parseInt(row[servicesHeaders.indexOf('Duration_Minutes')]) || 0,
-            is_active: row[servicesHeaders.indexOf('Is_Active')] === 'true',
+            is_active: row[servicesHeaders.indexOf('Is_Active')] === 'true' || row[servicesHeaders.indexOf('Is_Active')] === true,
             prices: servicePrices
           };
         }
@@ -777,14 +825,14 @@ class GoogleSheetsService {
         }
 
         return {
-          id: parseInt(serviceId) || 0,
+          id: serviceId,
           slug: this.createSlug(targetName),
           name: targetName,
           description: targetDescription,
           category: targetCategory,
           image_url: '',
           duration_minutes: parseInt(row[servicesHeaders.indexOf('Duration_Minutes')]) || 0,
-          is_active: row[servicesHeaders.indexOf('Is_Active')] === 'true',
+          is_active: row[servicesHeaders.indexOf('Is_Active')] === 'true' || row[servicesHeaders.indexOf('Is_Active')] === true,
           prices: servicePrices
         };
       }));
