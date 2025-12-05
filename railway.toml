@@ -2,6 +2,7 @@
 buildCommand = ""
 startCommand = "cd server && node src/index.js"
 dockerfilePath = "Dockerfile.production"
+nixpacksPlan.phases.setup.nixPkgs = ["nodejs_20"]
 
 [deploy]
 healthcheckPath = "/ping"

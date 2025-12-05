@@ -2,13 +2,20 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "rm -rf client/dist && rm -rf client/build && cd client && npm ci && npm run build && cd ../server && npm ci",
+    "buildCommand": "rm -rf client/dist && rm -rf client/build && cd client && npm install && npm run build && cd ../server && npm install",
     "installCommand": "npm install",
     "startCommand": "cd server && npm start",
     "healthcheckPath": "/",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
+    "restartPolicyMaxRetries": 10,
+    "nixpacksPlan": {
+      "phases": {
+        "setup": {
+          "nixPkgs": ["nodejs_20"]
+        }
+      }
+    }
   },
   "deploy": {
     "startCommand": "cd server && npm start",
@@ -16,6 +23,6 @@
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10,
-    "prBuildCommand": "cd client && npm ci && npm run build"
+    "prBuildCommand": "cd client && npm install && npm run build"
   }
 }
