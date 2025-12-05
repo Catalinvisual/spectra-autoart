@@ -98,6 +98,8 @@ import galleryRouter from './routes/gallery.js'
 import testimonialsRouter from './routes/testimonials.js'
 import translateRouter from './routes/translate.js'
 import debugVehiclesRouter from './routes/debugVehicles.js'
+import adminServicesRouter from './routes/adminServices.js'
+import cachedServicesRouter from './routes/cachedServices.js'
 import GoogleSheetsService from './services/googleSheetsService.js'
 import VehiclesAPIService from './services/vehiclesAPIService.js'
 import { vehicleServicesService } from './services/vehicleServicesService.js'
@@ -135,6 +137,8 @@ app.use((req, res, next) => {
 
 app.use('/api/public', publicRouter)
 app.use('/api/admin', adminRouter)
+app.use('/api/admin/services', adminServicesRouter)
+app.use('/api/services/cached', cachedServicesRouter)
 app.use('/api/vehicles', vehicleRouter)
 app.use('/api/services', servicesRouter)
 app.use('/api/vehicle-services', vehicleServicesRouter)

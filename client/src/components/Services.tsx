@@ -27,14 +27,21 @@ const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
     try {
       setLoading(true)
       
-      // Load services with prices
-      const servicesResponse = await publicAPI.getServicesWithPrices(currentLanguage)
+      // Load services with cached translations - this avoids repeated DeepL calls
+      // Include inactive services to show all services with prices
+      const servicesResponse = await publicAPI.getServicesWithCachedTranslations(currentLanguage, false)
       setServices(servicesResponse.data)
       
     } catch (error) {
-      console.error('Error loading services:', error)
-      // Fallback data
-      setServices([
+      console.error('Error loading services with cached translations:', error)
+      // Fallback to the old endpoint if cached translations fail
+      try {
+        const fallbackResponse = await publicAPI.getServicesWithPrices(currentLanguage)
+        setServices(fallbackResponse.data)
+      } catch (fallbackError) {
+        console.error('Fallback services loading also failed:', fallbackError)
+        // Fallback data
+        setServices([
         {
           id: '1',
           name: 'Premium Wash',
@@ -84,7 +91,7 @@ const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
           ]
         }
       ])
-      
+      }
     } finally {
       setLoading(false)
     }
@@ -148,8 +155,8 @@ const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                   </svg>
                 </div>
-                <h3>{currentLanguage === 'en' && service.name_en ? service.name_en : service.name}</h3>
-                <p>{currentLanguage === 'en' && service.description_en ? service.description_en : service.description}</p>
+                <h3>{service.name}</h3>
+                <p>{service.description}</p>
                 
                 {/* Price Display - Show minimum price for all services */}
                 <div className="service-price">

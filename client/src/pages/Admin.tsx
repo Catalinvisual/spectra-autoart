@@ -984,8 +984,9 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
         await adminAPI.updateVehicleService(editingService.id, serviceData)
         showSuccess(t('admin.vehicleServiceUpdated'))
       } else {
-        await adminAPI.createVehicleService(serviceData)
-        showSuccess(t('admin.vehicleServiceCreated'))
+        // Use the new translation-enabled endpoint for creating services
+        await adminAPI.createVehicleServiceWithTranslation(serviceData)
+        showSuccess(t('admin.vehicleServiceCreatedWithTranslation'))
       }
       
       setShowForm(false)

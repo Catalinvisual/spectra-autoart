@@ -140,6 +140,12 @@ export const publicAPI = {
     const queryString = params.toString();
     return api.get<ServiceWithPrices[]>(`/public/vehicle-services${queryString ? `?${queryString}` : ''}`);
   },
+  getServicesWithCachedTranslations: (lang?: string, activeOnly: boolean = true) => {
+    const params = new URLSearchParams();
+    if (activeOnly) params.append('active_only', 'true');
+    const queryString = params.toString();
+    return api.get<ServiceWithPrices[]>(`/services/cached/translations/${lang || 'nl'}${queryString ? `?${queryString}` : ''}`);
+  },
   getBodyTypes: (lang?: string) => api.get<BodyType[]>(`/public/body-types${lang ? `?lang=${lang}` : ''}`),
   getGallery: (lang?: string) => api.get('/public/gallery' + (lang ? `?lang=${lang}` : '')),
   getTestimonials: (lang?: string) => api.get('/public/testimonials' + (lang ? `?lang=${lang}` : '')),
@@ -160,6 +166,7 @@ export const adminAPI = {
 
   getVehicleServices: () => api.get('/admin/vehicle-services'),
   createVehicleService: (data: any) => api.post('/admin/vehicle-services', data),
+  createVehicleServiceWithTranslation: (data: any) => api.post('/admin/services/create-with-translation', data),
   updateVehicleService: (id: string, data: any) => api.put(`/admin/vehicle-services/${id}`, data),
   deleteVehicleService: (id: string) => api.delete(`/admin/vehicle-services/${id}`),
   getBodyTypes: () => api.get('/admin/body-types'),
