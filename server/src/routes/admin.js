@@ -6,6 +6,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import GoogleSheetsService from '../services/googleSheetsService.js'
+import { vehicleServicesService } from '../services/vehicleServicesService.js'
 import requireAuth from '../middleware/auth.js'
 import { sendBookingConfirmation, sendAdminNotification, testEmailService } from '../services/emailService.js'
 
