@@ -387,77 +387,56 @@ class VehicleServicesService {
         throw new Error(`Service with slug '${slug}' already exists`);
       }
       
-      // Detectează limba originală pentru nume și descriere folosind DeepL
-      let detectedNameLang = 'EN';
-      let detectedDescLang = 'EN';
-      
-      try {
-        detectedNameLang = await detectLanguageWithDeepL(serviceData.name);
-        detectedDescLang = serviceData.description ? await detectLanguageWithDeepL(serviceData.description) : 'EN';
-      } catch (error) {
-        console.log('⚠️ DeepL API key not found, using default language EN');
-        detectedNameLang = 'EN';
-        detectedDescLang = 'EN';
-      }
-      
-      console.log(`🔍 DeepL detected languages - Name: ${detectedNameLang}, Description: ${detectedDescLang}`);
-      
-      // Traduce numele și descrierea în toate cele 5 limbi folosind DeepL
+      const hasProvidedTranslations = (
+        serviceData.name_nl || serviceData.name_en || serviceData.name_es || serviceData.name_pl || serviceData.name_ro ||
+        serviceData.description_nl || serviceData.description_en || serviceData.description_es || serviceData.description_pl || serviceData.description_ro
+      );
       const targetLanguages = ['NL', 'EN', 'ES', 'PL', 'RO'];
       const nameTranslations = {};
       const descTranslations = {};
-      
-      // Traduce numele folosind DeepL
-      try {
-        console.log(`🔄 DeepL translating name: "${serviceData.name}" from ${detectedNameLang} to all languages...`);
-        const nameTranslationsResult = await translateMultipleWithDeepL(serviceData.name, targetLanguages, detectedNameLang);
-        
-        // Procesează rezultatele traducerii
-        targetLanguages.forEach(lang => {
-          if (lang === detectedNameLang) {
-            nameTranslations[lang] = serviceData.name; // Păstrează originalul
-            console.log(`✅ Keeping original name for ${lang}: ${serviceData.name}`);
-          } else {
-            nameTranslations[lang] = nameTranslationsResult[lang] || serviceData.name;
-            console.log(`🔄 DeepL translated name to ${lang}: ${nameTranslations[lang]}`);
-          }
-        });
-      } catch (error) {
-        console.error('❌ DeepL name translation failed:', error);
-        // Fallback: folosește textul original pentru toate limbile
-        targetLanguages.forEach(lang => {
-          nameTranslations[lang] = serviceData.name;
-        });
-      }
-      
-      // Traduce descrierea folosind DeepL
-      if (serviceData.description) {
+
+      if (hasProvidedTranslations) {
+        nameTranslations['NL'] = serviceData.name_nl || serviceData.name;
+        nameTranslations['EN'] = serviceData.name_en || serviceData.name;
+        nameTranslations['ES'] = serviceData.name_es || serviceData.name;
+        nameTranslations['PL'] = serviceData.name_pl || serviceData.name;
+        nameTranslations['RO'] = serviceData.name_ro || serviceData.name;
+
+        descTranslations['NL'] = serviceData.description_nl || serviceData.description || '';
+        descTranslations['EN'] = serviceData.description_en || serviceData.description || '';
+        descTranslations['ES'] = serviceData.description_es || serviceData.description || '';
+        descTranslations['PL'] = serviceData.description_pl || serviceData.description || '';
+        descTranslations['RO'] = serviceData.description_ro || serviceData.description || '';
+      } else {
+        let detectedNameLang = 'EN';
+        let detectedDescLang = 'EN';
         try {
-          console.log(`🔄 DeepL translating description: "${serviceData.description.substring(0, 50)}..." from ${detectedDescLang} to all languages...`);
-          const descTranslationsResult = await translateMultipleWithDeepL(serviceData.description, targetLanguages, detectedDescLang);
-          
-          // Procesează rezultatele traducerii
+          detectedNameLang = await detectLanguageWithDeepL(serviceData.name);
+          detectedDescLang = serviceData.description ? await detectLanguageWithDeepL(serviceData.description) : 'EN';
+        } catch (error) {
+          detectedNameLang = 'EN';
+          detectedDescLang = 'EN';
+        }
+        try {
+          const nameTranslationsResult = await translateMultipleWithDeepL(serviceData.name, targetLanguages, detectedNameLang);
           targetLanguages.forEach(lang => {
-            if (lang === detectedDescLang) {
-              descTranslations[lang] = serviceData.description; // Păstrează originalul
-              console.log(`✅ Keeping original description for ${lang}: ${serviceData.description.substring(0, 50)}...`);
-            } else {
-              descTranslations[lang] = descTranslationsResult[lang] || serviceData.description;
-              console.log(`🔄 DeepL translated description to ${lang}: ${descTranslations[lang].substring(0, 50)}...`);
-            }
+            nameTranslations[lang] = nameTranslationsResult[lang] || serviceData.name;
           });
         } catch (error) {
-          console.error('❌ DeepL description translation failed:', error);
-          // Fallback: folosește textul original pentru toate limbile
-          targetLanguages.forEach(lang => {
-            descTranslations[lang] = serviceData.description;
-          });
+          targetLanguages.forEach(lang => { nameTranslations[lang] = serviceData.name; });
         }
-      } else {
-        // Dacă nu există descriere, setează string gol pentru toate limbile
-        targetLanguages.forEach(lang => {
-          descTranslations[lang] = '';
-        });
+        if (serviceData.description) {
+          try {
+            const descTranslationsResult = await translateMultipleWithDeepL(serviceData.description, targetLanguages, detectedDescLang);
+            targetLanguages.forEach(lang => {
+              descTranslations[lang] = descTranslationsResult[lang] || serviceData.description;
+            });
+          } catch (error) {
+            targetLanguages.forEach(lang => { descTranslations[lang] = serviceData.description; });
+          }
+        } else {
+          targetLanguages.forEach(lang => { descTranslations[lang] = ''; });
+        }
       }
       
       // Creează serviciul nou cu traduceri
@@ -567,15 +546,11 @@ class VehicleServicesService {
       // Sincronizează doar noul serviciu și prețurile cu Google Sheets (operațiune rapidă)
       console.log(`🔄 Syncing new service to Google Sheets...`);
       
-      try {
-        // Încercăm să sincronizăm doar noul serviciu și prețurile sale
-        await GoogleSheetsService.updateServices([newService]);
-        await GoogleSheetsService.updateServicePrices(newPrices);
-        console.log(`✅ Successfully synced new service to Google Sheets`);
-      } catch (syncError) {
-        console.warn(`⚠️  Failed to sync to Google Sheets immediately:`, syncError.message);
-        // Continuăm fără să eșuăm - serviciul este salvat local
-      }
+      GoogleSheetsService.updateServices([newService])
+        .then(() => { console.log(`✅ Successfully synced new service to Google Sheets`); })
+        .catch(syncError => { console.warn(`⚠️  Failed to sync to Google Sheets immediately:`, syncError.message); });
+      GoogleSheetsService.updateServicePrices(newPrices)
+        .catch(syncError => { console.warn(`⚠️  Failed to sync prices to Google Sheets:`, syncError.message); });
       
       // Returnăm direct rezultatul fără să reîncărcăm toate datele
       console.log(`✅ Service created successfully with local ID: ${newServiceId}`);
