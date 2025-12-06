@@ -980,10 +980,10 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
           ...p,
           body_type_key: (p.body_type_key || '').toString().toLowerCase()
         }))
-        .filter(p => p && typeof p.body_type_key === 'string' && p.body_type_key && p.price_min !== undefined && p.price_min !== null && p.price_min !== '')
+        .filter(p => p && typeof p.body_type_key === 'string' && p.body_type_key && p.price_min !== undefined && p.price_min !== null)
         .map(p => ({
           body_type_key: String(p.body_type_key).toLowerCase(),
-          price_min: typeof p.price_min === 'string' ? parseFloat(p.price_min) : p.price_min,
+          price_min: p.price_min,
           duration_minutes: p.duration_minutes || 60,
           is_active: p.is_active !== undefined ? p.is_active : true
         }))
