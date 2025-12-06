@@ -93,6 +93,7 @@ import adminRouter from './routes/admin.js'
 import vehicleRouter from './routes/vehicles.js'
 import servicesRouter from './routes/services.js'
 import vehicleServicesRouter from './routes/vehicleServices.js'
+console.log('📦 vehicleServicesRouter imported successfully')
 import bookingsRouter from './routes/bookings.js'
 import galleryRouter from './routes/gallery.js'
 import testimonialsRouter from './routes/testimonials.js'
@@ -142,6 +143,7 @@ app.use('/api/services/cached', cachedServicesRouter)
 app.use('/api/vehicles', vehicleRouter)
 app.use('/api/services', servicesRouter)
 app.use('/api/vehicle-services', vehicleServicesRouter)
+console.log('🔧 vehicleServicesRouter mounted at /api/vehicle-services')
 app.use('/api/bookings', bookingsRouter)
 app.use('/api/gallery', galleryRouter)
 app.use('/api/testimonials', testimonialsRouter)

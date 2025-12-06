@@ -12,7 +12,7 @@ const router = express.Router();
  */
 router.post('/create-with-translation', auth, async (req, res) => {
   try {
-    const { name, description, category, duration_minutes, is_active } = req.body;
+    const { name, description, category, duration_minutes, is_active, prices } = req.body;
 
     // Validate required fields
     if (!name || !description || !category) {
@@ -23,7 +23,7 @@ router.post('/create-with-translation', auth, async (req, res) => {
     }
 
     console.log('🔄 Starting service creation with translation...');
-    console.log('📋 Input data:', { name, description, category, duration_minutes, is_active });
+    console.log('📋 Input data:', { name, description, category, duration_minutes, is_active, prices });
 
     // Prepare service data
     const serviceData = {
@@ -31,7 +31,8 @@ router.post('/create-with-translation', auth, async (req, res) => {
       description: description.trim(),
       category: category.trim(),
       duration_minutes: duration_minutes || 60,
-      is_active: is_active !== undefined ? is_active : true
+      is_active: is_active !== undefined ? is_active : true,
+      prices: prices || {} // Add prices support
     };
 
     // Translate and save service

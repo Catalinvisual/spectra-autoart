@@ -691,6 +691,7 @@ router.get('/vehicle-services', requireAuth, async (req, res) => {
     if (pricesData.length > 1) {
       pricesData.slice(1).forEach(priceRow => {
         const serviceId = String(priceRow[1] || '').trim();
+        console.log(`Processing price row - Service_ID: "${serviceId}", Price data:`, priceRow.slice(0, 5));
         if (serviceId) {
           if (!servicePrices[serviceId]) {
             servicePrices[serviceId] = [];
@@ -700,32 +701,76 @@ router.get('/vehicle-services', requireAuth, async (req, res) => {
             service_id: serviceId,
             body_type_key: priceRow[2] || '',
             price_min: priceRow[3] || '0',
-            price_max: priceRow[4] || priceRow[3] || '0',
             duration_minutes: priceRow[5] || '60',
-            is_active: priceRow[6] !== 'false'
+            is_active: priceRow[7] !== 'false'
           });
         }
       });
     }
 
+    console.log(`DEBUG: Processing ${data.length - 1} services from Google Sheets`);
+    console.log('DEBUG: Available service prices by service_id:', Object.keys(servicePrices));
+    Object.keys(servicePrices).forEach(sid => {
+      console.log(`DEBUG: service_id "${sid}" has ${servicePrices[sid].length} prices`);
+    });
+    
+    // Log toate prețurile pentru debugging
+    console.log('DEBUG: All prices from Google Sheets:');
+    pricesData.slice(1).forEach((priceRow, index) => {
+      console.log(`Price row ${index}: service_id="${priceRow[1] || ''}", body_type="${priceRow[2] || ''}", price="${priceRow[3] || ''}"`);
+    });
+    
     const vehicleServices = data.slice(1).map((row, index) => {
-      const serviceId = row[0] || `vehicle_service_${index + 1}`;
+      const serviceId = String(row[0] || '').trim() || `vehicle_service_${index + 1}`;
+      
+      console.log(`DEBUG: Processing service row ${index} with raw ID: "${row[0]}" -> final serviceId: "${serviceId}"`);
+      
+      // Debug pentru TOATE coloanele - afișează primele 15 coloane
+      console.log(`DEBUG Service ${serviceId} row data:`);
+      for (let i = 0; i < Math.min(25, row.length); i++) {
+        console.log(`  row[${i}]: "${row[i]}"`);
+      }
+      
+      // Debug pentru status - verifică valoarea exactă din row[20]
+      console.log(`DEBUG: Service ${serviceId} - row[20] value: "${row[20]}" (type: ${typeof row[20]})`);
+      console.log(`DEBUG: row[20] === true || row[20] === 'true' result: ${row[20] === true || row[20] === 'true'}`);
+      
+      // Obține prețurile pentru acest serviciu
+      let prices = servicePrices[serviceId] || [];
+      
+      // Elimină fallback-ul de prețuri legacy pentru a evita prețuri neașteptate
+      
+      console.log(`Service ID: "${serviceId}", Prices count: ${prices.length}`);
       return {
         id: serviceId,
         name: row[1] || '',
         name_en: row[2] || '',
         name_nl: row[3] || '',
-        description: row[4] || '',
-        description_en: row[5] || '',
-        description_nl: row[6] || '',
-        category: row[7] || 'general',
-        category_en: row[8] || '',
-        category_nl: row[9] || '',
-        duration: row[10] || '0',
-        isActive: row[11] !== 'false',
-        prices: servicePrices[serviceId] || []
+        name_es: row[4] || '',
+        name_pl: row[5] || '',
+        name_ro: row[6] || '',
+        description: row[7] || '',
+        description_en: row[8] || '',
+        description_nl: row[9] || '',
+        description_es: row[10] || '',
+        description_pl: row[11] || '',
+        description_ro: row[12] || '',
+        category: row[13] || 'general',
+        category_en: row[14] || '',
+        category_nl: row[15] || '',
+        category_es: row[16] || '',
+        category_pl: row[17] || '',
+        category_ro: row[18] || '',
+        duration: row[19] || '0',
+        isActive: row[20] === true || row[20] === 'true',
+        prices: prices
       };
     })
+    
+    // Log pentru debugging
+    vehicleServices.forEach(service => {
+      console.log(`Service "${service.id}" - Name: "${service.name}", IsActive: ${service.isActive}, Prices: ${service.prices.length}`);
+    });
 
     res.json(vehicleServices)
   } catch (error) {
@@ -821,10 +866,13 @@ router.post('/vehicle-services', requireAuth, async (req, res) => {
       category_ro || category,               // Category_RO
       duration || '60',                      // Duration_Minutes
       activeStatus !== false ? 'true' : 'false', // Is_Active
-      createdAt                              // Created_At
+      createdAt,                             // Created_At
+      '', '', '', ''                         // Coloane goale suplimentare pentru a completa structura de 26 coloane
     ];
 
     // Append to Google Sheets
+    console.log('📤 Sending service data to Google Sheets:', serviceData.length, 'columns');
+    console.log('Service data preview:', serviceData.slice(0, 5));
     await GoogleSheetsService.appendData('Vehicle_Services', serviceData);
     
     // Handle prices if provided
@@ -833,9 +881,8 @@ router.post('/vehicle-services', requireAuth, async (req, res) => {
       
       for (const priceData of prices) {
         if (priceData.body_type_key && (priceData.price_min !== undefined || priceData.price_max !== undefined)) {
-          // Determine the price value to use (prefer price_min, fallback to price, then price_max)
-          const priceValue = priceData.price_min !== undefined ? priceData.price_min : 
-                            (priceData.price !== undefined ? priceData.price : priceData.price_max);
+          // Determine the price value to use (only price_min, price_max eliminated)
+          const priceValue = priceData.price_min;
           
           if (priceValue === undefined || priceValue === null || priceValue === '') {
             console.log(`⚠️ Skipping price for body type ${priceData.body_type_key} - no valid price value`);
@@ -848,11 +895,11 @@ router.post('/vehicle-services', requireAuth, async (req, res) => {
             id,                                         // Service_ID
             priceData.body_type_key,                    // Body_Type_Key
             priceValue.toString(),                      // Price_Min
-            priceData.price_max !== undefined ? priceData.price_max.toString() : priceValue.toString(), // Price_Max
             priceData.currency || 'EUR',                // Currency
             priceData.duration_minutes || duration || '60', // Duration_Minutes
             priceData.promo_percent || '0',             // Promo_Percent
-            priceData.is_active !== undefined ? (priceData.is_active ? 'true' : 'false') : 'true' // Is_Active
+            priceData.is_active !== undefined ? (priceData.is_active ? 'true' : 'false') : 'true', // Is_Active
+            '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' // Coloane goale suplimentare pentru a completa structura de 25 coloane
           ];
           
           await GoogleSheetsService.appendData('Vehicle_Service_Prices', priceRowData);
@@ -882,10 +929,14 @@ router.post('/vehicle-services', requireAuth, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Create vehicle service error:', error);
+    console.error('❌ Create vehicle service error:', error.message);
+    console.error('Stack:', error.stack);
+    if (error.response) {
+      console.error('Google Sheets API error response:', error.response.data);
+    }
     res.status(500).json({ 
       success: false, 
-      error: 'Failed to create vehicle service' 
+      error: 'Failed to create vehicle service: ' + error.message 
     });
   }
 });
@@ -1017,9 +1068,8 @@ router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
         if (priceData.body_type_key) {
           const bodyTypeKey = priceData.body_type_key;
           
-          // Determine the price value to use (prefer price_min, fallback to price, then price_max)
-          const priceValue = priceData.price_min !== undefined ? priceData.price_min : 
-                            (priceData.price !== undefined ? priceData.price : priceData.price_max);
+          // Determine the price value to use (only price_min, price_max eliminated)
+          const priceValue = priceData.price_min;
           
           // Only process if there's a valid price value (not undefined, null, empty, or 0 if you want to allow 0)
           if (priceValue === undefined || priceValue === null || priceValue === '') {
@@ -1035,11 +1085,11 @@ router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
               targetId, // service_id
               bodyTypeKey, // body_type_key
               priceValue.toString(), // price_min
-              priceValue.toString(), // price_max (same as price_min for now)
-              priceData.currency || existingPrice.data[5] || 'EUR', // currency
-              priceData.duration_minutes || duration || existingPrice.data[6] || '60', // duration_minutes
-              priceData.promo_percent || existingPrice.data[7] || '0', // promo_percent
-              priceData.is_active !== undefined ? (priceData.is_active ? 'true' : 'false') : (existingPrice.data[8] || 'true') // is_active
+              priceData.currency || existingPrice.data[4] || 'EUR', // currency
+              priceData.duration_minutes || duration || existingPrice.data[5] || '60', // duration_minutes
+              priceData.promo_percent || existingPrice.data[6] || '0', // promo_percent
+              priceData.is_active !== undefined ? (priceData.is_active ? 'true' : 'false') : (existingPrice.data[7] || 'true'), // is_active
+              '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' // Coloane goale suplimentare pentru a completa structura de 25 coloane
             ];
             
             await GoogleSheetsService.updateData('Vehicle_Service_Prices', existingPrice.rowIndex + 1, updatedPriceData);
@@ -1051,16 +1101,16 @@ router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
             // Add new price
             const priceId = `service_price_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             const priceRowData = [
-              priceId,
-              targetId, // service_id
-              bodyTypeKey, // body_type_key
-              priceValue.toString(), // price_min
-              priceValue.toString(), // price_max (same as price_min for now)
-              priceData.currency || 'EUR', // currency
-              priceData.duration_minutes || duration || '60', // duration_minutes
-              priceData.promo_percent || '0', // promo_percent
-              priceData.is_active !== undefined ? (priceData.is_active ? 'true' : 'false') : 'true' // is_active
-            ];
+            priceId,
+            targetId, // service_id
+            bodyTypeKey, // body_type_key
+            priceValue.toString(), // price_min
+            priceData.currency || 'EUR', // currency
+            priceData.duration_minutes || duration || '60', // duration_minutes
+            priceData.promo_percent || '0', // promo_percent
+            priceData.is_active !== undefined ? (priceData.is_active ? 'true' : 'false') : 'true', // is_active
+            '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' // Coloane goale suplimentare pentru a completa structura de 25 coloane
+          ];
             
             await GoogleSheetsService.appendData('Vehicle_Service_Prices', priceRowData);
             console.log('✅ New price added for body type:', bodyTypeKey, 'with value:', priceValue);

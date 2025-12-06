@@ -975,9 +975,22 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
+      const normalizedPrices = (formData.prices || [])
+        .map(p => ({
+          ...p,
+          body_type_key: (p.body_type_key || '').toString().toLowerCase()
+        }))
+        .filter(p => p && typeof p.body_type_key === 'string' && p.body_type_key && p.price_min !== undefined && p.price_min !== null && p.price_min !== '')
+        .map(p => ({
+          body_type_key: String(p.body_type_key).toLowerCase(),
+          price_min: typeof p.price_min === 'string' ? parseFloat(p.price_min) : p.price_min,
+          duration_minutes: p.duration_minutes || 60,
+          is_active: p.is_active !== undefined ? p.is_active : true
+        }))
+
       const serviceData = {
         ...formData,
-        prices: formData.prices || []
+        prices: normalizedPrices
       }
       
       if (editingService) {
@@ -1080,7 +1093,6 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
           service_id: service.id,
           body_type_key: bodyTypeIdentifier,
           price_min: 0,
-          price_max: 0,
           duration_minutes: 60,
           is_active: true
         });
@@ -1220,13 +1232,40 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
   const getVehicleServiceName = (service: VehicleService) => {
     const currentLang = i18n.language
     // Return name in current language, fallback to default name if not available
-    return service[`name_${currentLang}` as keyof VehicleService] as string || service.name
+    const translatedName = service[`name_${currentLang}` as keyof VehicleService] as string;
+    console.log('DEBUG getVehicleServiceName:', {
+      currentLang,
+      translatedName,
+      fallbackName: service.name,
+      finalResult: translatedName || service.name
+    });
+    return translatedName || service.name;
   }
 
   const getVehicleServiceDescription = (service: VehicleService) => {
     const currentLang = i18n.language
     // Return description in current language, fallback to default description if not available
-    return service[`description_${currentLang}` as keyof VehicleService] as string || service.description
+    const translatedDescription = service[`description_${currentLang}` as keyof VehicleService] as string;
+    console.log('DEBUG getVehicleServiceDescription:', {
+      currentLang,
+      translatedDescription,
+      fallbackDescription: service.description,
+      finalResult: translatedDescription || service.description
+    });
+    return translatedDescription || service.description;
+  }
+
+  const getVehicleServiceCategory = (service: VehicleService) => {
+    const currentLang = i18n.language
+    // Return category in current language, fallback to default category if not available
+    const translatedCategory = service[`category_${currentLang}` as keyof VehicleService] as string;
+    console.log('DEBUG getVehicleServiceCategory:', {
+      currentLang,
+      translatedCategory,
+      fallbackCategory: service.category,
+      finalResult: translatedCategory || service.category
+    });
+    return translatedCategory || service.category;
   }
 
   // Car icons for different body types
@@ -1312,7 +1351,7 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
                     console.log(`🔍 Processing bodyType[${index}]:`, bodyType)
                     
                     // Use key or id for validation
-                    const bodyTypeIdentifier = bodyType?.key || bodyType?.id
+                    const bodyTypeIdentifier = bodyType?.key || bodyType?.name
                     if (!bodyType || !bodyTypeIdentifier) {
                       console.warn(`⚠️ Invalid bodyType at index ${index}:`, bodyType)
                       return null
@@ -1351,60 +1390,18 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
                                 } else {
                                   newPrices.push({
                                     id: '',
-                                    service_id: '',
+                                    service_id: editingService?.id || '',
                                     body_type_key: currentBodyTypeIdentifier,
                                     price_min: priceValue,
-                                    price_max: undefined,
                                     duration_minutes: 60,
                                     is_active: true
                                   });
                                 }
-                                
-
                                 
                                 setFormData(prev => ({ 
                                   ...prev, 
                                   prices: newPrices 
                                 }));
-                              }}
-                              min="0"
-                              step="0.01"
-                            />
-                          </div>
-                          <div className="price-input-wrapper">
-                            <span className="currency-symbol">€</span>
-                            <input
-                              type="number"
-                              placeholder={`Maxim - ${bodyTypeIdentifier}`}
-                              value={existingPrice?.price_max || ''}
-                              data-body-type={bodyTypeIdentifier}
-                              id={`price-max-${bodyTypeIdentifier}`}
-                              onChange={(e) => {
-                                // Capture the current bodyType identifier to avoid closure issues
-                                const currentBodyTypeIdentifier = bodyTypeIdentifier;
-                                
-                                const newPrices = [...(formData.prices || [])];
-                                const priceIndex = newPrices.findIndex(p => p.body_type_key === currentBodyTypeIdentifier);
-                                const priceValue = e.target.value ? parseFloat(e.target.value) : undefined;
-                                
-                                if (priceIndex >= 0) {
-                                  newPrices[priceIndex] = {
-                                    ...newPrices[priceIndex],
-                                    price_max: priceValue
-                                  };
-                                } else {
-                                  newPrices.push({
-                                    id: '',
-                                    service_id: '',
-                                    body_type_key: currentBodyTypeIdentifier,
-                                    price_min: 0,
-                                    price_max: priceValue,
-                                    duration_minutes: 60,
-                                    is_active: true
-                                  });
-                                }
-                                
-                                setFormData(prev => ({ ...prev, prices: newPrices }));
                               }}
                               min="0"
                               step="0.01"
@@ -1501,26 +1498,52 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
         {Array.isArray(vehicleServices) && vehicleServices.map((service) => (
           <div key={service.id} className="service-item">
             <div className="service-info">
+              {/* DEBUG: Afișează toate proprietățile serviciului */}
+              {(() => {
+                console.log('DEBUG Service:', {
+                  id: service.id,
+                  name: service.name,
+                  name_en: service.name_en,
+                  name_nl: service.name_nl,
+                  description: service.description,
+                  description_en: service.description_en,
+                  description_nl: service.description_nl,
+                  category: service.category,
+                  category_en: service.category_en,
+                  category_nl: service.category_nl
+                });
+                return null;
+              })()}
               <h4>{getVehicleServiceName(service)}</h4>
               <p>{getVehicleServiceDescription(service)}</p>
-              <p className="category">{t('admin.category')}: {service.category}</p>
+              <p className="category">{t('admin.category')}: {getVehicleServiceCategory(service)}</p>
 
               <div className="prices-info">
                 <h5>{t('admin.prices')}:</h5>
-                {Array.isArray(service.prices) && service.prices.map((price, index) => (
-                  <div key={price.id || `${price.body_type_key}-${index}`} className="price-item">
-                    <span>{getBodyTypeName(price.body_type_key)}: €{price.price_min}</span>
-                    {price.price_max && <span> - €{price.price_max}</span>}
-
-                    <span className={price.is_active ? 'active' : 'inactive'}>
-                      {price.is_active ? t('admin.active') : t('admin.inactive')}
-                    </span>
-                  </div>
-                ))}
+                <div className="prices-grid">
+                  {Array.isArray(service.prices) && service.prices.length > 0 ? (
+                    (() => {
+                      // Deduplicate prices by body_type_key, keeping only the first occurrence
+                      const uniquePrices = service.prices.reduce((acc, price) => {
+                        if (!acc.find(p => p.body_type_key === price.body_type_key)) {
+                          acc.push(price);
+                        }
+                        return acc;
+                      }, [] as ServicePrice[]);
+                      
+                      return uniquePrices.map((price, index) => (
+                        <div key={`${price.body_type_key}-${index}`} className="price-item">
+                          <span>{getBodyTypeName(price.body_type_key)}: €{price.price_min}</span>
+                        </div>
+                      ));
+                    })()
+                  ) : (
+                    <div className="price-item no-prices">
+                      <span>No prices</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <p className={service.is_active ? 'active' : 'inactive'}>
-                {service.is_active ? t('admin.active') : t('admin.inactive')}
-              </p>
             </div>
             <div className="service-actions">
               <button onClick={() => editVehicleService(service)} className="edit-btn">
@@ -1544,9 +1567,6 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
                 <h4>{getBodyTypeName(bodyType.key || bodyType.id)}</h4>
                 <p>{getBodyTypeDescription(bodyType)}</p>
                 <p className="key">{t('admin.key')}: {bodyType.key || bodyType.id}</p>
-                <p className={bodyType.is_active ? 'active' : 'inactive'}>
-                  {bodyType.is_active ? t('admin.active') : t('admin.inactive')}
-                </p>
               </div>
               <div className="body-type-actions">
                 <button onClick={() => editBodyType(bodyType)} className="edit-btn">
@@ -1906,9 +1926,6 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
                 />
                 <div className="image-info">
                   <div className="image-category">{image.category}</div>
-                  <div className="image-status">
-                    {t('admin.status')}: {image.active ? t('admin.active') : t('admin.inactive')}
-                  </div>
                 </div>
                 <div className="image-actions">
                   <button 

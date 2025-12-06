@@ -4,6 +4,8 @@ import { getActiveBodyTypes } from '../config/bodyTypesConfig.js';
 import GoogleSheetsService from '../services/googleSheetsService.js';
 import auth from '../middleware/auth.js';
 
+console.log('🚀 vehicleServices.js loaded');
+
 const router = express.Router();
 
 // GET /api/body-types - Obține toate tipurile de caroserie active
@@ -188,19 +190,27 @@ router.post('/services/initialize', async (req, res) => {
 });
 
 // POST /api/vehicle-services - Adaugă un serviciu nou cu prețuri pentru toate tipurile de caroserie
-router.post('/vehicle-services', auth, async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
+    console.log('🚀 POST /api/vehicle-services - Request received');
+    console.log('📋 Request body:', req.body);
+    console.log('🔑 User:', req.user);
+    
     const { name, description, category, duration_minutes, default_prices } = req.body;
     
     // Validare date de intrare
     if (!name) {
+      console.log('❌ Validation failed: Service name is required');
       return res.status(400).json({
         success: false,
         error: 'Service name is required'
       });
     }
     
+    console.log('✅ Validation passed, creating service...');
+    
     // Creează serviciul cu prețuri
+    console.log('🔄 Calling vehicleServicesService.addServiceWithPrices...');
     const result = await vehicleServicesService.addServiceWithPrices({
       name,
       description,
@@ -208,12 +218,14 @@ router.post('/vehicle-services', auth, async (req, res) => {
       duration_minutes
     }, default_prices || {});
 
+    console.log('✅ Service created successfully:', result);
     res.json({
       success: true,
       data: result
     });
   } catch (error) {
-    console.error('Error adding service:', error);
+    console.error('❌ Error adding service:', error);
+    console.error('Stack:', error.stack);
     res.status(500).json({
       success: false,
       error: 'Failed to add service'

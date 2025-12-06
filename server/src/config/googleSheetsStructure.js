@@ -14,7 +14,7 @@ export const GOOGLE_SHEETS_STRUCTURE = {
   },
   service_prices: {
     sheetName: 'Service_Prices',
-    columns: ['ID', 'Service_ID', 'Body_Type_ID', 'Price_Min', 'Price_Max', 'Currency', 'Duration_Minutes', 'Promo_Percent', 'Is_Active']
+    columns: ['ID', 'Service_ID', 'Body_Type_ID', 'Price_Min', 'Currency', 'Duration_Minutes', 'Promo_Percent', 'Is_Active']
   },
   vehicles: {
     sheetName: 'Vehicles',
@@ -46,7 +46,7 @@ export const GOOGLE_SHEETS_STRUCTURE = {
   },
   vehicle_service_prices: {
     sheetName: 'Vehicle_Service_Prices',
-    columns: ['ID', 'Service_ID', 'Body_Type_ID', 'Price_Min', 'Price_Max', 'Currency', 'Duration_Minutes', 'Promo_Percent', 'Is_Active']
+    columns: ['ID', 'Service_ID', 'Body_Type_ID', 'Price_Min', 'Currency', 'Duration_Minutes', 'Promo_Percent', 'Is_Active']
   }
 };
 

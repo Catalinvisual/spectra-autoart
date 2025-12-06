@@ -636,7 +636,7 @@ router.post('/bookings', async (req, res) => {
         // Parse Service_Prices headers (if available)
         const pricesHeaders = pricesData.length > 1 ? pricesData[0] : [];
         const pricesServiceIdIndex = pricesHeaders.indexOf('Service_ID');
-        const pricesBodyTypeIndex = pricesHeaders.indexOf('Body_Type_ID');
+        const pricesBodyTypeIndex = pricesHeaders.indexOf('Body_Type_Key');
         const pricesPriceMinIndex = pricesHeaders.indexOf('Price_Min');
         
         if (servicesIdIndex !== -1 && servicesNameIndex !== -1) {

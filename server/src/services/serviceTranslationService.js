@@ -1,5 +1,6 @@
 import { translateMultipleWithDeepL, detectLanguageWithDeepL } from './deeplTranslationService.js';
 import GoogleSheetsService from './googleSheetsService.js';
+import { vehicleServicesService } from './vehicleServicesService.js';
 
 // Required languages for translation
 const REQUIRED_LANGUAGES = ['NL', 'EN', 'ES', 'PL', 'RO'];
@@ -16,8 +17,8 @@ class ServiceTranslationService {
     if (this.isInitialized) return true;
 
     try {
-      // Initialize Google Sheets Service
-      await GoogleSheetsService.initialize();
+      // Google Sheets Service is already initialized at server startup
+      // No need to initialize it again here
       
       this.isInitialized = true;
       console.log('✅ ServiceTranslationService initialized successfully');
@@ -69,36 +70,110 @@ class ServiceTranslationService {
       const translationTime = Date.now() - translationStartTime;
       console.log(`✅ Parallel translation completed in ${translationTime}ms`);
 
-      // Generate unique ID for the service
-      const serviceId = this.generateServiceId();
+      // Generate unique ID for the service folosind aceeași logică ca vehicleServicesService.js
+      const timestamp = Date.now();
+      const serviceId = Math.floor(timestamp / 10000) + 1000;
       console.log(`🆔 Generated service ID: ${serviceId}`);
 
-      // Prepare data for Google Sheets with proper column structure
-      const sheetData = this.prepareSheetData(
-        serviceId,
-        serviceData,
-        nameTranslations,
-        descriptionTranslations,
-        categoryTranslations
-      );
+      // Creează serviciul local mai întâi (la fel ca în vehicleServicesService.js)
+      console.log('🏗️ Creating local service data...');
+      
+      // Creează slug din nume
+      const slug = this.createSlug(serviceData.name);
+      
+      // Creează serviciul cu toate traducerile
+      const newService = {
+        id: serviceId,
+        name: serviceData.name,
+        name_en: nameTranslations.EN || serviceData.name,
+        name_nl: nameTranslations.NL || serviceData.name,
+        name_es: nameTranslations.ES || serviceData.name,
+        name_pl: nameTranslations.PL || serviceData.name,
+        name_ro: nameTranslations.RO || serviceData.name,
+        description: serviceData.description,
+        description_en: descriptionTranslations.EN || serviceData.description,
+        description_nl: descriptionTranslations.NL || serviceData.description,
+        description_es: descriptionTranslations.ES || serviceData.description,
+        description_pl: descriptionTranslations.PL || serviceData.description,
+        description_ro: descriptionTranslations.RO || serviceData.description,
+        category: serviceData.category,
+        category_en: categoryTranslations.EN || serviceData.category,
+        category_nl: categoryTranslations.NL || serviceData.category,
+        category_es: categoryTranslations.ES || serviceData.category,
+        category_pl: categoryTranslations.PL || serviceData.category,
+        category_ro: categoryTranslations.RO || serviceData.category,
+        duration_minutes: serviceData.duration_minutes || 60,
+        is_active: serviceData.is_active !== undefined ? serviceData.is_active : true,
+        slug: slug,
+        created_at: new Date().toISOString()
+      };
 
-      console.log('📊 Prepared sheet data structure');
+      // Acum folosim vehicleServicesService pentru a salva serviciul și prețurile
+      console.log('🏗️ Creating service with vehicleServicesService...');
+      
+      // Pregătim datele pentru vehicleServicesService
+      const serviceDataForVehicleService = {
+        name: serviceData.name,
+        description: serviceData.description,
+        category: serviceData.category,
+        duration_minutes: serviceData.duration_minutes || 60,
+        is_active: serviceData.is_active !== undefined ? serviceData.is_active : true,
+        // Adăugăm și traducerile în formatul așteptat de vehicleServicesService
+        name_en: nameTranslations.EN || serviceData.name,
+        name_nl: nameTranslations.NL || serviceData.name,
+        name_es: nameTranslations.ES || serviceData.name,
+        name_pl: nameTranslations.PL || serviceData.name,
+        name_ro: nameTranslations.RO || serviceData.name,
+        description_en: descriptionTranslations.EN || serviceData.description,
+        description_nl: descriptionTranslations.NL || serviceData.description,
+        description_es: descriptionTranslations.ES || serviceData.description,
+        description_pl: descriptionTranslations.PL || serviceData.description,
+        description_ro: descriptionTranslations.RO || serviceData.description,
+        category_en: categoryTranslations.EN || serviceData.category,
+        category_nl: categoryTranslations.NL || serviceData.category,
+        category_es: categoryTranslations.ES || serviceData.category,
+        category_pl: categoryTranslations.PL || serviceData.category,
+        category_ro: categoryTranslations.RO || serviceData.category,
+        // Adăugăm prețurile primite de la client
+        prices: serviceData.prices || {}
+      };
 
-      // Save to Google Sheets
-      await GoogleSheetsService.appendData('Vehicle_Services', sheetData);
-      console.log('✅ Service translations saved to Google Sheets');
+      // Salvăm serviciul folosind vehicleServicesService
+      let normalizedPrices = {};
+      if (Array.isArray(serviceData.prices)) {
+        normalizedPrices = serviceData.prices.reduce((acc, p) => {
+          const key = p && (p.body_type_key || p.body_type_id);
+          const min = p && p.price_min;
+          if (key && min !== undefined && min !== null && min !== '') {
+            acc[String(key).toLowerCase()] = {
+              price_min: typeof min === 'string' ? parseFloat(min) : min,
+              price_max: p.price_max !== undefined ? p.price_max : null,
+              duration_minutes: p.duration_minutes || serviceData.duration_minutes || 60
+            };
+          }
+          return acc;
+        }, {});
+      } else if (serviceData.prices && typeof serviceData.prices === 'object') {
+        normalizedPrices = serviceData.prices;
+      }
+      const vehicleServiceResult = await vehicleServicesService.addServiceWithPrices(serviceDataForVehicleService, normalizedPrices);
+      
+      console.log(`✅ Service created with ID: ${vehicleServiceResult.service.id}`);
+      console.log(`✅ Saved ${vehicleServiceResult.prices.length} prices for the service`);
 
-      // Return complete translation results
+      // Return complete translation results bazat pe rezultatul din vehicleServicesService
       const result = {
         success: true,
-        serviceId,
+        serviceId: vehicleServiceResult.service.id,
         translations: {
           name: nameTranslations,
           description: descriptionTranslations,
           category: categoryTranslations
         },
         sourceLanguage,
-        savedToSheets: true
+        savedToSheets: true,
+        pricesSaved: vehicleServiceResult.prices.length > 0,
+        pricesCount: vehicleServiceResult.prices.length
       };
 
       console.log('✅ Translation process completed successfully');
@@ -128,12 +203,25 @@ class ServiceTranslationService {
 
   /**
    * Generate a unique service ID
-   * @returns {string} Unique service ID
+   * @returns {number} Unique service ID
    */
   generateServiceId() {
     const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 1000);
-    return `service-${timestamp}-${random}`;
+    return Math.floor(timestamp / 10000) + 1000; // Reducem la secunde și adăugăm offset pentru a evita numere prea mari
+  }
+
+  /**
+   * Create URL-friendly slug from text
+   * @param {string} text - Text to convert to slug
+   * @returns {string} URL-friendly slug
+   */
+  createSlug(text) {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '') // Remove special characters
+      .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
   }
 
   /**

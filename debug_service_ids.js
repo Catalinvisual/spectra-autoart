@@ -1,49 +1,74 @@
-const GoogleSheetsService = require('./server/src/services/googleSheetsService');
+import GoogleSheetsService from './server/src/services/googleSheetsService.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 async function debugServiceIds() {
   try {
-    console.log('🔍 Debugging Service IDs...\n');
+    console.log('🔍 Debugging Service IDs...');
     
-    // Get services
-    const services = await GoogleSheetsService.getData('Vehicle_Services');
-    console.log('📋 Services found:', services.length);
+    await GoogleSheetsService.initialize();
     
-    if (services.length > 1) {
-      console.log('\n📝 Service IDs:');
-      services.slice(1).forEach((service, index) => {
-        console.log(`  ${index + 1}. ID: "${service[0]}" | Name: "${service[1]}"`);
+    // Get Vehicle_Services data
+    const vehicleServices = await GoogleSheetsService.getData('Vehicle_Services');
+    console.log('\n📊 Vehicle_Services sheet:');
+    console.log('Total services:', vehicleServices.length - 1);
+    
+    const serviceIds = [];
+    if (vehicleServices.length > 1) {
+      vehicleServices.slice(1).forEach((row, index) => {
+        const serviceId = row[0] || '';
+        const name = row[1] || '';
+        console.log(`Service ${index + 1}: ID="${serviceId}", Name="${name}"`);
+        serviceIds.push(serviceId);
       });
     }
     
-    // Get prices
-    const prices = await GoogleSheetsService.getData('Vehicle_Service_Prices');
-    console.log('\n💰 Prices found:', prices.length);
+    // Get Vehicle_Service_Prices data
+    const vehiclePrices = await GoogleSheetsService.getData('Vehicle_Service_Prices');
+    console.log('\n📊 Vehicle_Service_Prices sheet:');
+    console.log('Total price rows:', vehiclePrices.length - 1);
     
-    if (prices.length > 1) {
-      console.log('\n💵 Price Service_IDs (first 10):');
-      prices.slice(1, 11).forEach((price, index) => {
-        console.log(`  ${index + 1}. Service_ID: "${price[1]}" | Body Type: "${price[2]}" | Price: "${price[3]}"`);
+    const priceServiceIds = {};
+    if (vehiclePrices.length > 1) {
+      vehiclePrices.slice(1).forEach((row, index) => {
+        const serviceId = row[1] || '';
+        const bodyType = row[2] || '';
+        const price = row[3] || '';
+        
+        if (serviceId) {
+          if (!priceServiceIds[serviceId]) {
+            priceServiceIds[serviceId] = [];
+          }
+          priceServiceIds[serviceId].push({
+            bodyType,
+            price,
+            row: index + 2
+          });
+        }
       });
-      
-      if (prices.length > 11) {
-        console.log(`  ... and ${prices.length - 11} more prices`);
+    }
+    
+    console.log('\n📊 Service IDs with prices:');
+    Object.keys(priceServiceIds).forEach(serviceId => {
+      console.log(`Service ID "${serviceId}": ${priceServiceIds[serviceId].length} prices`);
+      priceServiceIds[serviceId].forEach(price => {
+        console.log(`  - ${price.bodyType}: €${price.price} (row ${price.row})`);
+      });
+    });
+    
+    // Check for missing prices
+    console.log('\n🔍 Services without prices:');
+    serviceIds.forEach(serviceId => {
+      if (!priceServiceIds[serviceId]) {
+        console.log(`❌ Service "${serviceId}" has no prices in Google Sheets`);
       }
-    }
+    });
     
-    // Check for matches
-    if (services.length > 1 && prices.length > 1) {
-      const serviceIds = services.slice(1).map(s => s[0]);
-      const priceServiceIds = prices.slice(1).map(p => p[1]);
-      
-      console.log('\n🔗 Checking for matches:');
-      serviceIds.forEach(serviceId => {
-        const matchingPrices = priceServiceIds.filter(priceId => priceId === serviceId);
-        console.log(`  Service ID "${serviceId}": ${matchingPrices.length} matching prices`);
-      });
-    }
+    console.log('\n✅ Debug completed!');
     
   } catch (error) {
-    console.error('❌ Error debugging service IDs:', error.message);
+    console.error('❌ Error debugging service IDs:', error);
   }
 }
 

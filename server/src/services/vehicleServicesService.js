@@ -19,6 +19,37 @@ class VehicleServicesService {
     }
   }
 
+  // Map frontend string keys to body type objects
+  mapFrontendKeyToBodyType(frontendKey) {
+    // Common frontend key mappings - accept both English and Dutch terms
+    const keyMappings = {
+      'sedan': 'berlina',      // English sedan -> Dutch berlina
+      'berlina': 'berlina',     // Dutch berlina
+      'suv': 'suv',
+      'hatchback': 'hatchback',
+      'break': 'break',
+      'wagon': 'break',         // English wagon -> Dutch break
+      'coupe': 'coupe',
+      'cabrio': 'cabrio',
+      'van': 'van',
+      'estate': 'break'        // English estate -> Dutch break
+    };
+
+    const mappedKey = keyMappings[frontendKey.toLowerCase()];
+    if (!mappedKey) {
+      console.warn(`⚠️  No mapping found for frontend key: ${frontendKey}`);
+      return null;
+    }
+
+    const bodyType = this.bodyTypes.find(bt => bt.key === mappedKey);
+    if (!bodyType) {
+      console.warn(`⚠️  No body type found for mapped key: ${mappedKey}`);
+      return null;
+    }
+
+    return bodyType;
+  }
+
   // Inițializează datele demo
   async initializeDemoData() {
     // First try to load from Google Sheets
@@ -94,13 +125,13 @@ class VehicleServicesService {
     
     // Premium Wash - prețuri diferite în funcție de caroserie
     const premiumWashPrices = {
-      'suv': { price_min: 35, price_max: 45, duration_minutes: 45 },
-      'berlina': { price_min: 25, price_max: 35, duration_minutes: 40 },
-      'break': { price_min: 30, price_max: 40, duration_minutes: 45 },
-      'hatchback': { price_min: 20, price_max: 30, duration_minutes: 35 },
-      'coupe': { price_min: 25, price_max: 35, duration_minutes: 40 },
-      'cabrio': { price_min: 25, price_max: 35, duration_minutes: 40 },
-      'van': { price_min: 40, price_max: 50, duration_minutes: 50 }
+      'suv': { price_min: 35, duration_minutes: 45 },
+      'berlina': { price_min: 25, duration_minutes: 40 },
+      'break': { price_min: 30, duration_minutes: 45 },
+      'hatchback': { price_min: 20, duration_minutes: 35 },
+      'coupe': { price_min: 25, duration_minutes: 40 },
+      'cabrio': { price_min: 25, duration_minutes: 40 },
+      'van': { price_min: 40, duration_minutes: 50 }
     };
 
     // Interior Detail - prețuri
@@ -343,16 +374,31 @@ class VehicleServicesService {
   // Adaugă un serviciu nou cu prețuri pentru toate tipurile de caroserie
   async addServiceWithPrices(serviceData, defaultPrices = {}) {
     try {
-      // Generează ID unic pentru serviciu
-      const maxId = Math.max(...this.services.map(s => s.id), 0);
-      const newServiceId = maxId + 1;
+      // Generează ID unic bazat pe timestamp pentru servicii noi
+      const timestamp = Date.now();
+      const newServiceId = Math.floor(timestamp / 10000) + 1000; // Reducem la secunde și adăugăm offset pentru a evita numere prea mari
       
       // Creează slug din nume
       const slug = this.createSlug(serviceData.name);
       
+      // Verifică dacă există deja un serviciu cu același slug
+      const existingService = this.services.find(s => s.slug === slug);
+      if (existingService) {
+        throw new Error(`Service with slug '${slug}' already exists`);
+      }
+      
       // Detectează limba originală pentru nume și descriere folosind DeepL
-      const detectedNameLang = await detectLanguageWithDeepL(serviceData.name);
-      const detectedDescLang = serviceData.description ? await detectLanguageWithDeepL(serviceData.description) : 'EN';
+      let detectedNameLang = 'EN';
+      let detectedDescLang = 'EN';
+      
+      try {
+        detectedNameLang = await detectLanguageWithDeepL(serviceData.name);
+        detectedDescLang = serviceData.description ? await detectLanguageWithDeepL(serviceData.description) : 'EN';
+      } catch (error) {
+        console.log('⚠️ DeepL API key not found, using default language EN');
+        detectedNameLang = 'EN';
+        detectedDescLang = 'EN';
+      }
       
       console.log(`🔍 DeepL detected languages - Name: ${detectedNameLang}, Description: ${detectedDescLang}`);
       
@@ -443,34 +489,69 @@ class VehicleServicesService {
       const activeBodyTypes = this.bodyTypes.filter(bt => bt.is_active);
       const newPrices = [];
       
-      activeBodyTypes.forEach((bodyType, index) => {
-        // Verifică dacă există prețuri furnizate din frontend
-        const providedPrice = serviceData.prices?.find(p => p.body_type_key === bodyType.key);
+      console.log('🔍 Processing default_prices:', JSON.stringify(defaultPrices, null, 2));
+      console.log('📋 Available body types:', activeBodyTypes.map(bt => ({id: bt.id, key: bt.key})));
+      console.log(`🆔 newServiceId before loop: ${newServiceId}, type: ${typeof newServiceId}`); // Log suplimentar
+      
+      // Găsește prețul pentru fiecare tip de caroserie activă
+      // Pentru fiecare body type, caută în prețurile furnizate unul care se potrivește
+      console.log('🔍 Processing prices for each body type...');
+      
+      // Procesează fiecare tip de caroserie activă
+      for (let index = 0; index < activeBodyTypes.length; index++) {
+        const bodyType = activeBodyTypes[index];
+        let providedPrice = null;
+        let frontendKeyUsed = null;
+        
+        // Caută prețul pentru acest body type în prețurile furnizate
+        for (const [frontendKey, priceData] of Object.entries(defaultPrices)) {
+          const mappedBodyType = this.mapFrontendKeyToBodyType(frontendKey);
+          if (mappedBodyType && mappedBodyType.key === bodyType.key) {
+            providedPrice = priceData;
+            frontendKeyUsed = frontendKey;
+            break; // Găsit, nu mai căuta
+          }
+        }
+        
+        console.log(`🔍 BodyType ${bodyType.key} (ID: ${bodyType.id}): providedPrice=${providedPrice}, frontendKeyUsed=${frontendKeyUsed}`);
+        console.log(`🔍 newServiceId value: ${newServiceId}, type: ${typeof newServiceId}`); // Log pentru debug
         
         let priceData;
-        if (providedPrice) {
-          // Folosește prețurile furnizate din frontend
-          priceData = {
-            price_min: providedPrice.price_min,
-            price_max: providedPrice.price_max !== undefined ? providedPrice.price_max : null, // Dacă nu există price_max, setează null
-            duration_minutes: providedPrice.duration_minutes || serviceData.duration_minutes || 60
-          };
-        } else if (defaultPrices[bodyType.key]) {
-          // Folosește prețuri implicite dacă sunt furnizate
-          priceData = defaultPrices[bodyType.key];
+        if (providedPrice !== null && providedPrice !== undefined) {
+          // Folosește strict prețurile furnizate din frontend
+          if (typeof providedPrice === 'object') {
+            const hasValidMin = providedPrice.price_min !== undefined && providedPrice.price_min !== null && providedPrice.price_min !== ''
+            if (!hasValidMin) {
+              console.log(`⏭️  Skipping ${bodyType.key} - missing price_min in provided object`)
+              continue
+            }
+            priceData = {
+              price_min: providedPrice.price_min,
+              price_max: providedPrice.price_max !== undefined ? providedPrice.price_max : null,
+              duration_minutes: providedPrice.duration_minutes || serviceData.duration_minutes || 60
+            };
+          } else if (typeof providedPrice === 'number') {
+            // Dacă este doar un număr (preț simplu)
+            priceData = {
+              price_min: providedPrice,
+              price_max: null,
+              duration_minutes: serviceData.duration_minutes || 60
+            };
+          } else {
+            console.log(`⏭️  Skipping ${bodyType.key} - unsupported price format`)
+            continue
+          }
         } else {
-          // Folosește valori implicite
-          priceData = {
-            price_min: 50,
-            price_max: 70,
-            duration_minutes: 60
-          };
+          // Nu mai folosi default 50; sărim tipurile fără preț explicit
+          console.log(`⏭️  Skipping ${bodyType.key} - no price provided`)
+          continue
         }
         
         const newPrice = {
-          id: Date.now() + index, // ID unic bazat pe timestamp
-          service_id: newServiceId,
+          id: newServiceId * 100 + index, // ID unic bazat pe service ID + index
+          service_id: Number(newServiceId), // Convertim la număr pentru a evita NaN
           body_type_id: bodyType.id,
+          body_type_key: bodyType.key, // Stochează string key pentru consistență
           price_min: priceData.price_min,
           price_max: priceData.price_max,
           currency: 'EUR',
@@ -481,13 +562,37 @@ class VehicleServicesService {
         
         this.servicePrices.push(newPrice);
         newPrices.push(newPrice);
-      });
+      }
       
-      // Sincronizează cu Google Sheets
-      await this.syncWithGoogleSheets();
+      // Sincronizează doar noul serviciu și prețurile cu Google Sheets (operațiune rapidă)
+      console.log(`🔄 Syncing new service to Google Sheets...`);
+      
+      try {
+        // Încercăm să sincronizăm doar noul serviciu și prețurile sale
+        await GoogleSheetsService.updateServices([newService]);
+        await GoogleSheetsService.updateServicePrices(newPrices);
+        console.log(`✅ Successfully synced new service to Google Sheets`);
+      } catch (syncError) {
+        console.warn(`⚠️  Failed to sync to Google Sheets immediately:`, syncError.message);
+        // Continuăm fără să eșuăm - serviciul este salvat local
+      }
+      
+      // Returnăm direct rezultatul fără să reîncărcăm toate datele
+      console.log(`✅ Service created successfully with local ID: ${newServiceId}`);
+      
+      // Asigură-te că serviciul are ID-ul corect înainte de returnare
+      newService.id = newServiceId;
+      
+      return {
+        service: newService,
+        prices: newPrices
+      };
       
       console.log(`✅ Added service "${newService.name}" with ${newPrices.length} price entries`);
-      console.log(`📊 Price data used:`, serviceData.prices);
+      console.log(`📊 Price data used:`, defaultPrices);
+      console.log(`🆔 Service ID: ${newServiceId}`);
+      console.log(`🔍 Service object before return:`, JSON.stringify(newService, null, 2)); // Log suplimentar
+      console.log(`💰 Prices before return:`, JSON.stringify(newPrices.slice(0, 2), null, 2)); // Log suplimentar pentru primele 2 prețuri
       
       return {
         service: newService,

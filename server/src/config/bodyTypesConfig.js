@@ -6,7 +6,8 @@ export const BODY_TYPES = [
   { id: 4, key: 'hatchback', name: 'Hatchback', sort_order: 4, is_active: true },
   { id: 5, key: 'coupe', name: 'Coupe', sort_order: 5, is_active: true },
   { id: 6, key: 'cabrio', name: 'Cabrio', sort_order: 6, is_active: true },
-  { id: 7, key: 'van', name: 'Van', sort_order: 7, is_active: true }
+  { id: 7, key: 'van', name: 'Van', sort_order: 7, is_active: true },
+  { id: 8, key: 'wagon', name: 'Wagon', sort_order: 8, is_active: true }
 ];
 
 // Helper functions pentru body types

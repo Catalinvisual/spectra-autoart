@@ -8,7 +8,7 @@ console.log('🔍 VITE_API_URL env:', import.meta.env.VITE_API_URL)
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 60000, // Increased timeout to 60 seconds for service creation
   headers: {
     'Content-Type': 'application/json',
     'X-Requested-With': 'XMLHttpRequest',

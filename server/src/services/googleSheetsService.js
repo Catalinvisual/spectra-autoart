@@ -296,8 +296,60 @@ class GoogleSheetsService {
         throw new Error(`Sheet ${sheetName} not found`);
       }
 
-      await sheet.addRow(data);
-      console.log(`✅ Successfully appended data to ${sheetName}`);
+      // Încarcă header-ele pentru a obține numărul de coloane
+      await sheet.loadHeaderRow();
+      const numColumns = sheet.headerValues.length;
+      
+      // Obține numărul total de rânduri pentru a ști unde să adăugăm
+      await sheet.loadCells();
+      const lastRow = sheet.rowCount;
+      
+      console.log(`📊 Sheet ${sheetName} has ${numColumns} columns and ${lastRow} total rows`);
+      
+      // Verificăm dacă avem destule coloane în datele noastre
+      if (Array.isArray(data) && data.length < numColumns) {
+        // Completăm cu valori goale până la numărul de coloane
+        const paddedData = [...data];
+        while (paddedData.length < numColumns) {
+          paddedData.push('');
+        }
+        
+        console.log(`🔧 Padded data from ${data.length} to ${paddedData.length} columns`);
+        
+        // Folosim Google Sheets API direct pentru a append la sfârșit
+        try {
+          await sheet.addRow(paddedData);
+          console.log(`✅ Successfully appended data to ${sheetName} using addRow`);
+        } catch (addRowError) {
+          console.log(`⚠️  addRow failed, trying loadCells approach: ${addRowError.message}`);
+          
+          // Încercăm o abordare diferită - găsim primul rând gol
+          let firstEmptyRow = 1; // Începem de la rândul 2 (după header)
+          for (let row = 1; row <= Math.min(lastRow, 1000); row++) {
+            const cell = sheet.getCell(row, 0);
+            if (!cell.value || cell.value === '') {
+              firstEmptyRow = row;
+              break;
+            }
+          }
+          
+          console.log(`🔍 Found first empty row at: ${firstEmptyRow}`);
+          
+          // Adăugăm datele la primul rând gol
+          for (let col = 0; col < paddedData.length; col++) {
+            const cell = sheet.getCell(firstEmptyRow, col);
+            cell.value = paddedData[col];
+          }
+          
+          await sheet.saveUpdatedCells();
+          console.log(`✅ Successfully saved data to row ${firstEmptyRow}`);
+        }
+      } else {
+        // Dacă datele au suficiente coloane, folosim addRow direct
+        await sheet.addRow(data);
+        console.log(`✅ Successfully appended data to ${sheetName}`);
+      }
+      
       return true;
     } catch (error) {
       console.error(`❌ Error appending data to ${sheetName}:`, error);
@@ -646,7 +698,11 @@ class GoogleSheetsService {
     console.log('DEBUG: First active service:', activeServices[0]);
     
     return await Promise.all(activeServices.map(async (row) => {
-        const serviceId = row[servicesHeaders.indexOf('ID')];
+        const serviceId = row[servicesHeaders.indexOf('ID')] || row[0]; // Fallback la prima coloană dacă 'ID' nu există
+        if (!serviceId) {
+          console.log('DEBUG: Skipping row - no ID found:', row);
+          return null;
+        }
         const serviceIdStr = serviceId.toString();
         
         // Get all prices for this service
@@ -835,8 +891,8 @@ class GoogleSheetsService {
           is_active: row[servicesHeaders.indexOf('Is_Active')] === 'true' || row[servicesHeaders.indexOf('Is_Active')] === true,
           prices: servicePrices
         };
-      }));
-    } catch (error) {
+      })).then(results => results.filter(service => service !== null)); // Elimină serviciile null
+  } catch (error) {
       console.error('❌ Error in getServicesWithPrices:', error);
       throw error;
     }
@@ -888,26 +944,26 @@ class GoogleSheetsService {
         if (existingRow) {
           // Actualizează serviciul existent
           existingRow.set('Name', service.name);
-          existingRow.set('Name_EN', service.name);
-          existingRow.set('Name_NL', service.name);
-          existingRow.set('Name_ES', service.name);
-          existingRow.set('Name_PL', service.name);
-          existingRow.set('Name_RO', service.name);
-          existingRow.set('Description', service.description);
-          existingRow.set('Description_EN', service.description);
-          existingRow.set('Description_NL', service.description);
-          existingRow.set('Description_ES', service.description);
-          existingRow.set('Description_PL', service.description);
-          existingRow.set('Description_RO', service.description);
-          existingRow.set('Category', service.category);
-          existingRow.set('Category_EN', service.category);
-          existingRow.set('Category_NL', service.category);
-          existingRow.set('Category_ES', service.category);
-          existingRow.set('Category_PL', service.category);
-          existingRow.set('Category_RO', service.category);
-          existingRow.set('Duration_Minutes', service.duration_minutes);
-          existingRow.set('Is_Active', service.is_active);
-          existingRow.set('Updated_At', new Date().toISOString());
+          existingRow.set('Name_EN', service.name_en || service.name);
+          existingRow.set('Name_NL', service.name_nl || service.name);
+          existingRow.set('Name_ES', service.name_es || service.name);
+          existingRow.set('Name_PL', service.name_pl || service.name);
+          existingRow.set('Name_RO', service.name_ro || service.name);
+          existingRow.set('Description', service.description || '');
+          existingRow.set('Description_EN', service.description_en || service.description || '');
+          existingRow.set('Description_NL', service.description_nl || service.description || '');
+          existingRow.set('Description_ES', service.description_es || service.description || '');
+          existingRow.set('Description_PL', service.description_pl || service.description || '');
+          existingRow.set('Description_RO', service.description_ro || service.description || '');
+          existingRow.set('Category', service.category || 'general');
+          existingRow.set('Category_EN', service.category_en || service.category || 'general');
+          existingRow.set('Category_NL', service.category_nl || service.category || 'general');
+          existingRow.set('Category_ES', service.category_es || service.category || 'general');
+          existingRow.set('Category_PL', service.category_pl || service.category || 'general');
+          existingRow.set('Category_RO', service.category_ro || service.category || 'general');
+          existingRow.set('Duration_Minutes', service.duration_minutes || 60);
+          existingRow.set('Is_Active', service.is_active !== undefined ? service.is_active : true);
+          existingRow.set('Created_At', service.created_at || new Date().toISOString());
           
           await existingRow.save();
           updatedCount++;
@@ -916,26 +972,26 @@ class GoogleSheetsService {
           const newRowData = {
             'ID': service.id,
             'Name': service.name,
-            'Name_EN': service.name,
-            'Name_NL': service.name,
-            'Name_ES': service.name,
-            'Name_PL': service.name,
-            'Name_RO': service.name,
-            'Description': service.description,
-            'Description_EN': service.description,
-            'Description_NL': service.description,
-            'Description_ES': service.description,
-            'Description_PL': service.description,
-            'Description_RO': service.description,
-            'Category': service.category,
-            'Category_EN': service.category,
-            'Category_NL': service.category,
-            'Category_ES': service.category,
-            'Category_PL': service.category,
-            'Category_RO': service.category,
-            'Duration_Minutes': service.duration_minutes,
-            'Is_Active': service.is_active,
-            'Created_At': new Date().toISOString()
+            'Name_EN': service.name_en || service.name,
+            'Name_NL': service.name_nl || service.name,
+            'Name_ES': service.name_es || service.name,
+            'Name_PL': service.name_pl || service.name,
+            'Name_RO': service.name_ro || service.name,
+            'Description': service.description || '',
+            'Description_EN': service.description_en || service.description || '',
+            'Description_NL': service.description_nl || service.description || '',
+            'Description_ES': service.description_es || service.description || '',
+            'Description_PL': service.description_pl || service.description || '',
+            'Description_RO': service.description_ro || service.description || '',
+            'Category': service.category || 'general',
+            'Category_EN': service.category_en || service.category || 'general',
+            'Category_NL': service.category_nl || service.category || 'general',
+            'Category_ES': service.category_es || service.category || 'general',
+            'Category_PL': service.category_pl || service.category || 'general',
+            'Category_RO': service.category_ro || service.category || 'general',
+            'Duration_Minutes': service.duration_minutes || 60,
+            'Is_Active': service.is_active !== undefined ? service.is_active : true,
+            'Created_At': service.created_at || new Date().toISOString()
           };
           
           await sheet.addRow(newRowData);
@@ -982,11 +1038,11 @@ class GoogleSheetsService {
       // Cheia unică este combinația dintre Service_ID și Body_Type_ID
       existingRows.forEach(row => {
         const serviceId = row.get('Service_ID');
-        const bodyTypeId = row.get('Body_Type_ID');
+        const bodyTypeKey = row.get('Body_Type_Key'); // Schimbat din Body_Type_ID în Body_Type_Key
         const priceId = row.get('ID');
         
-        if (serviceId && bodyTypeId) {
-          const key = `${serviceId}_${bodyTypeId}`;
+        if (serviceId && bodyTypeKey) {
+          const key = `${serviceId}_${bodyTypeKey}`;
           existingPricesMap.set(key, { row, priceId: priceId?.toString() });
         }
       });
@@ -996,16 +1052,16 @@ class GoogleSheetsService {
 
       // Procesează fiecare preț
       for (const price of prices) {
-        const key = `${price.service_id}_${price.body_type_id}`;
+        const bodyTypeKey = price.body_type_key || price.body_type_id;
+        const key = `${price.service_id}_${bodyTypeKey}`;
         const existingData = existingPricesMap.get(key);
 
         if (existingData) {
           // Actualizează prețul existent
           const { row } = existingData;
           row.set('Service_ID', price.service_id);
-          row.set('Body_Type_ID', price.body_type_id);
+          row.set('Body_Type_Key', price.body_type_key || price.body_type_id); // Schimbat din Body_Type_ID în Body_Type_Key
           row.set('Price_Min', price.price_min);
-          row.set('Price_Max', price.price_max);
           row.set('Currency', price.currency);
           row.set('Duration_Minutes', price.duration_minutes);
           row.set('Promo_Percent', price.promo_percent);
@@ -1018,9 +1074,8 @@ class GoogleSheetsService {
           const newRowData = {
             'ID': price.id,
             'Service_ID': price.service_id,
-            'Body_Type_ID': price.body_type_id,
+            'Body_Type_Key': price.body_type_key || price.body_type_id, // Schimbat din Body_Type_ID în Body_Type_Key
             'Price_Min': price.price_min,
-            'Price_Max': price.price_max,
             'Currency': price.currency,
             'Duration_Minutes': price.duration_minutes,
             'Promo_Percent': price.promo_percent,

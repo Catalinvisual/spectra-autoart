@@ -85,13 +85,14 @@ h2:hover::before {
   backdrop-filter: blur(10px);
   border: 2px solid rgba(0, 229, 255, 0.5);
   border-radius: 15px;
-  padding: 25px;
-  margin-bottom: 20px;
+  padding: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   align-items: center;
+  min-height: 200px;
 }
 
 .service-item:hover {
@@ -113,6 +114,10 @@ h2:hover::before {
   font-size: 14px;
   margin: 0 0 8px 0;
   opacity: 0.9;
+}
+
+.service-info {
+  width: 100%;
 }
 
 .service-info .price {
@@ -598,6 +603,49 @@ h2:hover::before {
   background: linear-gradient(135deg, rgba(156, 39, 176, 0.05) 0%, rgba(103, 58, 183, 0.05) 100%);
 }
 
+/* Prices display in services list */
+.prices-info {
+  margin-top: 12px;
+  width: 100%;
+}
+
+.prices-info h5 {
+  color: #00e5ff;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.prices-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.price-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  flex: 1 1 180px;
+}
+
+.price-item.no-prices {
+  flex: 1 1 100%;
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .price-item {
+    flex: 1 1 140px;
+  }
+}
+
 .price-input-group:nth-child(5) {
   background: linear-gradient(135deg, rgba(244, 67, 54, 0.05) 0%, rgba(233, 30, 99, 0.05) 100%);
 }
@@ -1038,9 +1086,10 @@ h2:hover::before {
 }
 
 .services-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
 }
 
 .service-item-detail {
@@ -1123,7 +1172,31 @@ h2:hover::before {
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+  .services-list {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
+  .services-list {
+    grid-template-columns: 1fr;
+    padding: 15px 0;
+  }
+  
+  .service-item {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+  
+  .service-actions {
+    margin-top: 15px;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
   .bookings-header {
     flex-direction: column;
     gap: 15px;
@@ -1362,28 +1435,85 @@ h2:hover::before {
 }
 
 .vehicle-services-management .prices-info {
-  margin: 15px 0;
-  padding: 15px;
+  margin: 10px 0;
+  padding: 12px;
   background: rgba(0, 229, 255, 0.1);
   border-radius: 8px;
   border: 1px solid rgba(0, 229, 255, 0.3);
 }
 
+.vehicle-services-management .prices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* STIL UNIVERSAL pentru toate grid-urile de prețuri */
+.service-item .prices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+@media (max-width: 1400px) {
+  .vehicle-services-management .prices-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+}
+
+@media (max-width: 1200px) {
+  .vehicle-services-management .prices-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .vehicle-services-management .prices-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 6px;
+  }
+  
+  .vehicle-services-management .price-item {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+}
+
 .vehicle-services-management .prices-info h5 {
   color: #00e5ff;
-  margin: 0 0 10px 0;
-  font-size: 16px;
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .vehicle-services-management .price-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+  justify-content: center;
+  padding: 8px 12px;
+  background: rgba(0, 229, 255, 0.05);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
+  transition: all 0.2s ease;
 }
 
-.vehicle-services-management .price-item:last-child {
+.vehicle-services-management .price-item:hover {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: rgba(0, 229, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.vehicle-services-management .price-item.no-prices {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}.vehicle-services-management .price-item:last-child {
   border-bottom: none;
 }
 
@@ -1483,6 +1613,7 @@ h2:hover::before {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+  gap: 5px;
 }
 
 .login-header h2 {
@@ -1512,13 +1643,13 @@ h2:hover::before {
 
 .login-container h2 {
   text-align: center;
-  margin-bottom: 40px;
   color: #00e5ff;
   font-size: 32px;
   font-weight: 700;
   text-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
   position: relative;
   z-index: 1;
+  padding: 2px 2px;
 }
 
 .login-container .form-group {
@@ -2654,6 +2785,25 @@ h2:hover::before {
     margin-right: auto;
   }
   
+  /* Responsive styles for stat card texts */
+  .stat-card {
+    padding: 20px;
+  }
+  
+  .stat-card h3 {
+    font-size: 28px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    max-height: 2.8em;
+  }
+  
   .data-table {
     font-size: 12px;
   }
@@ -2691,6 +2841,42 @@ h2:hover::before {
   .modal-overlay {
     background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(18, 22, 29, 0.95) 100%);
     animation: modalOverlayFadeIn 0.4s ease-out;
+  }
+  
+  /* Additional responsive styles for stat cards on very small screens */
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .stat-card {
+    padding: 15px;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .stat-card h3 {
+    font-size: 20px;
+    line-height: 1.2;
+    margin-bottom: 8px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    max-height: 2.4em;
+  }
+  
+  .stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: #00e5ff;
   }
   
   @keyframes modalOverlayFadeIn {

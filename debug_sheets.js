@@ -1,46 +1,82 @@
-const axios = require('axios');
+import GoogleSheetsService from './server/src/services/googleSheetsService.js';
 
 async function debugGoogleSheets() {
   try {
-    console.log('🔑 Getting admin token...');
-    const tokenResponse = await axios.post('http://localhost:8080/api/admin/auth/login', {
-      email: 'admin@spectra.com',
-      password: 'admin123'
-    });
+    console.log('🔍 Debug Google Sheets...');
     
-    const token = tokenResponse.data.token;
-    console.log('✅ Token obtained');
+    // Inițializare
+    await GoogleSheetsService.initialize();
+    console.log('✅ Google Sheets inițializat');
     
-    console.log('\n📋 Getting admin gallery data...');
-    const adminResponse = await axios.get('http://localhost:8080/api/admin/gallery', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    // Verificăm structura Vehicle_Services
+    console.log('\n📋 Verificare Vehicle_Services...');
+    const servicesData = await GoogleSheetsService.getData('Vehicle_Services');
+    console.log('Vehicle_Services - Rânduri:', servicesData.length);
+    if (servicesData.length > 0) {
+      console.log('Antet:', servicesData[0]);
+      console.log('Ultimul rând:', servicesData[servicesData.length - 1]);
+    }
     
-    console.log('Admin response structure:', typeof adminResponse.data, Array.isArray(adminResponse.data));
-    const adminImages = Array.isArray(adminResponse.data) ? adminResponse.data : adminResponse.data.data || [];
+    // Verificăm structura Vehicle_Service_Prices
+    console.log('\n📋 Verificare Vehicle_Service_Prices...');
+    const pricesData = await GoogleSheetsService.getData('Vehicle_Service_Prices');
+    console.log('Vehicle_Service_Prices - Rânduri:', pricesData.length);
+    if (pricesData.length > 0) {
+      console.log('Antet:', pricesData[0]);
+      console.log('Ultimul rând:', pricesData[pricesData.length - 1]);
+    }
     
-    console.log('Admin gallery images:');
-    adminImages.forEach((img, i) => {
-      console.log(`  ${i + 1}. ID: "${img.id}"`);
-      console.log(`     Title: "${img.title}"`);
-      console.log(`     URL: ${img.url}`);
-      if (img.url) {
-        console.log(`     Public ID (from URL): ${img.url.split('/').pop()}`);
-      }
-    });
+    // Testăm adăugare rând simplu
+    console.log('\n➕ Testare adăugare rând simplu...');
+    const testRow = [
+      'test_service_999',
+      'Test Service Debug',
+      'Test Service Debug',
+      'Test Service Debug',
+      'Test Service Debug',
+      'Test Service Debug',
+      'Test Service Debug',
+      'Test description',
+      'Test description',
+      'Test description',
+      'Test description',
+      'Test description',
+      'Test description',
+      'Debug',
+      'Debug',
+      'Debug',
+      'Debug',
+      'Debug',
+      'Debug',
+      '60',
+      'true',
+      new Date().toISOString()
+    ];
     
-    console.log('\n📋 Getting public gallery data...');
-    const publicResponse = await axios.get('http://localhost:8080/api/gallery');
+    console.log('Se adaugă rândul de test...');
+    await GoogleSheetsService.appendData('Vehicle_Services', testRow);
+    console.log('✅ Rând de test adăugat cu succes!');
     
-    console.log('Public gallery images:');
-    publicResponse.data.data.forEach((img, i) => {
-      console.log(`  ${i + 1}. ID: "${img.id}"`);
-      console.log(`     Title: "${img.title}"`);
-      console.log(`     URL: ${img.url}`);
-    });
+    // Test preț
+    console.log('\n➕ Testare adăugare preț...');
+    const testPriceRow = [
+      'test_price_999',
+      'test_service_999',
+      'sedan',
+      '150',
+      'EUR',
+      '60',
+      '0',
+      'true'
+    ];
+    
+    console.log('Se adaugă prețul de test...');
+    await GoogleSheetsService.appendData('Vehicle_Service_Prices', testPriceRow);
+    console.log('✅ Preț de test adăugat cu succes!');
     
   } catch (error) {
-    console.log('❌ Error:', error.message);
+    console.error('❌ Eroare:', error.message);
+    console.error('Stack:', error.stack);
   }
 }
 
