@@ -45,100 +45,44 @@ class ServiceTranslationService {
         await this.initialize();
       }
 
-      console.log('🔄 Starting service translation process...');
+      console.log('🔄 Starting service creation (fast-path)...');
       console.log('📋 Input service data:', serviceData);
 
-      // Detect source language if not provided
-      const sourceLanguage = await this.detectSourceLanguage(serviceData);
-      console.log(`🔍 Detected source language: ${sourceLanguage}`);
-
-      // DeepL supports limited source languages, so we use auto-detection for translation
-      // This avoids the "source_lang not supported" error
-      const sourceLanguageForTranslation = null; // Use auto-detection
-      console.log(`🔄 Using auto-detection for translation (safer approach)`);
-
-      // Translate all fields in parallel for better performance
-      console.log('🔄 Starting parallel translation of all fields...');
-      const translationStartTime = Date.now();
-      
-      const [nameTranslations, descriptionTranslations, categoryTranslations] = await Promise.all([
-        translateMultipleWithDeepL(serviceData.name, REQUIRED_LANGUAGES, sourceLanguageForTranslation),
-        translateMultipleWithDeepL(serviceData.description, REQUIRED_LANGUAGES, sourceLanguageForTranslation),
-        translateMultipleWithDeepL(serviceData.category, REQUIRED_LANGUAGES, sourceLanguageForTranslation)
-      ]);
-      
-      const translationTime = Date.now() - translationStartTime;
-      console.log(`✅ Parallel translation completed in ${translationTime}ms`);
-
-      // Generate unique ID for the service folosind aceeași logică ca vehicleServicesService.js
-      const timestamp = Date.now();
-      const serviceId = Math.floor(timestamp / 10000) + 1000;
-      console.log(`🆔 Generated service ID: ${serviceId}`);
-
-      // Creează serviciul local mai întâi (la fel ca în vehicleServicesService.js)
-      console.log('🏗️ Creating local service data...');
-      
-      // Creează slug din nume
-      const slug = this.createSlug(serviceData.name);
-      
-      // Creează serviciul cu toate traducerile
-      const newService = {
-        id: serviceId,
-        name: serviceData.name,
-        name_en: nameTranslations.EN || serviceData.name,
-        name_nl: nameTranslations.NL || serviceData.name,
-        name_es: nameTranslations.ES || serviceData.name,
-        name_pl: nameTranslations.PL || serviceData.name,
-        name_ro: nameTranslations.RO || serviceData.name,
-        description: serviceData.description,
-        description_en: descriptionTranslations.EN || serviceData.description,
-        description_nl: descriptionTranslations.NL || serviceData.description,
-        description_es: descriptionTranslations.ES || serviceData.description,
-        description_pl: descriptionTranslations.PL || serviceData.description,
-        description_ro: descriptionTranslations.RO || serviceData.description,
-        category: serviceData.category,
-        category_en: categoryTranslations.EN || serviceData.category,
-        category_nl: categoryTranslations.NL || serviceData.category,
-        category_es: categoryTranslations.ES || serviceData.category,
-        category_pl: categoryTranslations.PL || serviceData.category,
-        category_ro: categoryTranslations.RO || serviceData.category,
-        duration_minutes: serviceData.duration_minutes || 60,
-        is_active: serviceData.is_active !== undefined ? serviceData.is_active : true,
-        slug: slug,
-        created_at: new Date().toISOString()
+      const placeholderTranslations = {
+        name: {},
+        description: {},
+        category: {}
       };
+      REQUIRED_LANGUAGES.forEach(lang => {
+        placeholderTranslations.name[lang] = serviceData.name;
+        placeholderTranslations.description[lang] = serviceData.description || '';
+        placeholderTranslations.category[lang] = serviceData.category;
+      });
 
-      // Acum folosim vehicleServicesService pentru a salva serviciul și prețurile
-      console.log('🏗️ Creating service with vehicleServicesService...');
-      
-      // Pregătim datele pentru vehicleServicesService
       const serviceDataForVehicleService = {
         name: serviceData.name,
         description: serviceData.description,
         category: serviceData.category,
         duration_minutes: serviceData.duration_minutes || 60,
         is_active: serviceData.is_active !== undefined ? serviceData.is_active : true,
-        // Adăugăm și traducerile în formatul așteptat de vehicleServicesService
-        name_en: nameTranslations.EN || serviceData.name,
-        name_nl: nameTranslations.NL || serviceData.name,
-        name_es: nameTranslations.ES || serviceData.name,
-        name_pl: nameTranslations.PL || serviceData.name,
-        name_ro: nameTranslations.RO || serviceData.name,
-        description_en: descriptionTranslations.EN || serviceData.description,
-        description_nl: descriptionTranslations.NL || serviceData.description,
-        description_es: descriptionTranslations.ES || serviceData.description,
-        description_pl: descriptionTranslations.PL || serviceData.description,
-        description_ro: descriptionTranslations.RO || serviceData.description,
-        category_en: categoryTranslations.EN || serviceData.category,
-        category_nl: categoryTranslations.NL || serviceData.category,
-        category_es: categoryTranslations.ES || serviceData.category,
-        category_pl: categoryTranslations.PL || serviceData.category,
-        category_ro: categoryTranslations.RO || serviceData.category,
-        // Adăugăm prețurile primite de la client
+        name_en: serviceData.name,
+        name_nl: serviceData.name,
+        name_es: serviceData.name,
+        name_pl: serviceData.name,
+        name_ro: serviceData.name,
+        description_en: serviceData.description || '',
+        description_nl: serviceData.description || '',
+        description_es: serviceData.description || '',
+        description_pl: serviceData.description || '',
+        description_ro: serviceData.description || '',
+        category_en: serviceData.category,
+        category_nl: serviceData.category,
+        category_es: serviceData.category,
+        category_pl: serviceData.category,
+        category_ro: serviceData.category,
         prices: serviceData.prices || {}
       };
 
-      // Salvăm serviciul folosind vehicleServicesService
       let normalizedPrices = {};
       if (Array.isArray(serviceData.prices)) {
         normalizedPrices = serviceData.prices.reduce((acc, p) => {
@@ -156,28 +100,61 @@ class ServiceTranslationService {
       } else if (serviceData.prices && typeof serviceData.prices === 'object') {
         normalizedPrices = serviceData.prices;
       }
-      const vehicleServiceResult = await vehicleServicesService.addServiceWithPrices(serviceDataForVehicleService, normalizedPrices);
-      
-      console.log(`✅ Service created with ID: ${vehicleServiceResult.service.id}`);
-      console.log(`✅ Saved ${vehicleServiceResult.prices.length} prices for the service`);
 
-      // Return complete translation results bazat pe rezultatul din vehicleServicesService
-      const result = {
+      const vehicleServiceResult = await vehicleServicesService.addServiceWithPrices(serviceDataForVehicleService, normalizedPrices);
+      console.log(`✅ Service created quickly with ID: ${vehicleServiceResult.service.id}`);
+
+      // Kick off DeepL translation in background (non-blocking)
+      (async () => {
+        try {
+          const sourceLanguage = await this.detectSourceLanguage(serviceData);
+          const sourceLanguageForTranslation = null;
+          const [nameTranslations, descriptionTranslations, categoryTranslations] = await Promise.all([
+            translateMultipleWithDeepL(serviceData.name, REQUIRED_LANGUAGES, sourceLanguageForTranslation),
+            translateMultipleWithDeepL(serviceData.description || '', REQUIRED_LANGUAGES, sourceLanguageForTranslation),
+            translateMultipleWithDeepL(serviceData.category, REQUIRED_LANGUAGES, sourceLanguageForTranslation)
+          ]);
+
+          const updatedService = {
+            id: vehicleServiceResult.service.id,
+            name: serviceData.name,
+            name_en: nameTranslations.EN || serviceData.name,
+            name_nl: nameTranslations.NL || serviceData.name,
+            name_es: nameTranslations.ES || serviceData.name,
+            name_pl: nameTranslations.PL || serviceData.name,
+            name_ro: nameTranslations.RO || serviceData.name,
+            description: serviceData.description || '',
+            description_en: descriptionTranslations.EN || serviceData.description || '',
+            description_nl: descriptionTranslations.NL || serviceData.description || '',
+            description_es: descriptionTranslations.ES || serviceData.description || '',
+            description_pl: descriptionTranslations.PL || serviceData.description || '',
+            description_ro: descriptionTranslations.RO || serviceData.description || '',
+            category: serviceData.category,
+            category_en: categoryTranslations.EN || serviceData.category,
+            category_nl: categoryTranslations.NL || serviceData.category,
+            category_es: categoryTranslations.ES || serviceData.category,
+            category_pl: categoryTranslations.PL || serviceData.category,
+            category_ro: categoryTranslations.RO || serviceData.category,
+            duration_minutes: serviceData.duration_minutes || 60,
+            is_active: serviceData.is_active !== undefined ? serviceData.is_active : true
+          };
+
+          await GoogleSheetsService.updateServices([updatedService]);
+          console.log('✅ Background translation saved to Google Sheets');
+        } catch (bgErr) {
+          console.warn('⚠️ Background translation failed:', bgErr.message);
+        }
+      })();
+
+      return {
         success: true,
         serviceId: vehicleServiceResult.service.id,
-        translations: {
-          name: nameTranslations,
-          description: descriptionTranslations,
-          category: categoryTranslations
-        },
-        sourceLanguage,
+        translations: placeholderTranslations,
+        sourceLanguage: 'auto',
         savedToSheets: true,
         pricesSaved: vehicleServiceResult.prices.length > 0,
         pricesCount: vehicleServiceResult.prices.length
       };
-
-      console.log('✅ Translation process completed successfully');
-      return result;
 
     } catch (error) {
       console.error('❌ Translation and save process failed:', error);
