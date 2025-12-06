@@ -978,7 +978,7 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
       const normalizedPrices = (formData.prices || [])
         .map(p => ({
           ...p,
-          body_type_key: (p.body_type_key || '').toString().toLowerCase()
+          body_type_key: mapFrontendBodyTypeKey((p.body_type_key || '').toString().toLowerCase())
         }))
         .filter(p => p && typeof p.body_type_key === 'string' && p.body_type_key && p.price_min !== undefined && p.price_min !== null)
         .map(p => ({
@@ -1084,14 +1084,16 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
     
     // Add missing body types with empty prices
     bodyTypes.forEach(bodyType => {
-      const bodyTypeIdentifier = bodyType?.key || bodyType?.id;
-      if (bodyTypeIdentifier) {
-        const existingPrice = completePrices.find(p => p.body_type_key === bodyTypeIdentifier);
+      const bodyTypeIdentifier = bodyType?.key || bodyType?.name;
+      const identifierLower = bodyTypeIdentifier ? String(bodyTypeIdentifier).toLowerCase() : '';
+      const canonicalKey = identifierLower ? mapFrontendBodyTypeKey(identifierLower) : ''
+      if (canonicalKey) {
+        const existingPrice = completePrices.find(p => String(p.body_type_key).toLowerCase() === canonicalKey);
         if (!existingPrice) {
           completePrices.push({
           id: '',
           service_id: service.id,
-          body_type_key: bodyTypeIdentifier,
+          body_type_key: canonicalKey,
           price_min: 0,
           duration_minutes: 60,
           is_active: true
@@ -1282,6 +1284,13 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
     }
   };
 
+  const mapFrontendBodyTypeKey = (k: string) => {
+    const key = String(k || '').toLowerCase()
+    if (key === 'sedan') return 'berlina'
+    if (key === 'wagon' || key === 'estate') return 'break'
+    return key
+  }
+
   return (
     <div className="vehicle-services-management">
       <div className="management-header">
@@ -1352,12 +1361,14 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
                     
                     // Use key or id for validation
                     const bodyTypeIdentifier = bodyType?.key || bodyType?.name
+                    const identifierLower = bodyTypeIdentifier ? String(bodyTypeIdentifier).toLowerCase() : ''
+                    const canonicalKey = identifierLower ? mapFrontendBodyTypeKey(identifierLower) : ''
                     if (!bodyType || !bodyTypeIdentifier) {
                       console.warn(`⚠️ Invalid bodyType at index ${index}:`, bodyType)
                       return null
                     }
                     
-                    const existingPrice = formData.prices?.find(p => p.body_type_key === bodyTypeIdentifier)
+                    const existingPrice = formData.prices?.find(p => String(p.body_type_key).toLowerCase() === canonicalKey)
                     
                     return (
                       <div key={bodyTypeIdentifier} className="price-input-group">
@@ -1371,15 +1382,14 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
                             <input
                               type="number"
                               placeholder={`Minim - ${bodyTypeIdentifier}`}
-                              value={existingPrice?.price_min || ''}
+                              value={existingPrice?.price_min !== undefined ? existingPrice.price_min : ''}
                               data-body-type={bodyTypeIdentifier}
                               id={`price-min-${bodyTypeIdentifier}`}
                               onChange={(e) => {
-                                // Capture the current bodyType identifier to avoid closure issues
-                                const currentBodyTypeIdentifier = bodyTypeIdentifier;
+                                const currentBodyTypeIdentifier = canonicalKey;
                                 
                                 const newPrices = [...(formData.prices || [])];
-                                const priceIndex = newPrices.findIndex(p => p.body_type_key === currentBodyTypeIdentifier);
+                                const priceIndex = newPrices.findIndex(p => String(p.body_type_key).toLowerCase() === currentBodyTypeIdentifier);
                                 const priceValue = e.target.value ? parseFloat(e.target.value) : 0;
                                 
                                 if (priceIndex >= 0) {
