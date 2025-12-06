@@ -678,101 +678,52 @@ router.get('/services', requireAuth, async (req, res) => {
 // Get vehicle services
 router.get('/vehicle-services', requireAuth, async (req, res) => {
   try {
-    const data = await GoogleSheetsService.getData('Vehicle_Services')
-    
-    if (data.length <= 1) {
-      return res.json([])
-    }
+    const start = Date.now()
+    const services = vehicleServicesService.services || []
+    const prices = vehicleServicesService.servicePrices || []
 
-    // Get all service prices
-    const pricesData = await GoogleSheetsService.getData('Vehicle_Service_Prices')
-    const servicePrices = {};
-    
-    if (pricesData.length > 1) {
-      pricesData.slice(1).forEach(priceRow => {
-        const serviceId = String(priceRow[1] || '').trim();
-        console.log(`Processing price row - Service_ID: "${serviceId}", Price data:`, priceRow.slice(0, 5));
-        if (serviceId) {
-          if (!servicePrices[serviceId]) {
-            servicePrices[serviceId] = [];
-          }
-          servicePrices[serviceId].push({
-            id: priceRow[0] || '',
-            service_id: serviceId,
-            body_type_key: priceRow[2] || '',
-            price_min: priceRow[3] || '0',
-            duration_minutes: priceRow[5] || '60',
-            is_active: priceRow[7] !== 'false'
-          });
-        }
-      });
-    }
-
-    console.log(`DEBUG: Processing ${data.length - 1} services from Google Sheets`);
-    console.log('DEBUG: Available service prices by service_id:', Object.keys(servicePrices));
-    Object.keys(servicePrices).forEach(sid => {
-      console.log(`DEBUG: service_id "${sid}" has ${servicePrices[sid].length} prices`);
-    });
-    
-    // Log toate prețurile pentru debugging
-    console.log('DEBUG: All prices from Google Sheets:');
-    pricesData.slice(1).forEach((priceRow, index) => {
-      console.log(`Price row ${index}: service_id="${priceRow[1] || ''}", body_type="${priceRow[2] || ''}", price="${priceRow[3] || ''}"`);
-    });
-    
-    const vehicleServices = data.slice(1).map((row, index) => {
-      const serviceId = String(row[0] || '').trim() || `vehicle_service_${index + 1}`;
-      
-      console.log(`DEBUG: Processing service row ${index} with raw ID: "${row[0]}" -> final serviceId: "${serviceId}"`);
-      
-      // Debug pentru TOATE coloanele - afișează primele 15 coloane
-      console.log(`DEBUG Service ${serviceId} row data:`);
-      for (let i = 0; i < Math.min(25, row.length); i++) {
-        console.log(`  row[${i}]: "${row[i]}"`);
-      }
-      
-      // Debug pentru status - verifică valoarea exactă din row[20]
-      console.log(`DEBUG: Service ${serviceId} - row[20] value: "${row[20]}" (type: ${typeof row[20]})`);
-      console.log(`DEBUG: row[20] === true || row[20] === 'true' result: ${row[20] === true || row[20] === 'true'}`);
-      
-      // Obține prețurile pentru acest serviciu
-      let prices = servicePrices[serviceId] || [];
-      
-      // Elimină fallback-ul de prețuri legacy pentru a evita prețuri neașteptate
-      
-      console.log(`Service ID: "${serviceId}", Prices count: ${prices.length}`);
-      return {
-        id: serviceId,
-        name: row[1] || '',
-        name_en: row[2] || '',
-        name_nl: row[3] || '',
-        name_es: row[4] || '',
-        name_pl: row[5] || '',
-        name_ro: row[6] || '',
-        description: row[7] || '',
-        description_en: row[8] || '',
-        description_nl: row[9] || '',
-        description_es: row[10] || '',
-        description_pl: row[11] || '',
-        description_ro: row[12] || '',
-        category: row[13] || 'general',
-        category_en: row[14] || '',
-        category_nl: row[15] || '',
-        category_es: row[16] || '',
-        category_pl: row[17] || '',
-        category_ro: row[18] || '',
-        duration: row[19] || '0',
-        isActive: row[20] === true || row[20] === 'true',
-        prices: prices
-      };
+    const pricesByService = new Map()
+    prices.forEach(p => {
+      const sid = String(p.service_id)
+      if (!pricesByService.has(sid)) pricesByService.set(sid, [])
+      pricesByService.get(sid).push({
+        id: p.id,
+        service_id: sid,
+        body_type_key: p.body_type_key || '',
+        price_min: p.price_min,
+        duration_minutes: p.duration_minutes || 60,
+        is_active: p.is_active !== false
+      })
     })
-    
-    // Log pentru debugging
-    vehicleServices.forEach(service => {
-      console.log(`Service "${service.id}" - Name: "${service.name}", IsActive: ${service.isActive}, Prices: ${service.prices.length}`);
-    });
 
-    res.json(vehicleServices)
+    const result = services.map(s => ({
+      id: String(s.id),
+      name: s.name || '',
+      name_en: s.name_en || s.name || '',
+      name_nl: s.name_nl || s.name || '',
+      name_es: s.name_es || s.name || '',
+      name_pl: s.name_pl || s.name || '',
+      name_ro: s.name_ro || s.name || '',
+      description: s.description || '',
+      description_en: s.description_en || s.description || '',
+      description_nl: s.description_nl || s.description || '',
+      description_es: s.description_es || s.description || '',
+      description_pl: s.description_pl || s.description || '',
+      description_ro: s.description_ro || s.description || '',
+      category: s.category || 'general',
+      category_en: s.category_en || s.category || 'general',
+      category_nl: s.category_nl || s.category || 'general',
+      category_es: s.category_es || s.category || 'general',
+      category_pl: s.category_pl || s.category || 'general',
+      category_ro: s.category_ro || s.category || 'general',
+      duration: String(s.duration_minutes || 60),
+      isActive: s.is_active !== false,
+      prices: pricesByService.get(String(s.id)) || []
+    }))
+
+    const ms = Date.now() - start
+    res.setHeader('X-Admin-Vehicle-Services-Response-Time', `${ms}ms`)
+    res.json(result)
   } catch (error) {
     console.error('Vehicle services error:', error)
     res.status(500).json({ error: 'Failed to load vehicle services' })
