@@ -1,6 +1,7 @@
 import express from 'express';
-import { translateAndSaveService } from '../services/serviceTranslationService.js';
+import { translateMultipleWithDeepL, detectLanguageWithDeepL } from '../services/deeplTranslationService.js';
 import GoogleSheetsService from '../services/googleSheetsService.js';
+import { vehicleServicesService } from '../services/vehicleServicesService.js';
 import auth from '../middleware/auth.js';
 
 const router = express.Router();
@@ -13,50 +14,110 @@ const router = express.Router();
 router.post('/create-with-translation', auth, async (req, res) => {
   try {
     const { name, description, category, duration_minutes, is_active, prices } = req.body;
-
-    // Validate required fields
     if (!name || !description || !category) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required fields: name, description, and category are required'
-      });
+      return res.status(400).json({ success: false, error: 'Missing required fields: name, description, and category are required' });
     }
 
-    console.log('🔄 Starting service creation with translation...');
-    console.log('📋 Input data:', { name, description, category, duration_minutes, is_active, prices });
-
-    // Prepare service data
-    const serviceData = {
-      name: name.trim(),
-      description: description.trim(),
-      category: category.trim(),
+    const base = {
+      name: String(name).trim(),
+      description: String(description).trim(),
+      category: String(category).trim(),
       duration_minutes: duration_minutes || 60,
-      is_active: is_active !== undefined ? is_active : true,
-      prices: prices || {} // Add prices support
+      is_active: is_active !== undefined ? is_active : true
     };
 
-    // Translate and save service
-    const result = await translateAndSaveService(serviceData);
+    let normalizedPrices = {};
+    if (Array.isArray(prices)) {
+      normalizedPrices = prices.reduce((acc, p) => {
+        const key = p && (p.body_type_key || p.body_type_id);
+        const min = p && p.price_min;
+        if (key && min !== undefined && min !== null && min !== '') {
+          acc[String(key).toLowerCase()] = {
+            price_min: typeof min === 'string' ? parseFloat(min) : min,
+            price_max: p.price_max !== undefined ? p.price_max : null,
+            duration_minutes: p.duration_minutes || base.duration_minutes || 60
+          };
+        }
+        return acc;
+      }, {});
+    }
 
-    console.log('✅ Service created and translated successfully');
-    
+    const serviceDataForVehicleService = {
+      ...base,
+      name_en: base.name,
+      name_nl: base.name,
+      name_es: base.name,
+      name_pl: base.name,
+      name_ro: base.name,
+      description_en: base.description,
+      description_nl: base.description,
+      description_es: base.description,
+      description_pl: base.description,
+      description_ro: base.description,
+      category_en: base.category,
+      category_nl: base.category,
+      category_es: base.category,
+      category_pl: base.category,
+      category_ro: base.category,
+      prices: prices || {}
+    };
+
+    const result = await vehicleServicesService.addServiceWithPrices(serviceDataForVehicleService, normalizedPrices);
+
     res.json({
       success: true,
-      message: 'Service created and translated successfully',
+      message: 'Service created successfully (translations updating in background)',
       data: {
-        serviceId: result.serviceId,
-        translations: result.translations,
-        sourceLanguage: result.sourceLanguage
+        serviceId: result.service.id,
+        translations: {
+          name: { NL: base.name, EN: base.name, ES: base.name, PL: base.name, RO: base.name },
+          description: { NL: base.description, EN: base.description, ES: base.description, PL: base.description, RO: base.description },
+          category: { NL: base.category, EN: base.category, ES: base.category, PL: base.category, RO: base.category }
+        },
+        sourceLanguage: 'auto'
       }
     });
 
+    (async () => {
+      try {
+        const src = await detectLanguageWithDeepL(base.name);
+        const [nameT, descT, catT] = await Promise.all([
+          translateMultipleWithDeepL(base.name, ['NL', 'EN', 'ES', 'PL', 'RO'], null),
+          translateMultipleWithDeepL(base.description, ['NL', 'EN', 'ES', 'PL', 'RO'], null),
+          translateMultipleWithDeepL(base.category, ['NL', 'EN', 'ES', 'PL', 'RO'], null)
+        ]);
+        const updated = {
+          id: result.service.id,
+          name: base.name,
+          name_nl: nameT.NL || base.name,
+          name_en: nameT.EN || base.name,
+          name_es: nameT.ES || base.name,
+          name_pl: nameT.PL || base.name,
+          name_ro: nameT.RO || base.name,
+          description: base.description,
+          description_nl: descT.NL || base.description,
+          description_en: descT.EN || base.description,
+          description_es: descT.ES || base.description,
+          description_pl: descT.PL || base.description,
+          description_ro: descT.RO || base.description,
+          category: base.category,
+          category_nl: catT.NL || base.category,
+          category_en: catT.EN || base.category,
+          category_es: catT.ES || base.category,
+          category_pl: catT.PL || base.category,
+          category_ro: catT.RO || base.category,
+          duration_minutes: base.duration_minutes,
+          is_active: base.is_active
+        };
+        await GoogleSheetsService.updateServices([updated]);
+      } catch (e) {
+        console.warn('⚠️ Background translation failed:', e.message);
+      }
+    })();
+
   } catch (error) {
-    console.error('❌ Service creation with translation failed:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create service with translations',
-      details: error.message
-    });
+    console.error('❌ Service creation failed:', error);
+    res.status(500).json({ success: false, error: 'Failed to create service', details: error.message });
   }
 });
 
