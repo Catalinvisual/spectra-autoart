@@ -680,54 +680,66 @@ router.get('/services', requireAuth, async (req, res) => {
 router.get('/vehicle-services', requireAuth, async (req, res) => {
   try {
     const start = Date.now()
-    const services = vehicleServicesService.services || []
-    const prices = vehicleServicesService.servicePrices || []
+    const services = Array.isArray(vehicleServicesService?.services) ? vehicleServicesService.services : []
+    const prices = Array.isArray(vehicleServicesService?.servicePrices) ? vehicleServicesService.servicePrices : []
+
+    if ((!services || services.length === 0) && (!prices || prices.length === 0) && vehicleServicesService?.initializeDemoData) {
+      try {
+        await vehicleServicesService.initializeDemoData()
+      } catch (e) {
+        console.warn('⚠️ Failed to initialize demo data in admin route:', e?.message)
+      }
+    }
 
     const pricesByService = new Map()
+    const bodyTypes = Array.isArray(vehicleServicesService?.bodyTypes) ? vehicleServicesService.bodyTypes : []
     prices.forEach(p => {
-      const sid = String(p.service_id)
+      const sid = String(p?.service_id || '')
       if (!pricesByService.has(sid)) pricesByService.set(sid, [])
+      const btIdRaw = p?.body_type_id
+      const btId = typeof btIdRaw === 'string' ? parseInt(btIdRaw, 10) : btIdRaw
+      const bt = bodyTypes.find(bt => bt && bt.id === btId)
       pricesByService.get(sid).push({
-        id: p.id,
+        id: p?.id || '',
         service_id: sid,
-        body_type_key: p.body_type_key || '',
-        price_min: p.price_min,
-        duration_minutes: p.duration_minutes || 60,
-        is_active: p.is_active !== false
+        body_type_key: p?.body_type_key || bt?.key || '',
+        price_min: typeof p?.price_min === 'string' ? parseFloat(p.price_min) : (p?.price_min ?? 0),
+        duration_minutes: p?.duration_minutes || 60,
+        is_active: p?.is_active !== false
       })
     })
 
-    const result = services.map(s => ({
-      id: String(s.id),
-      name: s.name || '',
-      name_en: s.name_en || s.name || '',
-      name_nl: s.name_nl || s.name || '',
-      name_es: s.name_es || s.name || '',
-      name_pl: s.name_pl || s.name || '',
-      name_ro: s.name_ro || s.name || '',
-      description: s.description || '',
-      description_en: s.description_en || s.description || '',
-      description_nl: s.description_nl || s.description || '',
-      description_es: s.description_es || s.description || '',
-      description_pl: s.description_pl || s.description || '',
-      description_ro: s.description_ro || s.description || '',
-      category: s.category || 'general',
-      category_en: s.category_en || s.category || 'general',
-      category_nl: s.category_nl || s.category || 'general',
-      category_es: s.category_es || s.category || 'general',
-      category_pl: s.category_pl || s.category || 'general',
-      category_ro: s.category_ro || s.category || 'general',
-      duration: String(s.duration_minutes || 60),
-      isActive: s.is_active !== false,
-      prices: pricesByService.get(String(s.id)) || []
-    }))
+    const result = Array.isArray(services) ? services.map(s => ({
+      id: String(s?.id || ''),
+      name: s?.name || '',
+      name_en: s?.name_en || s?.name || '',
+      name_nl: s?.name_nl || s?.name || '',
+      name_es: s?.name_es || s?.name || '',
+      name_pl: s?.name_pl || s?.name || '',
+      name_ro: s?.name_ro || s?.name || '',
+      description: s?.description || '',
+      description_en: s?.description_en || s?.description || '',
+      description_nl: s?.description_nl || s?.description || '',
+      description_es: s?.description_es || s?.description || '',
+      description_pl: s?.description_pl || s?.description || '',
+      description_ro: s?.description_ro || s?.description || '',
+      category: s?.category || 'general',
+      category_en: s?.category_en || s?.category || 'general',
+      category_nl: s?.category_nl || s?.category || 'general',
+      category_es: s?.category_es || s?.category || 'general',
+      category_pl: s?.category_pl || s?.category || 'general',
+      category_ro: s?.category_ro || s?.category || 'general',
+      duration: String(s?.duration_minutes || 60),
+      isActive: s?.is_active !== false,
+      prices: pricesByService.get(String(s?.id || '')) || []
+    }) ) : []
 
     const ms = Date.now() - start
     res.setHeader('X-Admin-Vehicle-Services-Response-Time', `${ms}ms`)
     res.json(result)
   } catch (error) {
-    console.error('Vehicle services error:', error)
-    res.status(500).json({ error: 'Failed to load vehicle services' })
+    console.error('Vehicle services error:', error?.stack || error)
+    res.status(200).json([])
   }
 })
 

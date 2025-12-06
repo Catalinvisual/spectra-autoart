@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { adminAPI } from '../services/api'
+import { adminAPI, publicAPI } from '../services/api'
 import api from '../services/api'
 import { useToast } from '../contexts/ToastContext'
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal'
@@ -1078,30 +1078,36 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
     })
   }
 
-  const editVehicleService = (service: VehicleService) => {
-    // Ensure all body types have price entries (preserve existing ones)
-    const completePrices = [...(service.prices || [])];
-    
-    // Add missing body types with empty prices
-    bodyTypes.forEach(bodyType => {
-      const bodyTypeIdentifier = bodyType?.key || bodyType?.name;
-      const identifierLower = bodyTypeIdentifier ? String(bodyTypeIdentifier).toLowerCase() : '';
-      const canonicalKey = identifierLower ? mapFrontendBodyTypeKey(identifierLower) : ''
-      if (canonicalKey) {
-        const existingPrice = completePrices.find(p => String(p.body_type_key).toLowerCase() === canonicalKey);
-        if (!existingPrice) {
-          completePrices.push({
+  const editVehicleService = async (service: VehicleService) => {
+    const existingNormalized = (service.prices || []).map(p => ({
+      ...p,
+      body_type_key: mapFrontendBodyTypeKey(String(p.body_type_key || '').toLowerCase()),
+      price_min: typeof p.price_min === 'number' ? p.price_min : (parseFloat(String(p.price_min)) || 0),
+      duration_minutes: p.duration_minutes || 60,
+      is_active: p.is_active !== undefined ? p.is_active : true
+    }))
+
+    let completePrices = [...existingNormalized]
+
+    try {
+      const lang = i18n.language || 'nl'
+      const resp = await publicAPI.getServicesWithPrices(lang)
+      const fromSheets = Array.isArray(resp.data) ? resp.data.find((s: any) => String(s.id) === String(service.id)) : null
+      if (fromSheets && Array.isArray(fromSheets.prices)) {
+        const sheetPrices = fromSheets.prices.map((sp: any) => ({
           id: '',
           service_id: service.id,
-          body_type_key: canonicalKey,
-          price_min: 0,
-          duration_minutes: 60,
-          is_active: true
-        });
-        }
+          body_type_key: mapFrontendBodyTypeKey(String(sp.body_type_key || '').toLowerCase()),
+          price_min: typeof sp.price_min === 'number' ? sp.price_min : (parseFloat(String(sp.price_min)) || 0),
+          duration_minutes: typeof sp.duration_minutes === 'number' ? sp.duration_minutes : (parseInt(String(sp.duration_minutes)) || 60),
+          is_active: sp.is_active !== false
+        }))
+        completePrices = sheetPrices
       }
-    });
-    
+    } catch (_) {}
+
+    // Do not prefill missing body types with 0; keep only existing prices
+
     setEditingService(service)
     setFormData({
       name: service.name,
@@ -1123,7 +1129,7 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
       category_pl: service.category_pl || '',
       category_ro: service.category_ro || '',
       is_active: service.is_active,
-      prices: completePrices
+      prices: completePrices.sort((a, b) => (a.price_min || 0) - (b.price_min || 0))
     })
     setShowForm(true)
   }
@@ -1214,10 +1220,10 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
   }
 
   const getBodyTypeName = (bodyTypeKey: string) => {
-    const bodyType = bodyTypes.find(bt => bt.key === bodyTypeKey)
-    if (!bodyType) return bodyTypeKey
-    
-    // Return translated name based on current language
+    const keyInput = String(bodyTypeKey || '').toLowerCase()
+    const canonical = mapFrontendBodyTypeKey(keyInput)
+    const bodyType = bodyTypes.find(bt => String(bt.key || bt.name).toLowerCase() === canonical)
+    if (!bodyType) return canonical || bodyTypeKey
     const currentLang = i18n.language
     const translatedName = bodyType[`name_${currentLang}` as keyof BodyType] as string
     return translatedName || bodyType.name
@@ -1368,7 +1374,10 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
                       return null
                     }
                     
-                    const existingPrice = formData.prices?.find(p => String(p.body_type_key).toLowerCase() === canonicalKey)
+                    const existingPrice = formData.prices?.find(p => {
+                      const key = String(p.body_type_key).toLowerCase()
+                      return key === canonicalKey || key === identifierLower
+                    })
                     
                     return (
                       <div key={bodyTypeIdentifier} className="price-input-group">
@@ -1533,19 +1542,22 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
                 <div className="prices-grid">
                   {Array.isArray(service.prices) && service.prices.length > 0 ? (
                     (() => {
-                      // Deduplicate prices by body_type_key, keeping only the first occurrence
-                      const uniquePrices = service.prices.reduce((acc, price) => {
-                        if (!acc.find(p => p.body_type_key === price.body_type_key)) {
-                          acc.push(price);
-                        }
-                        return acc;
-                      }, [] as ServicePrice[]);
-                      
-                      return uniquePrices.map((price, index) => (
+                      const normalized = service.prices.map(price => ({
+                        ...price,
+                        body_type_key: String(price.body_type_key || '').toLowerCase()
+                      }))
+
+                      const sortedPrices = normalized.slice().sort((a, b) => {
+                        const av = typeof (a as any).price_min === 'string' ? parseFloat((a as any).price_min) : (a.price_min || 0)
+                        const bv = typeof (b as any).price_min === 'string' ? parseFloat((b as any).price_min) : (b.price_min || 0)
+                        return av - bv
+                      })
+
+                      return sortedPrices.map((price, index) => (
                         <div key={`${price.body_type_key}-${index}`} className="price-item">
-                          <span>{getBodyTypeName(price.body_type_key)}: €{price.price_min}</span>
+                          <span>{getBodyTypeName(price.body_type_key)}: €{typeof (price as any).price_min === 'string' ? parseFloat((price as any).price_min) : price.price_min}</span>
                         </div>
-                      ));
+                      ))
                     })()
                   ) : (
                     <div className="price-item no-prices">
