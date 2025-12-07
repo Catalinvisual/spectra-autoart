@@ -19,12 +19,31 @@ class GoogleSheetsService {
       console.log('📧 SERVICE_ACCOUNT_EMAIL:', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)
       console.log('🔑 PRIVATE_KEY exists:', !!process.env.GOOGLE_PRIVATE_KEY)
       console.log('🌍 NODE_ENV:', process.env.NODE_ENV)
+      console.log('🏭 RAILWAY_PROJECT_ID:', process.env.RAILWAY_PROJECT_ID)
       
-      if (!process.env.GOOGLE_SHEETS_SPREADSHEET_ID) {
-        console.log('⚠️  Google Sheets spreadsheet ID not configured - service will not initialize');
-        this.isDemoMode = false; // Explicitly disable demo mode
-        this.isInitialized = false;
-        return false;
+      // Validate all required credentials are present
+      const hasSpreadsheetId = !!process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
+      const hasServiceAccountEmail = !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+      const hasPrivateKey = !!process.env.GOOGLE_PRIVATE_KEY;
+      
+      if (!hasSpreadsheetId || !hasServiceAccountEmail || !hasPrivateKey) {
+        console.log('⚠️  Google Sheets credentials incomplete:');
+        console.log(`   - SPREADSHEET_ID: ${hasSpreadsheetId ? '✅' : '❌'}`);
+        console.log(`   - SERVICE_ACCOUNT_EMAIL: ${hasServiceAccountEmail ? '✅' : '❌'}`);
+        console.log(`   - PRIVATE_KEY: ${hasPrivateKey ? '✅' : '❌'}`);
+        
+        // In production with Railway, this should NOT fall back to demo mode
+        if (process.env.RAILWAY_PROJECT_ID) {
+          console.log('❌ PRODUCTION ENVIRONMENT: Google Sheets credentials missing - service will fail');
+          this.isDemoMode = false; // Do NOT enable demo mode in production
+          this.isInitialized = false;
+          return false;
+        } else {
+          console.log('⚠️  Development environment: Service will not initialize');
+          this.isDemoMode = false;
+          this.isInitialized = false;
+          return false;
+        }
       }
 
       try {
@@ -101,11 +120,20 @@ class GoogleSheetsService {
       } catch (authError) {
         console.error('❌ Google Sheets authentication failed:', authError.message);
         console.error('❌ Full auth error:', authError);
-        // Enable demo mode when authentication fails
-        console.log('⚠️  Enabling demo mode due to authentication failure');
-        this.isDemoMode = true;
-        this.isInitialized = true; // Consider it initialized in demo mode
-        return true; // Return success for demo mode
+        
+        // In production, do NOT enable demo mode - let the service fail
+        if (process.env.RAILWAY_PROJECT_ID) {
+          console.log('❌ PRODUCTION ENVIRONMENT: Authentication failed - service will NOT initialize');
+          this.isDemoMode = false;
+          this.isInitialized = false;
+          return false; // Return failure in production
+        } else {
+          // In development, enable demo mode
+          console.log('⚠️  Development environment: Enabling demo mode due to authentication failure');
+          this.isDemoMode = true;
+          this.isInitialized = true; // Consider it initialized in demo mode
+          return true; // Return success for demo mode in development
+        }
       }
     } catch (error) {
       console.error('❌ Failed to initialize Google Sheets service:', error);
@@ -597,6 +625,15 @@ class GoogleSheetsService {
 
   async getServicesWithPrices(lang = 'nl') {
     try {
+      // Check if service is properly initialized
+      if (!this.isInitialized || !this.doc) {
+        console.log('❌ Google Sheets service not initialized - cannot get services with prices');
+        if (process.env.RAILWAY_PROJECT_ID) {
+          console.log('❌ PRODUCTION ENVIRONMENT: Service not initialized - returning failure');
+          return false;
+        }
+      }
+      
       const servicesData = await this.getData('Vehicle_Services');
       const pricesData = await this.getData('Vehicle_Service_Prices');
 
@@ -1551,6 +1588,15 @@ class GoogleSheetsService {
    * @returns {Promise<Array>} - Gallery array with translated content
    */
   async getGalleryWithDeepLTranslation(locale = 'nl', activeOnly = true, useDeepLTranslate = true) {
+    // Check if service is properly initialized
+    if (!this.isInitialized || !this.doc) {
+      console.log('❌ Google Sheets service not initialized - cannot get gallery');
+      if (process.env.RAILWAY_PROJECT_ID) {
+        console.log('❌ PRODUCTION ENVIRONMENT: Service not initialized - returning failure');
+        return false;
+      }
+    }
+    
     let data = await this.getData('Gallery');
     
     console.log(`📊 getGalleryWithDeepLTranslation called with locale=${locale}, useDeepLTranslate=${useDeepLTranslate}`);
