@@ -85,7 +85,7 @@ class CachedTranslationService {
         const priceDurationCol = priceHeaders.indexOf('Duration_Minutes');
         const priceIsActiveCol = priceHeaders.indexOf('Is_Active');
         
-        console.log(`🔍 Price column indices: Service_ID=${priceServiceIdCol}, Body_Type_ID=${priceBodyTypeCol}, Price_Min=${priceMinCol}, Price_Max=${priceMaxCol}, Currency=${priceCurrencyCol}, Duration_Minutes=${priceDurationCol}, Is_Active=${priceIsActiveCol}`);
+        console.log(`🔍 Price column indices: Service_ID=${priceServiceIdCol}, Body_Type_ID=${priceBodyTypeIdCol}, Price_Min=${priceMinCol}, Price_Max=${priceMaxCol}, Currency=${priceCurrencyCol}, Duration_Minutes=${priceDurationCol}, Is_Active=${priceIsActiveCol}`);
         
         // Build a map of service prices
       for (let i = 1; i < pricesData.length; i++) {
