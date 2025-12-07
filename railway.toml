@@ -1,14 +1,14 @@
 [build]
 buildCommand = ""
-startCommand = "sh -c 'cd server && node src/index.js'"
+startCommand = "sh -c 'cd server && STARTUP_DELAY=3000 node src/index.js'"
 dockerfilePath = "Dockerfile.production"
 nixpacksPlan.phases.setup.nixPkgs = ["nodejs_20"]
 
 [deploy]
 healthcheckPath = "/ping"
-healthcheckTimeout = 10000
+healthcheckTimeout = 60000
 restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 3
+restartPolicyMaxRetries = 10
 
 [resources]
 memoryLimit = 512

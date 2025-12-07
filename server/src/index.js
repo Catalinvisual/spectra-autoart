@@ -23,6 +23,9 @@ process.on('unhandledRejection', (reason, promise) => {
   process.exit(1)
 })
 
+// Startup state for healthcheck
+let serverReady = false
+
 // Timeout de siguranță pentru startup
 const startupTimeout = setTimeout(() => {
   console.error('❌ Server startup timeout - server failed to start within 30 seconds')
@@ -154,6 +157,16 @@ console.log('✅ API routes mounted')
 // API health check - must be before static files and catch-all route
 app.get('/health', (req, res) => {
   // Health check rapid - răspunde imediat fără dependențe externe
+  if (!serverReady) {
+    return res.status(503).json({ 
+      status: 'starting', 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || 'development',
+      port: process.env.PORT || 8080,
+      message: 'Server is starting up'
+    })
+  }
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
@@ -165,6 +178,16 @@ app.get('/health', (req, res) => {
 
 // Mirror health check for Docker/Railway configs expecting /api/health
 app.get('/api/health', (req, res) => {
+  if (!serverReady) {
+    return res.status(503).json({ 
+      status: 'starting', 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || 'development',
+      port: process.env.PORT || 8080,
+      message: 'Server is starting up'
+    })
+  }
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
@@ -176,6 +199,9 @@ app.get('/api/health', (req, res) => {
 
 // Healthcheck ultra-simplu pentru Docker
 app.get('/ping', (req, res) => {
+  if (!serverReady) {
+    return res.status(503).send('starting')
+  }
   res.status(200).send('pong')
 })
 
@@ -270,15 +296,25 @@ const startServer = async () => {
   try {
     const port = process.env.PORT || 8080
     const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost'
+    const startupDelay = parseInt(process.env.STARTUP_DELAY || '0', 10)
 
     console.log(`🎯 Starting server on ${host}:${port}`)
+    console.log(`⏱️  Startup delay: ${startupDelay}ms`)
+    
+    // Add startup delay for Railway deployment
+    if (startupDelay > 0) {
+      console.log(`😴 Waiting ${startupDelay}ms before starting server...`)
+      await new Promise(resolve => setTimeout(resolve, startupDelay))
+    }
     
     // Start server IMMEDIATELY - don't wait for services initialization
     const server = app.listen(port, host, () => {
       clearTimeout(startupTimeout) // Stop safety timeout
+      serverReady = true // Mark server as ready for healthchecks
       console.log(`✅ Server Spectra AutoArt STARTED SUCCESSFULLY on ${host}:${port}`)
       console.log(`🏥 Healthcheck available at: http://${host}:${port}/health`)
       console.log(`🏓 Ping healthcheck available at: http://${host}:${port}/ping`)
+      console.log(`🔄 Server ready state: ${serverReady}`)
       
       // Routes already mounted before static files
 
