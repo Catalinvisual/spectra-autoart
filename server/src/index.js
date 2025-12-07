@@ -217,23 +217,33 @@ async function initializeServices() {
     }
     // Initialize Vehicle Services
     try {
-      if (process.env.NODE_ENV === 'production' && sheetsInitialized) {
-        // In production with Google Sheets configured, load services from Google Sheets
-        console.log('📥 Loading vehicle services from Google Sheets in production...');
-        const loadedFromSheets = await vehicleServicesService.loadFromGoogleSheets();
+      const canUseSheets = (
+        process.env.NODE_ENV === 'production' &&
+        sheetsInitialized &&
+        GoogleSheetsService &&
+        GoogleSheetsService.isInitialized &&
+        !GoogleSheetsService.isDemoMode
+      )
+
+      if (canUseSheets) {
+        console.log('📥 Loading vehicle services from Google Sheets in production...')
+        const loadedFromSheets = await vehicleServicesService.loadFromGoogleSheets()
         if (loadedFromSheets) {
-          console.log('✅ Vehicle services loaded from Google Sheets in production');
-          console.log(`📋 ${vehicleServicesService.services?.length || 0} services loaded`);
-          console.log(`💰 ${vehicleServicesService.servicePrices?.length || 0} price configurations loaded`);
+          console.log('✅ Vehicle services loaded from Google Sheets in production')
+          console.log(`📋 ${vehicleServicesService.services?.length || 0} services loaded`)
+          console.log(`💰 ${vehicleServicesService.servicePrices?.length || 0} price configurations loaded`)
         } else {
-          console.log('⚠️  Failed to load vehicle services from Google Sheets, using fallback');
+          console.log('⚠️  Failed to load vehicle services from Google Sheets, initializing demo data')
+          const demoData = await vehicleServicesService.initializeDemoData()
+          console.log('✅ Vehicle services demo data initialized')
+          console.log(`📋 ${demoData?.services || 0} services created`)
+          console.log(`💰 ${demoData?.prices || 0} price configurations created`)
         }
-      } else if (process.env.NODE_ENV !== 'production') {
-        // Only initialize demo data in development
-        const demoData = await vehicleServicesService.initializeDemoData();
-        console.log('✅ Vehicle services demo data initialized');
-        console.log(`📋 ${demoData?.services || 0} services created`);
-        console.log(`💰 ${demoData?.prices || 0} price configurations created`);
+      } else {
+        const demoData = await vehicleServicesService.initializeDemoData()
+        console.log('✅ Vehicle services demo data initialized')
+        console.log(`📋 ${demoData?.services || 0} services created`)
+        console.log(`💰 ${demoData?.prices || 0} price configurations created`)
       }
     } catch (error) {
       console.log('⚠️  Vehicle services initialization failed:', error.message);
