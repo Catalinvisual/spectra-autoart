@@ -218,12 +218,20 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
 
   const loadServicesForBodyType = async () => {
     try {
-      const servicesRes = await publicAPI.getServicesWithPrices(i18n.language, bookingData.body);
-      console.log('🔧 Services with prices response:', servicesRes)
+      // Use cached translations for better performance and proper translations
+      const servicesRes = await publicAPI.getServicesWithCachedTranslations(i18n.language, false);
+      console.log('🔧 Services with cached translations response:', servicesRes)
       setServices(Array.isArray(servicesRes.data) ? servicesRes.data : []);
     } catch (error) {
-      console.error('Error loading services for body type:', error);
-      setServices([]);
+      console.error('Error loading services with cached translations:', error);
+      // Fallback to the old endpoint if cached translations fail
+      try {
+        const fallbackResponse = await publicAPI.getServicesWithPrices(i18n.language, bookingData.body);
+        setServices(Array.isArray(fallbackResponse.data) ? fallbackResponse.data : []);
+      } catch (fallbackError) {
+        console.error('Fallback services loading also failed:', fallbackError);
+        setServices([]);
+      }
     }
   }
 
@@ -249,7 +257,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       // Nu mai setăm loading - lăsăm modalul să apară instant
       const [makesRes, servicesRes, bodyTypesRes] = await Promise.all([
         publicAPI.getVehicleMakes(),
-        publicAPI.getServicesWithPrices(i18n.language),
+        publicAPI.getServicesWithCachedTranslations(i18n.language, false),
         publicAPI.getBodyTypes(i18n.language)
       ])
       
@@ -324,20 +332,46 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
     return service.prices && Array.isArray(service.prices) ? service.prices.find(price => price.body_type_key === bodyTypeKey && price.is_active) : undefined
   }
 
+  const getServiceDisplayName = (service: ServiceWithPrices) => {
+    // Return the appropriate name based on current language
+    if (i18n.language === 'en' && service.name_en) {
+      return service.name_en
+    }
+    return service.name
+  }
+
+  const getServiceDisplayDescription = (service: ServiceWithPrices) => {
+    // Return the appropriate description based on current language
+    if (i18n.language === 'en' && service.description_en) {
+      return service.description_en
+    }
+    return service.description
+  }
+
   const getFilteredServices = () => {
-    // Show all services regardless of whether they have prices for the selected body type
+    // Filter services to show only those that have prices for the selected body type
     if (!Array.isArray(services)) {
       console.log('⚠️ Services is not an array:', services)
       return []
     }
     
-    // Validate each service has required properties
+    // Validate each service and filter by body type if one is selected
     const validServices = services.filter(service => {
       const isValid = service && service.id && service.name && Array.isArray(service.prices)
       if (!isValid) {
         console.log('⚠️ Invalid service structure:', service)
+        return false
       }
-      return isValid
+      
+      // If body type is selected, only show services that have prices for this body type
+      if (bookingData.body) {
+        const hasPriceForBodyType = service.prices.some(price => 
+          price.body_type_key === bookingData.body && price.is_active
+        )
+        return hasPriceForBodyType
+      }
+      
+      return true
     })
     
     return validServices || []
@@ -579,8 +613,8 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 }
                 
                 const servicePrice = bookingData.body ? getServicePriceForBodyType(service, bookingData.body) : null
-                const serviceName = i18n.language === 'en' && service.name_en ? service.name_en : service.name
-                const serviceDesc = i18n.language === 'en' && service.description_en ? service.description_en : service.description
+                const serviceName = getServiceDisplayName(service)
+                const serviceDesc = getServiceDisplayDescription(service)
                 
                 return (
                   <div
@@ -727,7 +761,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                     value: Array.isArray(bookingData.services) && bookingData.services.length > 0 
                       ? bookingData.services.map(serviceId => {
                           const service = services.find(s => s.id === serviceId)
-                          const serviceName = service ? (i18n.language === 'en' && service.name_en ? service.name_en : service.name) : ''
+                          const serviceName = service ? getServiceDisplayName(service) : ''
                           return serviceName
                         }).join(', ')
                       : 'Niciun serviciu selectat'
