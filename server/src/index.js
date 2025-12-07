@@ -38,16 +38,17 @@ const envProductionPath = path.join(__dirname, '..', '.env.production')
 console.log('📂 __dirname:', __dirname)
 console.log('🎯 __filename:', __filename)
 
-// Încearcă să încarce fișierul .env.local, apoi .env.production, apoi .env ca fallback
 try {
-  const result = dotenv.config({ path: envLocalPath })
-  if (result.error) {
-    console.log('⚠️  Fișierul .env.local nu a putut fi încărcat, încerc .env.production:', result.error.message)
-    // Fallback la .env.production dacă .env.local nu există
-    const productionResult = dotenv.config({ path: envProductionPath })
-    if (productionResult.error) {
-      console.log('⚠️  Fișierul .env.production nu a putut fi încărcat, încerc .env:', productionResult.error.message)
-      // Fallback la .env dacă .env.production nu există
+  const isProduction = process.env.NODE_ENV === 'production'
+  const primaryPath = isProduction ? envProductionPath : envLocalPath
+  const secondaryPath = isProduction ? envLocalPath : envProductionPath
+
+  const primaryResult = dotenv.config({ path: primaryPath })
+  if (primaryResult.error) {
+    console.log('⚠️  Fișierul primar de env nu a putut fi încărcat, încerc fallback:', primaryResult.error.message)
+    const secondaryResult = dotenv.config({ path: secondaryPath })
+    if (secondaryResult.error) {
+      console.log('⚠️  Fișierul secundar de env nu a putut fi încărcat, încerc .env:', secondaryResult.error.message)
       const fallbackResult = dotenv.config({ path: envPath })
       if (fallbackResult.error) {
         console.log('⚠️  Nici fișierul .env nu a putut fi încărcat, dar serverul va continua:', fallbackResult.error.message)
@@ -55,10 +56,10 @@ try {
         console.log('✅ Fișierul .env a fost încărcat cu succes (fallback)')
       }
     } else {
-      console.log('✅ Fișierul .env.production a fost încărcat cu succes')
+      console.log('✅ Fișierul secundar de env a fost încărcat cu succes')
     }
   } else {
-    console.log('✅ Fișierul .env.local a fost încărcat cu succes')
+    console.log('✅ Fișierul primar de env a fost încărcat cu succes')
   }
 } catch (error) {
   console.log('⚠️  Eroare la încărcarea fișierului de configurare, dar serverul va continua:', error.message)
@@ -93,7 +94,6 @@ import adminRouter from './routes/admin.js'
 import vehicleRouter from './routes/vehicles.js'
 import servicesRouter from './routes/services.js'
 import vehicleServicesRouter from './routes/vehicleServices.js'
-console.log('📦 vehicleServicesRouter imported successfully')
 import bookingsRouter from './routes/bookings.js'
 import galleryRouter from './routes/gallery.js'
 import testimonialsRouter from './routes/testimonials.js'
@@ -101,10 +101,10 @@ import translateRouter from './routes/translate.js'
 import debugVehiclesRouter from './routes/debugVehicles.js'
 import adminServicesRouter from './routes/adminServices.js'
 import cachedServicesRouter from './routes/cachedServices.js'
-import GoogleSheetsService from './services/googleSheetsService.js'
-import VehiclesAPIService from './services/vehiclesAPIService.js'
-import { vehicleServicesService } from './services/vehicleServicesService.js'
-import { initializeEmailService } from './services/emailService.js'
+let GoogleSheetsService
+let VehiclesAPIService
+let vehicleServicesService
+let initializeEmailService
 
 const app = express()
 
@@ -143,12 +143,12 @@ app.use('/api/services/cached', cachedServicesRouter)
 app.use('/api/vehicles', vehicleRouter)
 app.use('/api/services', servicesRouter)
 app.use('/api/vehicle-services', vehicleServicesRouter)
-console.log('🔧 vehicleServicesRouter mounted at /api/vehicle-services')
 app.use('/api/bookings', bookingsRouter)
 app.use('/api/gallery', galleryRouter)
 app.use('/api/testimonials', testimonialsRouter)
 app.use('/api/translate', translateRouter)
 app.use('/api/debug', debugVehiclesRouter)
+console.log('✅ API routes mounted')
 
 // API health check - must be before static files and catch-all route
 app.get('/health', (req, res) => {
@@ -167,24 +167,14 @@ app.get('/ping', (req, res) => {
   res.status(200).send('pong')
 })
 
-// Serve uploaded files
-const uploadsPath = path.join(__dirname, '../uploads')
-app.use('/uploads', express.static(uploadsPath))
-
-// Serve static files from React build
-const clientBuildPath = path.join(__dirname, '../../client/dist')
-app.use(express.static(clientBuildPath))
-
-// Handle React routing, return all requests to React app
-// This should be the LAST route to catch any unmatched requests
-app.get('*', (req, res) => {
-  res.sendFile(path.join(clientBuildPath, 'index.html'))
-})
+// Static and catch-all are mounted after API routes inside start callback
 
 // Initialize Google Sheets Service
 async function initializeServices() {
   try {
-    // Initialize Email Service
+    if (!initializeEmailService) {
+      ({ initializeEmailService } = await import('./services/emailService.js'))
+    }
     const emailServiceInitialized = await initializeEmailService();
     if (emailServiceInitialized) {
       console.log('✅ Email service initialized successfully');
@@ -192,7 +182,9 @@ async function initializeServices() {
       console.log('⚠️  Email service initialization failed - emails may not be sent');
     }
     
-    // Initialize Vehicles API Service
+    if (!VehiclesAPIService) {
+      VehiclesAPIService = (await import('./services/vehiclesAPIService.js')).default
+    }
     const vehiclesAPIInitialized = await VehiclesAPIService.initialize();
     if (vehiclesAPIInitialized) {
       console.log('✅ Vehicles API service initialized successfully');
@@ -200,7 +192,9 @@ async function initializeServices() {
       console.log('⚠️  Vehicles API not configured - using comprehensive demo data');
     }
     
-    // Initialize Google Sheets Service
+    if (!GoogleSheetsService) {
+      GoogleSheetsService = (await import('./services/googleSheetsService.js')).default
+    }
     const sheetsInitialized = await GoogleSheetsService.initialize();
     if (sheetsInitialized) {
       console.log('✅ Google Sheets service initialized successfully');
@@ -218,6 +212,9 @@ async function initializeServices() {
       console.log('⚠️  Google Sheets not configured - using demo data');
     }
 
+    if (!vehicleServicesService) {
+      ({ vehicleServicesService } = await import('./services/vehicleServicesService.js'))
+    }
     // Initialize Vehicle Services
     try {
       if (process.env.NODE_ENV === 'production' && sheetsInitialized) {
@@ -261,6 +258,21 @@ const startServer = async () => {
       console.log(`🏥 Healthcheck available at: http://${host}:${port}/health`)
       console.log(`🏓 Ping healthcheck available at: http://${host}:${port}/ping`)
       
+      // Routes already mounted before static files
+
+      // Serve uploaded files
+      const uploadsPath = path.join(__dirname, '../uploads')
+      app.use('/uploads', express.static(uploadsPath))
+
+      // Serve static files from React build
+      const clientBuildPath = path.join(__dirname, '../../client/dist')
+      app.use(express.static(clientBuildPath))
+
+      // Handle React routing, return all requests to React app
+      app.get('*', (req, res) => {
+        res.sendFile(path.join(clientBuildPath, 'index.html'))
+      })
+
       // Initialize services in BACKGROUND after server starts
       setTimeout(() => {
         initializeServices().catch(error => {
