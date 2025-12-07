@@ -66,6 +66,7 @@ const resources = {
         fromPrice: 'Vanaf',
         minimumPrice: 'Minimale prijs'
       },
+      from: 'Vanaf',
       contact: 'Contact',
       selectLanguage: 'Taal selecteren',
       vehicleBrand: 'Merk',
@@ -1082,6 +1083,7 @@ const resources = {
         fromPrice: 'From',
         minimumPrice: 'Minimum price'
       },
+      from: 'From',
       contact: 'Contact',
       selectLanguage: 'Select Language',
       vehicleBrand: 'Brand',
@@ -2058,6 +2060,7 @@ const resources = {
         fromPrice: 'Desde',
         minimumPrice: 'Precio mínimo'
       },
+      from: 'Desde',
       testimonialPage: {
         title: 'Lo que dicen los clientes',
         subtitle: 'Las experiencias de nuestros clientes satisfechos',
@@ -2898,6 +2901,7 @@ const resources = {
         fromPrice: 'Od',
         minimumPrice: 'Cena minimalna'
       },
+      from: 'Od',
       testimonialPage: {
         title: 'Co mówią klienci',
         subtitle: 'Doświadczenia naszych zadowolonych klientów',
@@ -3735,6 +3739,7 @@ const resources = {
         fromPrice: 'De la',
         minimumPrice: 'Preț minim'
       },
+      from: 'De la',
       testimonialPage: {
         title: 'Ce spun clienții',
         subtitle: 'Experiențele clienților noștri mulțumiți',

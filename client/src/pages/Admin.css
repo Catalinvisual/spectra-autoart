@@ -400,6 +400,63 @@ h2:hover::before {
   padding: 8px;
 }
 
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0;
+  z-index: 9999;
+  max-height: 100vh;
+}
+
+.modal-content {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(15px);
+  border: 2px solid rgba(0, 229, 255, 0.4);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 900px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 229, 255, 0.2);
+  z-index: 10000;
+  max-height: 70vh!important;
+  overflow: hidden;
+  padding: 0!important;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #00e5ff;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(100vh - 60px);
+}
+
 /* Body Type Pricing Styles - Modern & Beautiful */
 .body-type-prices {
   display: grid;
@@ -991,13 +1048,11 @@ h2:hover::before {
   max-width: 600px;
   width: 100%;
   max-height: 80vh;
-  overflow-y: auto;
   box-shadow: 
     0 25px 50px rgba(0, 0, 0, 0.5),
     0 0 40px rgba(0, 229, 255, 0.3);
   /* Ensure modal stays centered and doesn't overflow */
   margin: auto;
-  position: relative;
 }
 
 .modal-header {
@@ -1311,8 +1366,8 @@ h2:hover::before {
     animation: modalPulse 4s ease-in-out infinite, modalGradientShift 12s ease infinite;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(0, 229, 255, 0.3);
-    box-shadow: 0 -10px 30px rgba(0, 229, 255, 0.1);
-    position: relative;
+  box-shadow: 0 -10px 30px rgba(0, 229, 255, 0.1);
+    
     z-index: 10;
     padding: 1.5rem;
   }
@@ -1590,7 +1645,6 @@ h2:hover::before {
 /* Large form modal for complex forms */
 .form-container.large-form {
   max-height: 90vh;
-  overflow-y: auto;
 }
 
 .form-section {
@@ -2914,17 +2968,34 @@ h2:hover::before {
     }
   }
   
-  /* Ensure delete modal stays centered on mobile */
-  .delete-modal {
-    max-width: 100vw;
-    margin: 0;
-    max-height: 100vh;
-    height: 100vh;
-  }
+/* Ensure delete modal stays centered on mobile */
+.delete-modal {
+  max-width: 100vw;
+  margin: 0;
+  max-height: 100vh;
+  height: 100vh;
+}
   
-  .modal-overlay {
-    padding: 0;
-  }
+.modal-overlay {
+  padding: 0;
+}
+
+/* Explicit overrides for Admin vehicle service modals to keep them at top */
+.vehicle-services-management .modal-overlay {
+  align-items: flex-start !important;
+  justify-content: center !important;
+  padding-top: 0 !important;
+  overflow: hidden !important;
+}
+
+.vehicle-services-management .modal-content {
+  position: static !important;
+  margin: 0 auto !important;
+  top: 0 !important;
+  transform: none !important;
+  max-height: 90vh;
+  overflow: hidden !important;
+}
   
 /* ÎNDEPĂRTAT: Stilul interferează cu gallery din componenta principală 
   .gallery-grid {
@@ -2932,4 +3003,13 @@ h2:hover::before {
     gap: 15px;
   }
 */
+}
+.vehicle-services-management .modal-body {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.vehicle-services-management .form-container.large-form {
+  overflow: visible !important;
+  max-height: none !important;
 }

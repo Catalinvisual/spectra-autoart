@@ -872,6 +872,20 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
     itemName: null
   })
   
+  useEffect(() => {
+    const active = showForm || showBodyTypesForm
+    const prevBody = document.body.style.overflow
+    const prevHtml = document.documentElement.style.overflow
+    if (active) {
+      document.documentElement.style.overflow = 'hidden'
+      document.body.style.overflow = 'hidden'
+    }
+    return () => {
+      document.documentElement.style.overflow = prevHtml
+      document.body.style.overflow = prevBody
+    }
+  }, [showForm, showBodyTypesForm])
+  
   const [formData, setFormData] = useState({
     name: '',
     name_en: '',
@@ -1311,11 +1325,14 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
         </div>
       </div>
 
-      {/* Vehicle Service Form Modal */}
       {showForm && (
-        <div className="form-modal">
-          <div className="form-container large-form">
-            <h3>{editingService ? t('admin.editVehicleService') : t('admin.addVehicleService')}</h3>
+        <div className="modal-overlay" onClick={() => { setShowForm(false); setEditingService(null); resetForm(); }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{editingService ? t('admin.editVehicleService') : t('admin.addVehicleService')}</h3>
+              <button className="close-btn" type="button" onClick={() => { setShowForm(false); setEditingService(null); resetForm(); }}>×</button>
+            </div>
+            <div className="modal-body">
             <form onSubmit={handleSubmit}>
               <div className="form-section">
                 <h4>{t('admin.basicInfo')}</h4>
@@ -1444,6 +1461,7 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

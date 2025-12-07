@@ -421,6 +421,69 @@
   font-weight: 500;
 }
 
+/* Booking Wizard Services Grid (Step 4) */
+.booking-wizard-modal .service-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.booking-wizard-modal .service-card {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 260px;
+  max-width: 300px;
+  min-width: 220px;
+}
+
+@media (max-width: 768px) {
+  .booking-wizard-modal .service-grid {
+    flex-direction: column;
+  }
+  .booking-wizard-modal .service-card {
+    flex: 1 1 auto;
+    max-width: none;
+    width: 100%;
+  }
+}
+
+/* Phone input with prefix */
+.phone-input-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.phone-select {
+  min-width: 120px;
+  width: auto;
+  max-width: 180px;
+  padding: 0.5rem 0.6rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: #ccd6f6;
+  white-space: nowrap;
+}
+
+.phone-number-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.phone-number-input {
+  padding-left: 12px;
+  width: 100%;
+  min-width: 280px;
+}
+
+.phone-number-input::placeholder {
+  color: rgba(204, 214, 246, 0.35);
+}
+
 /* Responsive Newsletter Card */
 @media (max-width: 768px) {
   .newsletter-card {

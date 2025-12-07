@@ -101,6 +101,83 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
     locale: i18n.language
   })
 
+  const getDefaultPrefix = (lang: string) => {
+    if (lang === 'ro') return '+40'
+    if (lang === 'nl') return '+31'
+    if (lang === 'es') return '+34'
+    if (lang === 'pl') return '+48'
+    if (lang === 'en') return '+44'
+    return '+40'
+  }
+  const [phonePrefix, setPhonePrefix] = useState<string>(getDefaultPrefix(i18n.language))
+  const [phoneDigits, setPhoneDigits] = useState<string>('')
+
+  const flagEmoji = (cc: string) => cc
+    .toUpperCase()
+    .replace(/./g, c => String.fromCodePoint(127397 + c.charCodeAt(0)))
+
+  const COUNTRIES = [
+    { code: 'RO', name: 'Romania', prefix: '+40' },
+    { code: 'NL', name: 'Netherlands', prefix: '+31' },
+    { code: 'ES', name: 'Spain', prefix: '+34' },
+    { code: 'PL', name: 'Poland', prefix: '+48' },
+    { code: 'GB', name: 'United Kingdom', prefix: '+44' },
+    { code: 'IE', name: 'Ireland', prefix: '+353' },
+    { code: 'FR', name: 'France', prefix: '+33' },
+    { code: 'DE', name: 'Germany', prefix: '+49' },
+    { code: 'IT', name: 'Italy', prefix: '+39' },
+    { code: 'BE', name: 'Belgium', prefix: '+32' },
+    { code: 'PT', name: 'Portugal', prefix: '+351' },
+    { code: 'SE', name: 'Sweden', prefix: '+46' },
+    { code: 'NO', name: 'Norway', prefix: '+47' },
+    { code: 'DK', name: 'Denmark', prefix: '+45' },
+    { code: 'FI', name: 'Finland', prefix: '+358' },
+    { code: 'CH', name: 'Switzerland', prefix: '+41' },
+    { code: 'AT', name: 'Austria', prefix: '+43' },
+    { code: 'CZ', name: 'Czechia', prefix: '+420' },
+    { code: 'SK', name: 'Slovakia', prefix: '+421' },
+    { code: 'HU', name: 'Hungary', prefix: '+36' },
+    { code: 'BG', name: 'Bulgaria', prefix: '+359' },
+    { code: 'GR', name: 'Greece', prefix: '+30' },
+    { code: 'SI', name: 'Slovenia', prefix: '+386' },
+    { code: 'HR', name: 'Croatia', prefix: '+385' },
+    { code: 'RS', name: 'Serbia', prefix: '+381' },
+    { code: 'UA', name: 'Ukraine', prefix: '+380' },
+    { code: 'TR', name: 'Turkey', prefix: '+90' },
+    { code: 'US', name: 'United States', prefix: '+1' },
+    { code: 'CA', name: 'Canada', prefix: '+1' },
+    { code: 'MX', name: 'Mexico', prefix: '+52' },
+    { code: 'BR', name: 'Brazil', prefix: '+55' },
+    { code: 'AR', name: 'Argentina', prefix: '+54' },
+    { code: 'CL', name: 'Chile', prefix: '+56' },
+    { code: 'CO', name: 'Colombia', prefix: '+57' },
+    { code: 'PE', name: 'Peru', prefix: '+51' },
+    { code: 'AU', name: 'Australia', prefix: '+61' },
+    { code: 'NZ', name: 'New Zealand', prefix: '+64' },
+    { code: 'JP', name: 'Japan', prefix: '+81' },
+    { code: 'CN', name: 'China', prefix: '+86' },
+    { code: 'HK', name: 'Hong Kong', prefix: '+852' },
+    { code: 'SG', name: 'Singapore', prefix: '+65' },
+    { code: 'MY', name: 'Malaysia', prefix: '+60' },
+    { code: 'TH', name: 'Thailand', prefix: '+66' },
+    { code: 'VN', name: 'Vietnam', prefix: '+84' },
+    { code: 'PH', name: 'Philippines', prefix: '+63' },
+    { code: 'ID', name: 'Indonesia', prefix: '+62' },
+    { code: 'IN', name: 'India', prefix: '+91' },
+    { code: 'PK', name: 'Pakistan', prefix: '+92' },
+    { code: 'BD', name: 'Bangladesh', prefix: '+880' },
+    { code: 'SA', name: 'Saudi Arabia', prefix: '+966' },
+    { code: 'AE', name: 'United Arab Emirates', prefix: '+971' },
+    { code: 'QA', name: 'Qatar', prefix: '+974' },
+    { code: 'KW', name: 'Kuwait', prefix: '+965' },
+    { code: 'EG', name: 'Egypt', prefix: '+20' },
+    { code: 'MA', name: 'Morocco', prefix: '+212' },
+    { code: 'ZA', name: 'South Africa', prefix: '+27' },
+    { code: 'NG', name: 'Nigeria', prefix: '+234' },
+    { code: 'KE', name: 'Kenya', prefix: '+254' },
+    { code: 'TZ', name: 'Tanzania', prefix: '+255' }
+  ]
+
   const totalSteps = 5
 
   const renderProgressCircles = () => {
@@ -516,13 +593,13 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                     <div className="service-price">
                       {servicePrice ? (
                         <>
-                          De la €{servicePrice.price_min}
+                          {t('from')} €{servicePrice.price_min}
                           {servicePrice.price_max && servicePrice.price_max > servicePrice.price_min && (
                             <span> - €{servicePrice.price_max}</span>
                           )}
                         </>
                       ) : (
-                        <span className="unavailable">Indisponibil</span>
+                        <span className="unavailable">{t('unavailable') || 'Indisponibil'}</span>
                       )}
                     </div>
                   </div>
@@ -581,12 +658,42 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               </div>
               <div className="form-group">
                 <label className="form-label">{t('phone')}</label>
-                <input
-                  type="tel"
-                  className="form-input"
-                  value={bookingData.user.phone}
-                  onChange={(e) => handleInputChange('user.phone', e.target.value)}
-                />
+                <div className="phone-input-group">
+                  <select
+                    className="phone-select"
+                    value={phonePrefix}
+                    onChange={(e) => {
+                      const p = e.target.value
+                      setPhonePrefix(p)
+                      setBookingData(prev => ({
+                        ...prev,
+                        user: { ...prev.user, phone: `${p}${phoneDigits}` }
+                      }))
+                    }}
+                  >
+                    {COUNTRIES.map(c => (
+                      <option key={c.code} value={c.prefix} title={`${c.name} ${c.prefix}`}>
+                        {`${flagEmoji(c.code)} ${c.name} ${c.prefix}`}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="phone-number-wrapper">
+                    <input
+                      type="tel"
+                      className="form-input phone-number-input"
+                      placeholder="000 000 000"
+                      value={phoneDigits}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/[^0-9]/g, '')
+                        setPhoneDigits(digits)
+                        setBookingData(prev => ({
+                          ...prev,
+                          user: { ...prev.user, phone: `${phonePrefix}${digits}` }
+                        }))
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
               <div className="form-group">
                 <label className="form-label">{t('selectDate')}</label>
