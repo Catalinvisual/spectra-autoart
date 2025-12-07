@@ -1,7 +1,7 @@
 [build]
 buildCommand = ""
 startCommand = "sh start.sh"
-dockerfilePath = "Dockerfile.production"
+dockerfilePath = "Dockerfile.railway"
 nixpacksPlan.phases.setup.nixPkgs = ["nodejs_20"]
 
 [deploy]
