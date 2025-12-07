@@ -22,7 +22,7 @@ export const GOOGLE_SHEETS_STRUCTURE = {
   },
   gallery: {
     sheetName: 'Gallery',
-    columns: ['ID', 'Title', 'Description', 'Image URL', 'Category', 'Upload Date']
+    columns: ['ID', 'Title', 'Description', 'Image_URL', 'Category', 'Active', 'Upload_Date', 'Title_NL', 'Title_EN', 'Title_ES', 'Title_PL', 'Title_RO', 'Description_NL', 'Description_EN', 'Description_ES', 'Description_PL', 'Description_RO']
   },
   testimonials: {
     sheetName: 'Testimonials',

@@ -1535,6 +1535,115 @@ class GoogleSheetsService {
       };
     });
   }
+
+  /**
+   * Get gallery images with DeepL Translate integration
+   * @param {string} locale - Target language code (e.g., 'en', 'es', 'pl', 'ro')
+   * @param {boolean} activeOnly - Return only active images
+   * @param {boolean} useDeepLTranslate - Use DeepL Translate for dynamic translation
+   * @returns {Promise<Array>} - Gallery array with translated content
+   */
+  async getGalleryWithDeepLTranslation(locale = 'nl', activeOnly = true, useDeepLTranslate = true) {
+    let data = await this.getData('Gallery');
+    
+    console.log(`📊 getGalleryWithDeepLTranslation called with locale=${locale}, useDeepLTranslate=${useDeepLTranslate}`);
+    console.log(`📋 Raw gallery data length: ${data.length}`);
+    
+    if (data.length <= 1) return [];
+
+    const headers = data[0];
+    const activeIndex = headers.indexOf('Active');
+    
+    console.log(`🔍 Processing gallery for locale: ${locale}`);
+    
+    // Filter active images if requested
+    let galleryData = data.slice(1);
+    if (activeOnly && activeIndex !== -1) {
+      galleryData = galleryData.filter(row => row[activeIndex] === 'true');
+    }
+    
+    // If DeepL Translate is enabled and locale is not Dutch, translate the data
+    if (useDeepLTranslate && locale !== 'nl') {
+      console.log(`🔄 Using DeepL Translate to translate gallery to ${locale}...`);
+      
+      // Get the original language (assuming Dutch for gallery)
+      const originalLang = 'nl';
+      
+      // Process each gallery image
+      const translatedGallery = await Promise.all(
+        galleryData.map(async (row) => {
+          const idIndex = headers.indexOf('ID');
+          const titleIndex = headers.indexOf('Title');
+          const descIndex = headers.indexOf('Description');
+          const urlIndex = headers.indexOf('Image_URL');
+          const categoryIndex = headers.indexOf('Category');
+          const uploadDateIndex = headers.indexOf('Upload_Date');
+          
+          if (idIndex === -1 || titleIndex === -1 || descIndex === -1) {
+            console.warn('⚠️ Missing required gallery columns');
+            return null;
+          }
+          
+          const originalTitle = row[titleIndex] || '';
+          const originalDesc = row[descIndex] || '';
+          
+          let translatedTitle = originalTitle;
+          let translatedDesc = originalDesc;
+          
+          try {
+            // Translate title
+            if (originalTitle) {
+              const titleResult = await translateMultipleWithDeepL(originalTitle, [locale.toUpperCase()], originalLang);
+              translatedTitle = titleResult[locale.toUpperCase()] || originalTitle;
+            }
+            
+            // Translate description
+            if (originalDesc) {
+              const descResult = await translateMultipleWithDeepL(originalDesc, [locale.toUpperCase()], originalLang);
+              translatedDesc = descResult[locale.toUpperCase()] || originalDesc;
+            }
+            
+            console.log(`✅ Translated gallery ${row[idIndex]}: "${originalTitle}" → "${translatedTitle}"`);
+          } catch (error) {
+            console.error(`❌ DeepL translation failed for gallery ${row[idIndex]}:`, error.message);
+            // Keep original text as fallback
+          }
+          
+          return {
+            id: row[idIndex] || '',
+            title: translatedTitle,
+            description: translatedDesc,
+            url: row[urlIndex] || '',
+            category: row[categoryIndex] || 'general',
+            active: activeIndex !== -1 ? row[activeIndex] === 'true' : true,
+            upload_date: row[uploadDateIndex] || ''
+          };
+        })
+      );
+      
+      return translatedGallery.filter(image => image !== null);
+    }
+    
+    // If no translation needed or disabled, return gallery as-is
+    return galleryData.map(row => {
+      const idIndex = headers.indexOf('ID');
+      const titleIndex = headers.indexOf('Title');
+      const descIndex = headers.indexOf('Description');
+      const urlIndex = headers.indexOf('Image_URL');
+      const categoryIndex = headers.indexOf('Category');
+      const uploadDateIndex = headers.indexOf('Upload_Date');
+      
+      return {
+        id: row[idIndex] || '',
+        title: row[titleIndex] || '',
+        description: row[descIndex] || '',
+        url: row[urlIndex] || '',
+        category: row[categoryIndex] || 'general',
+        active: activeIndex !== -1 ? row[activeIndex] === 'true' : true,
+        upload_date: row[uploadDateIndex] || ''
+      };
+    });
+  }
 }
 
 export { GoogleSheetsService };

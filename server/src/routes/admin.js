@@ -322,7 +322,7 @@ router.get('/gallery', requireAuth, async (req, res) => {
 // Add new gallery image
 router.post('/gallery', requireAuth, async (req, res) => {
   try {
-    const { url, alt_text, category, active, public_id } = req.body
+    const { url, title, description, category, active, public_id } = req.body
     
     // Validate required fields
     if (!url) {
@@ -332,40 +332,94 @@ router.post('/gallery', requireAuth, async (req, res) => {
       })
     }
 
+    if (!title) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Title is required' 
+      })
+    }
+
     // Use public_id from Cloudinary if provided, otherwise generate one
     const id = public_id || Date.now().toString()
     const createdAt = new Date().toISOString()
 
-    // Create new gallery entry - match Google Sheets structure for metadata
+    // Translate title and description to all languages using DeepL
+    console.log('🔄 Translating gallery title and description...')
+    const translations = {
+      nl: { title: title, description: description || '' },
+      en: { title: title, description: description || '' },
+      es: { title: title, description: description || '' },
+      pl: { title: title, description: description || '' },
+      ro: { title: title, description: description || '' }
+    }
+
+    const targetLanguages = ['EN', 'ES', 'PL', 'RO']
+    
+    // Translate to all languages
+    await Promise.all(targetLanguages.map(async (lang) => {
+      try {
+        // Translate title
+        if (title) {
+          const titleResult = await translateMultipleWithDeepL(title, [lang], 'NL')
+          translations[lang.toLowerCase()].title = titleResult[lang] || title
+        }
+        
+        // Translate description
+        if (description) {
+          const descResult = await translateMultipleWithDeepL(description, [lang], 'NL')
+          translations[lang.toLowerCase()].description = descResult[lang] || description
+        }
+      } catch (error) {
+        console.error(`❌ Translation failed for ${lang}:`, error.message)
+        // Keep original text as fallback
+      }
+    }))
+
+    console.log('✅ Translations completed:', translations)
+
+    // Create new gallery entry with all translations
     const galleryData = [
-      id,                                    // ID (column A) - use Cloudinary public_id
-      url,                                   // Title (column B) - contains image URL
-      alt_text || '',                        // Description (column C) - contains image description
-      category || 'general',                 // Image URL (column D) - contains category
-      active !== undefined ? active : true,  // Category (column E) - contains active status
-      createdAt                              // Upload Date (column F) - contains upload date
+      id,                                    // ID
+      title,                                 // Title (Dutch/original)
+      description || '',                     // Description (Dutch/original)
+      url,                                   // Image_URL
+      category || 'general',               // Category
+      active !== undefined ? active : true,  // Active
+      createdAt,                           // Upload_Date
+      translations.nl.title,               // Title_NL
+      translations.en.title,               // Title_EN
+      translations.es.title,               // Title_ES
+      translations.pl.title,               // Title_PL
+      translations.ro.title,               // Title_RO
+      translations.nl.description,       // Description_NL
+      translations.en.description,       // Description_EN
+      translations.es.description,       // Description_ES
+      translations.pl.description,       // Description_PL
+      translations.ro.description        // Description_RO
     ]
 
-    console.log('🖼️ Adding gallery image metadata:', galleryData)
+    console.log('🖼️ Adding gallery image with translations:', galleryData)
 
     // Append metadata to Google Sheets
     try {
       await GoogleSheetsService.appendData('Gallery', galleryData)
-      console.log('✅ Gallery metadata saved to Google Sheets')
+      console.log('✅ Gallery metadata with translations saved to Google Sheets')
     } catch (sheetsError) {
       console.warn('⚠️ Could not save metadata to Google Sheets:', sheetsError.message)
     }
 
     res.json({ 
       success: true, 
-      message: 'Gallery image metadata saved successfully',
+      message: 'Gallery image with translations saved successfully',
       image: {
         id,
         url,
-        alt_text: alt_text || '',
+        title,
+        description: description || '',
         category: category || 'general',
         active: active !== undefined ? active : true,
-        createdAt
+        createdAt,
+        translations
       }
     })
   } catch (error) {

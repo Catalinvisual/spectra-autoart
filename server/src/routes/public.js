@@ -183,8 +183,8 @@ router.get('/vehicles/makes', async (req, res) => {
     const headers = data[0];
     const langSuffix = lang.toUpperCase();
     
-    // Find column indices
-    const makeIndex = headers.indexOf(`Make_${langSuffix}`) !== -1 ? headers.indexOf(`Make_${langSuffix}`) : headers.indexOf('Make_NL');
+    // Find column indices - Vehicles sheet only has 'Make' column (no language suffix)
+    const makeIndex = headers.indexOf('Make');
     
     if (makeIndex === -1) {
       console.log('❌ Missing make column');
@@ -1102,124 +1102,52 @@ router.post('/testimonials', async (req, res) => {
   }
 })
 
-// GET /public/gallery - Get gallery images from Google Sheets with Cloudinary support
+// GET /public/gallery - Get gallery images from Google Sheets with translations
 router.get('/gallery', async (req, res) => {
   try {
     const { lang = 'nl' } = req.query
     
-    // Get gallery images from Google Sheets
-    const data = await GoogleSheetsService.getData('Gallery')
+    console.log(`🖼️ Public Gallery - Requested language: ${lang}`)
     
-    console.log('🖼️ Public Gallery - Google Sheets data:', JSON.stringify(data, null, 2))
+    // Use Google Sheets translations directly - NO DeepL translation
+    let galleryImages = []
+    console.log(`🔄 Processing gallery for language: ${lang}`)
     
-    if (data.length <= 1) {
-      console.log('🔄 Public Gallery empty or only headers')
-      return res.json({ 
-        success: true, 
-        data: [] 
-      })
+    try {
+      console.log('🔄 Using Google Sheets translations directly...')
+      
+      // Get gallery images WITHOUT DeepL translation - use translations from Google Sheets
+      const imagesFromSheets = await GoogleSheetsService.getGalleryWithDeepLTranslation(lang, true, false)
+      galleryImages = imagesFromSheets
+      console.log('✅ Google Sheets gallery loaded, count:', galleryImages.length)
+    } catch (error) {
+      console.error('❌ Failed to load gallery from Google Sheets:', error.message)
+      galleryImages = []
     }
-
-    const headers = data[0]
-    console.log('📋 Public Gallery headers:', headers)
     
-    const images = data.slice(1).map(row => {
-      const image = {}
-      headers.forEach((header, index) => {
-        image[header.toLowerCase().replace(/ /g, '_')] = row[index] || ''
-      })
-      
-      console.log('🖼️ Processing public gallery item:', JSON.stringify(image, null, 2))
-      
-      return {
-        id: image.id || '',
-        url: image.image_url || '', // Image URL column contains actual image URL
-        title: image.title || '', // Title column contains title for Gallery component
-        description: image.description || '', // Description column contains description for Gallery component
-        category: image.category || 'general', // Category column contains category
-        active: image.active ? (image.active.toString().toLowerCase() === 'true') : true, // Active column contains active status
-        created_date: image.upload_date || '', // Upload_Date column contains upload date
-        updated_date: image.upload_date || ''  // Upload_Date column contains upload date
-      }
-    }).filter(image => image.url && image.id)
-
-    // Filter out images without valid URL (exclude simple words like "interior", "general")
-    const filteredImages = images.filter(image => {
-      const hasUrl = image.url && image.id
-      const isValidUrl = image.url.includes('/') || image.url.startsWith('http') || image.url.endsWith('.jpg') || image.url.endsWith('.jpeg') || image.url.endsWith('.png') || image.url.endsWith('.gif') || image.url.endsWith('.webp')
-      return hasUrl && isValidUrl
-    })
+    console.log('✅ Processed gallery images:', galleryImages.length, 'items');
+    console.log('📤 Sending response immediately...');
     
-    console.log('🔍 Images after filtering:', filteredImages.length, 'from', images.length)
-    
-    // Log all URLs to understand the data structure
-    filteredImages.forEach((image, index) => {
-      console.log(`🖼️ Image ${index + 1}: ID="${image.id}", URL="${image.url}", Category="${image.category}"`)
-    })
-    
-    // Process images to ensure proper Cloudinary URLs
-    const processedImages = filteredImages.map(image => {
-      let processedUrl = image.url
-      
-      // If URL is from Cloudinary, ensure it uses HTTPS and has proper format
-      if (image.url.includes('cloudinary.com')) {
-        // Ensure HTTPS protocol
-        if (image.url.startsWith('http://')) {
-          processedUrl = image.url.replace('http://', 'https://')
-        }
-        
-        // Log Cloudinary URL processing
-        console.log(`☁️ Processing Cloudinary URL: ${image.url} -> ${processedUrl}`)
-      }
-      
-      // For local URLs, ensure they're properly formatted
-      else if (image.url.startsWith('/uploads/')) {
-        const baseUrl = process.env.API_URL || 'http://localhost:8080'
-        processedUrl = `${baseUrl}${image.url}`
-        console.log(`📁 Processing local URL: ${image.url} -> ${processedUrl}`)
-      }
-      
-      // For Google Drive URLs, use as-is (they should already be proper URLs)
-      else if (image.url.includes('drive.google.com') || image.url.includes('googleusercontent.com')) {
-        console.log(`📄 Processing Google Drive URL: ${image.url}`)
-        processedUrl = image.url
-      }
+    // Use pre-translated content from Google Sheets based on selected language
+    let translatedImages = galleryImages.map(image => {
+      // Get title and description for selected language, fallback to original
+      const titleKey = `title_${lang}`
+      const descKey = `description_${lang}`
       
       return {
         ...image,
-        url: processedUrl
+        title: image[titleKey] || image.title,
+        description: image[descKey] || image.description
       }
     })
-    
-    // Translate gallery images if language is not Dutch
-    let translatedImages = processedImages
-    if (lang !== 'nl') {
-      try {
-        // Extract descriptions that need translation
-        const descriptionsToTranslate = processedImages.map(img => img.description)
-
-        // Translate all descriptions
-        const translatedDescriptionsResult = await translateMultipleWithDeepL(descriptionsToTranslate.join('|'), [lang.toUpperCase()], 'nl');
-        const translatedDescriptions = translatedDescriptionsResult[lang.toUpperCase()]?.split('|') || descriptionsToTranslate;
-
-        // Create translated images
-        translatedImages = processedImages.map((image, index) => ({
-          ...image,
-          title: translatedDescriptions[index] || image.title,
-          description: translatedDescriptions[index] || image.description
-        }))
-      } catch (translationError) {
-        console.error('Translation error:', translationError)
-        // Fallback to original images
-        translatedImages = processedImages
-      }
-    }
     
     console.log('✅ Final public gallery response:', JSON.stringify(translatedImages, null, 2))
-    res.json({
+    
+    // Send response
+    return res.json({
       success: true,
       data: translatedImages
-    })
+    });
   } catch (error) {
     console.error('Error getting gallery images:', error)
     res.status(500).json({ 
