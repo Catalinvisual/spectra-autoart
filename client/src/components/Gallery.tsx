@@ -38,11 +38,12 @@ const Gallery: React.FC = () => {
       const response = await publicAPI.getGallery(currentLanguage)
       // Construiește URL-uri complete pentru imagini
       const processedImages = response.data.map((image: GalleryImage) => {
-        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8080'
+        const apiBase = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' ? `${window.location.origin}/api` : '')
+        const baseUrl = (apiBase && apiBase.replace('/api', '')) || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8080')
         let fullUrl = image.url
         
         // Dacă URL-ul nu începe cu http, construiește URL complet
-        if (!image.url.startsWith('http')) {
+        if (image.url && !image.url.startsWith('http')) {
           // Asigură-te că URL-ul începe cu / pentru a fi o cale relativă validă
           const normalizedPath = image.url.startsWith('/') ? image.url : `/${image.url}`
           fullUrl = `${baseUrl}${normalizedPath}`

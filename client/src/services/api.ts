@@ -1,7 +1,18 @@
 import axios from 'axios'
 import type { VehicleData, Service, BookingData, BodyType, ServiceWithPrices } from '../components/BookingWizard'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+const resolveBaseURL = () => {
+  const envUrl = import.meta.env.VITE_API_URL
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim() !== '') {
+    return envUrl
+  }
+  if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    return `${window.location.origin}/api`
+  }
+  return '/api'
+}
+
+const API_BASE_URL = resolveBaseURL()
 
 console.log('🔍 API Base URL:', API_BASE_URL)
 console.log('🔍 VITE_API_URL env:', import.meta.env.VITE_API_URL)
