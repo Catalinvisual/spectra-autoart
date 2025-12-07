@@ -188,7 +188,6 @@ router.get('/vehicles/makes', async (req, res) => {
     const langSuffix = lang.toUpperCase();
     
     // Find column index with fallbacks: Make_{lang}, Make_NL, Make_EN, Make
-    const langSuffix = lang.toUpperCase();
     let makeIndex = headers.indexOf(`Make_${langSuffix}`);
     if (makeIndex === -1) makeIndex = headers.indexOf('Make_NL');
     if (makeIndex === -1) makeIndex = headers.indexOf('Make_EN');
