@@ -6,7 +6,7 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 
 // LOG STARTUP DETALIAT PENTRU DEBUGGING CONTAINER
-console.log('🚀 SERVER STARTUP - Container Debug Log')
+console.log('🚀 SERVER STARTUP - Container Debug Log - Deployment Fix')
 console.log('📍 Current directory:', process.cwd())
 console.log('🔧 NODE_ENV:', process.env.NODE_ENV)
 console.log('📋 Process arguments:', process.argv)
