@@ -239,38 +239,27 @@ class GoogleSheetsService {
         throw new Error(`Sheet ${sheetName} not found`);
       }
 
-      await sheet.loadCells();
-      
-      // Try to get all rows including header
-      const rowCount = sheet.rowCount;
-      const columnCount = sheet.columnCount;
-      
-      console.log(`📊 Sheet ${sheetName} has ${rowCount} rows and ${columnCount} columns`);
-      
-      const allRows = [];
-      
-      // Read all cells
-      for (let row = 0; row < rowCount; row++) {
-        const rowData = [];
-        for (let col = 0; col < columnCount; col++) {
-          const cell = sheet.getCell(row, col);
-          rowData.push(cell.value || '');
-        }
-        // Only add rows that have at least one non-empty cell
+      await sheet.loadHeaderRow();
+      const headers = sheet.headerValues || [];
+      const rows = await sheet.getRows();
+      console.log(`📊 Sheet ${sheetName} rows loaded: ${rows.length}, headers: ${headers.length}`);
+
+      const result = [headers];
+      for (const row of rows) {
+        const rowData = headers.map((_, idx) => {
+          const raw = row._rawData && row._rawData[idx] !== undefined ? row._rawData[idx] : '';
+          return raw === null ? '' : raw;
+        });
         if (rowData.some(cell => cell !== '')) {
-          allRows.push(rowData);
+          result.push(rowData);
         }
       }
-      
-      console.log(`📊 Found ${allRows.length} valid rows in ${sheetName}`);
-      
-      // Return minimal structure if no data found
-      if (allRows.length === 0) {
-        console.log(`⚠️  No data found in ${sheetName}, returning empty structure`);
-        return [['No data']];
+
+      if (result.length === 1) {
+        console.log(`⚠️  No data rows found in ${sheetName}`);
       }
-      
-      return allRows;
+
+      return result;
     } catch (error) {
       console.error(`❌ Error getting data from ${sheetName}:`, error);
       throw error;
