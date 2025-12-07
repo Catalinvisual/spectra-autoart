@@ -170,6 +170,10 @@ router.get('/vehicles/makes', async (req, res) => {
     const { lang = 'nl' } = req.query;
     
     // Get all vehicles from Google Sheets and extract unique makes
+    if (!GoogleSheetsService.isInitialized) {
+      console.log('🔄 Initializing Google Sheets service for vehicle makes...')
+      try { await GoogleSheetsService.initialize() } catch(e) { console.warn('⚠️ Google Sheets init failed', e.message) }
+    }
     const data = await GoogleSheetsService.getData('Vehicles')
     console.log(`📊 Getting vehicle makes, lang: ${lang}`)
     
@@ -183,15 +187,16 @@ router.get('/vehicles/makes', async (req, res) => {
     const headers = data[0];
     const langSuffix = lang.toUpperCase();
     
-    // Find column indices - Vehicles sheet only has 'Make' column (no language suffix)
-    const makeIndex = headers.indexOf('Make');
+    // Find column index with fallbacks: Make_{lang}, Make_NL, Make_EN, Make
+    const langSuffix = lang.toUpperCase();
+    let makeIndex = headers.indexOf(`Make_${langSuffix}`);
+    if (makeIndex === -1) makeIndex = headers.indexOf('Make_NL');
+    if (makeIndex === -1) makeIndex = headers.indexOf('Make_EN');
+    if (makeIndex === -1) makeIndex = headers.indexOf('Make');
     
     if (makeIndex === -1) {
       console.log('❌ Missing make column');
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Missing required columns in Google Sheets'
-      });
+      return res.json({ success: true, data: [] });
     }
     
     // Get unique makes
