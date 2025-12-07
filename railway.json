@@ -12,9 +12,9 @@
     }
   },
   "deploy": {
-    "startCommand": "sh -c 'cd server && STARTUP_DELAY=3000 npm start'",
+    "startCommand": "cd server && npm start",
     "healthcheckPath": "/ping",
-    "healthcheckTimeout": 600,
+    "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }

@@ -112,6 +112,39 @@ let initializeEmailService
 
 const app = express()
 
+// Ultra-early healthcheck endpoints - respond even during startup
+app.get('/ping', (req, res) => {
+  console.log('📍 PING endpoint hit - server responding')
+  res.status(200).send('pong')
+})
+
+app.get('/health', (req, res) => {
+  console.log('📍 HEALTH endpoint hit - server responding')
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    serverReady: serverReady
+  })
+})
+
+app.get('/debug', (req, res) => {
+  console.log('📍 DEBUG endpoint hit - full system info')
+  res.json({
+    status: 'debug_info',
+    serverReady: serverReady,
+    port: process.env.PORT || 8080,
+    nodeEnv: process.env.NODE_ENV || 'development',
+    railwayEnv: !!process.env.RAILWAY_PROJECT_ID,
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  })
+})
+
+// Critical startup logging
+console.log('🔥 CRITICAL: Express app created, healthcheck endpoints mounted')
+console.log('🔥 CRITICAL: PORT from env:', process.env.PORT)
+console.log('🔥 CRITICAL: NODE_ENV:', process.env.NODE_ENV)
+
 app.use(cors({
   origin: [
     'http://localhost:5173',
@@ -154,56 +187,10 @@ app.use('/api/translate', translateRouter)
 app.use('/api/debug', debugVehiclesRouter)
 console.log('✅ API routes mounted')
 
-// API health check - must be before static files and catch-all route
-app.get('/health', (req, res) => {
-  // Health check rapid - răspunde imediat fără dependențe externe
-  if (!serverReady) {
-    return res.status(503).json({ 
-      status: 'starting', 
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      environment: process.env.NODE_ENV || 'development',
-      port: process.env.PORT || 8080,
-      message: 'Server is starting up'
-    })
-  }
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development',
-    port: process.env.PORT || 8080
-  })
-})
+// Healthcheck endpoints are defined EARLIER in the file (right after app creation)
+// This ensures they respond even during startup issues
 
-// Mirror health check for Docker/Railway configs expecting /api/health
-app.get('/api/health', (req, res) => {
-  if (!serverReady) {
-    return res.status(503).json({ 
-      status: 'starting', 
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      environment: process.env.NODE_ENV || 'development',
-      port: process.env.PORT || 8080,
-      message: 'Server is starting up'
-    })
-  }
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development',
-    port: process.env.PORT || 8080
-  })
-})
-
-// Healthcheck ultra-simplu pentru Docker
-app.get('/ping', (req, res) => {
-  if (!serverReady) {
-    return res.status(503).send('starting')
-  }
-  res.status(200).send('pong')
-})
+// Healthcheck endpoints are already defined (debug, ping, health) right after app creation
 
 // Static and catch-all are mounted after API routes inside start callback
 
@@ -296,18 +283,17 @@ const startServer = async () => {
   try {
     const port = process.env.PORT || 8080
     const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost'
-    const startupDelay = parseInt(process.env.STARTUP_DELAY || '0', 10)
 
-    console.log(`🎯 Starting server on ${host}:${port}`)
-    console.log(`⏱️  Startup delay: ${startupDelay}ms`)
-    
-    // Add startup delay for Railway deployment
-    if (startupDelay > 0) {
-      console.log(`😴 Waiting ${startupDelay}ms before starting server...`)
-      await new Promise(resolve => setTimeout(resolve, startupDelay))
-    }
+    console.log('🚀 STARTING SERVER - Railway Production Debug')
+    console.log(`🎯 NODE_ENV: ${process.env.NODE_ENV}`)
+    console.log(`🎯 PORT: ${port}`)
+    console.log(`🎯 HOST: ${host}`)
+    console.log(`🎯 Railway environment: ${!!process.env.RAILWAY_PROJECT_ID ? 'YES' : 'NO'}`)
+    console.log('🔥 CRITICAL: About to call app.listen()')
     
     // Start server IMMEDIATELY - don't wait for services initialization
+    console.log(`🔥 CRITICAL: Calling app.listen(${port}, ${host})`)
+    
     const server = app.listen(port, host, () => {
       clearTimeout(startupTimeout) // Stop safety timeout
       serverReady = true // Mark server as ready for healthchecks
@@ -315,6 +301,14 @@ const startServer = async () => {
       console.log(`🏥 Healthcheck available at: http://${host}:${port}/health`)
       console.log(`🏓 Ping healthcheck available at: http://${host}:${port}/ping`)
       console.log(`🔄 Server ready state: ${serverReady}`)
+      
+      // Test the healthcheck endpoints immediately
+      setTimeout(() => {
+        console.log('🔥 TESTING HEALTHCHECK ENDPOINTS:')
+        console.log(`🔥 Testing: http://localhost:${port}/ping`)
+        console.log(`🔥 Testing: http://localhost:${port}/health`)
+        console.log(`🔥 Testing: http://localhost:${port}/debug`)
+      }, 1000)
       
       // Routes already mounted before static files
 

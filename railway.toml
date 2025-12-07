@@ -1,6 +1,6 @@
 [build]
 buildCommand = ""
-startCommand = "sh -c 'cd server && STARTUP_DELAY=3000 node src/index.js'"
+startCommand = "cd server && node src/index.js"
 dockerfilePath = "Dockerfile.production"
 nixpacksPlan.phases.setup.nixPkgs = ["nodejs_20"]
 
