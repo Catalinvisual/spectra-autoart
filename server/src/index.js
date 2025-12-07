@@ -2,6 +2,7 @@ import dotenv from 'dotenv'
 import express from 'express'
 import cors from 'cors'
 import path from 'path'
+import fs from 'fs'
 import { fileURLToPath } from 'url'
 
 // LOG STARTUP DETALIAT PENTRU DEBUGGING CONTAINER
@@ -280,7 +281,21 @@ const startServer = async () => {
 
       app.get('/site.webmanifest', (req, res) => {
         res.set('Content-Type', 'application/manifest+json')
-        res.sendFile(path.join(clientBuildPath, 'site.webmanifest'))
+        const manifestPath = path.join(clientBuildPath, 'site.webmanifest')
+        if (fs.existsSync(manifestPath)) {
+          res.sendFile(manifestPath)
+        } else {
+          res.send(JSON.stringify({
+            name: 'Spectra AutoArt',
+            short_name: 'Spectra AutoArt',
+            icons: [],
+            theme_color: '#ffffff',
+            background_color: '#ffffff',
+            display: 'standalone',
+            start_url: '/',
+            scope: '/'
+          }))
+        }
       })
 
       // Handle React routing, return all requests to React app

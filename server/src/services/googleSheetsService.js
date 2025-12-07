@@ -216,6 +216,9 @@ class GoogleSheetsService {
 
   async getData(sheetName) {
     try {
+      if (this.isDemoMode) {
+        return this.getDemoData(sheetName);
+      }
       // Force real Google Sheets operation - no more demo mode
       if (!this.isInitialized || !this.doc) {
         throw new Error('Google Sheets service not properly initialized for getting data');
