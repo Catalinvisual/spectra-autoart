@@ -248,7 +248,20 @@ class GoogleSheetsService {
       for (const row of rows) {
         const rowData = headers.map((_, idx) => {
           const raw = row._rawData && row._rawData[idx] !== undefined ? row._rawData[idx] : '';
-          return raw === null ? '' : raw;
+          let val = raw === null ? '' : raw;
+          if (typeof val === 'boolean') {
+            return val ? 'true' : 'false';
+          }
+          if (typeof val === 'number') {
+            return String(val);
+          }
+          if (typeof val === 'object' && val !== null) {
+            try { return String(val); } catch { return ''; }
+          }
+          if (typeof val === 'string') {
+            return val;
+          }
+          return '';
         });
         if (rowData.some(cell => cell !== '')) {
           result.push(rowData);
