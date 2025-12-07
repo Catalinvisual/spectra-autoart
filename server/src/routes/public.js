@@ -7,6 +7,7 @@ import NotificationService from '../services/notificationService.js'
 import { getActiveBodyTypes } from '../config/bodyTypesConfig.js'
 import { translateMultipleWithDeepL, detectLanguageWithDeepL } from '../services/deeplTranslationService.js'
 import CloudinaryService from '../services/cloudinaryService.js'
+import { vehicleServicesService } from '../services/vehicleServicesService.js'
 import { sendBookingConfirmation, sendAdminNotification } from '../services/emailService.js'
 
 const router = Router()
@@ -379,50 +380,27 @@ router.get('/vehicle-services', async (req, res) => {
     let vehicleServices = []
     
     try {
-      // Use the dedicated method from GoogleSheetsService
+      // Use the dedicated method from GoogleSheetsService - it already returns translated data
       vehicleServices = await GoogleSheetsService.getServicesWithPrices(lang)
       console.log(`📊 Vehicle services with prices:`, vehicleServices.length, 'services')
       console.log(`📋 First 3 vehicle services:`, vehicleServices.slice(0, 3))
       
-      // Translate if needed - services are in English by default from Google Sheets
-      if (lang === 'nl') {
-        // For Dutch, use the original English text as Dutch (since Argos API doesn't support Dutch translation)
-        // The Google Sheets data is already in English, so we use it as-is for Dutch
-        console.log(`🇳🇱 Using original English text as Dutch for ${vehicleServices.length} vehicle services`)
-        // No translation needed - English text serves as Dutch default
-      } else if (lang !== 'en') {
-        // For other languages, translate from English using DeepL
-        try {
-          const namesToTranslate = vehicleServices.map(service => service.name)
-          const descsToTranslate = vehicleServices.map(service => service.description)
-          
-          const { translateMultipleWithDeepL } = await import('./services/deeplTranslationService.js');
-          
-          const [namesResult, descsResult] = await Promise.all([
-            translateMultipleWithDeepL(namesToTranslate.join(' | '), [lang.toUpperCase()], 'EN'),
-            translateMultipleWithDeepL(descsToTranslate.join(' | '), [lang.toUpperCase()], 'EN')
-          ]);
-          
-          const translatedNames = namesResult[lang.toUpperCase()].split(' | ');
-          const translatedDescs = descsResult[lang.toUpperCase()].split(' | ');
-          
-          vehicleServices = vehicleServices.map((service, index) => ({
-            ...service,
-            name: translatedNames[index] || service.name,
-            description: translatedDescs[index] || service.description
-          }))
-          
-          console.log(`🔄 Translated ${vehicleServices.length} vehicle services to ${lang}`)
-        } catch (translationError) {
-          console.error('Vehicle services translation error:', translationError)
-          // Keep original vehicle services data if translation fails
-        }
-      }
+      // NO REAL-TIME TRANSLATION - Google Sheets already has the translations
+      console.log(`✅ Using pre-translated data from Google Sheets for language: ${lang}`)
       
     } catch (error) {
       console.error('❌ Error getting vehicle services:', error)
-      // Return empty array instead of error to allow booking modal to work
-      vehicleServices = []
+      try {
+        if (!vehicleServicesService.services || vehicleServicesService.services.length === 0) {
+          await vehicleServicesService.initializeDemoData()
+        }
+        const demoServices = vehicleServicesService.getServicesWithPrices()
+        vehicleServices = Array.isArray(demoServices) ? demoServices : []
+        console.log('✅ Fallback to demo vehicle services:', vehicleServices.length)
+      } catch (fallbackError) {
+        console.error('❌ Failed to provide demo vehicle services:', fallbackError.message)
+        vehicleServices = []
+      }
     }
     
     return res.json({ 
@@ -943,30 +921,19 @@ router.get('/testimonials', async (req, res) => {
     console.log('🎯 Testimonials route hit with lang:', lang)
     console.log('📋 Full query:', req.query)
     
-    // Use DeepL for testimonial translations
+    // Use Google Sheets translations directly - NO DeepL translation
     let testimonials = [];
     console.log(`🔄 Processing testimonials for language: ${lang}`)
     
     try {
-      console.log('🔄 Using DeepL Translate for testimonials...')
+      console.log('🔄 Using Google Sheets translations directly...')
       
-      // Create a timeout promise that rejects after 15 seconds
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Translation timeout - exceeded 15 seconds')), 15000)
-      })
-      
-      // Race between translation and timeout
-      const limitedTestimonials = await Promise.race([
-        GoogleSheetsService.getTestimonialsWithDeepLTranslation(lang, true, true),
-        timeoutPromise
-      ])
-      
-      // Limit results to prevent performance issues
-      testimonials = limitedTestimonials.slice(0, 10)
-      console.log('✅ DeepL Translate successful, testimonials count (limited to 10):', testimonials.length)
+      // Get testimonials WITHOUT DeepL translation - use translations from Google Sheets
+      const testimonialsFromSheets = await GoogleSheetsService.getTestimonialsWithDeepLTranslation(lang, true, false)
+      testimonials = testimonialsFromSheets.slice(0, 10)
+      console.log('✅ Google Sheets testimonials loaded, count (limited to 10):', testimonials.length)
     } catch (error) {
-      console.log('⚠️ Translation failed:', error.message)
-      // Return empty array if translation fails
+      console.error('❌ Failed to load testimonials from Google Sheets:', error.message)
       testimonials = []
     }
     

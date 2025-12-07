@@ -166,8 +166,7 @@ class DeepLTranslationService {
 
     try {
       await this.waitForRateLimit();
-      
-      // Map source language if provided
+
       let sourceLangCode = null;
       if (sourceLanguage && sourceLanguage !== 'auto') {
         sourceLangCode = LANGUAGE_MAPPING[sourceLanguage.toUpperCase()];
@@ -178,14 +177,10 @@ class DeepLTranslationService {
       }
 
       console.log(`🔄 DeepL translating: "${text.substring(0, 50)}..." ${sourceLangCode || 'auto'} → ${targetLangCode}`);
-      
+
       const result = await this.translator.translateText(text, sourceLangCode, targetLangCode);
-      
       console.log(`✅ DeepL translation completed: "${text.substring(0, 50)}..." → "${result.text.substring(0, 50)}..."`);
-      
-      // Cache the result
       this.translationCache.set(cacheKey, result.text);
-      
       return result.text;
     } catch (error) {
       console.error('❌ DeepL translation failed:', error);
