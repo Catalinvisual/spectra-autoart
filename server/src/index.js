@@ -268,6 +268,11 @@ const startServer = async () => {
       const clientBuildPath = path.join(__dirname, '../../client/dist')
       app.use(express.static(clientBuildPath))
 
+      app.get('/site.webmanifest', (req, res) => {
+        res.set('Content-Type', 'application/manifest+json')
+        res.sendFile(path.join(clientBuildPath, 'site.webmanifest'))
+      })
+
       // Handle React routing, return all requests to React app
       app.get('*', (req, res) => {
         res.sendFile(path.join(clientBuildPath, 'index.html'))
