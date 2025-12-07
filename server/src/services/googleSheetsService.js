@@ -1418,7 +1418,7 @@ class GoogleSheetsService {
             name: row[headers.indexOf('Name')] || 'Unknown Client',
             rating: parseInt(row[headers.indexOf('Rating')]) || 5,
             comment: finalComment,
-            active: activeIndex !== -1 ? row[activeIndex] === 'true' : true,
+            active: activeIndex !== -1 ? (String(row[activeIndex] ?? '').trim().toLowerCase() === 'true' || String(row[activeIndex] ?? '').trim() === '1' || row[activeIndex] === true || row[activeIndex] === 1) : true,
             created_date: row[headers.indexOf('Created_Date')] || ''
           };
         })
@@ -1449,9 +1449,14 @@ class GoogleSheetsService {
     console.log(`🔍 Processing services for locale: ${locale}`);
     
     // Filter active services if requested
+    const isActiveValue = (v) => {
+      const s = String(v ?? '').trim().toLowerCase();
+      return s === 'true' || s === '1' || v === true || v === 1;
+    };
+
     let servicesData = data.slice(1);
     if (activeOnly && activeIndex !== -1) {
-      servicesData = servicesData.filter(row => row[activeIndex] === 'true');
+      servicesData = servicesData.filter(row => isActiveValue(row[activeIndex]));
     }
     
     // If DeepL Translate is enabled and locale is not Dutch, translate the data
@@ -1509,7 +1514,7 @@ class GoogleSheetsService {
             price: parseFloat(row[priceIndex]) || 0,
             category: row[categoryIndex] || '',
             duration_minutes: parseInt(row[durationIndex]) || 0,
-            is_active: activeIndex !== -1 ? row[activeIndex] === 'true' : true
+            is_active: activeIndex !== -1 ? isActiveValue(row[activeIndex]) : true
           };
         })
       );
@@ -1533,7 +1538,7 @@ class GoogleSheetsService {
         price: parseFloat(row[priceIndex]) || 0,
         category: row[categoryIndex] || '',
         duration_minutes: parseInt(row[durationIndex]) || 0,
-        is_active: activeIndex !== -1 ? row[activeIndex] === 'true' : true
+        is_active: activeIndex !== -1 ? isActiveValue(row[activeIndex]) : true
       };
     });
   }
@@ -1559,9 +1564,14 @@ class GoogleSheetsService {
     console.log(`🔍 Processing gallery for locale: ${locale}`);
     
     // Filter active images if requested
+    const isActiveValue = (v) => {
+      const s = String(v ?? '').trim().toLowerCase();
+      return s === 'true' || s === '1' || v === true || v === 1;
+    };
+
     let galleryData = data.slice(1);
     if (activeOnly && activeIndex !== -1) {
-      galleryData = galleryData.filter(row => row[activeIndex] === 'true');
+      galleryData = galleryData.filter(row => isActiveValue(row[activeIndex]));
     }
     
     // If DeepL Translate is enabled and locale is not Dutch, translate the data
@@ -1617,7 +1627,7 @@ class GoogleSheetsService {
             description: translatedDesc,
             url: row[urlIndex] || '',
             category: row[categoryIndex] || 'general',
-            active: activeIndex !== -1 ? row[activeIndex] === 'true' : true,
+            active: activeIndex !== -1 ? isActiveValue(row[activeIndex]) : true,
             upload_date: row[uploadDateIndex] || ''
           };
         })
@@ -1641,7 +1651,7 @@ class GoogleSheetsService {
         description: row[descIndex] || '',
         url: row[urlIndex] || '',
         category: row[categoryIndex] || 'general',
-        active: activeIndex !== -1 ? row[activeIndex] === 'true' : true,
+        active: activeIndex !== -1 ? isActiveValue(row[activeIndex]) : true,
         upload_date: row[uploadDateIndex] || ''
       };
     });

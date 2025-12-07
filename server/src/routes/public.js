@@ -934,8 +934,8 @@ router.get('/testimonials', async (req, res) => {
       
       // Get testimonials WITHOUT DeepL translation - use translations from Google Sheets
       const testimonialsFromSheets = await GoogleSheetsService.getTestimonialsWithDeepLTranslation(lang, true, false)
-      testimonials = testimonialsFromSheets.slice(0, 10)
-      console.log('✅ Google Sheets testimonials loaded, count (limited to 10):', testimonials.length)
+      testimonials = testimonialsFromSheets
+      console.log('✅ Google Sheets testimonials loaded, count:', testimonials.length)
     } catch (error) {
       console.error('❌ Failed to load testimonials from Google Sheets:', error.message)
       testimonials = []

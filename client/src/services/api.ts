@@ -153,7 +153,7 @@ export const publicAPI = {
   },
   getServicesWithCachedTranslations: (lang?: string, activeOnly: boolean = true) => {
     const params = new URLSearchParams();
-    if (activeOnly) params.append('active_only', 'true');
+    params.append('active_only', activeOnly ? 'true' : 'false');
     const queryString = params.toString();
     return api.get<ServiceWithPrices[]>(`/services/cached/translations/${lang || 'nl'}${queryString ? `?${queryString}` : ''}`);
   },

@@ -56,7 +56,10 @@ class CachedTranslationService {
       const nameCol = headers.indexOf(`Name_${langCode}`);
       const descCol = headers.indexOf(`Description_${langCode}`);
       const categoryCol = headers.indexOf(`Category_${langCode}`);
-      const isActiveCol = headers.indexOf('Is_Active');
+      let isActiveCol = headers.indexOf('Is_Active');
+      if (isActiveCol === -1) {
+        isActiveCol = headers.indexOf('Active');
+      }
       const durationCol = headers.indexOf('Duration_Minutes');
       const idCol = headers.indexOf('ID');
 
@@ -74,7 +77,8 @@ class CachedTranslationService {
       
       if (pricesData.length > 1) {
         const priceServiceIdCol = priceHeaders.indexOf('Service_ID');
-        const priceBodyTypeCol = priceHeaders.indexOf('Body_Type_Key'); // Changed from Body_Type_ID to Body_Type_Key
+        const priceBodyTypeKeyCol = priceHeaders.indexOf('Body_Type_Key');
+        const priceBodyTypeIdCol = priceHeaders.indexOf('Body_Type_ID');
         const priceMinCol = priceHeaders.indexOf('Price_Min');
         const priceMaxCol = priceHeaders.indexOf('Price_Max');
         const priceCurrencyCol = priceHeaders.indexOf('Currency');
@@ -89,9 +93,9 @@ class CachedTranslationService {
         if (priceServiceIdCol === -1) continue;
         
         const serviceId = priceRow[priceServiceIdCol];
-        const bodyTypeKey = priceRow[priceBodyTypeCol] || 'default'; // Use body type key directly
-        const rawIsActive = priceRow[priceIsActiveCol];
-        const isActive = priceIsActiveCol === -1 || rawIsActive === 'true' || rawIsActive === true;
+        const bodyTypeKey = (priceBodyTypeKeyCol !== -1 ? priceRow[priceBodyTypeKeyCol] : (priceBodyTypeIdCol !== -1 ? priceRow[priceBodyTypeIdCol] : 'default')) || 'default';
+        const rawIsActive = priceIsActiveCol !== -1 ? priceRow[priceIsActiveCol] : 'true';
+        const isActive = (() => { const s = String(rawIsActive ?? '').trim().toLowerCase(); return s === 'true' || s === '1' || rawIsActive === true || rawIsActive === 1; })();
         
         console.log(`🔍 Processing price row ${i}: serviceId=${serviceId}, bodyTypeKey=${bodyTypeKey}, isActive=${isActive}, rawValue=${rawIsActive}`);
         
@@ -128,8 +132,10 @@ class CachedTranslationService {
         const row = servicesData[i];
         
         // Skip inactive services if requested
-        if (activeOnly && isActiveCol !== -1 && row[isActiveCol] !== 'true' && row[isActiveCol] !== true) {
-          continue;
+        if (activeOnly && isActiveCol !== -1) {
+          const rawActive = row[isActiveCol];
+          const isActive = (() => { const s = String(rawActive ?? '').trim().toLowerCase(); return s === 'true' || s === '1' || rawActive === true || rawActive === 1; })();
+          if (!isActive) continue;
         }
 
         const serviceId = idCol !== -1 ? row[idCol] : `service-${i}`;
@@ -146,7 +152,7 @@ class CachedTranslationService {
           description: row[descIndex] || row[headers.indexOf('Description')] || '',
           category: row[categoryIndex] || row[headers.indexOf('Category')] || 'general',
           duration_minutes: durationCol !== -1 ? parseInt(row[durationCol]) || 60 : 60,
-          is_active: isActiveCol !== -1 ? row[isActiveCol] === 'true' : true,
+          is_active: isActiveCol !== -1 ? (String(row[isActiveCol] ?? '').trim().toLowerCase() === 'true' || String(row[isActiveCol] ?? '').trim() === '1' || row[isActiveCol] === true || row[isActiveCol] === 1) : true,
           prices: pricesToUse
         };
 
