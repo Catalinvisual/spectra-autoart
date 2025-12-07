@@ -19,6 +19,16 @@ class CachedTranslationService {
    */
   async getServicesWithTranslations(language, activeOnly = true) {
     try {
+      if (!GoogleSheetsService.isInitialized) {
+        console.log('🔄 Initializing Google Sheets service in CachedTranslationService...')
+        try {
+          const ok = await GoogleSheetsService.initialize()
+          console.log(`✅ Google Sheets initialize returned: ${ok}`)
+        } catch (initError) {
+          console.warn('⚠️ Google Sheets initialize failed, returning empty services:', initError.message)
+          return []
+        }
+      }
       const cacheKey = `${language}_${activeOnly}`;
       
       // Check if we have cached data for this specific language

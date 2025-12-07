@@ -1103,27 +1103,32 @@ router.post('/testimonials', async (req, res) => {
 })
 
 // GET /public/gallery - Get gallery images from Google Sheets with translations
-router.get('/gallery', async (req, res) => {
-  try {
-    const { lang = 'nl' } = req.query
-    
-    console.log(`🖼️ Public Gallery - Requested language: ${lang}`)
-    
-    // Use Google Sheets translations directly - NO DeepL translation
-    let galleryImages = []
-    console.log(`🔄 Processing gallery for language: ${lang}`)
-    
+  router.get('/gallery', async (req, res) => {
     try {
-      console.log('🔄 Using Google Sheets translations directly...')
+      const { lang = 'nl' } = req.query
       
-      // Get gallery images WITHOUT DeepL translation - use translations from Google Sheets
-      const imagesFromSheets = await GoogleSheetsService.getGalleryWithDeepLTranslation(lang, true, false)
-      galleryImages = imagesFromSheets
-      console.log('✅ Google Sheets gallery loaded, count:', galleryImages.length)
-    } catch (error) {
-      console.error('❌ Failed to load gallery from Google Sheets:', error.message)
-      galleryImages = []
-    }
+      console.log(`🖼️ Public Gallery - Requested language: ${lang}`)
+      
+      // Use Google Sheets translations directly - NO DeepL translation
+      let galleryImages = []
+      console.log(`🔄 Processing gallery for language: ${lang}`)
+      
+      try {
+        if (!GoogleSheetsService.isInitialized) {
+          console.log('🔄 Initializing Google Sheets service for gallery route...')
+          const initialized = await GoogleSheetsService.initialize()
+          console.log(`✅ Google Sheets initialize result: ${initialized}`)
+        }
+        console.log('🔄 Using Google Sheets translations directly...')
+        
+        // Get gallery images WITHOUT DeepL translation - use translations from Google Sheets
+        const imagesFromSheets = await GoogleSheetsService.getGalleryWithDeepLTranslation(lang, true, false)
+        galleryImages = imagesFromSheets
+        console.log('✅ Google Sheets gallery loaded, count:', galleryImages.length)
+      } catch (error) {
+        console.error('❌ Failed to load gallery from Google Sheets:', error.message)
+        galleryImages = []
+      }
     
     console.log('✅ Processed gallery images:', galleryImages.length, 'items');
     console.log('📤 Sending response immediately...');
