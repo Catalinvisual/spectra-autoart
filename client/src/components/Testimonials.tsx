@@ -13,6 +13,7 @@ interface Testimonial {
   rating: number
   comment: string
   date: string
+  created_date?: string
   avatar?: string
 }
 
@@ -201,7 +202,7 @@ const Testimonials: React.FC = () => {
                     <div className="author-details">
                       <h4 className="author-name">{testimonial.name}</h4>
                       <p className="testimonial-date">
-                        {testimonial.date ? new Date(testimonial.date).toLocaleDateString() : 'Recent'}
+                        {(() => { const dv = testimonial.date || testimonial.created_date; return dv ? new Date(dv).toLocaleDateString() : 'Recent'; })()}
                       </p>
                     </div>
                   </div>

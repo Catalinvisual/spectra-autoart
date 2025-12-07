@@ -512,6 +512,7 @@ class GoogleSheetsService {
     if (data.length <= 1) return [];
 
     const headers = data[0];
+    const findCol = (name) => headers.findIndex(h => String(h || '').trim().toLowerCase() === String(name || '').trim().toLowerCase());
     const nameIndex = headers.indexOf(`Name_${locale.toUpperCase()}`);
     const descIndex = headers.indexOf(`Description_${locale.toUpperCase()}`);
     const priceIndex = headers.indexOf('Price');
@@ -1269,6 +1270,22 @@ class GoogleSheetsService {
    * @returns {Promise<Array>} - Testimonials array with translated content
    */
   async getTestimonialsWithDeepLTranslation(locale = 'nl', activeOnly = true, useDeepLTranslate = true) {
+    // Add initialization check similar to other methods
+    if (!this.isInitialized) {
+      console.log('⚠️ Google Sheets service not initialized, attempting initialization...')
+      try {
+        await this.initialize()
+      } catch (error) {
+        console.error('❌ Failed to initialize Google Sheets service:', error.message)
+        // In production environment, return empty array instead of throwing error
+        if (process.env.RAILWAY_PROJECT_ID) {
+          console.log('🚧 Production environment detected, returning empty testimonials array')
+          return []
+        }
+        throw new Error('Google Sheets service initialization failed: ' + error.message)
+      }
+    }
+
     let data = await this.getData('Testimonials');
     
     console.log(`📊 getTestimonialsWithDeepLTranslation called with locale=${locale}, useDeepLTranslate=${useDeepLTranslate}`);
@@ -1282,6 +1299,11 @@ class GoogleSheetsService {
 
     const headers = data[0];
     const activeIndex = headers.indexOf('Active');
+    const findCol = (name) => headers.findIndex(h => String(h || '').trim().toLowerCase() === String(name || '').trim().toLowerCase());
+    const isActiveValue = (v) => {
+      const s = String(v ?? '').trim().toLowerCase();
+      return s === 'true' || s === '1' || v === true || v === 1;
+    };
     
     console.log(`🔍 Looking for testimonials in locale: ${locale}`);
     console.log(`🔍 Found Active at index: ${activeIndex}`);
@@ -1292,8 +1314,7 @@ class GoogleSheetsService {
       const activeTestimonials = data.slice(1).filter(row => {
         if (!activeOnly) return true;
         if (activeIndex === -1) return true;
-        const activeValue = row[activeIndex];
-        return activeValue === 'true' || activeValue === true || activeValue === 1 || activeValue === '1';
+        return isActiveValue(row[activeIndex]);
       });
       
       // Debug: Show content of ALL testimonials (active and inactive)
@@ -1311,18 +1332,18 @@ class GoogleSheetsService {
       });
       
       // Check which language columns exist and have data in active testimonials
-      const hasEnglish = headers.includes('Comment_EN') && activeTestimonials.some(row => {
-        const comment = row[headers.indexOf('Comment_EN')];
+      const hasEnglish = findCol('Comment_EN') !== -1 && activeTestimonials.some(row => {
+        const comment = row[findCol('Comment_EN')];
         return comment && comment.trim().length > 0;
       });
       
-      const hasDutch = headers.includes('Comment_NL') && activeTestimonials.some(row => {
-        const comment = row[headers.indexOf('Comment_NL')];
+      const hasDutch = findCol('Comment_NL') !== -1 && activeTestimonials.some(row => {
+        const comment = row[findCol('Comment_NL')];
         return comment && comment.trim().length > 0;
       });
       
-      const hasRomanian = headers.includes('Comment_RO') && activeTestimonials.some(row => {
-        const comment = row[headers.indexOf('Comment_RO')];
+      const hasRomanian = findCol('Comment_RO') !== -1 && activeTestimonials.some(row => {
+        const comment = row[findCol('Comment_RO')];
         return comment && comment.trim().length > 0;
       });
       
@@ -1349,15 +1370,14 @@ class GoogleSheetsService {
     const activeTestimonials = data.slice(1).filter(row => {
       if (!activeOnly) return true;
       if (activeIndex === -1) return true;
-      const activeValue = row[activeIndex];
-      return activeValue === 'true' || activeValue === true || activeValue === 1 || activeValue === '1';
+      return isActiveValue(row[activeIndex]);
     });
     
     console.log(`DEBUG: Found ${activeTestimonials.length} active testimonials`);
     activeTestimonials.forEach((row, index) => {
-      const nlComment = headers.indexOf('Comment_NL') !== -1 ? row[headers.indexOf('Comment_NL')] : 'N/A';
-      const enComment = headers.indexOf('Comment_EN') !== -1 ? row[headers.indexOf('Comment_EN')] : 'N/A';
-      const roComment = headers.indexOf('Comment_RO') !== -1 ? row[headers.indexOf('Comment_RO')] : 'N/A';
+      const nlComment = findCol('Comment_NL') !== -1 ? row[findCol('Comment_NL')] : 'N/A';
+      const enComment = findCol('Comment_EN') !== -1 ? row[findCol('Comment_EN')] : 'N/A';
+      const roComment = findCol('Comment_RO') !== -1 ? row[findCol('Comment_RO')] : 'N/A';
       console.log(`DEBUG: Testimonial ${index + 1}:`);
       console.log(`  NL: "${nlComment}"`);
       console.log(`  EN: "${enComment}"`);
@@ -1367,7 +1387,7 @@ class GoogleSheetsService {
     // Get text from original language columns with better fallback logic
     const getOriginalText = (row, columnBaseName) => {
       // First try the detected original language
-      const originalColumn = headers.indexOf(`${columnBaseName}_${originalLanguage.toUpperCase()}`);
+      const originalColumn = findCol(`${columnBaseName}_${originalLanguage.toUpperCase()}`);
       if (originalColumn !== -1 && row[originalColumn] && row[originalColumn].trim().length > 0) {
         return row[originalColumn];
       }
@@ -1375,7 +1395,7 @@ class GoogleSheetsService {
       // If original language column is empty, try to find any column with content
       // Priority: English, Romanian, Dutch
       for (const langSuffix of ['EN', 'RO', 'NL']) {
-        const column = headers.indexOf(`${columnBaseName}_${langSuffix}`);
+        const column = findCol(`${columnBaseName}_${langSuffix}`);
         if (column !== -1 && row[column] && row[column].trim().length > 0) {
           return row[column];
         }
@@ -1388,9 +1408,8 @@ class GoogleSheetsService {
       data.slice(1)
         .filter(row => {
           if (!activeOnly) return true;
-          if (activeIndex === -1) return true; // No active column, include all
-          const activeValue = row[activeIndex];
-          return activeValue === 'true' || activeValue === true || activeValue === 1 || activeValue === '1';
+          if (activeIndex === -1) return true;
+          return isActiveValue(row[activeIndex]);
         })
         .map(async (row) => {
           // Get original comment text - detect language for THIS specific testimonial
@@ -1446,8 +1465,19 @@ class GoogleSheetsService {
               finalComment = originalComment;
             }
           } else {
-            // Fallback to original text if DeepL is disabled
-            finalComment = originalComment;
+            let requestedCol = findCol(`Comment_${locale.toUpperCase()}`);
+            if (requestedCol === -1) {
+              const lowerLocale = String(locale || '').toLowerCase();
+              requestedCol = headers.findIndex(h => {
+                const hh = String(h || '').toLowerCase();
+                return hh.includes('comment') && hh.includes(lowerLocale);
+              });
+            }
+            if (requestedCol !== -1 && row[requestedCol] && String(row[requestedCol]).trim().length > 0) {
+              finalComment = row[requestedCol];
+            } else {
+              finalComment = originalComment;
+            }
           }
           
           return {

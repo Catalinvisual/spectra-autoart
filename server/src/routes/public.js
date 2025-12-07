@@ -925,19 +925,61 @@ router.get('/testimonials', async (req, res) => {
     console.log('🎯 Testimonials route hit with lang:', lang)
     console.log('📋 Full query:', req.query)
     
+    // Ensure Google Sheets service is initialized
+    if (!GoogleSheetsService.isInitialized) {
+      console.log('🔄 Initializing Google Sheets service for testimonials...')
+      try {
+        await GoogleSheetsService.initialize()
+      } catch (initError) {
+        console.error('❌ Failed to initialize Google Sheets service:', initError.message)
+        // In production, return empty array instead of error
+        if (process.env.RAILWAY_PROJECT_ID) {
+          console.log('🚧 Production environment detected, returning empty testimonials array')
+          return res.json({
+            success: true,
+            data: []
+          })
+        }
+        throw initError
+      }
+    }
+    
     // Use Google Sheets translations directly - NO DeepL translation
     let testimonials = [];
     console.log(`🔄 Processing testimonials for language: ${lang}`)
     
     try {
-      console.log('🔄 Using Google Sheets translations directly...')
-      
-      // Get testimonials WITHOUT DeepL translation - use translations from Google Sheets
       const testimonialsFromSheets = await GoogleSheetsService.getTestimonialsWithDeepLTranslation(lang, true, false)
       testimonials = testimonialsFromSheets
-      console.log('✅ Google Sheets testimonials loaded, count:', testimonials.length)
+      if (!Array.isArray(testimonials) || testimonials.length === 0) {
+        const raw = await GoogleSheetsService.getData('Testimonials')
+        if (Array.isArray(raw) && raw.length > 1) {
+          const headers = raw[0]
+          const idxActive = headers.indexOf('Active')
+          const idxId = 0
+          const idxName = headers.indexOf('Name')
+          const idxRating = headers.indexOf('Rating')
+          const idxDate = headers.indexOf('Created_Date')
+          const idxComment = headers.indexOf(`Comment_${String(lang || 'nl').toUpperCase()}`)
+          const isActiveVal = (v) => {
+            const s = String(v ?? '').trim().toLowerCase()
+            return s === 'true' || s === '1' || v === true || v === 1
+          }
+          testimonials = raw.slice(1)
+            .filter(row => idxActive === -1 ? true : isActiveVal(row[idxActive]))
+            .map(row => ({
+              id: row[idxId] || '',
+              name: idxName !== -1 ? row[idxName] || '' : '',
+              rating: idxRating !== -1 ? parseInt(row[idxRating]) || 5 : 5,
+              comment: idxComment !== -1 && row[idxComment] ? row[idxComment] : '',
+              active: idxActive === -1 ? true : isActiveVal(row[idxActive]),
+              created_date: idxDate !== -1 ? row[idxDate] || '' : ''
+            }))
+        } else {
+          testimonials = []
+        }
+      }
     } catch (error) {
-      console.error('❌ Failed to load testimonials from Google Sheets:', error.message)
       testimonials = []
     }
     
