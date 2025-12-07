@@ -26,11 +26,12 @@ process.on('unhandledRejection', (reason, promise) => {
 // Startup state for healthcheck
 let serverReady = false
 
-// Timeout de siguranță pentru startup
+// Timeout de siguranță pentru startup - mai lung pentru Railway
+const startupTimeoutMs = process.env.RAILWAY_PROJECT_ID ? 120000 : 30000 // 2 minute pentru Railway
 const startupTimeout = setTimeout(() => {
-  console.error('❌ Server startup timeout - server failed to start within 30 seconds')
+  console.error(`❌ Server startup timeout - server failed to start within ${startupTimeoutMs/1000} seconds`)
   process.exit(1)
-}, 30000)
+}, startupTimeoutMs)
 
 // Configurare dotenv să încarce fișierul .env.local din directorul server
 const __filename = fileURLToPath(import.meta.url)
@@ -290,13 +291,20 @@ const startServer = async () => {
     console.log(`🎯 HOST: ${host}`)
     console.log(`🎯 Railway environment: ${!!process.env.RAILWAY_PROJECT_ID ? 'YES' : 'NO'}`)
     console.log('🔥 CRITICAL: About to call app.listen()')
+    console.log('🔥 RAILWAY_DEBUG: Server starting with ultra-early endpoints already mounted')
     
     // Start server IMMEDIATELY - don't wait for services initialization
     console.log(`🔥 CRITICAL: Calling app.listen(${port}, ${host})`)
+    console.log(`🔥 RAILWAY_DEBUG: Healthcheck endpoints should be available at:`)
+    console.log(`🔥 RAILWAY_DEBUG: http://${host}:${port}/ping`)
+    console.log(`🔥 RAILWAY_DEBUG: http://${host}:${port}/health`)
+    console.log(`🔥 RAILWAY_DEBUG: http://${host}:${port}/debug`)
     
     const server = app.listen(port, host, () => {
       clearTimeout(startupTimeout) // Stop safety timeout
       serverReady = true // Mark server as ready for healthchecks
+      console.log('🔥 RAILWAY_DEBUG: SERVER SUCCESSFULLY STARTED!')
+      console.log(`🔥 RAILWAY_DEBUG: Listening on ${host}:${port}`)
       console.log(`✅ Server Spectra AutoArt STARTED SUCCESSFULLY on ${host}:${port}`)
       console.log(`🏥 Healthcheck available at: http://${host}:${port}/health`)
       console.log(`🏓 Ping healthcheck available at: http://${host}:${port}/ping`)
