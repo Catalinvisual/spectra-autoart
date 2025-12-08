@@ -88,7 +88,7 @@ router.get('/vehicles', async (req, res) => {
                 
                 // Use DeepL for vehicle translations
                 try {
-                  const { translateMultipleWithDeepL } = await import('./services/deeplTranslationService.js');
+                  const { translateMultipleWithDeepL } = await import('../services/deeplTranslationService.js');
                   
                   const [makesResult, modelsResult, typesResult, bodiesResult] = await Promise.all([
                     translateMultipleWithDeepL(makesToTranslate.join(' | '), [lang.toUpperCase()], 'NL'),
