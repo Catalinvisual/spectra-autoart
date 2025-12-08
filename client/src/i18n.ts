@@ -434,19 +434,7 @@ const resources = {
         errorDeletingBooking: 'Fout bij het verwijderen van afspraak'
       },
       
-      // Chatbot translations
-      chatbot: {
-        title: 'Chat Assistent',
-        welcome: 'Hallo! Hoe kan ik u vandaag helpen?',
-        prices: 'Prețuri',
-        bookings: 'Programări',
-        services: 'Servicii',
-        hours: 'Orar',
-        pricesResponse: 'Voor prijsinformatie kunt u het beste een afspraak maken voor een gratis consultatie.',
-        bookingsResponse: 'U kunt eenvoudig online een afspraak maken via onze website!',
-        servicesResponse: 'We bieden verschillende detailing en styling diensten aan. Kijk op onze website voor meer details.',
-        hoursResponse: 'We zijn geopend van maandag tot vrijdag van 9:00 tot 18:00 en op zaterdag van 9:00 tot 16:00.'
-      },
+      
       
       // Footer translations
       footer: {

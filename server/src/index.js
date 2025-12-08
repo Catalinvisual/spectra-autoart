@@ -324,9 +324,13 @@ const startServer = async () => {
       const uploadsPath = path.join(__dirname, '../uploads')
       app.use('/uploads', express.static(uploadsPath))
 
-      // Serve static files from React build
+      // Serve static files from React build if available
       const clientBuildPath = path.join(__dirname, '../../client/dist')
-      app.use(express.static(clientBuildPath))
+      if (fs.existsSync(clientBuildPath)) {
+        app.use(express.static(clientBuildPath))
+      } else {
+        console.log('⚠️  Client build folder not found:', clientBuildPath)
+      }
 
       app.get('/site.webmanifest', (req, res) => {
         res.set('Content-Type', 'application/manifest+json')
@@ -349,7 +353,22 @@ const startServer = async () => {
 
       // Handle React routing, return all requests to React app
       app.get('*', (req, res) => {
-        res.sendFile(path.join(clientBuildPath, 'index.html'))
+        const indexPath = path.join(clientBuildPath, 'index.html')
+        if (fs.existsSync(indexPath)) {
+          res.sendFile(indexPath)
+        } else {
+          res.status(200).send(
+            `<!doctype html><html><head><meta charset="utf-8"/><title>Spectra AutoArt API</title></head><body>
+            <h1>Spectra AutoArt</h1>
+            <p>Frontend build indisponibil în container. API-ul rulează.</p>
+            <ul>
+              <li><a href="/ping">/ping</a></li>
+              <li><a href="/health">/health</a></li>
+              <li><a href="/api/public/vehicles">/api/public/vehicles</a></li>
+            </ul>
+            </body></html>`
+          )
+        }
       })
 
       // Initialize services in BACKGROUND after server starts
