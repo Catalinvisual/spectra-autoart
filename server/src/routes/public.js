@@ -606,7 +606,8 @@ router.post('/bookings', async (req, res) => {
 
       servicesList = names.join(', ')
       servicesListIds = selected.join(', ')
-      total = sum
+      const providedTotal = req.body && typeof req.body.total === 'number' ? req.body.total : null
+      total = providedTotal && providedTotal > 0 ? providedTotal : sum
     } catch {
       servicesList = Array.isArray(services) ? services.join(', ') : (services || '')
       servicesListIds = Array.isArray(services) ? services.map(s => String(s)).join(', ') : ''

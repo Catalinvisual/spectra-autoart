@@ -34,6 +34,7 @@ export interface BookingData {
   time: string
   newsletter: boolean
   locale: string
+  total?: number
 }
 
 export interface BodyType {
@@ -468,8 +469,12 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
   const handleSubmit = async () => {
     try {
       setError('')
-      
-      const response = await publicAPI.createBooking(bookingData)
+      const computedTotal = bookingData.services.reduce((acc, serviceId) => {
+        const s = services.find(ss => ss.id === serviceId)
+        const p = s && bookingData.body ? getServicePriceForBodyType(s, bookingData.body) : null
+        return acc + (p?.price_min || 0)
+      }, 0)
+      const response = await publicAPI.createBooking({ ...bookingData, total: computedTotal })
       
       if (response.data.success) {
         // Show success notification immediately
