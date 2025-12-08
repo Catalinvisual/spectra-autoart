@@ -3188,3 +3188,10 @@ h2:hover::before {
   scrollbar-width: thin;
   scrollbar-color: #00e5ff rgba(11, 15, 20, 0.2);
 }
+
+/* Explicit scroll for edit booking modal body */
+.edit-modal-content .modal-body {
+  overflow-y: auto !important;
+  min-height: 0 !important;
+  padding-bottom: 5rem !important;
+}

@@ -783,8 +783,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
 
       {/* Edit Modal */}
       {showEditModal && editingBooking && (
-        <div className="modal-overlay" onClick={closeEditModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <PortalModal isOpen={showEditModal} onClose={closeEditModal} contentClass="modal-content edit-modal-content">
             <div className="modal-header">
               <h2>{t('admin.editBooking')}</h2>
               <button onClick={closeEditModal} className="close-btn">×</button>
@@ -855,8 +854,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
                 </div>
               </form>
             </div>
-          </div>
-        </div>
+        </PortalModal>
       )}
     </div>
   )

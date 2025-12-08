@@ -152,7 +152,8 @@ app.use(cors({
     'http://localhost:5174',
     'https://spectra-autoart-production.up.railway.app',
     'https://spectra-autoart-production.up.railway.app:8080',
-    process.env.CLIENT_ORIGIN
+    process.env.CLIENT_ORIGIN,
+    process.env.RAILWAY_STATIC_URL
   ].filter(Boolean),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

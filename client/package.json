@@ -7,8 +7,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && VITE_API_URL=https://spectra-autoart-production.up.railway.app/api vite build",
-    "build:railway": "tsc -b && VITE_API_URL=https://spectra-autoart-production.up.railway.app/api vite build",
+    "build": "tsc -b && vite build",
+    "build:railway": "tsc -b && vite build",
     "build:local": "tsc -b && set VITE_API_URL=http://localhost:8080/api && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
