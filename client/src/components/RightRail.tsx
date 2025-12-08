@@ -112,6 +112,7 @@ const RightRail = () => {
       }
       
       setMessages(prev => [...prev, { type: 'bot', text: botResponse }])
+      inputRef.current?.focus({ preventScroll: true })
     }, 1000)
   }
 
@@ -131,6 +132,7 @@ const RightRail = () => {
       setMessages(prev => [...prev, { type: 'bot', text: 'Ne pare rău, încercați din nou.' }])
     } finally {
       setSending(false)
+      inputRef.current?.focus({ preventScroll: true })
     }
   }
 
@@ -173,7 +175,7 @@ const RightRail = () => {
             type="text"
             ref={inputRef}
             value={inputValue}
-            onChange={(e) => { setInputValue(e.target.value); inputRef.current?.focus({ preventScroll: true }) }}
+            onChange={(e) => { setInputValue(e.target.value) }}
             placeholder={t('contactPage.send') || 'Scrieți întrebarea...'}
             autoFocus
             autoComplete="off"
