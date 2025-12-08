@@ -258,7 +258,7 @@ router.get('/bookings', requireAuth, async (req, res) => {
           return { id: sid, name: sname, price }
         }).filter(service => service.name.length > 0)
       }
-      if (Array.isArray(servicesArray) && servicesArray.length > 0) {
+      if (total <= 0 && Array.isArray(servicesArray) && servicesArray.length > 0) {
         total = servicesArray.reduce((acc, s) => acc + (typeof s.price === 'number' ? s.price : 0), 0)
       }
       
