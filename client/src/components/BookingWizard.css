@@ -443,6 +443,66 @@
   flex: 0 0 260px;
   max-width: 300px;
   min-width: 220px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 1rem;
+  color: #ccd6f6;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.booking-wizard-modal .service-card:hover {
+  border-color: rgba(0, 229, 255, 0.35);
+  transform: translateY(-2px);
+}
+
+.booking-wizard-modal .service-card.selected {
+  border-color: #64ffda;
+  box-shadow: 0 0 0 3px rgba(100, 255, 218, 0.25);
+  background: linear-gradient(135deg, rgba(100, 255, 218, 0.08) 0%, rgba(10, 25, 47, 0.4) 100%);
+}
+
+.booking-wizard-modal .service-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(100, 255, 218, 0.15);
+  border: 1px solid #64ffda;
+  color: #64ffda;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 6px rgba(100, 255, 218, 0.4));
+}
+
+.booking-wizard-modal .service-card h4 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  color: #e6edf7;
+}
+
+.booking-wizard-modal .service-card p {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: #8892b0;
+}
+
+.booking-wizard-modal .service-card .service-price {
+  margin-top: auto;
+  font-weight: 600;
+  color: #00e5ff;
+}
+
+.booking-wizard-modal .service-card .service-price .unavailable {
+  color: #f44336;
 }
 
 @media (max-width: 768px) {
