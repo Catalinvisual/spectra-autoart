@@ -871,13 +871,13 @@ const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onD
       const daysInMonth = new Date(year, month + 1, 0).getDate()
       
       const availability: Record<string, boolean> = {}
+      const todayString = new Date().toISOString().split('T')[0]
       
       for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day)
         const dateString = date.toISOString().split('T')[0]
         
-        // Duminica este mereu indisponibilă
-        if (date.getDay() === 0) {
+        if (date.getDay() === 0 || dateString < todayString) {
           availability[dateString] = false
         } else {
           // Verificăm dacă data este deja în lista de bookedDates
@@ -898,6 +898,7 @@ const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onD
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
     const startingDayOfWeek = firstDay.getDay()
+    const todayString = new Date().toISOString().split('T')[0]
     
     const days = []
     
@@ -910,13 +911,15 @@ const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onD
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day)
       const dateString = date.toISOString().split('T')[0]
+      const isPast = dateString < todayString
       days.push({
         day,
         dateString,
         isAvailable: availabilityMap[dateString] !== false,
         isSunday: date.getDay() === 0,
         isToday: dateString === new Date().toISOString().split('T')[0],
-        isSelected: dateString === selectedDate
+        isSelected: dateString === selectedDate,
+        isPast
       })
     }
     
@@ -924,7 +927,7 @@ const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onD
   }
 
   const handleDayClick = (dayInfo: any) => {
-    if (!dayInfo || dayInfo.isSunday || !dayInfo.isAvailable) return
+    if (!dayInfo || dayInfo.isSunday || dayInfo.isPast || !dayInfo.isAvailable) return
     onDateSelect(dayInfo.dateString)
   }
 
@@ -1002,6 +1005,7 @@ const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onD
             className={`calendar-day ${
               !dayInfo ? 'empty' :
               dayInfo.isSunday ? 'sunday disabled' :
+              dayInfo.isPast ? 'past disabled' :
               !dayInfo.isAvailable ? 'unavailable disabled' :
               dayInfo.isSelected ? 'selected' :
               dayInfo.isToday ? 'today' :
@@ -1014,7 +1018,7 @@ const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onD
                 <span className="day-number">{dayInfo.day}</span>
                 <span className="day-status">
                   {dayInfo.isSunday ? '✗' :
-                   !dayInfo.isAvailable ? '✗' :
+                   dayInfo.isPast || !dayInfo.isAvailable ? '✗' :
                    dayInfo.isSelected ? '✓' : ''}
                 </span>
               </>

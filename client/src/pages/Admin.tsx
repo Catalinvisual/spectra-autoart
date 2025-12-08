@@ -17,6 +17,7 @@ interface Booking {
     phone: string
   }
   date: string
+  time?: string
   services: Array<{
     id: string
     name: string
@@ -471,6 +472,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
             phone: booking.customer_phone || booking.user?.phone || ''
           },
           date: booking.date || '',
+          time: booking.time || '',
           services: Array.isArray(booking.services) ? booking.services.map((service: any) => ({
             id: service.id || service.name || '',
             name: service.name || ''
@@ -495,7 +497,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     onDeleteBooking(id)
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string, time?: string) => {
     if (!dateString || dateString === 'Invalid Date') {
       return t('admin.noDate') || 'No date specified'
     }
@@ -513,10 +515,9 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
         year: 'numeric'
       })
       
-      const timePart = date.toLocaleTimeString(i18n.language, {
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+      const timePart = time && typeof time === 'string' && time.trim() !== ''
+        ? time
+        : date.toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' })
       
       return `${datePart} • ${timePart}`
     } catch {
@@ -647,7 +648,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
               </div>
               <div className="booking-datetime">
                 <div className="booking-date">
-                  📅 {formatDate(booking.date)}
+                  📅 {formatDate(booking.date, booking.time)}
                 </div>
               </div>
             </div>
@@ -737,7 +738,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
                 <div className="detail-grid">
                   <div className="detail-item">
                     <label>{t('admin.date')}:</label>
-                    <span>{formatDate(selectedBooking.date)}</span>
+                    <span>{formatDate(selectedBooking.date, selectedBooking.time)}</span>
                   </div>
                   <div className="detail-item">
                     <label>{t('admin.status')}:</label>
@@ -831,6 +832,17 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
                     onChange={(e) => setEditingBooking({
                       ...editingBooking,
                       date: e.target.value
+                    })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>{t('admin.time') || 'Ora'}:</label>
+                  <input
+                    type="time"
+                    value={editingBooking.time || ''}
+                    onChange={(e) => setEditingBooking({
+                      ...editingBooking,
+                      time: e.target.value
                     })}
                   />
                 </div>

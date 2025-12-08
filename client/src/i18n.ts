@@ -341,6 +341,7 @@ const resources = {
         bookingsManagement: 'Afspraken Beheer',
         loadingBookings: 'Laden van afspraken...',
         date: 'Datum',
+        time: 'Tijd',
         total: 'Totaal',
         serviceUpdated: 'Service bijgewerkt!',
         serviceCreated: 'Dienst aangemaakt!',
@@ -1351,6 +1352,7 @@ const resources = {
         bookingsManagement: 'Bookings Management',
         loadingBookings: 'Loading bookings...',
         date: 'Date',
+        time: 'Time',
         total: 'Total',
         serviceUpdated: 'Service updated!',
         serviceCreated: 'Service created!',
@@ -2844,6 +2846,7 @@ const resources = {
         admin: {
           notSpecified: 'No Especificado',
           bookingDetails: 'Detalles de Reserva',
+          time: 'Hora',
           save: 'Guardar',
           cancel: 'Cancelar',
           subscribedToNewsletter: 'Suscrito al Boletín',
@@ -3682,6 +3685,7 @@ const resources = {
         admin: {
           notSpecified: 'Nie Określono',
           bookingDetails: 'Szczegóły Rezerwacji',
+          time: 'Godzina',
           save: 'Zapisz',
           cancel: 'Anuluj',
           subscribedToNewsletter: 'Zapisany do Newslettera',
@@ -4622,6 +4626,7 @@ const resources = {
       admin: {
         notSpecified: 'Nespecificat',
         bookingDetails: 'Detalii Programare',
+        time: 'Ora',
         save: 'Salvează',
         cancel: 'Anulează',
         subscribedToNewsletter: 'Abonat la Newsletter',
