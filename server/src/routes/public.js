@@ -1260,3 +1260,41 @@ router.get('/gallery/cloudinary', async (req, res) => {
 })
 
 export default router
+// Simple multilingual chatbot endpoint
+router.post('/chat', async (req, res) => {
+  try {
+    const { question = '', lang = 'nl' } = req.body || {}
+    const q = String(question || '').toLowerCase()
+    
+    const baseAnswers = {
+      prices: 'Pentru un cost exact, deschideți Booking Wizard, selectați caroseria și serviciile dorite. Totalul se calculează automat înainte de confirmare.',
+      bookings: 'Programările se fac din Booking Wizard. Alegeți data și ora disponibile și confirmați cu datele dvs.',
+      services: 'Oferim detailing interior/exterior, ambient lighting, starlight ceiling, chrome delete, trim wrapping, polish și ceramic protection.',
+      hours: 'Program: Luni–Vineri 9:00–18:00, Sâmbătă 10:00–16:00. Pentru ore în afara programului, contactați-ne.',
+      contact: 'Ne puteți contacta la info@spectraautoart.com sau pe WhatsApp/Instagram din bara din dreapta.',
+      fallback: 'Mulțumim pentru întrebare! Pentru un răspuns precis, folosiți Booking Wizard sau scrieți mai detaliat ce doriți.'
+    }
+
+    let key = 'fallback'
+    const match = (words) => words.some(w => q.includes(w))
+    if (match(['pret', 'preț', 'price', 'tarif', 'kosten', 'cât', 'how much'])) key = 'prices'
+    else if (match(['booking', 'programare', 'afspraak', 'rezervare'])) key = 'bookings'
+    else if (match(['services', 'servicii', 'diensten'])) key = 'services'
+    else if (match(['hours', 'program', 'orar', 'opening'])) key = 'hours'
+    else if (match(['contact', 'email', 'telefon'])) key = 'contact'
+
+    let answer = baseAnswers[key]
+    if (lang && lang !== 'ro') {
+      try {
+        const result = await translateMultipleWithDeepL(answer, [lang.toUpperCase()], 'RO')
+        answer = result[lang.toUpperCase()] || answer
+      } catch (e) {
+        // keep Romanian fallback
+      }
+    }
+
+    return res.json({ success: true, data: { answer } })
+  } catch (error) {
+    return res.status(500).json({ success: false, error: 'Chat failed', message: error?.message })
+  }
+})

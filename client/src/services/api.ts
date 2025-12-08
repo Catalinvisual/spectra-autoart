@@ -166,6 +166,7 @@ export const publicAPI = {
   translateText: (data: { text: string; target: string; source?: string }) => api.post('/translate', data),
   translateBatch: (data: { texts: string[]; target: string; source?: string }) => api.post('/translate/batch', data),
   getAvailability: (date?: string) => api.get(`/public/bookings/availability${date ? `?date=${date}` : ''}`)
+  ,askChat: (question: string, lang: string) => api.post('/public/chat', { question, lang })
 }
 
 // Admin API endpoints

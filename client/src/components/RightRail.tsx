@@ -15,6 +15,8 @@ const RightRail = () => {
     { type: 'bot', text: t('chatbot.welcome') }
   ])
   const [translatedQuickReplies, setTranslatedQuickReplies] = useState<string[]>([])
+  const [inputValue, setInputValue] = useState('')
+  const [sending, setSending] = useState(false)
 
   // Translate welcome message and quick replies when language changes
   useEffect(() => {
@@ -106,6 +108,25 @@ const RightRail = () => {
     }, 1000)
   }
 
+  const handleSend = async () => {
+    const text = inputValue.trim()
+    if (!text || sending) return
+    const userMessage = { type: 'user', text }
+    setMessages(prev => [...prev, userMessage])
+    setInputValue('')
+    setSending(true)
+    try {
+      const { publicAPI } = await import('../services/api')
+      const resp = await publicAPI.askChat(text, currentLanguage)
+      const answer = resp.data?.data?.answer || t('chatbot.fallback') || 'Mulțumim!'
+      setMessages(prev => [...prev, { type: 'bot', text: answer }])
+    } catch (e) {
+      setMessages(prev => [...prev, { type: 'bot', text: 'Ne pare rău, încercați din nou.' }])
+    } finally {
+      setSending(false)
+    }
+  }
+
   // ChatModal Component with Portal
   const ChatModal = () => {
     const portalRoot = document.getElementById('chatbot-portal')
@@ -139,6 +160,17 @@ const RightRail = () => {
               {option}
             </button>
           ))}
+        </div>
+        <div className="chatbot-input">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder={t('contactPage.send') || 'Scrieți întrebarea...'}
+          />
+          <button onClick={handleSend} disabled={sending || !inputValue.trim()}>
+            {sending ? '...' : t('confirm')}
+          </button>
         </div>
         <div className="chatbot-footer">
           <p>Chatbot-ul este în curs de dezvoltare!</p>
