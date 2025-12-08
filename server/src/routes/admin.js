@@ -12,6 +12,77 @@ import { sendBookingConfirmation, sendAdminNotification, testEmailService } from
 
 const router = express.Router()
 
+let bookingsEnrichmentCache = {
+  idToName: new Map(),
+  nameToId: new Map(),
+  serviceMinPrice: new Map(),
+  lastFetch: 0
+}
+
+async function ensureEnrichmentCache() {
+  const ttl = 5 * 60 * 1000
+  if (Date.now() - bookingsEnrichmentCache.lastFetch < ttl && bookingsEnrichmentCache.idToName.size > 0) {
+    return
+  }
+  try {
+    const servicesData = await GoogleSheetsService.getData('Vehicle_Services')
+    const pricesData = await GoogleSheetsService.getData('Vehicle_Service_Prices')
+    const idToName = new Map()
+    const nameToId = new Map()
+    const serviceMinPrice = new Map()
+    if (servicesData && servicesData.length > 1) {
+      const hs = servicesData[0]
+      const idIdx = hs.indexOf('ID')
+      const nameNlIdx = hs.indexOf('Name_NL')
+      const nameIdx = nameNlIdx !== -1 ? nameNlIdx : hs.indexOf('Name')
+      if (idIdx !== -1 && nameIdx !== -1) {
+        servicesData.slice(1).forEach(row => {
+          const sid = String(row[idIdx] || '').trim()
+          const sname = String(row[nameIdx] || sid).trim()
+          if (sid) {
+            idToName.set(sid, sname)
+            nameToId.set(sname.toLowerCase(), sid)
+          }
+        })
+      }
+    }
+  if (pricesData && pricesData.length > 1) {
+    const hp = pricesData[0]
+    const sidIdx = hp.indexOf('Service_ID')
+    const pminIdx = hp.indexOf('Price_Min')
+    const activeIdx = hp.indexOf('Is_Active')
+    if (sidIdx !== -1 && pminIdx !== -1) {
+      pricesData.slice(1).forEach(row => {
+        const sid = String(row[sidIdx] || '').trim()
+        const activeVal = activeIdx !== -1 ? row[activeIdx] : true
+        const isActive = activeIdx === -1
+          ? true
+          : (activeVal === 'true' || activeVal === true || activeVal === 'TRUE' || activeVal === 'True' || activeVal === 1)
+        const pmin = parseFloat(row[pminIdx]) || 0
+        if (!sid) return
+        if (isActive) {
+          if (!serviceMinPrice.has(sid)) {
+            serviceMinPrice.set(sid, pmin)
+          } else {
+            const cur = serviceMinPrice.get(sid) || 0
+            serviceMinPrice.set(sid, Math.min(cur, pmin))
+          }
+        }
+      })
+    }
+  }
+    bookingsEnrichmentCache = {
+      idToName,
+      nameToId,
+      serviceMinPrice,
+      lastFetch: Date.now()
+    }
+  } catch (err) {
+    console.warn('⚠️  Failed to refresh enrichment cache, using existing cache:', err?.message || err)
+    bookingsEnrichmentCache.lastFetch = Date.now()
+  }
+}
+
 // Admin login
 router.post('/auth/login', async (req, res) => {
   try {
@@ -84,31 +155,58 @@ router.get('/dashboard', requireAuth, async (req, res) => {
 router.get('/bookings', requireAuth, async (req, res) => {
   try {
     const data = await GoogleSheetsService.getData('Bookings')
+    await ensureEnrichmentCache()
     
     if (data.length <= 1) {
       return res.json([])
     }
 
     // Convert rows to booking objects
+    const headers = Array.isArray(data[0]) ? data[0] : []
+    const findCol = (...names) => {
+      const lowered = headers.map(h => String(h || '').toLowerCase())
+      for (const n of names) {
+        const idx = lowered.indexOf(String(n).toLowerCase())
+        if (idx !== -1) return idx
+      }
+      // fallback: try partial includes
+      for (let i = 0; i < lowered.length; i++) {
+        for (const n of names) {
+          if (lowered[i].includes(String(n).toLowerCase())) return i
+        }
+      }
+      return -1
+    }
+    const idIndex = findCol('ID') !== -1 ? findCol('ID') : 0
+    const nameIndex = findCol('Name', 'Customer_Name', 'Client_Name') !== -1 ? findCol('Name', 'Customer_Name', 'Client_Name') : 1
+    const emailIndex = findCol('Email') !== -1 ? findCol('Email') : 2
+    const phoneIndex = findCol('Phone') !== -1 ? findCol('Phone') : 3
+    const dateIndex = findCol('Date') !== -1 ? findCol('Date') : 4
+    const timeIndex = findCol('Time') !== -1 ? findCol('Time') : 5
+    const servicesIndex = findCol('Services', 'Service', 'Diensten') !== -1 ? findCol('Services', 'Service', 'Diensten') : 6
+    const totalIndex = findCol('Total', 'Amount') !== -1 ? findCol('Total', 'Amount') : 7
+    const statusIndex = findCol('Status') !== -1 ? findCol('Status') : 8
+    const createdAtIndex = findCol('Created_At', 'Created At') !== -1 ? findCol('Created_At', 'Created At') : 9
+
     const bookings = data.slice(1).map((row, index) => {
       // Map columns based on actual Google Sheets structure
-      const id = row[0] || `booking_${index + 1}`
-      const name = row[1] || ''
-      const email = row[2] || ''
-      const phone = row[3] || ''
-      const date = row[4] || ''
-      const time = row[5] || ''
-      const servicesString = row[6] || ''
-      const totalRaw = row[7] || '0'
-      const status = row[8] || 'pending'
-      const createdAt = row[9] || new Date().toISOString()
+      const id = row[idIndex] || `booking_${index + 1}`
+      const name = row[nameIndex] || ''
+      const email = row[emailIndex] || ''
+      const phone = row[phoneIndex] || ''
+      const date = row[dateIndex] || ''
+      const time = row[timeIndex] || ''
+      const servicesString = row[servicesIndex] || ''
+      const totalRaw = row[totalIndex] || '0'
+      const status = row[statusIndex] || 'pending'
+      const createdAt = row[createdAtIndex] || new Date().toISOString()
       
-      // Parse total amount
       let total = 0
       if (typeof totalRaw === 'number') {
         total = totalRaw
       } else if (typeof totalRaw === 'string') {
-        total = parseFloat(totalRaw) || 0
+        const parsed = parseFloat(totalRaw)
+        total = isNaN(parsed) ? 0 : parsed
       }
       
       // Combine date and time for frontend compatibility
@@ -120,18 +218,48 @@ router.get('/bookings', requireAuth, async (req, res) => {
         combinedDateTime = `${cleanDate}T${cleanTime}:00`
       }
       
-      // Parse services string into array of objects
       let servicesArray = []
       if (servicesString && typeof servicesString === 'string') {
-        // Remove any single quotes and split by comma
-        const cleanServices = servicesString.replace(/^'/, '').replace(/'$/, '')
-        servicesArray = cleanServices.split(',').map(serviceName => {
-          const trimmedName = serviceName.trim()
-          return {
-            id: trimmedName.toLowerCase().replace(/\s+/g, '_'),
-            name: trimmedName
+        const cleanServices = servicesString.replace(/^'/, '').replace(/'$/, '').trim()
+        let tokens = []
+        if (cleanServices.startsWith('[')) {
+          try {
+            const arr = JSON.parse(cleanServices)
+            if (Array.isArray(arr)) {
+              tokens = arr.map(item => {
+                if (typeof item === 'string') return item
+                if (item && typeof item === 'object') {
+                  return item.id || item.service_id || item.name || ''
+                }
+                return ''
+              }).filter(x => x)
+            }
+          } catch {
+            tokens = cleanServices.split(/[,|;]+/)
           }
+        } else {
+          tokens = cleanServices.split(/[,|;]+/)
+        }
+        servicesArray = tokens.map(token => {
+          const trimmed = token.trim()
+          let sid = ''
+          let sname = ''
+          if (bookingsEnrichmentCache.idToName.has(trimmed)) {
+            sid = trimmed
+            sname = bookingsEnrichmentCache.idToName.get(trimmed)
+          } else if (bookingsEnrichmentCache.nameToId.has(trimmed.toLowerCase())) {
+            sid = bookingsEnrichmentCache.nameToId.get(trimmed.toLowerCase())
+            sname = bookingsEnrichmentCache.idToName.get(sid) || trimmed
+          } else {
+            sid = trimmed.toLowerCase().replace(/\s+/g, '_')
+            sname = trimmed
+          }
+          const price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
+          return { id: sid, name: sname, price }
         }).filter(service => service.name.length > 0)
+      }
+      if (Array.isArray(servicesArray) && servicesArray.length > 0) {
+        total = servicesArray.reduce((acc, s) => acc + (typeof s.price === 'number' ? s.price : 0), 0)
       }
       
       // Extract make/model from services or use defaults

@@ -3,11 +3,11 @@ import { getRange, appendRange } from '../services/sheets.js'
 import { translateText } from '../services/translator.js'
 import VehicleService from '../services/vehicleService.js'
 import GoogleSheetsService from '../services/googleSheetsService.js'
+import { vehicleServicesService } from '../services/vehicleServicesService.js'
 import NotificationService from '../services/notificationService.js'
 import { getActiveBodyTypes } from '../config/bodyTypesConfig.js'
 import { translateMultipleWithDeepL, detectLanguageWithDeepL } from '../services/deeplTranslationService.js'
 import CloudinaryService from '../services/cloudinaryService.js'
-import { vehicleServicesService } from '../services/vehicleServicesService.js'
 import { sendBookingConfirmation, sendAdminNotification } from '../services/emailService.js'
 
 const router = Router()
@@ -575,107 +575,42 @@ router.post('/bookings', async (req, res) => {
     
     const bookingId = Date.now().toString()
     
-    // Get services data to calculate total and names - with optimized parallel fetching
-    let servicesList = '';
-    let total = 0;
-    
+    let servicesList = ''
+    let servicesListIds = ''
+    let total = 0
     try {
-      const servicesStartTime = Date.now();
-      console.log(`🔍 Starting services data fetch...`);
-      
-      // Create optimized timeout for Google Sheets operations (2 seconds)
-      const sheetsTimeout = new Promise((resolve) => {
-        setTimeout(() => resolve(null), 2000); // 2 second timeout
-      });
-      
-      // Fetch both sheets in parallel with timeout
-      const servicesPromise = GoogleSheetsService.getData('Services');
-      const pricesPromise = GoogleSheetsService.getData('Service_Prices');
-      
-      const [servicesFromSheets, servicePricesFromSheets] = await Promise.all([
-        Promise.race([servicesPromise, sheetsTimeout]),
-        Promise.race([pricesPromise, sheetsTimeout])
-      ]);
-      
-      const servicesFetchTime = Date.now() - servicesStartTime;
-      console.log(`✅ Services data fetch completed in ${servicesFetchTime}ms`);
-      
-      if (!servicesFromSheets) {
-        console.log('⚠️  Google Sheets services request timed out, using fallback');
-        throw new Error('Google Sheets timeout');
-      }
-      
-      // Use empty array if prices timed out
-      const pricesData = servicePricesFromSheets || [];
-      
-      if (servicesFromSheets.length > 1) {
-        // Parse Services headers
-        const servicesHeaders = servicesFromSheets[0];
-        const servicesIdIndex = servicesHeaders.indexOf('ID');
-        const servicesNameIndex = servicesHeaders.indexOf('Name_NL'); // Default to Dutch
-        const servicesPriceIndex = servicesHeaders.indexOf('Price'); // Fallback price from Services sheet
-        
-        // Parse Service_Prices headers (if available)
-        const pricesHeaders = pricesData.length > 1 ? pricesData[0] : [];
-        const pricesServiceIdIndex = pricesHeaders.indexOf('Service_ID');
-        const pricesBodyTypeIndex = pricesHeaders.indexOf('Body_Type_Key');
-        const pricesPriceMinIndex = pricesHeaders.indexOf('Price_Min');
-        
-        if (servicesIdIndex !== -1 && servicesNameIndex !== -1) {
-          
-          // Get service names and prices for the selected service IDs - optimized
-          const serviceNames = [];
-          
-          // Pre-process services data for faster lookup
-          const servicesMap = new Map();
-          servicesFromSheets.slice(1).forEach(row => {
-            const rowId = String(row[servicesIdIndex]).trim();
-            servicesMap.set(rowId, row);
-          });
-          
-          // Pre-process prices data for faster lookup
-          const pricesMap = new Map();
-          if (pricesData.length > 1 && pricesServiceIdIndex !== -1 && pricesBodyTypeIndex !== -1) {
-            pricesData.slice(1).forEach(row => {
-              const key = `${String(row[pricesServiceIdIndex]).trim()}_${String(row[pricesBodyTypeIndex]).trim()}`;
-              pricesMap.set(key, row);
-            });
-          }
-          
-          services.forEach(serviceId => {
-            const serviceRow = servicesMap.get(String(serviceId).trim());
-            
-            if (serviceRow) {
-              const serviceName = serviceRow[servicesNameIndex] || serviceRow[servicesIdIndex];
-              serviceNames.push(serviceName);
-              
-              let servicePrice = 0;
-              
-              // Optimized price lookup using pre-built map
-              if (pricesServiceIdIndex !== -1 && pricesBodyTypeIndex !== -1 && pricesPriceMinIndex !== -1) {
-                const priceKey = `${String(serviceId).trim()}_${String(body).trim()}`;
-                const priceRow = pricesMap.get(priceKey);
-                if (priceRow) {
-                  servicePrice = parseFloat(priceRow[pricesPriceMinIndex]) || 0;
-                }
-              }
-              
-              // If no price found in Service_Prices, try to use Price from Services sheet
-              if (servicePrice === 0 && servicesPriceIndex !== -1) {
-                servicePrice = parseFloat(serviceRow[servicesPriceIndex]) || 0;
-              }
-              
-              total += servicePrice;
-            }
-          });
-          servicesList = serviceNames.join(', ');
+      const selected = Array.isArray(services) ? services.map(s => String(s)) : []
+      const bodyKeyRaw = String(body || '').trim().toLowerCase()
+      const synonyms = { sedan: 'berlina', wagon: 'break', estate: 'break' }
+      const bodyKey = synonyms[bodyKeyRaw] || bodyKeyRaw
+      const bodyType = vehicleServicesService.mapFrontendKeyToBodyType ? vehicleServicesService.mapFrontendKeyToBodyType(bodyKey) : null
+      const normalizedKey = bodyType?.key || bodyKey
+      const servicesForBody = vehicleServicesService.getServicesByBodyType ? vehicleServicesService.getServicesByBodyType(normalizedKey) : []
+
+      const byId = new Map()
+      servicesForBody.forEach(s => byId.set(String(s.id), s))
+
+      let names = []
+      let sum = 0
+      for (const sid of selected) {
+        const svc = byId.get(sid) || vehicleServicesService.services?.find(s => String(s.id) === sid)
+        if (svc) {
+          names.push(svc.name || sid)
+          const p = Array.isArray(svc.prices) && svc.prices.length > 0 ? svc.prices[0] : null
+          const priceMin = p ? (parseFloat(p.price_min) || 0) : 0
+          sum += priceMin
+        } else {
+          names.push(sid)
         }
       }
-    } catch (servicesError) {
-      console.error('❌ Error fetching services for calculation:', servicesError);
-      // Fallback: use services as-is
-      servicesList = Array.isArray(services) ? services.join(', ') : services;
-      total = 0; // Set to 0 if we can't calculate
+
+      servicesList = names.join(', ')
+      servicesListIds = selected.join(', ')
+      total = sum
+    } catch {
+      servicesList = Array.isArray(services) ? services.join(', ') : (services || '')
+      servicesListIds = Array.isArray(services) ? services.map(s => String(s)).join(', ') : ''
+      total = 0
     }
     
     // Save booking to Google Sheets with optimized timeout - fire and forget approach
@@ -693,7 +628,7 @@ router.post('/bookings', async (req, res) => {
           user.phone,                   // Phone (column 3)
           formattedDate,                // Date (column 4) - text format
           formattedTime,              // Time (column 5) - text format
-          servicesList,                 // Services (column 6)
+          servicesListIds || servicesList, // Services (column 6) - prefer IDs
           total.toString(),             // Total (column 7)
           'confirmed',                  // Status (column 8)
           new Date().toISOString()      // Created At (column 9)
@@ -701,26 +636,12 @@ router.post('/bookings', async (req, res) => {
         
         console.log('💾 Saving booking to Google Sheets (async):', bookingData);
         
-        // Quick timeout for save operation (3 seconds)
-        const saveTimeout = new Promise((resolve) => {
-          setTimeout(() => {
-            console.log('⚠️  Google Sheets save operation timed out (async)');
-            resolve(false);
-          }, 3000); // 3 second timeout
-        });
-        
         const savePromise = GoogleSheetsService.appendDataWithFormats('Bookings', bookingData, {
           4: 'TEXT', // Date column - force text format
           5: 'TEXT'  // Time column - force text format
         });
-        
-        const saved = await Promise.race([savePromise, saveTimeout]);
-        
-        if (saved) {
-          console.log('✅ Booking saved successfully to Google Sheets (async)');
-        } else {
-          console.log('⚠️  Booking save failed or timed out (async), but continuing');
-        }
+        await savePromise
+        console.log('✅ Booking saved successfully to Google Sheets (async)')
       } catch (sheetsError) {
         console.error('❌ Google Sheets error (async):', sheetsError);
         // Silent fail - don't affect user experience
@@ -740,7 +661,7 @@ router.post('/bookings', async (req, res) => {
         }
         
         // Prepare services data for emails
-        const emailServices = servicesList.split(', ').map(serviceName => ({
+        const emailServices = (servicesList && servicesList.length > 0 ? servicesList.split(', ') : []).map(serviceName => ({
           name: serviceName,
           description: 'Serviciu auto detailing',
           price: total > 0 ? (total / servicesList.split(', ').length).toFixed(2) : '0'
