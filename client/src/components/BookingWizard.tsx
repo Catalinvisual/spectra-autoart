@@ -112,6 +112,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
   }
   const [phonePrefix, setPhonePrefix] = useState<string>(getDefaultPrefix(i18n.language))
   const [phoneDigits, setPhoneDigits] = useState<string>('')
+  const [prefixOpen, setPrefixOpen] = useState<boolean>(false)
 
   const flagEmoji = (cc: string) => cc
     .toUpperCase()
@@ -698,24 +699,41 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               <div className="form-group">
                 <label className="form-label">{t('phone')}</label>
                 <div className="phone-input-group">
-                  <select
-                    className="phone-select"
-                    value={phonePrefix}
-                    onChange={(e) => {
-                      const p = e.target.value
-                      setPhonePrefix(p)
-                      setBookingData(prev => ({
-                        ...prev,
-                        user: { ...prev.user, phone: `${p}${phoneDigits}` }
-                      }))
-                    }}
-                  >
-                    {COUNTRIES.map(c => (
-                      <option key={c.code} value={c.prefix} title={`${c.name} ${c.prefix}`}>
-                        {`${flagEmoji(c.code)} ${c.name} ${c.prefix}`}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="phone-prefix-dropdown">
+                    <button
+                      type="button"
+                      className="phone-select phone-prefix-trigger"
+                      onClick={() => setPrefixOpen(!prefixOpen)}
+                    >
+                      {(() => {
+                        const sel = COUNTRIES.find(c => c.prefix === phonePrefix)
+                        return sel ? `${flagEmoji(sel.code)} ${sel.prefix}` : phonePrefix
+                      })()}
+                    </button>
+                    {prefixOpen && (
+                      <div className="phone-prefix-menu" role="listbox">
+                        {COUNTRIES.map(c => (
+                          <div
+                            key={c.code}
+                            className="phone-prefix-option"
+                            role="option"
+                            onClick={() => {
+                              setPhonePrefix(c.prefix)
+                              setBookingData(prev => ({
+                                ...prev,
+                                user: { ...prev.user, phone: `${c.prefix}${phoneDigits}` }
+                              }))
+                              setPrefixOpen(false)
+                            }}
+                          >
+                            <span className="flag">{flagEmoji(c.code)}</span>
+                            <span className="name">{c.name}</span>
+                            <span className="prefix">{c.prefix}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <div className="phone-number-wrapper">
                     <input
                       type="tel"

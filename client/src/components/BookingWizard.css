@@ -469,6 +469,59 @@
   white-space: nowrap;
 }
 
+.phone-prefix-dropdown {
+  position: relative;
+}
+
+.phone-prefix-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 92px;
+  max-width: 120px;
+  padding: 0.35rem 0.5rem;
+}
+
+.phone-prefix-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 10010;
+  min-width: 220px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: rgba(11, 15, 20, 0.95);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+}
+
+.phone-prefix-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  color: #e6edf7;
+}
+
+.phone-prefix-option:hover {
+  background: rgba(0, 229, 255, 0.08);
+}
+
+.phone-prefix-option .flag {
+  min-width: 1.4rem;
+}
+
+.phone-prefix-option .name {
+  flex: 1;
+}
+
+.phone-prefix-option .prefix {
+  font-weight: 600;
+}
+
 .phone-number-wrapper {
   position: relative;
   flex: 1;
