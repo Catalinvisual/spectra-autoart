@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useLanguage } from '../contexts/LanguageContext'
@@ -17,6 +17,13 @@ const RightRail = () => {
   const [translatedQuickReplies, setTranslatedQuickReplies] = useState<string[]>([])
   const [inputValue, setInputValue] = useState('')
   const [sending, setSending] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (chatbotOpen) {
+      inputRef.current?.focus({ preventScroll: true })
+    }
+  }, [chatbotOpen])
 
   // Translate welcome message and quick replies when language changes
   useEffect(() => {
@@ -164,9 +171,16 @@ const RightRail = () => {
         <div className="chatbot-input">
           <input
             type="text"
+            ref={inputRef}
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => { setInputValue(e.target.value); inputRef.current?.focus({ preventScroll: true }) }}
             placeholder={t('contactPage.send') || 'Scrieți întrebarea...'}
+            autoFocus
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            inputMode="text"
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSend() } }}
           />
           <button onClick={handleSend} disabled={sending || !inputValue.trim()}>
             {sending ? '...' : t('confirm')}
