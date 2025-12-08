@@ -103,7 +103,6 @@ import bookingsRouter from './routes/bookings.js'
 import galleryRouter from './routes/gallery.js'
 import testimonialsRouter from './routes/testimonials.js'
 import translateRouter from './routes/translate.js'
-import debugVehiclesRouter from './routes/debugVehicles.js'
 import adminServicesRouter from './routes/adminServices.js'
 import cachedServicesRouter from './routes/cachedServices.js'
 let GoogleSheetsService
@@ -186,7 +185,7 @@ app.use('/api/bookings', bookingsRouter)
 app.use('/api/gallery', galleryRouter)
 app.use('/api/testimonials', testimonialsRouter)
 app.use('/api/translate', translateRouter)
-app.use('/api/debug', debugVehiclesRouter)
+// Removed debug routes
 console.log('✅ API routes mounted')
 
 // Healthcheck endpoints are defined EARLIER in the file (right after app creation)
