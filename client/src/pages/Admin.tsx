@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import ReactDOM from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { adminAPI, publicAPI } from '../services/api'
@@ -588,6 +589,24 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     setShowEditModal(false)
   }
 
+  useEffect(() => {
+    const active = showDetailsModal || showEditModal
+    const prevHtmlOverflow = document.documentElement.style.overflow
+    const prevBodyOverflow = document.body.style.overflow
+    if (active) {
+      document.documentElement.style.overflow = 'hidden'
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.documentElement.style.overflow = prevHtmlOverflow
+      document.body.style.overflow = prevBodyOverflow
+    }
+    return () => {
+      document.documentElement.style.overflow = prevHtmlOverflow
+      document.body.style.overflow = prevBodyOverflow
+    }
+  }, [showDetailsModal, showEditModal])
+
+
   const saveBookingEdit = async () => {
     if (!editingBooking) return
     
@@ -688,8 +707,8 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
 
       {/* Details Modal */}
       {showDetailsModal && selectedBooking && (
-        <div className="modal-overlay" onClick={closeDetailsModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <PortalModal isOpen={showDetailsModal} onClose={closeDetailsModal} overlayClass="details-modal" contentClass="modal-content details-modal-content">
+          <div>
             <div className="modal-header">
               <h2>{t('admin.bookingDetails')}</h2>
               <button onClick={closeDetailsModal} className="close-btn">×</button>
@@ -759,7 +778,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
               )}
             </div>
           </div>
-        </div>
+        </PortalModal>
       )}
 
       {/* Edit Modal */}
@@ -874,17 +893,21 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
   
   useEffect(() => {
     const active = showForm || showBodyTypesForm
-    const prevBody = document.body.style.overflow
-    const prevHtml = document.documentElement.style.overflow
+    const prevHtmlOverflow = document.documentElement.style.overflow
+    const prevBodyOverflow = document.body.style.overflow
     if (active) {
       document.documentElement.style.overflow = 'hidden'
       document.body.style.overflow = 'hidden'
+    } else {
+      document.documentElement.style.overflow = prevHtmlOverflow
+      document.body.style.overflow = prevBodyOverflow
     }
     return () => {
-      document.documentElement.style.overflow = prevHtml
-      document.body.style.overflow = prevBody
+      document.documentElement.style.overflow = prevHtmlOverflow
+      document.body.style.overflow = prevBodyOverflow
     }
   }, [showForm, showBodyTypesForm])
+
   
   const [formData, setFormData] = useState({
     name: '',
@@ -1326,8 +1349,8 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
       </div>
 
       {showForm && (
-        <div className="modal-overlay" onClick={() => { setShowForm(false); setEditingService(null); resetForm(); }}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <PortalModal isOpen={showForm} onClose={() => { setShowForm(false); setEditingService(null); resetForm(); }} overlayClass="services-modal vehicle-services-management" contentClass="modal-content services-modal-content">
+          <div>
             <div className="modal-header">
               <h3>{editingService ? t('admin.editVehicleService') : t('admin.addVehicleService')}</h3>
               <button className="close-btn" type="button" onClick={() => { setShowForm(false); setEditingService(null); resetForm(); }}>×</button>
@@ -1463,13 +1486,13 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
             </form>
             </div>
           </div>
-        </div>
+        </PortalModal>
       )}
 
       {/* Body Types Form Modal */}
       {showBodyTypesForm && (
-        <div className="form-modal">
-          <div className="form-container">
+        <PortalModal isOpen={showBodyTypesForm} onClose={() => { setShowBodyTypesForm(false); setEditingBodyType(null); resetBodyTypeForm(); }} overlayClass="services-modal vehicle-services-management" contentClass="modal-content services-modal-content">
+          <div>
             <h3>{editingBodyType ? t('admin.editBodyType') : t('admin.addBodyType')}</h3>
             <form onSubmit={handleBodyTypeSubmit}>
               <div className="form-group">
@@ -1527,7 +1550,7 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
               </div>
             </form>
           </div>
-        </div>
+        </PortalModal>
       )}
 
       {/* Vehicle Services List */}
@@ -2115,3 +2138,14 @@ const NewsletterManagement: React.FC<NewsletterManagementProps> = ({ isAuthentic
 }
 
 export default Admin
+  const PortalModal: React.FC<{ isOpen: boolean; onClose: () => void; overlayClass?: string; contentClass?: string; children: React.ReactNode }> = ({ isOpen, onClose, overlayClass, contentClass, children }) => {
+    if (!isOpen) return null
+    return ReactDOM.createPortal(
+      <div className={['portal-modal-overlay', overlayClass].filter(Boolean).join(' ')} onClick={onClose}>
+        <div className={['portal-modal-content', contentClass].filter(Boolean).join(' ')} onClick={(e) => e.stopPropagation()}>
+          {children}
+        </div>
+      </div>,
+      document.body
+    )
+  }
