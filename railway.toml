@@ -1,8 +1,7 @@
 [build]
-buildCommand = ""
-startCommand = "sh start.sh"
-dockerfilePath = "Dockerfile.railway"
-nixpacksPlan.phases.setup.nixPkgs = ["nodejs_20"]
+buildCommand = "npm run build"
+startCommand = "npm run start"
+nixpacksPlan.phases.setup.nixPkgs = ["nodejs_18"]
 
 [deploy]
 healthcheckPath = "/ping"
