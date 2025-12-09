@@ -313,6 +313,7 @@
     animation: none !important;
     backdrop-filter: none !important;
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35) !important;
+    height: 80vh !important;
   }
   
   .rail-button {
@@ -331,7 +332,7 @@
     bottom: 20px !important;
     top: auto !important;
     max-width: 380px !important;
-    height: 400px !important;
+    height: 85vh !important;
     animation: none !important;
     backdrop-filter: none !important;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3) !important;
