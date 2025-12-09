@@ -124,12 +124,9 @@ let initializeEmailService
 const app = express()
 
 // Ultra-early healthcheck endpoints - respond even during startup
-// Basic root endpoint for platform healthchecks
-app.get('/', (req, res) => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('📍 ROOT endpoint hit')
-  }
-  res.status(200).send('ok')
+// HEAD / for liveness probes without breaking frontend root
+app.head('/', (req, res) => {
+  res.sendStatus(200)
 })
 app.head('/', (req, res) => {
   res.sendStatus(200)
