@@ -113,22 +113,55 @@ let initializeEmailService
 const app = express()
 
 // Ultra-early healthcheck endpoints - respond even during startup
+// Basic root endpoint for platform healthchecks
+app.get('/', (req, res) => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('📍 ROOT endpoint hit')
+  }
+  res.status(200).send('ok')
+})
+
 app.get('/ping', (req, res) => {
-  console.log('📍 PING endpoint hit - server responding')
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('📍 PING endpoint hit - server responding')
+  }
   res.status(200).send('pong')
+})
+app.head('/ping', (req, res) => {
+  res.sendStatus(200)
 })
 
 app.get('/health', (req, res) => {
-  console.log('📍 HEALTH endpoint hit - server responding')
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('📍 HEALTH endpoint hit - server responding')
+  }
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
     serverReady: serverReady
   })
 })
+app.head('/health', (req, res) => {
+  res.sendStatus(200)
+})
+
+// Readiness endpoint returns 200 only when services are marked ready
+app.get('/ready', (req, res) => {
+  const statusCode = serverReady ? 200 : 503
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`📍 READY endpoint hit - serverReady=${serverReady}`)
+  }
+  res.status(statusCode).json({
+    status: serverReady ? 'ready' : 'starting',
+    serverReady,
+    timestamp: new Date().toISOString()
+  })
+})
 
 app.get('/debug', (req, res) => {
-  console.log('📍 DEBUG endpoint hit - full system info')
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('📍 DEBUG endpoint hit - full system info')
+  }
   res.json({
     status: 'debug_info',
     serverReady: serverReady,
@@ -163,16 +196,18 @@ app.use(express.json({ limit: '1mb' }))
 app.use(express.urlencoded({ extended: true }))
 
 // Debug middleware to log all requests - MUST be before API routes
-app.use((req, res, next) => {
-  console.log('🌐 Server received request:', {
-    method: req.method,
-    url: req.url,
-    path: req.path,
-    query: req.query,
-    headers: req.headers
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    console.log('🌐 Server received request:', {
+      method: req.method,
+      url: req.url,
+      path: req.path,
+      query: req.query,
+      headers: req.headers
+    })
+    next()
   })
-  next()
-})
+}
 
 app.use('/api/public', publicRouter)
 app.use('/api/admin', adminRouter)

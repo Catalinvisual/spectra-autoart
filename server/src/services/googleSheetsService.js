@@ -712,6 +712,7 @@ class GoogleSheetsService {
           if (process.env.NODE_ENV !== 'production') {
             console.log(`DEBUG: Added price to map with key: ${key}`);
           }
+        }
       });
     }
     
