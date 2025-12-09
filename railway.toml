@@ -1,7 +1,8 @@
 [build]
 buildCommand = "npm run build"
 startCommand = "npm run start"
-nixpacksPlan.phases.setup.nixPkgs = ["nodejs_18"]
+## Forțează Node 20 în Nixpacks
+nixpacksPlan.phases.setup.nixPkgs = ["nodejs_20"]
 
 [deploy]
 healthcheckPath = "/ping"
