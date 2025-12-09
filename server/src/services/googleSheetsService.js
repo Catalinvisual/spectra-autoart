@@ -667,28 +667,28 @@ class GoogleSheetsService {
 
     // Map prices by service_id and body_type_id
     const pricesMap = {};
-    console.log('DEBUG: Processing prices data, total rows:', pricesData.length - 1);
-    console.log('DEBUG: Prices data sample (first 2 rows):');
-    pricesData.slice(1, 3).forEach((row, index) => {
-      console.log(`DEBUG: Price row ${index + 1}:`);
-      row.forEach((cell, cellIndex) => {
-        if (cell !== '' && cell !== null && cell !== undefined) {
-          console.log(`  Column ${cellIndex}: "${cell}"`);
-        }
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('DEBUG: Processing prices data, total rows:', pricesData.length - 1);
+      console.log('DEBUG: Prices data sample (first 2 rows):');
+      pricesData.slice(1, 3).forEach((row, index) => {
+        console.log(`DEBUG: Price row ${index + 1}:`, row);
       });
-    });
+    }
     
     console.log(`DEBUG: Prices data length: ${pricesData.length}`);
     if (pricesData.length > 1) {
-      console.log(`DEBUG: Processing ${pricesData.length - 1} price rows`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`DEBUG: Processing ${pricesData.length - 1} price rows`);
+      }
       pricesData.slice(1).forEach((row, index) => {
         const serviceId = row[pricesHeaders.indexOf('Service_ID')];
-        const bodyTypeId = row[pricesHeaders.indexOf('Body_Type_Key')]; // This could be numeric ID or string key
-        const isActive = row[pricesHeaders.indexOf('Is_Active')] === 'true' || row[pricesHeaders.indexOf('Is_Active')] === true || row[pricesHeaders.indexOf('Is_Active')] === '' || row[pricesHeaders.indexOf('Is_Active')] === null || row[pricesHeaders.indexOf('Is_Active')] === undefined;
-        
-        console.log(`DEBUG: Price row ${index + 1} - Service_ID: "${serviceId}", Body_Type_Key: "${bodyTypeId}", Is_Active: ${isActive}`);
-        console.log(`DEBUG: BODY_TYPES loaded:`, BODY_TYPES.length, 'types');
-        console.log(`DEBUG: BODY_TYPES sample:`, BODY_TYPES.slice(0, 2));
+        const bodyTypeKeyIdx = pricesHeaders.indexOf('Body_Type_Key');
+        const bodyTypeIdIdx = pricesHeaders.indexOf('Body_Type_ID');
+        const bodyTypeId = bodyTypeKeyIdx !== -1 ? row[bodyTypeKeyIdx] : (bodyTypeIdIdx !== -1 ? row[bodyTypeIdIdx] : null);
+        const isActive = row[pricesHeaders.indexOf('Is_Active')] === 'true' || row[pricesHeaders.indexOf('Is_Active')] === true;
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`DEBUG: Price row ${index + 1} - Service_ID: "${serviceId}", Body_Type: "${bodyTypeId}", Is_Active: ${isActive}`);
+        }
         
         // Allow prices with empty Body_Type_Key to be linked to services
         if (isActive && serviceId) {
@@ -709,36 +709,39 @@ class GoogleSheetsService {
             promo_percent: parseInt(row[pricesHeaders.indexOf('Promo_Percent')]) || 0,
             is_active: isActive
           };
-          console.log(`DEBUG: Added price to map with key: ${key}`);
-          console.log(`DEBUG: Price details: service=${serviceId}, body_type=${bodyTypeKey}, price_min=${pricesMap[key].price_min}`);
-        }
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`DEBUG: Added price to map with key: ${key}`);
+          }
       });
     }
     
-    console.log('DEBUG: Total prices in map:', Object.keys(pricesMap).length);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('DEBUG: Total prices in map:', Object.keys(pricesMap).length);
+    }
 
     // Build services with prices for all body types
     const allServices = servicesData.slice(1);
-    console.log('DEBUG: All services before filtering:', allServices.length);
-    console.log('DEBUG: Services data sample (first 2 rows):');
-    allServices.slice(0, 2).forEach((row, index) => {
-      console.log(`DEBUG: Service row ${index + 1}:`);
-      row.forEach((cell, cellIndex) => {
-        if (cell !== '' && cell !== null && cell !== undefined) {
-          console.log(`  Column ${cellIndex} (${servicesHeaders[cellIndex]}): "${cell}"`);
-        }
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('DEBUG: All services before filtering:', allServices.length);
+      console.log('DEBUG: Services data sample (first 2 rows):');
+      allServices.slice(0, 2).forEach((row, index) => {
+        console.log(`DEBUG: Service row ${index + 1}:`, row);
       });
-    });
+    }
     
     const activeServices = allServices
       .filter(row => {
         const isActive = row[servicesHeaders.indexOf('Is_Active')];
-        console.log('DEBUG: Checking Is_Active value:', isActive, 'type:', typeof isActive);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('DEBUG: Checking Is_Active value:', isActive, 'type:', typeof isActive);
+        }
         return isActive === 'true' || isActive === true;
       });
     
-    console.log('DEBUG: Active services found:', activeServices.length);
-    console.log('DEBUG: First active service:', activeServices[0]);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('DEBUG: Active services found:', activeServices.length);
+      console.log('DEBUG: First active service:', activeServices[0]);
+    }
     
     return await Promise.all(activeServices.map(async (row) => {
         const serviceId = row[servicesHeaders.indexOf('ID')] || row[0]; // Fallback la prima coloană dacă 'ID' nu există
@@ -751,23 +754,33 @@ class GoogleSheetsService {
         // Get all prices for this service
         const servicePrices = [];
         
-        console.log(`DEBUG: Looking for prices for service ${serviceIdStr}`);
-        console.log(`DEBUG: Available price keys in map:`, Object.keys(pricesMap));
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`DEBUG: Looking for prices for service ${serviceIdStr}`);
+          console.log(`DEBUG: Available price keys in map:`, Object.keys(pricesMap));
+        }
         
         // Find all prices for this service ID
         Object.keys(pricesMap).forEach(key => {
-          console.log(`DEBUG: Checking key: ${key} against ${serviceIdStr}_`);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`DEBUG: Checking key: ${key} against ${serviceIdStr}_`);
+          }
           if (key.startsWith(`${serviceIdStr}_`)) {
             servicePrices.push(pricesMap[key]);
-            console.log(`DEBUG: Added price for service ${serviceIdStr}:`, pricesMap[key]);
+            if (process.env.NODE_ENV !== 'production') {
+              console.log(`DEBUG: Added price for service ${serviceIdStr}:`, pricesMap[key]);
+            }
           }
         });
         
-        console.log(`DEBUG: Total prices found for service ${serviceIdStr}:`, servicePrices.length);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`DEBUG: Total prices found for service ${serviceIdStr}:`, servicePrices.length);
+        }
         
         // If no prices found, generate fallback prices for common body types
         if (servicePrices.length === 0) {
-          console.log(`⚠️  No prices found for service ${serviceIdStr}, generating fallback prices`);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`⚠️  No prices found for service ${serviceIdStr}, generating fallback prices`);
+          }
           const fallbackBodyTypes = ['suv', 'berlina', 'hatchback', 'coupe'];
           const basePrice = 25 + (Math.floor(Math.random() * 50)); // Random price between 25-75
           
@@ -785,12 +798,16 @@ class GoogleSheetsService {
             is_active: true
           });
           });
-          console.log(`✅ Generated ${servicePrices.length} fallback prices for service ${serviceIdStr}`);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`✅ Generated ${servicePrices.length} fallback prices for service ${serviceIdStr}`);
+          }
         }
 
         // Detectează limba originală pentru acest serviciu specific
         const serviceOriginalLang = detectServiceOriginalLanguage(row);
-        console.log(`DEBUG: Service ${serviceIdStr} original language: ${serviceOriginalLang}`);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`DEBUG: Service ${serviceIdStr} original language: ${serviceOriginalLang}`);
+        }
 
         // Get text from original language columns
         const getOriginalText = (columnBaseName) => {
