@@ -270,7 +270,9 @@ class GoogleSheetsService {
       await sheet.loadHeaderRow();
       const headers = sheet.headerValues || [];
       const rows = await sheet.getRows();
-      console.log(`📊 Sheet ${sheetName} rows loaded: ${rows.length}, headers: ${headers.length}`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`📊 Sheet ${sheetName} rows loaded: ${rows.length}, headers: ${headers.length}`);
+      }
 
       const result = [headers];
       for (const row of rows) {
@@ -590,21 +592,29 @@ class GoogleSheetsService {
 
   // Helper function to map body type ID to key
   getBodyTypeKeyById(bodyTypeId) {
-    console.log(`DEBUG getBodyTypeKeyById: input="${bodyTypeId}", type=${typeof bodyTypeId}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`DEBUG getBodyTypeKeyById: input="${bodyTypeId}", type=${typeof bodyTypeId}`);
+    }
     if (!bodyTypeId) return 'default';
     
     // If it's already a string key, return it
     if (typeof bodyTypeId === 'string' && !/^\d+$/.test(bodyTypeId)) {
-      console.log(`DEBUG getBodyTypeKeyById: returning string key "${bodyTypeId}"`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`DEBUG getBodyTypeKeyById: returning string key "${bodyTypeId}"`);
+      }
       return bodyTypeId;
     }
     
     // If it's a numeric ID, find the corresponding body type
     const numericId = parseInt(bodyTypeId);
-    console.log(`DEBUG getBodyTypeKeyById: looking for numeric ID ${numericId}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`DEBUG getBodyTypeKeyById: looking for numeric ID ${numericId}`);
+    }
     const bodyType = BODY_TYPES.find(bt => bt.id === numericId);
     const result = bodyType ? bodyType.key : 'default';
-    console.log(`DEBUG getBodyTypeKeyById: found body type`, bodyType, 'returning key:', result);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`DEBUG getBodyTypeKeyById: found body type`, bodyType, 'returning key:', result);
+    }
     return result;
   }
 
@@ -638,10 +648,12 @@ class GoogleSheetsService {
       const servicesData = await this.getData('Vehicle_Services');
       const pricesData = await this.getData('Vehicle_Service_Prices');
 
-    console.log('DEBUG: Vehicle_Services data length:', servicesData?.length || 0);
-    console.log('DEBUG: Vehicle_Service_Prices data length:', pricesData?.length || 0);
-    console.log('DEBUG: Services headers:', servicesData?.[0] || 'No headers');
-    console.log('DEBUG: Prices headers:', pricesData?.[0] || 'No headers');
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('DEBUG: Vehicle_Services data length:', servicesData?.length || 0);
+      console.log('DEBUG: Vehicle_Service_Prices data length:', pricesData?.length || 0);
+      console.log('DEBUG: Services headers:', servicesData?.[0] || 'No headers');
+      console.log('DEBUG: Prices headers:', pricesData?.[0] || 'No headers');
+    }
 
     if (servicesData.length <= 1) return [];
 
@@ -675,7 +687,9 @@ class GoogleSheetsService {
       });
     }
     
-    console.log(`DEBUG: Prices data length: ${pricesData.length}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`DEBUG: Prices data length: ${pricesData.length}`);
+    }
     if (pricesData.length > 1) {
       if (process.env.NODE_ENV !== 'production') {
         console.log(`DEBUG: Processing ${pricesData.length - 1} price rows`);
@@ -747,7 +761,9 @@ class GoogleSheetsService {
     return await Promise.all(activeServices.map(async (row) => {
         const serviceId = row[servicesHeaders.indexOf('ID')] || row[0]; // Fallback la prima coloană dacă 'ID' nu există
         if (!serviceId) {
-          console.log('DEBUG: Skipping row - no ID found:', row);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('DEBUG: Skipping row - no ID found:', row);
+          }
           return null;
         }
         const serviceIdStr = serviceId.toString();
