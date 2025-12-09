@@ -15,12 +15,20 @@ console.log('📋 Process arguments:', process.argv)
 process.on('uncaughtException', (error) => {
   console.error('❌ Uncaught Exception:', error.message)
   console.error('Stack:', error.stack)
-  process.exit(1)
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(1)
+  } else {
+    console.error('⚠️  Suppressing exit on uncaughtException in production to maintain liveness')
+  }
 })
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason)
-  process.exit(1)
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(1)
+  } else {
+    console.error('⚠️  Suppressing exit on unhandledRejection in production to maintain liveness')
+  }
 })
 
 // Startup state for healthcheck
@@ -119,6 +127,9 @@ app.get('/', (req, res) => {
     console.log('📍 ROOT endpoint hit')
   }
   res.status(200).send('ok')
+})
+app.head('/', (req, res) => {
+  res.sendStatus(200)
 })
 
 app.get('/ping', (req, res) => {
