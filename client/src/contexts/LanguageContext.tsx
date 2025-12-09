@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { resources } from '../i18n';
 import { publicAPI } from '../services/api';
 
 interface LanguageContextType {
@@ -25,6 +26,13 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     // Set the initial language on mount
     const initialLang = getInitialLanguage();
+    if (!i18n.hasResourceBundle(initialLang, 'translation')) {
+      const bundle = (resources as any)[initialLang]?.translation || {};
+      i18n.addResourceBundle(initialLang, 'translation', bundle, true, true);
+    }
+    i18n.reloadResources([initialLang]).then(() => {
+      console.log('i18n resources reloaded for:', initialLang);
+    });
     if (initialLang !== i18n.language) {
       i18n.changeLanguage(initialLang).then(() => {
         setCurrentLanguage(initialLang);
@@ -38,6 +46,13 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       // Store in localStorage for persistence first
       localStorage.setItem('selectedLanguage', lang);
+      
+      if (!i18n.hasResourceBundle(lang, 'translation')) {
+        const bundle = (resources as any)[lang]?.translation || {};
+        i18n.addResourceBundle(lang, 'translation', bundle, true, true);
+      }
+
+      await i18n.reloadResources([lang]);
       
       // Change i18next language (for static content)
       await i18n.changeLanguage(lang);

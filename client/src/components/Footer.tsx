@@ -10,11 +10,16 @@ const Footer = () => {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
 
+  const tf = (key: string, fallback: string) => {
+    const v = t(key)
+    return v === key ? fallback : v
+  }
+
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!email) {
-      setMessage('Please enter your email')
+      setMessage(tf('footer.enterEmail', 'Introduceți adresa dvs. de email'))
       return
     }
 
@@ -23,8 +28,13 @@ const Footer = () => {
       const response = await publicAPI.subscribeNewsletter({ email, locale: i18n.language })
       setMessage(response.data.message || t('newsletterSubscribeSuccess') || 'Thank you for subscribing!')
       setEmail('')
-    } catch (error: any) {
-      setMessage(error.response?.data?.error || 'Failed to subscribe')
+    } catch (error: unknown) {
+      let errMsg = 'Failed to subscribe'
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        const resp = (error as { response?: { data?: { error?: string } } }).response
+        errMsg = resp?.data?.error || errMsg
+      }
+      setMessage(errMsg)
     } finally {
       setLoading(false)
     }
@@ -58,7 +68,7 @@ const Footer = () => {
         </div>
         
         <div className="footer-section">
-          <h3>Quick Links</h3>
+          <h3>{tf('footer.quickLinks', 'Link-uri Rapide')}</h3>
           <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection('services') }}>
             {t('ourServices')}
           </a>
@@ -77,28 +87,28 @@ const Footer = () => {
         </div>
         
         <div className="footer-section">
-          <h3>Services</h3>
-          <a href="#">Auto Detailing</a>
-          <a href="#">Chrome Delete</a>
-          <a href="#">Ceramic Coating</a>
-          <a href="#">Paint Protection</a>
-          <a href="#">Interior Cleaning</a>
+          <h3>{tf('footer.services', 'Servicii')}</h3>
+          <a href="#">{tf('footer.autoDetailing', 'Detailing Auto')}</a>
+          <a href="#">{tf('footer.chromeDelete', 'Chrome Delete')}</a>
+          <a href="#">{tf('footer.ceramicCoating', 'Protecție Ceramică')}</a>
+          <a href="#">{tf('footer.paintProtection', 'Protecție Vopsea')}</a>
+          <a href="#">{tf('footer.interiorCleaning', 'Curățare Interior')}</a>
         </div>
         
         <div className="footer-section">
-          <h3>Newsletter</h3>
+          <h3>{tf('footer.newsletter', 'Newsletter')}</h3>
           <p>{t('subscribeNewsletter')}</p>
           <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
             <input
               type="email"
-              placeholder="Enter your email"
+              placeholder={tf('footer.enterEmail', 'Introduceți adresa dvs. de email')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
             />
             <button type="submit" disabled={loading}>
-              {loading ? '...' : t('send')}
+              {loading ? '...' : tf('footer.send', 'Trimite')}
             </button>
           </form>
           {message && <div className="newsletter-message">{message}</div>}

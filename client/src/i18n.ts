@@ -442,11 +442,21 @@ const resources = {
       
       // Footer translations
       footer: {
-        description: 'Premium auto detailing and styling services. Transform your vehicle with our expert care and attention to detail.',
+        description: 'Premium auto detailing en styling. Transformeer uw voertuig met onze deskundige zorg en aandacht voor detail.',
         terms: 'Algemene Voorwaarden',
         privacy: 'Privacybeleid',
         cookies: 'Cookiebeleid',
-        contact: 'Contact & Juridisch'
+        contact: 'Contact & Juridisch',
+        quickLinks: 'Snelle Links',
+        services: 'Diensten',
+        autoDetailing: 'Auto Detailing',
+        chromeDelete: 'Chrome Delete',
+        ceramicCoating: 'Keramische Bescherming',
+        paintProtection: 'Lakbescherming',
+        interiorCleaning: 'Interieur Reiniging',
+        newsletter: 'Nieuwsbrief',
+        enterEmail: 'Voer uw e-mailadres in',
+        send: 'Verzenden'
       },
       
       // Terms popup translations
@@ -1290,7 +1300,17 @@ const resources = {
         terms: 'Terms & Conditions',
         privacy: 'Privacy Policy',
         cookies: 'Cookie Policy',
-        contact: 'Contact & Legal'
+        contact: 'Contact & Legal',
+        quickLinks: 'Quick Links',
+        services: 'Services',
+        autoDetailing: 'Auto Detailing',
+        chromeDelete: 'Chrome Delete',
+        ceramicCoating: 'Ceramic Coating',
+        paintProtection: 'Paint Protection',
+        interiorCleaning: 'Interior Cleaning',
+        newsletter: 'Newsletter',
+        enterEmail: 'Enter your email',
+        send: 'Send'
       },
       
       // Terms popup translations
@@ -2285,7 +2305,17 @@ const resources = {
         terms: 'Términos y Condiciones',
         privacy: 'Política de Privacidad',
         cookies: 'Política de Cookies',
-        contact: 'Contacto y Legal'
+        contact: 'Contacto y Legal',
+        quickLinks: 'Enlaces Rápidos',
+        services: 'Servicios',
+        autoDetailing: 'Detailing de Auto',
+        chromeDelete: 'Chrome Delete',
+        ceramicCoating: 'Revestimiento Cerámico',
+        paintProtection: 'Protección de Pintura',
+        interiorCleaning: 'Limpieza Interior',
+        newsletter: 'Boletín',
+        enterEmail: 'Ingrese su correo electrónico',
+        send: 'Enviar'
       },
       
       // Terms and Conditions page translations
@@ -3130,7 +3160,17 @@ const resources = {
         terms: 'Regulamin',
         privacy: 'Polityka Prywatności',
         cookies: 'Polityka Cookies',
-        contact: 'Kontakt i Prawne'
+        contact: 'Kontakt i Prawne',
+        quickLinks: 'Szybkie linki',
+        services: 'Usługi',
+        autoDetailing: 'Detailing samochodu',
+        chromeDelete: 'Chrome Delete',
+        ceramicCoating: 'Powłoka ceramiczna',
+        paintProtection: 'Ochrona lakieru',
+        interiorCleaning: 'Czyszczenie wnętrza',
+        newsletter: 'Newsletter',
+        enterEmail: 'Wprowadź swój adres e-mail',
+        send: 'Wyślij'
       },
       
       // Terms and Conditions page translations
@@ -4589,7 +4629,7 @@ const resources = {
       
       // Footer translations
       footer: {
-        description: 'Servicii premium de detailing și styling auto. Transformă-ți vehiculul cu îngrijirea noastră expertă și atenția la detalii.',
+        description: 'Servicii premium de detailing și styling auto.',
         contact: 'Contact',
         openingHours: 'Program de Lucru',
         monday: 'Luni',
@@ -4602,8 +4642,12 @@ const resources = {
         closed: 'Închis',
         openingHoursText: 'Lun-Vin: 9:00-18:00, Sâm: 10:00-16:00, Dum: Închis',
         services: 'Servicii',
+        autoDetailing: 'Detailing Auto',
         premiumDetailing: 'Detailing Premium',
         ceramicProtection: 'Protecție Ceramică',
+        ceramicCoating: 'Protecție Ceramică',
+        paintProtection: 'Protecție Vopsea',
+        interiorCleaning: 'Curățare Interior',
         starlightCeiling: 'Tavan Starlight',
         chromeDelete: 'Chrome Delete',
         quickLinks: 'Link-uri Rapide',
@@ -4613,8 +4657,14 @@ const resources = {
         privacyPolicy: 'Politica de Confidențialitate',
         termsOfService: 'Termeni și Condiții',
         cookiePolicy: 'Politica Cookies',
+        privacy: 'Politica de Confidențialitate',
+        terms: 'Termeni și Condiții',
+        cookies: 'Politica Cookies',
         social: 'Social',
         followUs: 'Urmărește-ne pe rețelele sociale',
+        newsletter: 'Newsletter',
+        enterEmail: 'Introduceți adresa dvs. de email',
+        send: 'Trimite',
         copyright: '© 2025 Spectra AutoArt. Toate drepturile rezervate.'
       },
       
@@ -4692,6 +4742,91 @@ i18n
   .then(() => {
     console.log('i18n initialized successfully with language:', i18n.language);
     console.log('i18n initialized successfully with available languages:', Object.keys(resources));
+
+    const store = i18n.services.resourceStore.data;
+    const roBundle = (resources as any)?.ro?.translation || {
+      title: 'Spectra AutoArt',
+      subtitle: 'Premium Auto Detailing\n& Styling',
+      aboutUs: 'Despre Noi',
+      bookNow: 'Programează Acum',
+      ourServices: 'Serviciile Noastre',
+      aboutUsTitle: 'Despre Noi',
+      aboutUsDescription: 'Spectra AutoArt este partenerul tău premium pentru detailing și styling auto. Cu ani de experiență și pasiune pentru perfecțiune, oferim servicii de înaltă calitate care transformă vehiculul tău într-un adevărat spectacol. Echipa noastră de profesioniști specializați folosește doar cele mai bune produse și tehnici pentru a oferi rezultate excepționale. Credem în calitate, atenție la detalii și satisfacția clienților care depășește așteptările tale.',
+      testimonials: 'Testimoniale',
+      contact: 'Contact',
+      gallery: 'Galerie',
+      selectLanguage: 'Selectează Limba',
+      footer: {
+        terms: 'Termeni și Condiții',
+        privacy: 'Politica de Confidențialitate',
+        cookies: 'Politica Cookies',
+        contact: 'Contact și Juridic',
+        description: 'Servicii premium de detailing și styling auto.'
+      },
+      servicesPage: { fromPrice: 'De la', minimumPrice: 'Preț minim' },
+      galleryPage: {
+        title: 'Galerie',
+        subtitle: 'Vezi lucrările noastre premium de detailing auto',
+        categories: {
+          all: 'Tot',
+          'detailing-interior': 'Detailing Interior',
+          'detailing-exterior': 'Detailing Exterior',
+          'ambient-lights': 'Lumini Ambientale',
+          'starlight-ceiling': 'Plafon Înstelat',
+          'chrome-delete': 'Chrome Delete',
+          'trim-wrapping': 'Colantare Trimuri',
+          'polish-auto': 'Polish Auto',
+          'ceramic-protection': 'Protecție Ceramică',
+          'before-after': 'Înainte și După'
+        }
+      },
+      testimonialPage: {
+        title: 'Ce spun clienții',
+        subtitle: 'Experiențele clienților noștri mulțumiți',
+        noTestimonials: 'Nu există testimoniale disponibile încă.',
+        writeReview: 'Scrieți o recenzie',
+        yourName: 'Numele dumneavoastră',
+        yourRating: 'Evaluarea dumneavoastră',
+        yourReview: 'Recenzia dumneavoastră',
+        namePlaceholder: 'Introduceți numele dumneavoastră',
+        reviewPlaceholder: 'Spuneți-ne despre experiența dumneavoastră...',
+        submitReview: 'Trimite recenzia',
+        errorSubmit: 'Eroare la trimiterea recenziei',
+        submitting: 'Se trimite...',
+        cancel: 'Anulează',
+        reviewSubmittedSuccessfully: 'Recenzia a fost trimisă cu succes!'
+      },
+      contactPage: {
+        title: 'Contactați-ne',
+        subtitle: 'Suntem aici pentru a vă ajuta cu toate nevoile dvs. de detailing și styling auto',
+        address: 'Adresă',
+        phone: 'Telefon',
+        email: 'Email',
+        hours: 'Program',
+        hoursText: 'Luni - Vineri: 9:00 - 18:00\nSâmbătă: 9:00 - 16:00\nDuminică: Închis',
+        hoursWeekdays: 'Luni - Vineri: 09:00 - 20:00',
+        hoursSaturday: 'Sâmbătă: 10:00 - 17:00',
+        hoursSunday: 'Duminică: Închis',
+        name: 'Nume',
+        subject: 'Subiect',
+        message: 'Mesaj',
+        send: 'Trimite',
+        sending: 'Se trimite...',
+        selectSubject: 'Selectați subiectul',
+        generalInquiry: 'Întrebare Generală',
+        bookingInquiry: 'Întrebare despre Programare',
+        servicesInquiry: 'Întrebare despre Servicii',
+        pricingInquiry: 'Întrebare despre Prețuri',
+        other: 'Altele',
+        messagePlaceholder: 'Tastați mesajul dvs. aici...'
+      },
+      subscribeNewsletter: 'Abonează-mă la newsletter',
+      newsletterSubscribeSuccess: 'Vă mulțumim pentru abonare!'
+    };
+    if (!store.ro || !store.ro.translation) {
+      i18n.addResourceBundle('ro', 'translation', roBundle, true, true);
+      console.log('i18n: injected Romanian bundle');
+    }
   })
   .catch((error) => {
     console.error('i18n initialization failed:', error);
