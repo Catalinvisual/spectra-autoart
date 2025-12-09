@@ -116,6 +116,15 @@
   margin: 0;
 }
 
+.hours-lines {
+  color: #e0e0e0;
+  line-height: 1.6;
+}
+
+.hours-line {
+  margin: 0;
+}
+
 /* Contact Form */
 .contact-form-container {
   background: rgba(18, 22, 29, 0.6);
@@ -317,6 +326,9 @@
     text-align: center;
     padding: 0;
     
+  }
+  .hours-line {
+    display: block;
   }
   
 }

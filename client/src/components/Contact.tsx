@@ -81,7 +81,11 @@ const Contact: React.FC = () => {
               <div className="info-icon">🕒</div>
               <div className="info-content">
                 <h3>{t('contactPage.hours')}</h3>
-                <p>{t('contactPage.hoursText')}</p>
+                <div className="hours-lines">
+                  <div className="hours-line">{t('contactPage.hoursWeekdays')}</div>
+                  <div className="hours-line">{t('contactPage.hoursSaturday')}</div>
+                  <div className="hours-line">{t('contactPage.hoursSunday')}</div>
+                </div>
               </div>
             </div>
           </div>
