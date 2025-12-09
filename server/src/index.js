@@ -8,6 +8,9 @@ import { fileURLToPath } from 'url'
 // LOG STARTUP DETALIAT PENTRU DEBUGGING CONTAINER
 console.log('🚀 SERVER STARTUP - Container Debug Log - Deployment Fix')
 console.log('📍 Current directory:', process.cwd())
+if (!process.env.NODE_ENV && (process.env.RAILWAY_PROJECT_ID || process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_STATIC_URL)) {
+  process.env.NODE_ENV = 'production'
+}
 console.log('🔧 NODE_ENV:', process.env.NODE_ENV)
 console.log('📋 Process arguments:', process.argv)
 
