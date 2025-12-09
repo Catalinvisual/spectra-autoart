@@ -133,7 +133,7 @@ const resources = {
         pricesResponse: 'Voor een exacte prijs, open de Booking Wizard, kies uw carrosserietype en gewenste diensten. Het totaal wordt automatisch berekend vóór bevestiging.',
         bookingsResponse: 'U kunt een afspraak maken via de Booking Wizard. Kies een beschikbare datum en tijd en bevestig met uw gegevens.',
         servicesResponse: 'Wij bieden interieur/exterieur detailing, ambient lighting, starlight ceiling, chrome delete, trim wrapping, polish en ceramic protection.',
-        hoursResponse: 'Openingstijden: Ma–Vr 9:00–18:00, Za 10:00–16:00. Voor afspraken buiten deze tijden, neem contact met ons op.',
+        hoursResponse: 'Openingstijden: Ma–Vr 9:00–20:00, Za 10:00–17:00. Voor afspraken buiten deze tijden, neem contact met ons op.',
         fallback: 'Bedankt voor uw vraag! Voor een precies antwoord, gebruikt u de Booking Wizard of beschrijf uw verzoek gedetailleerder.'
       },
       adminPanel: 'Admin Paneel',
@@ -585,7 +585,7 @@ const resources = {
           emailAppointmentsValue: 'bookings@spectraautoart.nl',
           emailSupportValue: 'support@spectraautoart.nl',
           whatsappValue: '+31 6 12345678',
-          availabilityValue: 'Maandag t/m zaterdag, 9:00 - 18:00 uur',
+        availabilityValue: 'Maandag–Vrijdag: 9:00 – 20:00 uur; Zaterdag: 10:00 – 17:00 uur',
           instagramValue: '@spectraautoart',
           facebookValue: 'Spectra AutoArt',
           linkedinValue: 'Spectra AutoArt'
@@ -601,8 +601,8 @@ const resources = {
           saturday: 'Zaterdag',
           sunday: 'Zondag',
           closed: 'Gesloten',
-          hoursValue: '9:00 - 18:00 uur',
-          saturdayHours: '9:00 - 16:00 uur',
+          hoursValue: '9:00 - 20:00 uur',
+          saturdayHours: '10:00 - 17:00 uur',
           note: 'Let op',
           noteText: 'Buiten openingstijden zijn afspraken op afspraak mogelijk. Neem contact op voor de mogelijkheden.'
         },
@@ -1281,7 +1281,7 @@ const resources = {
         pricesResponse: 'For pricing information, it\'s best to schedule an appointment for a free consultation.',
         bookingsResponse: 'You can easily book online through our website!',
         servicesResponse: 'We offer various detailing and styling services. Check our website for more details.',
-        hoursResponse: 'We are open Monday to Friday from 9:00 AM to 6:00 PM and Saturday from 9:00 AM to 4:00 PM.'
+        hoursResponse: 'We are open Monday to Friday from 9:00 AM to 8:00 PM and Saturday from 10:00 AM to 5:00 PM.'
       },
       
       // Footer translations
@@ -1877,7 +1877,7 @@ const resources = {
           emailAppointmentsValue: 'bookings@spectraautoart.nl',
           emailSupportValue: 'support@spectraautoart.nl',
           whatsappValue: '+31 6 12345678',
-          availabilityValue: 'Monday through Saturday, 9:00 AM - 6:00 PM',
+        availabilityValue: 'Monday–Friday: 9:00 AM – 8:00 PM; Saturday: 10:00 AM – 5:00 PM',
           instagramValue: '@spectraautoart',
           facebookValue: 'Spectra AutoArt',
           linkedinValue: 'Spectra AutoArt'
@@ -1893,8 +1893,8 @@ const resources = {
           saturday: 'Saturday',
           sunday: 'Sunday',
           closed: 'Closed',
-          hoursValue: '9:00 AM - 6:00 PM',
-          saturdayHours: '9:00 AM - 4:00 PM',
+          hoursValue: '9:00 AM - 8:00 PM',
+          saturdayHours: '10:00 AM - 5:00 PM',
           note: 'Note',
           noteText: 'Appointments outside opening hours are available by arrangement. Please contact us for possibilities.'
         },
@@ -2276,7 +2276,7 @@ const resources = {
         pricesResponse: 'Para información de precios, es mejor programar una cita para una consulta gratuita.',
         bookingsResponse: '¡Puedes reservar fácilmente en línea a través de nuestro sitio web!',
         servicesResponse: 'Ofrecemos varios servicios de detailing y estilizado. Revisa nuestro sitio web para más detalles.',
-        hoursResponse: 'Estamos abiertos de lunes a viernes de 9:00 AM a 6:00 PM y los sábados de 9:00 AM a 4:00 PM.'
+        hoursResponse: 'Estamos abiertos de lunes a viernes de 9:00 AM a 8:00 PM y los sábados de 10:00 AM a 5:00 PM.'
       },
       
       // Footer translations
@@ -2714,7 +2714,7 @@ const resources = {
           emailAppointmentsValue: 'bookings@spectraautoart.nl',
           emailSupportValue: 'support@spectraautoart.nl',
           whatsappValue: '+31 6 12345678',
-          availabilityValue: 'De lunes a sábado, 9:00 - 18:00 horas',
+        availabilityValue: 'Lunes–Viernes: 9:00 – 20:00; Sábado: 10:00 – 17:00',
           instagramValue: '@spectraautoart',
           facebookValue: 'Spectra AutoArt',
           linkedinValue: 'Spectra AutoArt'
@@ -2730,8 +2730,8 @@ const resources = {
           saturday: 'Sábado',
           sunday: 'Domingo',
           closed: 'Cerrado',
-          hoursValue: '9:00 - 18:00 horas',
-          saturdayHours: '9:00 - 16:00 horas',
+          hoursValue: '9:00 - 20:00 horas',
+          saturdayHours: '10:00 - 17:00 horas',
           note: 'Nota',
           noteText: 'Las citas fuera del horario de atención están disponibles bajo previa cita. Por favor contáctenos para posibilidades.'
         },
@@ -3121,7 +3121,7 @@ const resources = {
         pricesResponse: 'Aby uzyskać informacje o cenach, najlepiej umówić się na bezpłatną konsultację.',
         bookingsResponse: 'Możesz łatwo zarezerwować online przez naszą stronę internetową!',
         servicesResponse: 'Oferujemy różne usługi detailingu i stylizacji. Sprawdź naszą stronę internetową, aby uzyskać więcej informacji.',
-        hoursResponse: 'Jesteśmy otwarci od poniedziałku do piątku od 9:00 do 18:00 i w soboty od 9:00 do 16:00.'
+        hoursResponse: 'Jesteśmy otwarci od poniedziałku do piątku od 9:00 do 20:00 i w soboty od 10:00 do 17:00.'
       },
       
       // Footer translations
@@ -3555,7 +3555,7 @@ const resources = {
           emailAppointmentsValue: 'bookings@spectraautoart.nl',
           emailSupportValue: 'support@spectraautoart.nl',
           whatsappValue: '+31 6 12345678',
-          availabilityValue: 'Poniedziałek do soboty, 9:00 - 18:00',
+        availabilityValue: 'Poniedziałek–Piątek: 9:00 – 20:00; Sobota: 10:00 – 17:00',
           instagramValue: '@spectraautoart',
           facebookValue: 'Spectra AutoArt',
           linkedinValue: 'Spectra AutoArt'
@@ -3571,8 +3571,8 @@ const resources = {
           saturday: 'Sobota',
           sunday: 'Niedziela',
           closed: 'Zamknięte',
-          hoursValue: '9:00 - 18:00',
-          saturdayHours: '9:00 - 16:00',
+          hoursValue: '9:00 - 20:00',
+          saturdayHours: '10:00 - 17:00',
           note: 'Uwaga',
           noteText: 'Wizyty poza godzinami otwarcia są dostępne po wcześniejszym uzgodnieniu. Prosimy o kontakt w celu omówienia możliwości.'
         },
@@ -4061,7 +4061,7 @@ const resources = {
         pricesResponse: 'Pentru informații despre prețuri, cel mai bine este să programați o întâlnire pentru o consultație gratuită.',
         bookingsResponse: 'Vă puteți programa cu ușurință online prin intermediul site-ului nostru web!',
         servicesResponse: 'Oferim diverse servicii de detailing și styling. Verificați site-ul nostru web pentru mai multe detalii.',
-        hoursResponse: 'Suntem deschiși de luni până vineri de la 9:00 la 18:00 și sâmbăta de la 9:00 la 16:00.'
+        hoursResponse: 'Suntem deschiși de luni până vineri de la 9:00 la 20:00 și sâmbăta de la 10:00 la 17:00.'
       },
       
 
@@ -4488,7 +4488,7 @@ const resources = {
           emailAppointmentsValue: 'bookings@spectraautoart.nl',
           emailSupportValue: 'support@spectraautoart.nl',
           whatsappValue: '+31 6 12345678',
-          availabilityValue: 'Luni până sâmbătă, 9:00 - 18:00',
+        availabilityValue: 'Luni–Vineri: 09:00 – 20:00; Sâmbătă: 10:00 – 17:00',
           instagramValue: '@spectraautoart',
           facebookValue: 'Spectra AutoArt',
           linkedinValue: 'Spectra AutoArt'
@@ -4504,8 +4504,8 @@ const resources = {
           saturday: 'Sâmbătă',
           sunday: 'Duminică',
           closed: 'Închis',
-          hoursValue: '9:00 - 18:00',
-          saturdayHours: '9:00 - 16:00',
+          hoursValue: '09:00 - 20:00',
+          saturdayHours: '10:00 - 17:00',
           note: 'Notă',
           noteText: 'Programările în afara orelor de lucru sunt disponibile prin aranjament. Vă rugăm să ne contactați pentru posibilități.'
         },
