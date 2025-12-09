@@ -335,14 +335,14 @@ const startServer = async () => {
     console.log(`🔥 RAILWAY_DEBUG: http://${host}:${port}/health`)
     console.log(`🔥 RAILWAY_DEBUG: http://${host}:${port}/debug`)
     
-    const server = app.listen(port, host, () => {
+    const server = app.listen(port, () => {
       clearTimeout(startupTimeout) // Stop safety timeout
       serverReady = true // Mark server as ready for healthchecks
       console.log('🔥 RAILWAY_DEBUG: SERVER SUCCESSFULLY STARTED!')
-      console.log(`🔥 RAILWAY_DEBUG: Listening on ${host}:${port}`)
-      console.log(`✅ Server Spectra AutoArt STARTED SUCCESSFULLY on ${host}:${port}`)
-      console.log(`🏥 Healthcheck available at: http://${host}:${port}/health`)
-      console.log(`🏓 Ping healthcheck available at: http://${host}:${port}/ping`)
+      console.log(`🔥 RAILWAY_DEBUG: Listening on 0.0.0.0:${port}`)
+      console.log(`✅ Server Spectra AutoArt STARTED SUCCESSFULLY on 0.0.0.0:${port}`)
+      console.log(`🏥 Healthcheck available at: http://0.0.0.0:${port}/health`)
+      console.log(`🏓 Ping healthcheck available at: http://0.0.0.0:${port}/ping`)
       console.log(`🔄 Server ready state: ${serverReady}`)
       
       // Test the healthcheck endpoints immediately
