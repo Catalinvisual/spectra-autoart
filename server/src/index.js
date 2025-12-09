@@ -199,9 +199,12 @@ app.use(cors({
     process.env.RAILWAY_STATIC_URL
   ].filter(Boolean),
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma', 'Expires', 'X-Requested-With']
 }))
+
+// Handle CORS preflight for all routes
+app.options('*', cors())
 
 app.use(express.json({ limit: '1mb' }))
 app.use(express.urlencoded({ extended: true }))

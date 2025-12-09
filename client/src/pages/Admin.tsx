@@ -8,6 +8,7 @@ import { useToast } from '../contexts/ToastContext'
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal'
 import './Admin.css'
 import i18n from '../i18n'
+import { useLanguage } from '../contexts/LanguageContext'
 
 interface Booking {
   id: string
@@ -94,8 +95,9 @@ interface VehicleService {
 
 const Admin: React.FC = () => {
   const { t, i18n } = useTranslation()
+  const { currentLanguage, setLanguage } = useLanguage()
   const navigate = useNavigate()
-  const { showSuccess, showError, showInfo } = useToast()
+  const toast = useToast()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [bookingToDelete, setBookingToDelete] = useState<string | null>(null)
@@ -135,7 +137,7 @@ const Admin: React.FC = () => {
       
     } catch (error) {
       console.error('Login error:', error)
-      showError(t('admin.loginFailed'))
+      toast.showError(t('admin.loginFailed'))
     } finally {
       setLoading(false)
     }
@@ -159,12 +161,12 @@ const Admin: React.FC = () => {
     if (bookingToDelete) {
       try {
         await adminAPI.deleteBooking(bookingToDelete)
-        showSuccess(t('admin.bookingDeleted'))
+        toast.showSuccess(t('admin.bookingDeleted'))
         // Refresh bookings list after successful deletion
         setBookingsRefreshKey(prev => prev + 1)
       } catch (error) {
         console.error('Error deleting booking:', error)
-        showError(t('admin.errorDeletingBooking'))
+        toast.showError(t('admin.errorDeletingBooking'))
       } finally {
         setShowDeleteModal(false)
         setBookingToDelete(null)
@@ -188,12 +190,12 @@ const Admin: React.FC = () => {
     try {
       // În producție, acesta ar trebui să trimită un email de resetare
       // Pentru moment, afișăm instrucțiuni de recuperare
-      showInfo(t('passwordResetInstructions') || t('admin.passwordResetInstructions') || 'Dacă ai uitat parola, contactează administratorul sistemului.')
+      toast.showInfo(t('passwordResetInstructions') || t('admin.passwordResetInstructions') || 'Dacă ai uitat parola, contactează administratorul sistemului.')
       setShowResetForm(false)
       setResetEmail('')
     } catch (error) {
       console.error('Password reset error:', error)
-      showError(t('passwordResetFailed') || t('admin.passwordResetFailed') || 'Resetarea parolei a eșuat.')
+      toast.showError(t('passwordResetFailed') || t('admin.passwordResetFailed') || 'Resetarea parolei a eșuat.')
     } finally {
       setLoading(false)
     }
@@ -210,8 +212,8 @@ const Admin: React.FC = () => {
         <div className="login-container">
           <div className="login-header">
             <h2>{t('adminPanel')}</h2>
-            <button onClick={handleGoHome} className="home-btn" title="Go to Home">
-              ← Home
+            <button onClick={handleGoHome} className="home-btn" title={t('goHome')}>
+              ← {t('home')}
             </button>
           </div>
           
@@ -237,12 +239,12 @@ const Admin: React.FC = () => {
                   />
                 </div>
                 <button type="submit" disabled={loading} className="btn-primary">
-                  {loading ? 'Logging in...' : t('login')}
+                  {loading ? t('loggingIn') : t('login')}
                 </button>
               </form>
               <div className="login-footer">
                 <button onClick={handleForgotPassword} className="forgot-password-btn">
-                  Forgot Password?
+                  {t('forgotPassword')}
                 </button>
               </div>
             </>
@@ -281,11 +283,11 @@ const Admin: React.FC = () => {
         <h1>{t('adminPanel')}</h1>
         <div className="header-actions">
           <button onClick={handleGoHome} className="home-btn">
-            🏠 Home
+            🏠 {t('home')}
           </button>
           <select 
-            value={i18n.language} 
-            onChange={(e) => i18n.changeLanguage(e.target.value)}
+            value={currentLanguage} 
+            onChange={(e) => setLanguage(e.target.value)}
             className="language-selector"
           >
             <option value="nl">Nederlands</option>
@@ -303,7 +305,7 @@ const Admin: React.FC = () => {
             className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
-            {t('dashboard')}
+            {t('admin.dashboard')}
           </button>
           <button 
             className={`nav-btn ${activeTab === 'bookings' ? 'active' : ''}`}
@@ -439,6 +441,7 @@ interface BookingsManagementProps {
 
 const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking, refreshKey, isAuthenticated }) => {
   const { t } = useTranslation()
+  const toast = useToast()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
@@ -463,6 +466,15 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
       const response = await adminAPI.getBookings()
       
       // Transform server data to match frontend structure
+      const normalizeStatus = (value: string) => {
+        const v = String(value || '').toLowerCase().trim()
+        if (!v) return 'pending'
+        if (['pending', 'în așteptare', 'in asteptare', 'in așteptare'].includes(v)) return 'pending'
+        if (['confirmed', 'confirmat', 'bevestigd'].includes(v)) return 'confirmed'
+        if (['cancelled', 'anulat', 'geannuleerd'].includes(v)) return 'cancelled'
+        if (['completed', 'finalizat', 'afgerond'].includes(v)) return 'completed'
+        return 'pending'
+      }
       const transformedBookings = response.data.map((booking: any) => {
         return {
           id: booking.id,
@@ -478,7 +490,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
             name: service.name || ''
           })) : (typeof booking.services === 'string' ? [{ id: booking.services, name: booking.services }] : []),
           total: typeof booking.total === 'string' ? parseFloat(booking.total) : booking.total || 0,
-          status: booking.status || 'pending',
+          status: normalizeStatus(booking.status),
           make: booking.make || booking.vehicle_make || '',
           model: booking.model || booking.vehicle_model || '',
           body: booking.body || booking.vehicle_body || ''
@@ -554,6 +566,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'completed': return '#2ecc71'
       case 'confirmed': return '#00e5ff'
       case 'cancelled': return '#ff4757'
       case 'pending':
@@ -563,6 +576,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
 
   const getStatusIcon = (status: string) => {
     switch (status) {
+      case 'completed': return '✅'
       case 'confirmed': return '' // Removed green check icon
       case 'cancelled': return '❌'
       case 'pending':
@@ -612,11 +626,13 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     if (!editingBooking) return
     
     try {
-      await adminAPI.updateBooking(editingBooking.id, editingBooking)
-      loadBookings()
+      await adminAPI.updateBooking(editingBooking.id, { status: editingBooking.status })
+      setBookings(prev => prev.map(b => b.id === editingBooking.id ? { ...b, status: editingBooking.status } : b))
+      toast.showSuccess(t('admin.status') + ' ' + t(`admin.${editingBooking.status}`))
       closeEditModal()
     } catch (error) {
       console.error('Error updating booking:', error)
+      toast.showError(t('admin.status') + ' ' + t('admin.updateFailed'))
     }
   }
 
@@ -644,7 +660,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
           <div key={booking.id} className="booking-card">
             <div className="booking-card-header">
               <div className="booking-status" style={{ backgroundColor: getStatusColor(booking.status) }}>
-                {getStatusIcon(booking.status)} {t(booking.status) || booking.status}
+                {getStatusIcon(booking.status)} {t(`admin.${booking.status}`) || t(booking.status) || booking.status}
               </div>
               <div className="booking-datetime">
                 <div className="booking-date">
@@ -712,7 +728,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
           <div>
             <div className="modal-header">
               <h2>{t('admin.bookingDetails')}</h2>
-              <button onClick={closeDetailsModal} className="close-btn">×</button>
+              <button onClick={closeDetailsModal} className="close-btn" aria-label={t('close')}>×</button>
             </div>
             <div className="modal-body">
               <div className="detail-section">
@@ -787,7 +803,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
         <PortalModal isOpen={showEditModal} onClose={closeEditModal} contentClass="modal-content edit-modal-content">
             <div className="modal-header">
               <h2>{t('admin.editBooking')}</h2>
-              <button onClick={closeEditModal} className="close-btn">×</button>
+              <button onClick={closeEditModal} className="close-btn" aria-label={t('close')}>×</button>
             </div>
             <div className="modal-body">
               <form onSubmit={(e) => { e.preventDefault(); saveBookingEdit(); }}>
@@ -828,7 +844,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
                   <label>{t('admin.date')}:</label>
                   <input
                     type="date"
-                    value={editingBooking.date || ''}
+                    value={(editingBooking.date || '').substring(0, 10)}
                     onChange={(e) => setEditingBooking({
                       ...editingBooking,
                       date: e.target.value
@@ -839,7 +855,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
                   <label>{t('admin.time') || 'Ora'}:</label>
                   <input
                     type="time"
-                    value={editingBooking.time || ''}
+                    value={(editingBooking.time || '').replace(/^'+/, '')}
                     onChange={(e) => setEditingBooking({
                       ...editingBooking,
                       time: e.target.value
@@ -855,9 +871,10 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
                       status: e.target.value
                     })}
                   >
-                    <option value="pending">{t('pending')}</option>
-                    <option value="confirmed">{t('confirmed')}</option>
-                    <option value="cancelled">{t('cancelled')}</option>
+                    <option value="pending">{t('admin.pending')}</option>
+                    <option value="confirmed">{t('admin.confirmed')}</option>
+                    <option value="cancelled">{t('admin.cancelled')}</option>
+                    <option value="completed">{t('admin.completed')}</option>
                   </select>
                 </div>
                 <div className="form-actions">
@@ -882,7 +899,7 @@ interface VehicleServicesManagementProps {
 
 const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ isAuthenticated }) => {
   const { t } = useTranslation()
-  const { showSuccess, showError } = useToast()
+  const toast = useToast()
   const [vehicleServices, setVehicleServices] = useState<VehicleService[]>([])
   const [bodyTypes, setBodyTypes] = useState<BodyType[]>([])
   const [showForm, setShowForm] = useState(false)
@@ -971,7 +988,7 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
       setVehicleServices(response.data)
     } catch (error) {
       console.error('Error loading vehicle services:', error)
-      showError(t('admin.errorLoadingVehicleServices'))
+      toast.showError(t('admin.errorLoadingVehicleServices'))
     }
   }
 
@@ -1008,7 +1025,7 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
       setBodyTypes(validBodyTypes)
     } catch (error) {
       console.error('Error loading body types:', error)
-      showError(t('admin.errorLoadingBodyTypes'))
+      toast.showError(t('admin.errorLoadingBodyTypes'))
     }
   }
 
@@ -1042,11 +1059,11 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
       
       if (editingService) {
         await adminAPI.updateVehicleService(editingService.id, serviceData)
-        showSuccess(t('admin.vehicleServiceUpdated'))
+        toast.showSuccess(t('admin.vehicleServiceUpdated'))
       } else {
         // Use the new translation-enabled endpoint for creating services
         await adminAPI.createVehicleServiceWithTranslation(serviceData)
-        showSuccess(t('admin.vehicleServiceCreatedWithTranslation'))
+        toast.showSuccess(t('admin.vehicleServiceCreatedWithTranslation'))
       }
       
       setShowForm(false)
@@ -1055,7 +1072,7 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
       loadVehicleServices()
     } catch (error) {
       console.error('Error saving vehicle service:', error)
-      showError(t('admin.errorSavingVehicleService'))
+      toast.showError(t('admin.errorSavingVehicleService'))
     }
   }
 
@@ -1064,10 +1081,10 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
     try {
       if (editingBodyType) {
         await adminAPI.updateBodyType(editingBodyType.id, bodyTypeFormData)
-        showSuccess(t('admin.bodyTypeUpdated'))
+        toast.showSuccess(t('admin.bodyTypeUpdated'))
       } else {
         await adminAPI.createBodyType(bodyTypeFormData)
-        showSuccess(t('admin.bodyTypeCreated'))
+        toast.showSuccess(t('admin.bodyTypeCreated'))
       }
       
       setShowBodyTypesForm(false)
@@ -1076,7 +1093,7 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
       loadBodyTypes()
     } catch (error) {
       console.error('Error saving body type:', error)
-      showError(t('admin.errorSavingBodyType'))
+      toast.showError(t('admin.errorSavingBodyType'))
     }
   }
 
@@ -1233,19 +1250,19 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
     try {
       if (deleteModalState.type === 'vehicleService') {
         await adminAPI.deleteVehicleService(deleteModalState.itemId)
-        showSuccess(t('admin.vehicleServiceDeleted'))
+        toast.showSuccess(t('admin.vehicleServiceDeleted'))
         loadVehicleServices()
       } else if (deleteModalState.type === 'bodyType') {
         await adminAPI.deleteBodyType(deleteModalState.itemId)
-        showSuccess(t('admin.bodyTypeDeleted'))
+        toast.showSuccess(t('admin.bodyTypeDeleted'))
         loadBodyTypes()
       }
     } catch (error) {
       console.error(`Error deleting ${deleteModalState.type}:`, error)
       if (deleteModalState.type === 'vehicleService') {
-        showError(t('admin.errorDeletingVehicleService'))
+        toast.showError(t('admin.errorDeletingVehicleService'))
       } else {
-        showError(t('admin.errorDeletingBodyType'))
+        toast.showError(t('admin.errorDeletingBodyType'))
       }
     } finally {
       setDeleteModalState({
@@ -1363,7 +1380,7 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
           <div>
             <div className="modal-header">
               <h3>{editingService ? t('admin.editVehicleService') : t('admin.addVehicleService')}</h3>
-              <button className="close-btn" type="button" onClick={() => { setShowForm(false); setEditingService(null); resetForm(); }}>×</button>
+              <button className="close-btn" type="button" aria-label={t('close')} onClick={() => { setShowForm(false); setEditingService(null); resetForm(); }}>×</button>
             </div>
             <div className="modal-body">
             <form onSubmit={handleSubmit}>
@@ -1503,7 +1520,11 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
       {showBodyTypesForm && (
         <PortalModal isOpen={showBodyTypesForm} onClose={() => { setShowBodyTypesForm(false); setEditingBodyType(null); resetBodyTypeForm(); }} overlayClass="services-modal vehicle-services-management" contentClass="modal-content services-modal-content">
           <div>
-            <h3>{editingBodyType ? t('admin.editBodyType') : t('admin.addBodyType')}</h3>
+            <div className="modal-header">
+              <h3>{editingBodyType ? t('admin.editBodyType') : t('admin.addBodyType')}</h3>
+              <button className="close-btn" type="button" aria-label={t('close')} onClick={() => { setShowBodyTypesForm(false); setEditingBodyType(null); resetBodyTypeForm(); }}>×</button>
+            </div>
+            <div className="modal-body">
             <form onSubmit={handleBodyTypeSubmit}>
               <div className="form-group">
                 <label>{t('admin.key')}</label>
@@ -1559,6 +1580,7 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </PortalModal>
       )}
@@ -1688,7 +1710,7 @@ interface GalleryManagementProps {
 
 const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }) => {
   const { t } = useTranslation()
-  const { showSuccess, showError, showWarning } = useToast()
+  const toast = useToast()
   const [images, setImages] = useState<GalleryImage[]>([])
   const [loading, setLoading] = useState(false)
   const [newImage, setNewImage] = useState<Omit<GalleryImage, 'id'>>({
@@ -1767,7 +1789,7 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
     e.preventDefault()
     
     if (!selectedFile && !newImage.url) {
-      showWarning(t('admin.pleaseSelectImage'))
+      toast.showWarning(t('admin.pleaseSelectImage'))
       return
     }
 
@@ -1817,10 +1839,10 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
         createdAt: new Date().toISOString()
       }
       setImages(prevImages => [...prevImages, uploadedImageData])
-      showSuccess(t('admin.imageAdded'))
+      toast.showSuccess(t('admin.imageAdded'))
     } catch (error) {
       console.error('Error adding image:', error)
-      showError(t('admin.failedToAddImage'))
+      toast.showError(t('admin.failedToAddImage'))
     } finally {
       setLoading(false)
     }
@@ -1838,10 +1860,10 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
       // Actualizează local lista de imagini fără a reîncărca tot
       setImages(prevImages => prevImages.filter(img => img.id !== imageId))
       
-      showSuccess(t('admin.imageDeleted'))
+      toast.showSuccess(t('admin.imageDeleted'))
     } catch (error) {
       console.error('Error deleting image:', error)
-      showError(t('admin.failedToDeleteImage'))
+      toast.showError(t('admin.failedToDeleteImage'))
       
       // În caz de eroare, reîncarcă lista completă
       await loadImages()
@@ -1857,7 +1879,7 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
       // Găsește imaginea curentă
       const image = images.find(img => img.id === imageId)
       if (!image) {
-        showError(t('admin.imageNotFound'))
+        toast.showError(t('admin.imageNotFound'))
         return
       }
       
@@ -1872,7 +1894,7 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
         // Folosește noul endpoint de update în loc de ștergere și re-upload
         await adminAPI.updateImage(imageId, { active: !currentStatus })
         
-        showSuccess(t('admin.imageStatusUpdated'))
+        toast.showSuccess(t('admin.imageStatusUpdated'))
       } catch (error) {
         console.error('Error updating image status:', error)
         // Revenire la statusul anterior în caz de eroare
@@ -1881,11 +1903,11 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
             img.id === imageId ? { ...img, active: currentStatus } : img
           )
         )
-        showError(t('admin.failedToUpdateImageStatus'))
+        toast.showError(t('admin.failedToUpdateImageStatus'))
       }
     } catch (error) {
       console.error('Error in toggleImageStatus:', error)
-      showError(t('admin.failedToUpdateImageStatus'))
+      toast.showError(t('admin.failedToUpdateImageStatus'))
     } finally {
       setLoading(false)
     }
@@ -1914,7 +1936,7 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
                 onClick={() => document.getElementById('imageFileInput')?.click()}
                 className="upload-button"
               >
-                Choose File
+                {t('admin.chooseImageFile')}
               </button>
               
               {/* Preview imagine */}
@@ -1955,7 +1977,7 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
               <option value="detailing-exterior">{t('admin.detailingExterior')}</option>
               <option value="ambient-lights">{t('admin.ambientLights')}</option>
               <option value="starlight-ceiling">{t('admin.starlightCeiling')}</option>
-              <option value="chrome-delete">Chrome Delete</option>
+              <option value="chrome-delete">{t('admin.chromeDelete')}</option>
               <option value="trim-wrapping">{t('admin.trimWrapping')}</option>
               <option value="polish-auto">{t('admin.polishAuto')}</option>
               <option value="ceramic-protection">{t('admin.ceramicProtection')}</option>
@@ -1982,7 +2004,9 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
 
       {/* Existing Images */}
       <div className="existing-images">
-        <h3>{t('admin.existingImages')} ({images.length})</h3>
+        <h3>
+          {t('admin.existingImages')} ({images.length})
+        </h3>
         
         {loading ? (
           <div className="loading">{t('admin.loadingImages')}</div>
@@ -1998,7 +2022,7 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
                   className="gallery-thumbnail"
                 />
                 <div className="image-info">
-                  <div className="image-category">{image.category}</div>
+                  <div className="image-category">{t(`galleryPage.categories.${image.category}`)}</div>
                 </div>
                 <div className="image-actions">
                   <button 
@@ -2030,7 +2054,7 @@ interface NewsletterManagementProps {
 
 const NewsletterManagement: React.FC<NewsletterManagementProps> = ({ isAuthenticated }) => {
   const { t } = useTranslation()
-  const { showSuccess, showError, showWarning } = useToast()
+  const toast = useToast()
   const [subscribers, setSubscribers] = useState<Subscriber[]>([])
   const [newsletterSubject, setNewsletterSubject] = useState('')
   const [newsletterContent, setNewsletterContent] = useState('')
@@ -2054,12 +2078,12 @@ const NewsletterManagement: React.FC<NewsletterManagementProps> = ({ isAuthentic
 
   const sendNewsletter = async () => {
     if (!newsletterSubject.trim()) {
-      showWarning(t('admin.pleaseEnterNewsletterSubject'))
+      toast.showWarning(t('admin.pleaseEnterNewsletterSubject'))
       return
     }
 
     if (!newsletterContent.trim() && !newsletterHTML.trim()) {
-      showWarning(t('admin.pleaseEnterNewsletterContent'))
+      toast.showWarning(t('admin.pleaseEnterNewsletterContent'))
       return
     }
 
@@ -2070,13 +2094,13 @@ const NewsletterManagement: React.FC<NewsletterManagementProps> = ({ isAuthentic
           subject: newsletterSubject,
           content: newsletterHTML || `<div style="font-family: Arial, sans-serif; line-height: 1.6;">${newsletterContent.replace(/\n/g, '<br>')}</div>`
         })
-        showSuccess(t('admin.newsletterSentSuccessfully'))
+        toast.showSuccess(t('admin.newsletterSentSuccessfully'))
         setNewsletterSubject('')
         setNewsletterContent('')
         setNewsletterHTML('')
       } catch (error) {
         console.error('Error sending newsletter:', error)
-        showError(t('admin.failedToSendNewsletter'))
+        toast.showError(t('admin.failedToSendNewsletter'))
       } finally {
         setSending(false)
       }

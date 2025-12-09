@@ -308,16 +308,22 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Nu există programări' })
     }
 
-    // Find the row by ID
-    const rowIndex = data.slice(1).findIndex(row => row[0] === id)
+    // Determine column indices based on headers
+    const headers = Array.isArray(data[0]) ? data[0] : []
+    const idIndex = headers.indexOf('ID') !== -1 ? headers.indexOf('ID') : 0
+    const statusIndex = headers.indexOf('Status') !== -1 ? headers.indexOf('Status') : 8
+
+    // Find the row by ID (flexible matching)
+    const targetId = String(id).trim()
+    const rowIndex = data.slice(1).findIndex(row => String(row[idIndex] || '').trim() === targetId)
     
     if (rowIndex === -1) {
       return res.status(404).json({ error: 'Programarea nu a fost găsită' })
     }
 
-    // Update the status in the row (status is in column 8)
+    // Update the status in the correct column
     const actualRowIndex = rowIndex + 1 // +1 to account for header row
-    data[actualRowIndex][8] = status
+    data[actualRowIndex][statusIndex] = status
 
     // Update the data in Google Sheets
     await GoogleSheetsService.updateData('Bookings', actualRowIndex + 1, data[actualRowIndex]) // +1 because Google Sheets is 1-indexed
@@ -325,6 +331,35 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     res.json({ success: true, message: 'Status updated successfully' })
   } catch (error) {
     console.error('Update booking error:', error)
+    res.status(500).json({ error: 'Failed to update booking status' })
+  }
+})
+
+// Support PUT for clients that cannot use PATCH (CORS or legacy)
+router.put('/bookings/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params
+    const { status } = req.body
+    const data = await GoogleSheetsService.getData('Bookings')
+    if (data.length <= 1) {
+      return res.status(404).json({ error: 'Nu există programări' })
+    }
+
+    const headers = Array.isArray(data[0]) ? data[0] : []
+    const idIndex = headers.indexOf('ID') !== -1 ? headers.indexOf('ID') : 0
+    const statusIndex = headers.indexOf('Status') !== -1 ? headers.indexOf('Status') : 8
+
+    const targetId = String(id).trim()
+    const rowIndex = data.slice(1).findIndex(row => String(row[idIndex] || '').trim() === targetId)
+    if (rowIndex === -1) {
+      return res.status(404).json({ error: 'Programarea nu a fost găsită' })
+    }
+    const actualRowIndex = rowIndex + 1
+    data[actualRowIndex][statusIndex] = status
+    await GoogleSheetsService.updateData('Bookings', actualRowIndex + 1, data[actualRowIndex])
+    res.json({ success: true, message: 'Status updated successfully' })
+  } catch (error) {
+    console.error('Update booking error (PUT):', error)
     res.status(500).json({ error: 'Failed to update booking status' })
   }
 })

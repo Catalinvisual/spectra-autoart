@@ -28,11 +28,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const initialLang = getInitialLanguage();
     if (!i18n.hasResourceBundle(initialLang, 'translation')) {
       const bundle = (resources as any)[initialLang]?.translation || {};
-      i18n.addResourceBundle(initialLang, 'translation', bundle, true, true);
+      // merge without overwriting existing keys
+      i18n.addResourceBundle(initialLang, 'translation', bundle, true, false);
     }
-    i18n.reloadResources([initialLang]).then(() => {
-      console.log('i18n resources reloaded for:', initialLang);
-    });
     if (initialLang !== i18n.language) {
       i18n.changeLanguage(initialLang).then(() => {
         setCurrentLanguage(initialLang);
@@ -49,10 +47,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       
       if (!i18n.hasResourceBundle(lang, 'translation')) {
         const bundle = (resources as any)[lang]?.translation || {};
-        i18n.addResourceBundle(lang, 'translation', bundle, true, true);
+        // merge without overwriting existing keys
+        i18n.addResourceBundle(lang, 'translation', bundle, true, false);
       }
-
-      await i18n.reloadResources([lang]);
       
       // Change i18next language (for static content)
       await i18n.changeLanguage(lang);

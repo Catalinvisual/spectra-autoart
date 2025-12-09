@@ -173,7 +173,7 @@ export const publicAPI = {
 export const adminAPI = {
   login: (credentials: { email: string; password: string }) => api.post('/admin/auth/login', credentials),
   getBookings: () => api.get('/admin/bookings'),
-  updateBooking: (id: string, data: any) => api.put(`/admin/bookings/${id}`, data),
+  updateBooking: (id: string, data: any) => api.patch(`/admin/bookings/${id}`, data),
   deleteBooking: (id: string) => api.delete(`/admin/bookings/${id}`),
 
   getVehicleServices: () => api.get('/admin/vehicle-services'),
