@@ -111,8 +111,11 @@ class GoogleSheetsService {
         this.doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEETS_SPREADSHEET_ID, serviceAccountAuth);
         await this.doc.loadInfo();
         
-        // Initialize spreadsheet structure if needed
-        await this.initializeSpreadsheetStructure();
+        try {
+          await this.initializeSpreadsheetStructure();
+        } catch (e) {
+          console.log('⚠️  Skipping spreadsheet structure initialization due to error, continuing in read-only mode');
+        }
         
         this.isInitialized = true;
         console.log('✅ Google Sheets service initialized successfully');
@@ -224,9 +227,17 @@ class GoogleSheetsService {
         try {
           // Try to load header row - this will fail if sheet is empty
           await sheet.loadHeaderRow();
+          const existing = sheet.headerValues || []
           
-          // If we get here, headers exist
-          console.log(`✅ Sheet ${config.sheetName} already has headers`);
+          // Append any missing columns to ensure new data fields are persisted
+          const missing = (config.columns || []).filter(col => !existing.includes(col))
+          if (missing.length > 0) {
+            const updatedHeaders = [...existing, ...missing]
+            await sheet.setHeaderRow(updatedHeaders)
+            console.log(`✅ Updated headers for ${config.sheetName}: appended ${missing.length} columns`)
+          } else {
+            console.log(`✅ Sheet ${config.sheetName} already has headers`)
+          }
         } catch (headerError) {
           // If loading headers fails, it means the sheet is empty
           console.log(`📝 Sheet ${config.sheetName} is empty, setting up headers...`);
@@ -238,7 +249,7 @@ class GoogleSheetsService {
       }
     } catch (error) {
       console.error('❌ Error initializing spreadsheet structure:', error);
-      throw error;
+      return false;
     }
   }
 
@@ -472,6 +483,42 @@ class GoogleSheetsService {
     }
   }
 
+  async ensureSheetColumns(sheetName, columns) {
+    try {
+      if (!this.isInitialized || !this.doc) {
+        throw new Error('Google Sheets service not properly initialized for ensuring columns');
+      }
+
+      try {
+        if (!this.doc.title) {
+          await this.doc.loadInfo();
+        }
+      } catch {
+        await this.doc.loadInfo();
+      }
+
+      const sheet = this.doc.sheetsByTitle[sheetName];
+      if (!sheet) {
+        throw new Error(`Sheet ${sheetName} not found`);
+      }
+
+      await sheet.loadHeaderRow();
+      const existing = sheet.headerValues || [];
+      const missing = (columns || []).filter(col => !existing.includes(col));
+      if (missing.length > 0) {
+        const updatedHeaders = [...existing, ...missing];
+        await sheet.setHeaderRow(updatedHeaders);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`✅ ensureSheetColumns: appended ${missing.length} columns to ${sheetName}`);
+        }
+      }
+      return true;
+    } catch (error) {
+      console.error(`❌ ensureSheetColumns error for ${sheetName}:`, error.message);
+      return false;
+    }
+  }
+
   async deleteData(sheetName, rowIndex) {
     try {
       // Force real Google Sheets operation - no more demo mode
@@ -521,13 +568,16 @@ class GoogleSheetsService {
     const activeIndex = headers.indexOf('Active');
 
     return data.slice(1)
-      .filter(row => !activeOnly || row[activeIndex] === 'true')
+      .filter(row => {
+        const val = row[activeIndex];
+        return !activeOnly || (String(val).toLowerCase() === 'true' || val === true);
+      })
       .map(row => ({
         id: row[0],
         name: row[nameIndex] || row[headers.indexOf('Name_NL')],
         description: row[descIndex] || row[headers.indexOf('Description_NL')],
         price: parseFloat(row[priceIndex]) || 0,
-        active: row[activeIndex] === 'true'
+        active: (String(row[activeIndex]).toLowerCase() === 'true' || row[activeIndex] === true)
       }));
   }
 
@@ -570,13 +620,13 @@ class GoogleSheetsService {
     const isActiveIndex = headers.indexOf('Is_Active');
 
     return data.slice(1)
-      .filter(row => row[isActiveIndex] === 'true')
+      .filter(row => (String(row[isActiveIndex]).toLowerCase() === 'true' || row[isActiveIndex] === true))
       .map(row => ({
         id: parseInt(row[idIndex]) || 0,
         key: row[keyIndex],
         name: row[nameIndex],
         sort_order: parseInt(row[sortOrderIndex]) || 0,
-        is_active: row[isActiveIndex] === 'true'
+        is_active: (String(row[isActiveIndex]).toLowerCase() === 'true' || row[isActiveIndex] === true)
       }))
       .sort((a, b) => a.sort_order - b.sort_order);
   }
@@ -699,7 +749,7 @@ class GoogleSheetsService {
         const bodyTypeKeyIdx = pricesHeaders.indexOf('Body_Type_Key');
         const bodyTypeIdIdx = pricesHeaders.indexOf('Body_Type_ID');
         const bodyTypeId = bodyTypeKeyIdx !== -1 ? row[bodyTypeKeyIdx] : (bodyTypeIdIdx !== -1 ? row[bodyTypeIdIdx] : null);
-        const isActive = row[pricesHeaders.indexOf('Is_Active')] === 'true' || row[pricesHeaders.indexOf('Is_Active')] === true;
+        const isActive = (String(row[pricesHeaders.indexOf('Is_Active')]).toLowerCase() === 'true' || row[pricesHeaders.indexOf('Is_Active')] === true);
         if (process.env.NODE_ENV !== 'production') {
           console.log(`DEBUG: Price row ${index + 1} - Service_ID: "${serviceId}", Body_Type: "${bodyTypeId}", Is_Active: ${isActive}`);
         }
@@ -750,7 +800,7 @@ class GoogleSheetsService {
         if (process.env.NODE_ENV !== 'production') {
           console.log('DEBUG: Checking Is_Active value:', isActive, 'type:', typeof isActive);
         }
-        return isActive === 'true' || isActive === true;
+        return (String(isActive).toLowerCase() === 'true' || isActive === true);
       });
     
     if (process.env.NODE_ENV !== 'production') {
@@ -907,7 +957,7 @@ class GoogleSheetsService {
             category: finalCategory,
             image_url: '',
             duration_minutes: parseInt(row[servicesHeaders.indexOf('Duration_Minutes')]) || 0,
-            is_active: row[servicesHeaders.indexOf('Is_Active')] === 'true' || row[servicesHeaders.indexOf('Is_Active')] === true,
+            is_active: (String(row[servicesHeaders.indexOf('Is_Active')]).toLowerCase() === 'true' || row[servicesHeaders.indexOf('Is_Active')] === true),
             prices: servicePrices
           };
         }

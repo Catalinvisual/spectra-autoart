@@ -618,34 +618,37 @@ router.post('/bookings', async (req, res) => {
     // This operation will continue in background after response is sent
     const saveBookingAsync = async () => {
       try {
-        // Format date and time to prevent Google Sheets auto-conversion
-        const formattedDate = `'${date}`;  // '2025-11-30 (appears as 2025-11-30)
-        const formattedTime = `'${time}`;  // '14:30 (appears as 14:30)
-        
-        const bookingData = [
-          bookingId,                    // ID (column 0)
-          user.name,                    // Name (column 1)
-          user.email,                   // Email (column 2)
-          user.phone,                   // Phone (column 3)
-          formattedDate,                // Date (column 4) - text format
-          formattedTime,              // Time (column 5) - text format
-          servicesListIds || servicesList, // Services (column 6) - prefer IDs
-          total.toString(),             // Total (column 7)
-          'confirmed',                  // Status (column 8)
-          new Date().toISOString()      // Created At (column 9)
-        ];
-        
-        console.log('💾 Saving booking to Google Sheets (async):', bookingData);
-        
-        const savePromise = GoogleSheetsService.appendDataWithFormats('Bookings', bookingData, {
-          4: 'TEXT', // Date column - force text format
-          5: 'TEXT'  // Time column - force text format
-        });
+        const formattedDate = `'${date}`;
+        const formattedTime = `'${time}`;
+
+        const data = await GoogleSheetsService.getData('Bookings')
+        const headers = Array.isArray(data[0]) ? data[0] : []
+        const idx = (name) => headers.indexOf(name)
+
+        const row = new Array(headers.length > 0 ? headers.length : 10).fill('')
+        if (idx('ID') !== -1) row[idx('ID')] = bookingId
+        if (idx('Name') !== -1) row[idx('Name')] = user.name
+        if (idx('Email') !== -1) row[idx('Email')] = user.email
+        if (idx('Phone') !== -1) row[idx('Phone')] = user.phone
+        if (idx('Date') !== -1) row[idx('Date')] = formattedDate
+        if (idx('Time') !== -1) row[idx('Time')] = formattedTime
+        if (idx('Services') !== -1) row[idx('Services')] = servicesListIds || servicesList
+        if (idx('Total') !== -1) row[idx('Total')] = total.toString()
+        if (idx('Status') !== -1) row[idx('Status')] = 'confirmed'
+        if (idx('Created At') !== -1) row[idx('Created At')] = new Date().toISOString()
+
+        if (idx('Make') !== -1) row[idx('Make')] = make || ''
+        if (idx('Model') !== -1) row[idx('Model')] = model || ''
+        if (idx('Type') !== -1) row[idx('Type')] = type || ''
+        if (idx('Body') !== -1) row[idx('Body')] = body || ''
+        if (idx('Locale') !== -1) row[idx('Locale')] = String(locale || 'nl').toLowerCase()
+
+        console.log('💾 Saving booking to Google Sheets (async) with mapped headers:', headers)
+        const savePromise = GoogleSheetsService.appendData('Bookings', row)
         await savePromise
         console.log('✅ Booking saved successfully to Google Sheets (async)')
       } catch (sheetsError) {
         console.error('❌ Google Sheets error (async):', sheetsError);
-        // Silent fail - don't affect user experience
       }
     };
     
@@ -654,19 +657,23 @@ router.post('/bookings', async (req, res) => {
       try {
         console.log('📧 Sending email notifications for booking (async):', bookingId);
         
-        // Check if email service is configured
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        // Check if email service is configured (Zoho/Gmail)
+        const hasUser = !!(process.env.ZOHO_SMTP_USER || process.env.EMAIL_USER);
+        const hasPass = !!(process.env.ZOHO_SMTP_PASS || process.env.EMAIL_PASS);
+        if (!hasUser || !hasPass) {
           console.warn('⚠️ Email service not configured - skipping email notifications');
-          console.warn(`⚠️ EMAIL_USER: ${process.env.EMAIL_USER ? 'SET' : 'MISSING'}, EMAIL_PASS: ${process.env.EMAIL_PASS ? 'SET' : 'MISSING'}`);
+          console.warn(`⚠️ USER: ${hasUser ? 'SET' : 'MISSING'}, PASS: ${hasPass ? 'SET' : 'MISSING'}`);
           return;
         }
         
-        // Prepare services data for emails
-        const emailServices = (servicesList && servicesList.length > 0 ? servicesList.split(', ') : []).map(serviceName => ({
-          name: serviceName,
-          description: 'Serviciu auto detailing',
-          price: total > 0 ? (total / servicesList.split(', ').length).toFixed(2) : '0'
-        }));
+        const emailServices = Array.isArray(services)
+          ? services.map(sid => {
+              const svc = (byId && byId.get(String(sid))) || (vehicleServicesService.services || []).find(x => String(x.id) === String(sid))
+              const priceEntry = svc && Array.isArray(svc.prices) ? svc.prices.find(p => String(p.body_type_key).toLowerCase() === String((vehicleServicesService.mapFrontendKeyToBodyType ? vehicleServicesService.mapFrontendKeyToBodyType(String(body || '').toLowerCase())?.key : body || '').toLowerCase()) && p.is_active) : null
+              const priceMin = priceEntry && priceEntry.price_min !== undefined ? Number(priceEntry.price_min) : 0
+              return { name: svc?.name || String(sid), price: priceMin }
+            })
+          : []
         
         // Send confirmation email to client
         console.log(`📧 Sending client confirmation email to: ${req.body.user.email}`);
@@ -678,7 +685,7 @@ router.post('/bookings', async (req, res) => {
         }
         
         // Send notification email to admin
-        console.log('📧 Sending admin notification email to: spectraautoart@gmail.com');
+        console.log(`📧 Sending admin notification email to: ${process.env.ADMIN_NOTIFICATION_EMAIL || process.env.MAIL_FROM_ADDRESS || 'contact@spectraautoart.nl'}`);
         const adminEmailResult = await sendAdminNotification(req.body, emailServices);
         if (adminEmailResult.success) {
           console.log('✅ Admin notification email sent successfully (async)');

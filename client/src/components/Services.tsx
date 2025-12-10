@@ -155,8 +155,24 @@ const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                   </svg>
                 </div>
-                <h3>{service.name}</h3>
-                <p>{service.description}</p>
+                <h3>{(() => {
+                  const lang = (currentLanguage || 'nl').toLowerCase()
+                  if (lang === 'nl' && service.name_nl) return service.name_nl as string
+                  if (lang === 'en' && service.name_en) return service.name_en as string
+                  if (lang === 'es' && service.name_es) return service.name_es as string
+                  if (lang === 'pl' && service.name_pl) return service.name_pl as string
+                  if (lang === 'ro' && service.name_ro) return service.name_ro as string
+                  return service.name
+                })()}</h3>
+                <p>{(() => {
+                  const lang = (currentLanguage || 'nl').toLowerCase()
+                  if (lang === 'nl' && service.description_nl) return service.description_nl as string
+                  if (lang === 'en' && service.description_en) return service.description_en as string
+                  if (lang === 'es' && service.description_es) return service.description_es as string
+                  if (lang === 'pl' && service.description_pl) return service.description_pl as string
+                  if (lang === 'ro' && service.description_ro) return service.description_ro as string
+                  return service.description
+                })()}</p>
                 
                 {/* Price Display - Show minimum price for all services */}
                 <div className="service-price">

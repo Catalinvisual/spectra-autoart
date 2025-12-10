@@ -42,8 +42,16 @@ export interface BodyType {
   key: string
   name: string
   name_en?: string
+  name_nl?: string
+  name_es?: string
+  name_pl?: string
+  name_ro?: string
   description?: string
   description_en?: string
+  description_nl?: string
+  description_es?: string
+  description_pl?: string
+  description_ro?: string
   is_active: boolean
   sort_order: number
 }
@@ -62,10 +70,22 @@ export interface ServiceWithPrices {
   id: string
   name: string
   name_en?: string
+  name_nl?: string
+  name_es?: string
+  name_pl?: string
+  name_ro?: string
   description: string
   description_en?: string
+  description_nl?: string
+  description_es?: string
+  description_pl?: string
+  description_ro?: string
   category: string
   category_en?: string
+  category_nl?: string
+  category_es?: string
+  category_pl?: string
+  category_ro?: string
   duration_minutes: number
   is_active: boolean
   prices: ServicePrice[]
@@ -324,10 +344,19 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
 
 
   const getBodiesForType = () => {
-    return Array.isArray(bodyTypes) ? bodyTypes.filter(bt => bt.is_active).map(bt => ({
-      key: bt.key,
-      name: i18n.language === 'en' && bt.name_en ? bt.name_en : bt.name
-    })) : []
+    const lang = (i18n.language || 'nl').toLowerCase()
+    const suffix = lang === 'nl' ? 'nl' : lang
+    return Array.isArray(bodyTypes)
+      ? bodyTypes.filter(bt => bt.is_active).map(bt => {
+          const localizedName =
+            suffix === 'en' && bt.name_en ? bt.name_en :
+            suffix === 'es' && bt.name_es ? bt.name_es :
+            suffix === 'pl' && bt.name_pl ? bt.name_pl :
+            suffix === 'ro' && bt.name_ro ? bt.name_ro :
+            suffix === 'nl' && bt.name_nl ? bt.name_nl : bt.name
+          return { key: bt.key, name: localizedName }
+        })
+      : []
   }
 
   const getServicePriceForBodyType = (service: ServiceWithPrices, bodyTypeKey: string) => {
@@ -335,18 +364,22 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
   }
 
   const getServiceDisplayName = (service: ServiceWithPrices) => {
-    // Return the appropriate name based on current language
-    if (i18n.language === 'en' && service.name_en) {
-      return service.name_en
-    }
+    const lang = (i18n.language || 'nl').toLowerCase()
+    if (lang === 'nl' && service.name_nl) return service.name_nl
+    if (lang === 'en' && service.name_en) return service.name_en
+    if (lang === 'es' && service.name_es) return service.name_es
+    if (lang === 'pl' && service.name_pl) return service.name_pl
+    if (lang === 'ro' && service.name_ro) return service.name_ro
     return service.name
   }
 
   const getServiceDisplayDescription = (service: ServiceWithPrices) => {
-    // Return the appropriate description based on current language
-    if (i18n.language === 'en' && service.description_en) {
-      return service.description_en
-    }
+    const lang = (i18n.language || 'nl').toLowerCase()
+    if (lang === 'nl' && service.description_nl) return service.description_nl
+    if (lang === 'en' && service.description_en) return service.description_en
+    if (lang === 'es' && service.description_es) return service.description_es
+    if (lang === 'pl' && service.description_pl) return service.description_pl
+    if (lang === 'ro' && service.description_ro) return service.description_ro
     return service.description
   }
 
@@ -858,10 +891,24 @@ interface CalendarComponentProps {
   loading?: boolean
 }
 
-const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onDateSelect, bookedDates, loading }) => {
+export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onDateSelect, bookedDates, loading }) => {
   const { t } = useTranslation()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [availabilityMap, setAvailabilityMap] = useState<Record<string, boolean>>({})
+
+  const TIME_ZONE = 'Europe/Amsterdam'
+  const formatDateEU = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: TIME_ZONE }).format(d)
+  const weekdayIndexTZ = (d: Date) => {
+    const w = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: TIME_ZONE }).format(d)
+    if (w === 'Sun') return 0
+    if (w === 'Mon') return 1
+    if (w === 'Tue') return 2
+    if (w === 'Wed') return 3
+    if (w === 'Thu') return 4
+    if (w === 'Fri') return 5
+    return 6
+  }
+  const isSundayTZ = (d: Date) => new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: TIME_ZONE }).format(d) === 'Sun'
 
   // Verifică disponibilitatea pentru toate zilele lunii curente
   useEffect(() => {
@@ -871,13 +918,13 @@ const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onD
       const daysInMonth = new Date(year, month + 1, 0).getDate()
       
       const availability: Record<string, boolean> = {}
-      const todayString = new Date().toISOString().split('T')[0]
+      const todayString = formatDateEU(new Date())
       
       for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day)
-        const dateString = date.toISOString().split('T')[0]
+        const dateString = formatDateEU(date)
         
-        if (date.getDay() === 0 || dateString < todayString) {
+        if (isSundayTZ(date) || dateString < todayString) {
           availability[dateString] = false
         } else {
           // Verificăm dacă data este deja în lista de bookedDates
@@ -897,8 +944,8 @@ const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onD
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
-    const startingDayOfWeek = firstDay.getDay()
-    const todayString = new Date().toISOString().split('T')[0]
+    const startingDayOfWeek = weekdayIndexTZ(firstDay)
+    const todayString = formatDateEU(new Date())
     
     const days = []
     
@@ -910,14 +957,14 @@ const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onD
     // Zilele lunii
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day)
-      const dateString = date.toISOString().split('T')[0]
+      const dateString = formatDateEU(date)
       const isPast = dateString < todayString
       days.push({
         day,
         dateString,
         isAvailable: availabilityMap[dateString] !== false,
-        isSunday: date.getDay() === 0,
-        isToday: dateString === new Date().toISOString().split('T')[0],
+        isSunday: isSundayTZ(date),
+        isToday: dateString === todayString,
         isSelected: dateString === selectedDate,
         isPast
       })

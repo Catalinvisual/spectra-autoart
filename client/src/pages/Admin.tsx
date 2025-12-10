@@ -6,6 +6,8 @@ import { adminAPI, publicAPI } from '../services/api'
 import api from '../services/api'
 import { useToast } from '../contexts/ToastContext'
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal'
+import { CalendarComponent } from '../components/BookingWizard'
+import '../components/BookingWizard.css'
 import './Admin.css'
 import i18n from '../i18n'
 import { useLanguage } from '../contexts/LanguageContext'
@@ -448,6 +450,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [bookedDatesAdmin, setBookedDatesAdmin] = useState<string[]>([])
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -621,13 +624,28 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     }
   }, [showDetailsModal, showEditModal])
 
+  useEffect(() => {
+    const loadAvailability = async () => {
+      try {
+        const response = await publicAPI.getAvailability()
+        const dates = (response.data && response.data.bookedDates) ? response.data.bookedDates : []
+        setBookedDatesAdmin(Array.isArray(dates) ? dates : [])
+      } catch {
+        setBookedDatesAdmin([])
+      }
+    }
+    if (showEditModal) {
+      loadAvailability()
+    }
+  }, [showEditModal])
+
 
   const saveBookingEdit = async () => {
     if (!editingBooking) return
     
     try {
-      await adminAPI.updateBooking(editingBooking.id, { status: editingBooking.status })
-      setBookings(prev => prev.map(b => b.id === editingBooking.id ? { ...b, status: editingBooking.status } : b))
+      await adminAPI.updateBooking(editingBooking.id, { status: editingBooking.status, date: editingBooking.date, time: editingBooking.time })
+      setBookings(prev => prev.map(b => b.id === editingBooking.id ? { ...b, status: editingBooking.status, date: editingBooking.date, time: editingBooking.time } : b))
       toast.showSuccess(t('admin.status') + ' ' + t(`admin.${editingBooking.status}`))
       closeEditModal()
     } catch (error) {
@@ -709,6 +727,8 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
               >
                 ✏️ {t('admin.edit')}
               </button>
+
+              
 
               <button 
                 onClick={() => handleDeleteBooking(booking.id)} 
@@ -863,13 +883,28 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
                   />
                 </div>
                 <div className="form-group">
+                  <label>{t('selectDate')}</label>
+                  <CalendarComponent
+                    selectedDate={editingBooking.date || ''}
+                    onDateSelect={(date) => setEditingBooking({ ...editingBooking, date })}
+                    bookedDates={bookedDatesAdmin}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>{t('selectTime')}</label>
+                  <input
+                    type="time"
+                    value={editingBooking.time || ''}
+                    onChange={(e) => setEditingBooking({ ...editingBooking, time: e.target.value })}
+                    min="09:00"
+                    max="18:00"
+                  />
+                </div>
+                <div className="form-group">
                   <label>{t('admin.status')}:</label>
                   <select
                     value={editingBooking.status}
-                    onChange={(e) => setEditingBooking({
-                      ...editingBooking,
-                      status: e.target.value
-                    })}
+                    onChange={(e) => setEditingBooking({ ...editingBooking, status: e.target.value })}
                   >
                     <option value="pending">{t('admin.pending')}</option>
                     <option value="confirmed">{t('admin.confirmed')}</option>

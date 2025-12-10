@@ -4,7 +4,10 @@ import type { VehicleData, Service, BookingData, BodyType, ServiceWithPrices } f
 const resolveBaseURL = () => {
   const envUrl = import.meta.env.VITE_API_URL
   if (envUrl && typeof envUrl === 'string' && envUrl.trim() !== '') {
-    return envUrl
+    const u = envUrl.trim()
+    if (u.endsWith('/api')) return u
+    if (u.endsWith('/')) return `${u}api`
+    return `${u}/api`
   }
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
     return `${window.location.origin}/api`
@@ -12,7 +15,7 @@ const resolveBaseURL = () => {
   return '/api'
 }
 
-const API_BASE_URL = resolveBaseURL()
+  const API_BASE_URL = resolveBaseURL()
 
 console.log('🔍 API Base URL:', API_BASE_URL)
 console.log('🔍 VITE_API_URL env:', import.meta.env.VITE_API_URL)
@@ -138,7 +141,7 @@ api.interceptors.response.use(
 )
 
 // Public API endpoints
-export const publicAPI = {
+  export const publicAPI = {
   getVehicles: () => api.get<VehicleData[]>('/public/vehicles'),
   getVehicleMakes: () => api.get<string[]>('/public/vehicles/makes'),
   getVehicleTypes: () => api.get<string[]>('/public/vehicles/types'),
@@ -149,7 +152,7 @@ export const publicAPI = {
     if (lang) params.append('lang', lang);
     if (bodyType) params.append('bodyType', bodyType);
     const queryString = params.toString();
-    return api.get<ServiceWithPrices[]>(`/public/vehicle-services${queryString ? `?${queryString}` : ''}`);
+    return api.get<ServiceWithPrices[]>(`/vehicle-services/services-with-prices${queryString ? `?${queryString}` : ''}`);
   },
   getServicesWithCachedTranslations: (lang?: string, activeOnly: boolean = true) => {
     const params = new URLSearchParams();

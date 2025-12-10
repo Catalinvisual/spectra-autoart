@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url'
 import GoogleSheetsService from '../services/googleSheetsService.js'
 import { vehicleServicesService } from '../services/vehicleServicesService.js'
 import requireAuth from '../middleware/auth.js'
-import { sendBookingConfirmation, sendAdminNotification, testEmailService } from '../services/emailService.js'
+import { sendBookingConfirmation, sendAdminNotification, sendBookingUpdate, sendAdminUpdate, testEmailService } from '../services/emailService.js'
 
 const router = express.Router()
 
@@ -300,38 +300,126 @@ router.get('/bookings', requireAuth, async (req, res) => {
 router.patch('/bookings/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
-    const { status } = req.body
-    
-    const data = await GoogleSheetsService.getData('Bookings')
-    
+    const { status, date, time, make: makeIn, model: modelIn, body: bodyIn, type: typeIn } = req.body
+    await ensureEnrichmentCache()
+    await GoogleSheetsService.ensureSheetColumns('Bookings', ['Make','Model','Type','Body','Locale'])
+    let data = await GoogleSheetsService.getData('Bookings')
     if (data.length <= 1) {
       return res.status(404).json({ error: 'Nu există programări' })
     }
-
-    // Determine column indices based on headers
     const headers = Array.isArray(data[0]) ? data[0] : []
-    const idIndex = headers.indexOf('ID') !== -1 ? headers.indexOf('ID') : 0
-    const statusIndex = headers.indexOf('Status') !== -1 ? headers.indexOf('Status') : 8
-
-    // Find the row by ID (flexible matching)
+    const findCol = (...names) => {
+      const lowered = headers.map(h => String(h || '').toLowerCase())
+      for (const n of names) {
+        const idx = lowered.indexOf(String(n).toLowerCase())
+        if (idx !== -1) return idx
+      }
+      for (let i = 0; i < lowered.length; i++) {
+        for (const n of names) {
+          if (lowered[i].includes(String(n).toLowerCase())) return i
+        }
+      }
+      return -1
+    }
+    const idIndex = findCol('ID') !== -1 ? findCol('ID') : 0
+    const nameIndex = findCol('Name','Customer_Name','Client_Name') !== -1 ? findCol('Name','Customer_Name','Client_Name') : 1
+    const emailIndex = findCol('Email') !== -1 ? findCol('Email') : 2
+    const phoneIndex = findCol('Phone') !== -1 ? findCol('Phone') : 3
+    const dateIndex = findCol('Date') !== -1 ? findCol('Date') : 4
+    const timeIndex = findCol('Time') !== -1 ? findCol('Time') : 5
+    const makeIndex = findCol('Make','Marca','Vehicle_Make')
+    const modelIndex = findCol('Model','Vehicle_Model')
+    const typeIndex = findCol('Type','Vehicle_Type')
+    const bodyIndex = findCol('Body','Caroserie','Body_Type')
+    const servicesIndex = findCol('Services','Service','Diensten') !== -1 ? findCol('Services','Service','Diensten') : 6
+    const totalIndex = findCol('Total','Amount') !== -1 ? findCol('Total','Amount') : 7
+    const statusIndex = findCol('Status') !== -1 ? findCol('Status') : 8
     const targetId = String(id).trim()
     const rowIndex = data.slice(1).findIndex(row => String(row[idIndex] || '').trim() === targetId)
-    
     if (rowIndex === -1) {
       return res.status(404).json({ error: 'Programarea nu a fost găsită' })
     }
+    const actualRowIndex = rowIndex + 1
+    if (status) data[actualRowIndex][statusIndex] = status
+    if (date) data[actualRowIndex][dateIndex] = String(date)
+    if (time) data[actualRowIndex][timeIndex] = String(time)
+    if (makeIn && makeIndex !== -1) data[actualRowIndex][makeIndex] = String(makeIn)
+    if (modelIn && modelIndex !== -1) data[actualRowIndex][modelIndex] = String(modelIn)
+    if (typeIn && typeIndex !== -1) data[actualRowIndex][typeIndex] = String(typeIn)
+    if (bodyIn && bodyIndex !== -1) data[actualRowIndex][bodyIndex] = String(bodyIn)
+    await GoogleSheetsService.updateData('Bookings', actualRowIndex + 1, data[actualRowIndex])
 
-    // Update the status in the correct column
-    const actualRowIndex = rowIndex + 1 // +1 to account for header row
-    data[actualRowIndex][statusIndex] = status
+    const name = data[actualRowIndex][nameIndex] || ''
+    const email = data[actualRowIndex][emailIndex] || ''
+    const phone = data[actualRowIndex][phoneIndex] || ''
+    const dateVal = data[actualRowIndex][dateIndex] || ''
+    const timeVal = data[actualRowIndex][timeIndex] || ''
+    const servicesString = data[actualRowIndex][servicesIndex] || ''
 
-    // Update the data in Google Sheets
-    await GoogleSheetsService.updateData('Bookings', actualRowIndex + 1, data[actualRowIndex]) // +1 because Google Sheets is 1-indexed
+    let servicesArr = []
+    if (servicesString && typeof servicesString === 'string') {
+      const cleanServices = servicesString.replace(/^'/, '').replace(/'$/, '').trim()
+      let tokens = []
+      if (cleanServices.startsWith('[')) {
+        try {
+          const arr = JSON.parse(cleanServices)
+          if (Array.isArray(arr)) {
+            tokens = arr.map(item => {
+              if (typeof item === 'string') return item
+              if (item && typeof item === 'object') {
+                return item.id || item.service_id || item.name || ''
+              }
+              return ''
+            }).filter(x => x)
+          }
+        } catch {
+          tokens = cleanServices.split(/[,|;]+/)
+        }
+      } else {
+        tokens = cleanServices.split(/[,|;]+/)
+      }
+      servicesArr = tokens.map(token => {
+        const trimmed = token.trim()
+        let sid = ''
+        let sname = ''
+        if (bookingsEnrichmentCache.idToName.has(trimmed)) {
+          sid = trimmed
+          sname = bookingsEnrichmentCache.idToName.get(trimmed)
+        } else if (bookingsEnrichmentCache.nameToId.has(trimmed.toLowerCase())) {
+          sid = bookingsEnrichmentCache.nameToId.get(trimmed.toLowerCase())
+          sname = bookingsEnrichmentCache.idToName.get(sid) || trimmed
+        } else {
+          sid = trimmed.toLowerCase().replace(/\s+/g, '_')
+          sname = trimmed
+        }
+        const price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
+        return { id: sid, name: sname, price }
+      }).filter(service => service.name.length > 0)
+    }
 
-    res.json({ success: true, message: 'Status updated successfully' })
+    const bookingData = {
+      user: { name, email, phone },
+      date: dateVal,
+      time: timeVal,
+      make: makeIndex !== -1 ? (data[actualRowIndex][makeIndex] || '') : (makeIn || ''),
+      model: modelIndex !== -1 ? (data[actualRowIndex][modelIndex] || '') : (modelIn || ''),
+      body: bodyIndex !== -1 ? (data[actualRowIndex][bodyIndex] || '') : (bodyIn || ''),
+      type: typeIndex !== -1 ? (data[actualRowIndex][typeIndex] || '') : (typeIn || ''),
+      newsletter: false,
+      locale: (() => {
+        const localeIndex = findCol('Locale','Language')
+        const raw = localeIndex !== -1 ? (data[actualRowIndex][localeIndex] || '') : ''
+        return String(raw || 'nl').toLowerCase()
+      })()
+    }
+
+    await sendBookingUpdate(bookingData, servicesArr)
+    await sendAdminUpdate(bookingData, servicesArr)
+
+    res.json({ success: true, message: 'Programare actualizată și notificări trimise' })
   } catch (error) {
     console.error('Update booking error:', error)
-    res.status(500).json({ error: 'Failed to update booking status' })
+    res.status(500).json({ error: 'Failed to update booking' })
   }
 })
 
@@ -339,28 +427,122 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
 router.put('/bookings/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
-    const { status } = req.body
-    const data = await GoogleSheetsService.getData('Bookings')
+    const { status, date, time, make: makeIn, model: modelIn, body: bodyIn, type: typeIn } = req.body
+    await ensureEnrichmentCache()
+    await GoogleSheetsService.ensureSheetColumns('Bookings', ['Make','Model','Type','Body','Locale'])
+    let data = await GoogleSheetsService.getData('Bookings')
     if (data.length <= 1) {
       return res.status(404).json({ error: 'Nu există programări' })
     }
-
     const headers = Array.isArray(data[0]) ? data[0] : []
-    const idIndex = headers.indexOf('ID') !== -1 ? headers.indexOf('ID') : 0
-    const statusIndex = headers.indexOf('Status') !== -1 ? headers.indexOf('Status') : 8
-
+    const findCol = (...names) => {
+      const lowered = headers.map(h => String(h || '').toLowerCase())
+      for (const n of names) {
+        const idx = lowered.indexOf(String(n).toLowerCase())
+        if (idx !== -1) return idx
+      }
+      for (let i = 0; i < lowered.length; i++) {
+        for (const n of names) {
+          if (lowered[i].includes(String(n).toLowerCase())) return i
+        }
+      }
+      return -1
+    }
+    const idIndex = findCol('ID') !== -1 ? findCol('ID') : 0
+    const nameIndex = findCol('Name','Customer_Name','Client_Name') !== -1 ? findCol('Name','Customer_Name','Client_Name') : 1
+    const emailIndex = findCol('Email') !== -1 ? findCol('Email') : 2
+    const phoneIndex = findCol('Phone') !== -1 ? findCol('Phone') : 3
+    const dateIndex = findCol('Date') !== -1 ? findCol('Date') : 4
+    const timeIndex = findCol('Time') !== -1 ? findCol('Time') : 5
+    const servicesIndex = findCol('Services','Service','Diensten') !== -1 ? findCol('Services','Service','Diensten') : 6
+    const makeIndex2 = findCol('Make','Marca','Vehicle_Make')
+    const modelIndex2 = findCol('Model','Vehicle_Model')
+    const typeIndex2 = findCol('Type','Vehicle_Type')
+    const bodyIndex2 = findCol('Body','Caroserie','Body_Type')
+    const statusIndex = findCol('Status') !== -1 ? findCol('Status') : 8
     const targetId = String(id).trim()
     const rowIndex = data.slice(1).findIndex(row => String(row[idIndex] || '').trim() === targetId)
     if (rowIndex === -1) {
       return res.status(404).json({ error: 'Programarea nu a fost găsită' })
     }
     const actualRowIndex = rowIndex + 1
-    data[actualRowIndex][statusIndex] = status
+    if (status) data[actualRowIndex][statusIndex] = status
+    if (date) data[actualRowIndex][dateIndex] = String(date)
+    if (time) data[actualRowIndex][timeIndex] = String(time)
+    if (makeIn && makeIndex2 !== -1) data[actualRowIndex][makeIndex2] = String(makeIn)
+    if (modelIn && modelIndex2 !== -1) data[actualRowIndex][modelIndex2] = String(modelIn)
+    if (typeIn && typeIndex2 !== -1) data[actualRowIndex][typeIndex2] = String(typeIn)
+    if (bodyIn && bodyIndex2 !== -1) data[actualRowIndex][bodyIndex2] = String(bodyIn)
     await GoogleSheetsService.updateData('Bookings', actualRowIndex + 1, data[actualRowIndex])
-    res.json({ success: true, message: 'Status updated successfully' })
+
+    const name = data[actualRowIndex][nameIndex] || ''
+    const email = data[actualRowIndex][emailIndex] || ''
+    const phone = data[actualRowIndex][phoneIndex] || ''
+    const dateVal = data[actualRowIndex][dateIndex] || ''
+    const timeVal = data[actualRowIndex][timeIndex] || ''
+    const servicesString = data[actualRowIndex][servicesIndex] || ''
+    let servicesArr = []
+    if (servicesString && typeof servicesString === 'string') {
+      const cleanServices = servicesString.replace(/^'/, '').replace(/'$/, '').trim()
+      let tokens = []
+      if (cleanServices.startsWith('[')) {
+        try {
+          const arr = JSON.parse(cleanServices)
+          if (Array.isArray(arr)) {
+            tokens = arr.map(item => {
+              if (typeof item === 'string') return item
+              if (item && typeof item === 'object') {
+                return item.id || item.service_id || item.name || ''
+              }
+              return ''
+            }).filter(x => x)
+          }
+        } catch {
+          tokens = cleanServices.split(/[,|;]+/)
+        }
+      } else {
+        tokens = cleanServices.split(/[,|;]+/)
+      }
+      servicesArr = tokens.map(token => {
+        const trimmed = token.trim()
+        let sid = ''
+        let sname = ''
+        if (bookingsEnrichmentCache.idToName.has(trimmed)) {
+          sid = trimmed
+          sname = bookingsEnrichmentCache.idToName.get(trimmed)
+        } else if (bookingsEnrichmentCache.nameToId.has(trimmed.toLowerCase())) {
+          sid = bookingsEnrichmentCache.nameToId.get(trimmed.toLowerCase())
+          sname = bookingsEnrichmentCache.idToName.get(sid) || trimmed
+        } else {
+          sid = trimmed.toLowerCase().replace(/\s+/g, '_')
+          sname = trimmed
+        }
+        const price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
+        return { id: sid, name: sname, price }
+      }).filter(service => service.name.length > 0)
+    }
+
+    const bookingData = {
+      user: { name, email, phone },
+      date: dateVal,
+      time: timeVal,
+      make: makeIndex2 !== -1 ? (data[actualRowIndex][makeIndex2] || '') : (makeIn || ''),
+      model: modelIndex2 !== -1 ? (data[actualRowIndex][modelIndex2] || '') : (modelIn || ''),
+      body: bodyIndex2 !== -1 ? (data[actualRowIndex][bodyIndex2] || '') : (bodyIn || ''),
+      type: typeIndex2 !== -1 ? (data[actualRowIndex][typeIndex2] || '') : (typeIn || ''),
+      newsletter: false,
+      locale: (() => {
+        const localeIndex = findCol('Locale','Language')
+        const raw = localeIndex !== -1 ? (data[actualRowIndex][localeIndex] || '') : ''
+        return String(raw || 'nl').toLowerCase()
+      })()
+    }
+    await sendBookingUpdate(bookingData, servicesArr)
+    await sendAdminUpdate(bookingData, servicesArr)
+    res.json({ success: true, message: 'Programare actualizată și notificări trimise' })
   } catch (error) {
     console.error('Update booking error (PUT):', error)
-    res.status(500).json({ error: 'Failed to update booking status' })
+    res.status(500).json({ error: 'Failed to update booking' })
   }
 })
 
