@@ -666,12 +666,25 @@ router.post('/bookings', async (req, res) => {
           return;
         }
         
+        const allServices = (vehicleServicesService && Array.isArray(vehicleServicesService.services)) ? vehicleServicesService.services : []
+        const byId = new Map(allServices.map(s => [String(s.id), s]))
+        const byNameLower = new Map(allServices.map(s => [String(String(s.name || '')).toLowerCase(), s]))
+        const resolvedBodyKey = String(
+          vehicleServicesService && typeof vehicleServicesService.mapFrontendKeyToBodyType === 'function'
+            ? (vehicleServicesService.mapFrontendKeyToBodyType(String(body || '').toLowerCase()) || {}).key
+            : (body || '')
+        ).toLowerCase()
+
         const emailServices = Array.isArray(services)
-          ? services.map(sid => {
-              const svc = (byId && byId.get(String(sid))) || (vehicleServicesService.services || []).find(x => String(x.id) === String(sid))
-              const priceEntry = svc && Array.isArray(svc.prices) ? svc.prices.find(p => String(p.body_type_key).toLowerCase() === String((vehicleServicesService.mapFrontendKeyToBodyType ? vehicleServicesService.mapFrontendKeyToBodyType(String(body || '').toLowerCase())?.key : body || '').toLowerCase()) && p.is_active) : null
+          ? services.map(s => {
+              const key = typeof s === 'object' && s ? (s.id ?? s.name ?? s) : s
+              const keyStr = String(key)
+              const svc = byId.get(keyStr) || byNameLower.get(keyStr.toLowerCase()) || allServices.find(x => String(x.id) === keyStr)
+              const priceEntry = svc && Array.isArray(svc.prices)
+                ? svc.prices.find(p => String(p.body_type_key).toLowerCase() === resolvedBodyKey && p.is_active)
+                : null
               const priceMin = priceEntry && priceEntry.price_min !== undefined ? Number(priceEntry.price_min) : 0
-              return { name: svc?.name || String(sid), price: priceMin }
+              return { name: svc && svc.name ? svc.name : keyStr, price: priceMin }
             })
           : []
         
