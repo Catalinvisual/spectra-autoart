@@ -102,14 +102,37 @@ const initializeTransporters = () => {
   console.log(`📧 Total transporters configured: ${(transporter ? 1 : 0) + fallbackTransporters.length}`)
 }
 
+// Initialize transporters with Railway-specific logic
 try {
-  initializeTransporters()
+  // For Railway production environment, use only Resend API to avoid SMTP timeouts
+  if (process.env.RAILWAY_PROJECT_ID) {
+    console.log('🏭 Detected Railway environment - using Resend API only, skipping SMTP setup')
+    // Don't initialize SMTP transporters in Railway to prevent timeouts
+    transporter = null
+    fallbackTransporters = []
+  } else {
+    // For non-Railway environments, use normal SMTP initialization
+    initializeTransporters()
+  }
 } catch (error) {
   console.error('❌ Failed to initialize email transporters:', error.message)
 }
 
 // Verify transporter configuration with intelligent fallback
 const verifyTransporter = async (retries = 3) => {
+  // Skip verification in Railway environment
+  if (process.env.RAILWAY_PROJECT_ID) {
+    console.log('🏭 Railway environment detected - skipping SMTP verification')
+    // Check if Resend API is available instead
+    if (process.env.RESEND_API_KEY) {
+      console.log('✅ Resend API key available - email service ready')
+      return true
+    } else {
+      console.warn('⚠️ No Resend API key available in Railway environment')
+      return false
+    }
+  }
+  
   const allTransporters = [transporter, ...fallbackTransporters].filter(Boolean)
   
   if (allTransporters.length === 0) {
@@ -618,7 +641,47 @@ export const sendEmail = async (to, subject, html, text = '') => {
 
     console.log(`📧 Attempting to send email to ${to} from ${process.env.MAIL_FROM_ADDRESS || process.env.ZOHO_SMTP_USER || process.env.EMAIL_USER}`)
     
-    // Try each transporter in order
+    // For Railway environment, prioritize Resend API to avoid SMTP timeouts
+    if (process.env.RAILWAY_PROJECT_ID) {
+      if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY.includes('re_Y5xBHWfG')) {
+        console.error('❌ INVALID RESEND_API_KEY in Railway - please get a valid key from https://resend.com')
+        console.error('❌ Current key is placeholder or missing - emails cannot be sent!')
+        return { success: false, error: 'Invalid Resend API key - please configure a valid key' }
+      }
+      
+      console.log('🏭 Railway environment detected - using Resend API as primary')
+      try {
+        const r = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: mailOptions.from,
+            to: Array.isArray(mailOptions.to) ? mailOptions.to : [mailOptions.to],
+            subject: mailOptions.subject,
+            html: mailOptions.html,
+            text: mailOptions.text
+          })
+        })
+        
+        if (r.ok) {
+          const data = await r.json()
+          const messageId = data?.id || data?.data?.id || 'resend'
+          console.log(`✅ Email sent via Resend API to ${to} with id: ${messageId}`)
+          return { success: true, messageId }
+        } else {
+          const body = await r.text()
+          throw new Error(`Resend API failed: ${r.status} ${body}`)
+        }
+      } catch (resendErr) {
+        console.error(`❌ Resend API failed:`, resendErr.message)
+        console.log('🔄 Falling back to SMTP transporters...')
+      }
+    }
+    
+    // Try each transporter in order (for non-Railway or if Resend failed)
     for (let i = 0; i < allTransporters.length; i++) {
       const currentTransporter = allTransporters[i]
       const isPrimary = i === 0

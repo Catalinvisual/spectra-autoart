@@ -239,12 +239,21 @@ class GoogleSheetsService {
             console.log(`✅ Sheet ${config.sheetName} already has headers`)
           }
         } catch (headerError) {
-          // If loading headers fails, it means the sheet is empty
-          console.log(`📝 Sheet ${config.sheetName} is empty, setting up headers...`);
+          // If loading headers fails, it means the sheet is empty or protected
+          console.log(`📝 Sheet ${config.sheetName} is empty or protected, attempting to set up headers...`);
           
-          // Set headers by adding a row with header values
-          await sheet.setHeaderRow(config.columns);
-          console.log(`✅ Set headers for ${config.sheetName}`);
+          try {
+            // Try to set headers by adding a row with header values
+            await sheet.setHeaderRow(config.columns);
+            console.log(`✅ Set headers for ${config.sheetName}`);
+          } catch (protectionError) {
+            if (protectionError.message.includes('protected')) {
+              console.warn(`⚠️ Sheet ${config.sheetName} has protected cells - skipping header setup`);
+              console.log(`📝 Sheet ${config.sheetName} will work with existing structure`);
+            } else {
+              throw protectionError;
+            }
+          }
         }
       }
     } catch (error) {
