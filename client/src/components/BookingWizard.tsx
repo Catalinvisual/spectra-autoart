@@ -106,6 +106,13 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
   const [models, setModels] = useState<string[]>([])
   const [error, setError] = useState('')
   const [bookedDates, setBookedDates] = useState<string[]>([])
+  const [validationErrors, setValidationErrors] = useState<{
+    name?: string
+    email?: string
+    phone?: string
+    date?: string
+    time?: string
+  }>({})
   const [bookingData, setBookingData] = useState<BookingData>({
     make: '',
     model: '',
@@ -466,6 +473,9 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
 
   const handleDateSelect = (date: string) => {
     handleInputChange('date', date)
+    if (validationErrors.date) {
+      setValidationErrors(prev => ({ ...prev, date: undefined }))
+    }
   }
 
   const handleServiceToggle = (serviceId: string) => {
@@ -500,9 +510,49 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
            !!bookingData.time
   }
 
+  const validateForm = () => {
+    const errors: {
+      name?: string
+      email?: string
+      phone?: string
+      date?: string
+      time?: string
+    } = {}
+
+    if (!bookingData.user.name.trim()) {
+      errors.name = t('nameRequired') || 'Name is required'
+    }
+
+    if (!bookingData.user.email.trim()) {
+      errors.email = t('emailRequired') || 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.user.email)) {
+      errors.email = t('invalidEmail') || 'Please enter a valid email address'
+    }
+
+    if (!bookingData.user.phone.trim()) {
+      errors.phone = t('phoneRequired') || 'Phone is required'
+    }
+
+    if (!bookingData.date) {
+      errors.date = t('dateRequired') || 'Date is required'
+    }
+
+    if (!bookingData.time) {
+      errors.time = t('timeRequired') || 'Time is required'
+    }
+
+    setValidationErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleSubmit = async () => {
     try {
       setError('')
+      
+      // Validate form before submission
+      if (!validateForm()) {
+        return // Stop submission if validation fails
+      }
       const computedTotal = bookingData.services.reduce((acc, serviceId) => {
         const s = services.find(ss => ss.id === serviceId)
         const p = s && bookingData.body ? getServicePriceForBodyType(s, bookingData.body) : null
@@ -715,23 +765,39 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 <label className="form-label">{t('name')}</label>
                 <input
                   type="text"
-                  className="form-input"
+                  className={`form-input ${validationErrors.name ? 'error' : ''}`}
                   value={bookingData.user.name}
-                  onChange={(e) => handleInputChange('user.name', e.target.value)}
+                  onChange={(e) => {
+                    handleInputChange('user.name', e.target.value)
+                    if (validationErrors.name) {
+                      setValidationErrors(prev => ({ ...prev, name: undefined }))
+                    }
+                  }}
                 />
+                {validationErrors.name && (
+                  <span className="error-message">{validationErrors.name}</span>
+                )}
               </div>
               <div className="form-group">
                 <label className="form-label">{t('email')}</label>
                 <input
                   type="email"
-                  className="form-input"
+                  className={`form-input ${validationErrors.email ? 'error' : ''}`}
                   value={bookingData.user.email}
-                  onChange={(e) => handleInputChange('user.email', e.target.value)}
+                  onChange={(e) => {
+                    handleInputChange('user.email', e.target.value)
+                    if (validationErrors.email) {
+                      setValidationErrors(prev => ({ ...prev, email: undefined }))
+                    }
+                  }}
                 />
+                {validationErrors.email && (
+                  <span className="error-message">{validationErrors.email}</span>
+                )}
               </div>
               <div className="form-group">
                 <label className="form-label">{t('phone')}</label>
-                <div className="phone-input-group">
+                <div className={`phone-input-group ${validationErrors.phone ? 'error' : ''}`}>
                   <div className="phone-prefix-dropdown">
                     <button
                       type="button"
@@ -757,6 +823,9 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                                 user: { ...prev.user, phone: `${c.prefix}${phoneDigits}` }
                               }))
                               setPrefixOpen(false)
+                              if (validationErrors.phone) {
+                                setValidationErrors(prev => ({ ...prev, phone: undefined }))
+                              }
                             }}
                           >
                             <span className="flag">{flagEmoji(c.code)}</span>
@@ -780,29 +849,48 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                           ...prev,
                           user: { ...prev.user, phone: `${phonePrefix}${digits}` }
                         }))
+                        if (validationErrors.phone) {
+                          setValidationErrors(prev => ({ ...prev, phone: undefined }))
+                        }
                       }}
                     />
                   </div>
                 </div>
+                {validationErrors.phone && (
+                  <span className="error-message">{validationErrors.phone}</span>
+                )}
               </div>
               <div className="form-group">
                 <label className="form-label">{t('selectDate')}</label>
-                <CalendarComponent
-                  selectedDate={bookingData.date}
-                  onDateSelect={handleDateSelect}
-                  bookedDates={bookedDates}
-                />
+                <div className={`calendar-wrapper ${validationErrors.date ? 'error' : ''}`}>
+                  <CalendarComponent
+                    selectedDate={bookingData.date}
+                    onDateSelect={handleDateSelect}
+                    bookedDates={bookedDates}
+                  />
+                </div>
+                {validationErrors.date && (
+                  <span className="error-message">{validationErrors.date}</span>
+                )}
               </div>
               <div className="form-group">
                 <label className="form-label">{t('selectTime') || 'Ora programării'}</label>
                 <input
                   type="time"
-                  className="form-input time-input-instant"
+                  className={`form-input time-input-instant ${validationErrors.time ? 'error' : ''}`}
                   value={bookingData.time}
-                  onChange={(e) => handleInputChange('time', e.target.value)}
+                  onChange={(e) => {
+                    handleInputChange('time', e.target.value)
+                    if (validationErrors.time) {
+                      setValidationErrors(prev => ({ ...prev, time: undefined }))
+                    }
+                  }}
                   min="09:00"
                   max="18:00"
                 />
+                {validationErrors.time && (
+                  <span className="error-message">{validationErrors.time}</span>
+                )}
               </div>
               
               {/* Booking Summary Card */}
