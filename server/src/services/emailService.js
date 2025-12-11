@@ -3,6 +3,36 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
+// Rate limiting for Resend API (2 requests per second limit)
+class RateLimiter {
+  constructor(maxRequests = 2, timeWindow = 1000) {
+    this.maxRequests = maxRequests
+    this.timeWindow = timeWindow
+    this.requests = []
+  }
+
+  async throttle() {
+    const now = Date.now()
+    
+    // Remove old requests outside the time window
+    this.requests = this.requests.filter(time => now - time < this.timeWindow)
+    
+    // If we've hit the limit, wait
+    if (this.requests.length >= this.maxRequests) {
+      const oldestRequest = this.requests[0]
+      const waitTime = this.timeWindow - (now - oldestRequest) + 100 // Add 100ms buffer
+      console.log(`⏳ Rate limit reached, waiting ${waitTime}ms...`)
+      await new Promise(resolve => setTimeout(resolve, waitTime))
+      return this.throttle() // Recursively check again
+    }
+    
+    // Add current request
+    this.requests.push(now)
+  }
+}
+
+const resendRateLimiter = new RateLimiter(2, 1000) // 2 requests per second
+
 // Create transporter with error handling and Gmail-optimized settings
 let transporter = null
 let fallbackTransporters = []
@@ -650,7 +680,16 @@ export const sendEmail = async (to, subject, html, text = '') => {
       }
       
       console.log('🏭 Railway environment detected - using Resend API as primary')
+      
+      // Apply rate limiting before making the request
+      await resendRateLimiter.throttle()
+      
       try {
+        // Use Resend's default domain until your domain is verified
+        const fromAddress = 'onboarding@resend.dev' // Resend default - works immediately
+        console.log(`📧 Using Resend default sender: ${fromAddress}`)
+        console.log(`📧 Note: Until spectraautoart.nl is verified, emails will show "sent via Resend"`)
+        
         const r = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
@@ -658,7 +697,7 @@ export const sendEmail = async (to, subject, html, text = '') => {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            from: mailOptions.from,
+            from: fromAddress,
             to: Array.isArray(mailOptions.to) ? mailOptions.to : [mailOptions.to],
             subject: mailOptions.subject,
             html: mailOptions.html,
