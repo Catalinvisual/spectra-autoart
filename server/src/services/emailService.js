@@ -685,10 +685,10 @@ export const sendEmail = async (to, subject, html, text = '') => {
       await resendRateLimiter.throttle()
       
       try {
-        // Use Resend's default domain until your domain is verified
-        const fromAddress = 'onboarding@resend.dev' // Resend default - works immediately
-        console.log(`📧 Using Resend default sender: ${fromAddress}`)
-        console.log(`📧 Note: Until spectraautoart.nl is verified, emails will show "sent via Resend"`)
+        // Use your verified domain sender address
+        const fromAddress = process.env.MAIL_FROM_ADDRESS || 'contact@spectraautoart.nl'
+        console.log(`📧 Using verified domain sender: ${fromAddress}`)
+        console.log(`📧 Domain spectraautoart.nl is verified - emails will show your brand!`)
         
         const r = await fetch('https://api.resend.com/emails', {
           method: 'POST',
