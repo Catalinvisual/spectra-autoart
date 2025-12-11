@@ -5,6 +5,7 @@ dotenv.config()
 
 // Create transporter with error handling and Gmail-optimized settings
 let transporter = null
+let fallbackTransporters = []
 
 const makeTransport = (override = {}) => {
   const host = override.host || process.env.ZOHO_SMTP_HOST || process.env.SMTP_HOST || 'smtppro.zoho.eu'
@@ -12,57 +13,144 @@ const makeTransport = (override = {}) => {
   const secure = override.secure ?? ((process.env.ZOHO_SMTP_SECURE || process.env.SMTP_SECURE || 'true') === 'true')
   const user = process.env.ZOHO_SMTP_USER || process.env.EMAIL_USER
   const pass = process.env.ZOHO_SMTP_PASS || process.env.EMAIL_PASS
+  
+  // Optimized settings for Railway production environment
   return nodemailer.createTransport({
     host,
     port,
     secure,
     auth: { user, pass },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 15000,
-    pool: false,
-    maxConnections: 1,
-    maxMessages: 1,
-    requireTLS: override.requireTLS || false,
-    name: override.name,
-    tls: { rejectUnauthorized: false, minVersion: 'TLSv1.2' }
+    // Reduced timeouts for faster failover
+    connectionTimeout: 10000,  // 10s instead of 15s
+    greetingTimeout: 10000,   // 10s instead of 15s
+    socketTimeout: 20000,     // 20s for socket operations
+    // Connection pooling for better performance
+    pool: true,
+    maxConnections: 3,        // Allow multiple connections
+    maxMessages: 100,         // More messages per connection
+    // Retry settings
+    rateDelta: 1000,          // 1 second
+    rateLimit: 5,             // Max 5 messages per second
+    // TLS settings optimized for Zoho
+    requireTLS: override.requireTLS || (port === 587), // Force TLS for port 587
+    name: override.name || 'spectraautoart.nl', // Proper SMTP hostname
+    tls: { 
+      rejectUnauthorized: false, // Accept self-signed certs in production
+      minVersion: 'TLSv1.2',
+      // Add specific cipher suites for Zoho compatibility
+      ciphers: 'HIGH:MEDIUM:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA'
+    }
   })
 }
 
-try {
-  transporter = makeTransport()
-  console.log(`📧 Email transporter initialized for ${process.env.ZOHO_SMTP_HOST || process.env.SMTP_HOST || 'smtppro.zoho.eu'}`)
-} catch (error) {
-  console.error('❌ Failed to create email transporter:', error.message)
+// Initialize multiple transporters with different configurations
+const initializeTransporters = () => {
+  const configs = [
+    // Primary: Zoho SMTP Pro with port 465 (SSL)
+    {
+      host: process.env.ZOHO_SMTP_HOST || 'smtppro.zoho.eu',
+      port: parseInt(process.env.ZOHO_SMTP_PORT || '465'),
+      secure: true,
+      priority: 1
+    },
+    // Fallback 1: Zoho SMTP Pro with port 587 (STARTTLS)
+    {
+      host: process.env.ZOHO_SMTP_HOST || 'smtppro.zoho.eu',
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      priority: 2
+    },
+    // Fallback 2: Alternative Zoho host
+    {
+      host: 'smtp.zoho.eu',
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      priority: 3
+    }
+  ]
+
+  const user = process.env.ZOHO_SMTP_USER || process.env.EMAIL_USER
+  const pass = process.env.ZOHO_SMTP_PASS || process.env.EMAIL_PASS
+
+  if (!user || !pass) {
+    console.warn('⚠️ Email credentials not found - email service disabled')
+    return
+  }
+
+  // Try primary configuration first
+  try {
+    transporter = makeTransport(configs[0])
+    console.log(`📧 Primary email transporter initialized for ${configs[0].host}:${configs[0].port}`)
+  } catch (error) {
+    console.error('❌ Failed to create primary email transporter:', error.message)
+  }
+
+  // Create fallback transporters
+  fallbackTransporters = configs.slice(1).map(config => {
+    try {
+      const transport = makeTransport(config)
+      console.log(`📧 Fallback transporter configured for ${config.host}:${config.port}`)
+      return transport
+    } catch (error) {
+      console.warn(`⚠️ Failed to create fallback transporter for ${config.host}:${config.port}:`, error.message)
+      return null
+    }
+  }).filter(Boolean)
+
+  console.log(`📧 Total transporters configured: ${(transporter ? 1 : 0) + fallbackTransporters.length}`)
 }
 
-// Verify transporter configuration with retry logic
+try {
+  initializeTransporters()
+} catch (error) {
+  console.error('❌ Failed to initialize email transporters:', error.message)
+}
+
+// Verify transporter configuration with intelligent fallback
 const verifyTransporter = async (retries = 3) => {
-  if (!transporter) {
-    console.warn('⚠️ Email transporter not initialized')
+  const allTransporters = [transporter, ...fallbackTransporters].filter(Boolean)
+  
+  if (allTransporters.length === 0) {
+    console.warn('⚠️ No email transporters available')
     return false
   }
   
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      console.log(`🔍 Verifying email transporter (attempt ${attempt}/${retries})...`)
-      await transporter.verify()
-      console.log('✅ Email transporter verified successfully')
-      return true
-    } catch (error) {
-      console.error(`❌ Email transporter verification failed (attempt ${attempt}):`, error.message)
-      
-      if (attempt === retries) {
-        console.error('❌ All verification attempts failed')
-        return false
+  for (let transporterIndex = 0; transporterIndex < allTransporters.length; transporterIndex++) {
+    const currentTransporter = allTransporters[transporterIndex]
+    const isPrimary = transporterIndex === 0
+    
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        console.log(`🔍 Verifying ${isPrimary ? 'primary' : 'fallback'} transporter (attempt ${attempt}/${retries})...`)
+        await currentTransporter.verify()
+        console.log(`✅ Email transporter verified successfully (${isPrimary ? 'primary' : 'fallback'})`)
+        
+        // If fallback worked, make it the primary
+        if (!isPrimary && transporterIndex > 0) {
+          console.log(`🔄 Switching to fallback transporter as primary`)
+          transporter = currentTransporter
+        }
+        
+        return true
+      } catch (error) {
+        console.error(`❌ Email transporter verification failed (${isPrimary ? 'primary' : 'fallback'}, attempt ${attempt}):`, error.message)
+        
+        if (attempt === retries) {
+          console.warn(`⚠️ All attempts failed for ${isPrimary ? 'primary' : 'fallback'} transporter`)
+          break // Try next transporter
+        }
+        
+        // Wait before retry with exponential backoff
+        const waitTime = Math.min(attempt * 2000, 10000) // Max 10s
+        console.log(`⏱️  Retrying in ${waitTime}ms...`)
+        await new Promise(resolve => setTimeout(resolve, waitTime))
       }
-      
-      // Wait before retry
-      console.log(`⏱️  Retrying in ${attempt * 1000}ms...`)
-      await new Promise(resolve => setTimeout(resolve, attempt * 1000))
     }
   }
   
+  console.error('❌ All transporters failed verification')
   return false
 }
 
@@ -509,10 +597,12 @@ const emailTemplates = {
   }
 }
 
-// Send email function
+// Send email function with intelligent fallback
 export const sendEmail = async (to, subject, html, text = '') => {
-  if (!transporter && !process.env.RESEND_API_KEY) {
-    console.warn(`⚠️ Email transporter not available and RESEND_API_KEY missing, skipping email to ${to}`)
+  const allTransporters = [transporter, ...fallbackTransporters].filter(Boolean)
+  
+  if (allTransporters.length === 0 && !process.env.RESEND_API_KEY) {
+    console.warn(`⚠️ No email transporters available and RESEND_API_KEY missing, skipping email to ${to}`)
     console.warn(`⚠️ Email configuration check - USER: ${(process.env.ZOHO_SMTP_USER || process.env.EMAIL_USER) ? 'SET' : 'MISSING'}, PASS: ${(process.env.ZOHO_SMTP_PASS || process.env.EMAIL_PASS) ? 'SET' : 'MISSING'}`)
     return { success: false, error: 'Email service not configured' }
   }
@@ -527,13 +617,43 @@ export const sendEmail = async (to, subject, html, text = '') => {
     }
 
     console.log(`📧 Attempting to send email to ${to} from ${process.env.MAIL_FROM_ADDRESS || process.env.ZOHO_SMTP_USER || process.env.EMAIL_USER}`)
-    const apiKeyEarly = process.env.RESEND_API_KEY
-    if (apiKeyEarly) {
+    
+    // Try each transporter in order
+    for (let i = 0; i < allTransporters.length; i++) {
+      const currentTransporter = allTransporters[i]
+      const isPrimary = i === 0
+      
       try {
-        const rEarly = await fetch('https://api.resend.com/emails', {
+        console.log(`📧 Trying ${isPrimary ? 'primary' : 'fallback'} transporter (${i + 1}/${allTransporters.length})...`)
+        const result = await currentTransporter.sendMail(mailOptions)
+        console.log(`✅ Email sent successfully to ${to} with messageId: ${result.messageId}`)
+        return { success: true, messageId: result.messageId }
+      } catch (err) {
+        const isLastTransporter = i === allTransporters.length - 1
+        const isNetworkTimeout = err && (err.code === 'ETIMEDOUT' || err.code === 'ECONNRESET' || err.code === 'ENETUNREACH' || err.code === 'EAI_AGAIN')
+        const isAuthError = err && (err.code === 'EAUTH' || String(err.responseCode) === '554')
+        
+        console.error(`❌ ${isPrimary ? 'Primary' : 'Fallback'} transporter failed:`, err.message)
+        
+        if (isLastTransporter) {
+          console.warn(`⚠️ All SMTP transporters failed, attempting Resend API fallback...`)
+          break // Continue to Resend fallback
+        } else {
+          console.log(`🔄 Trying next transporter...`)
+          continue // Try next transporter
+        }
+      }
+    }
+    
+    // Final fallback: Resend API
+    const apiKey = process.env.RESEND_API_KEY
+    if (apiKey) {
+      try {
+        console.log(`📧 Attempting Resend API as final fallback...`)
+        const r = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${apiKeyEarly}`,
+            Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
@@ -544,106 +664,23 @@ export const sendEmail = async (to, subject, html, text = '') => {
             text: mailOptions.text
           })
         })
-        if (rEarly.ok) {
-          const dataEarly = await rEarly.json()
-          const messageIdEarly = dataEarly?.id || dataEarly?.data?.id || 'resend'
-          console.log(`✅ Email sent via Resend to ${to} with id: ${messageIdEarly}`)
-          return { success: true, messageId: messageIdEarly }
+        
+        if (r.ok) {
+          const data = await r.json()
+          const messageId = data?.id || data?.data?.id || 'resend'
+          console.log(`✅ Email sent via Resend API to ${to} with id: ${messageId}`)
+          return { success: true, messageId }
         } else {
-          const bodyEarly = await rEarly.text()
-          console.warn(`⚠️ Resend HTTP send failed (early): ${rEarly.status} ${bodyEarly}, falling back to SMTP`)
+          const body = await r.text()
+          throw new Error(`Resend API failed: ${r.status} ${body}`)
         }
-      } catch (resendErrEarly) {
-        console.warn(`⚠️ Resend HTTP send error (early): ${resendErrEarly?.message || resendErrEarly}, falling back to SMTP`)
+      } catch (resendErr) {
+        console.error(`❌ Resend API also failed:`, resendErr.message)
+        throw new Error(`All email methods failed. Last error: ${resendErr.message}`)
       }
+    } else {
+      throw new Error('All SMTP transporters failed and no Resend API key available')
     }
-    let result
-    try {
-      result = await transporter.sendMail(mailOptions)
-            } catch (err) {
-              const isZohoAuthError = err && (err.code === 'EAUTH' || String(err.responseCode) === '554')
-              const usingPro = (process.env.ZOHO_SMTP_HOST || '').includes('smtppro.zoho.eu')
-              const isNetworkTimeout = err && (err.code === 'ETIMEDOUT' || err.code === 'ECONNRESET' || err.code === 'ENETUNREACH' || err.code === 'EAI_AGAIN')
-              if (isZohoAuthError && usingPro) {
-                try {
-                  const fallback = makeTransport({ host: 'smtp.zoho.eu' })
-                  console.log('🔁 Retrying email via smtp.zoho.eu fallback')
-                  result = await fallback.sendMail(mailOptions)
-                } catch (retryErr) {
-                  throw retryErr
-                }
-              } else if (isNetworkTimeout) {
-                try {
-                  const fallback587 = makeTransport({ host: 'smtp.zoho.eu', port: 587, secure: false, requireTLS: true })
-                  console.log('🔁 Retrying email via smtp.zoho.eu:587 STARTTLS fallback')
-                  result = await fallback587.sendMail(mailOptions)
-                } catch (retryErr2) {
-                  if (usingPro) {
-                    try {
-                      const fallbackPro587 = makeTransport({ host: 'smtppro.zoho.eu', port: 587, secure: false, requireTLS: true })
-                      console.log('🔁 Retrying email via smtppro.zoho.eu:587 STARTTLS fallback')
-                      result = await fallbackPro587.sendMail(mailOptions)
-                    } catch (retryErr3) {
-                      const apiKey = process.env.RESEND_API_KEY
-                      if (apiKey) {
-                        const r = await fetch('https://api.resend.com/emails', {
-                          method: 'POST',
-                          headers: {
-                            Authorization: `Bearer ${apiKey}`,
-                            'Content-Type': 'application/json'
-                          },
-                          body: JSON.stringify({
-                            from: mailOptions.from,
-                            to: Array.isArray(mailOptions.to) ? mailOptions.to : [mailOptions.to],
-                            subject: mailOptions.subject,
-                            html: mailOptions.html,
-                            text: mailOptions.text
-                          })
-                        })
-                        if (!r.ok) {
-                          const body = await r.text()
-                          throw new Error(`RESEND_HTTP_FAIL ${r.status} ${body}`)
-                        }
-                        const data = await r.json()
-                        result = { messageId: data?.id || data?.data?.id || 'resend' }
-                      } else {
-                        throw retryErr3
-                      }
-                    }
-                  } else {
-                    const apiKey = process.env.RESEND_API_KEY
-                    if (apiKey) {
-                      const r = await fetch('https://api.resend.com/emails', {
-                        method: 'POST',
-                        headers: {
-                          Authorization: `Bearer ${apiKey}`,
-                          'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                          from: mailOptions.from,
-                          to: Array.isArray(mailOptions.to) ? mailOptions.to : [mailOptions.to],
-                          subject: mailOptions.subject,
-                          html: mailOptions.html,
-                          text: mailOptions.text
-                        })
-                      })
-                      if (!r.ok) {
-                        const body = await r.text()
-                        throw new Error(`RESEND_HTTP_FAIL ${r.status} ${body}`)
-                      }
-                      const data = await r.json()
-                      result = { messageId: data?.id || data?.data?.id || 'resend' }
-                    } else {
-                      throw retryErr2
-                    }
-                  }
-                }
-              } else {
-                throw err
-              }
-            }
-    console.log(`✅ Email sent successfully to ${to} with messageId: ${result.messageId}`)
-    return { success: true, messageId: result.messageId }
   } catch (error) {
     console.error(`❌ Failed to send email to ${to}:`, error.message)
     console.error(`❌ Email config error details:`, {
