@@ -511,8 +511,8 @@ const emailTemplates = {
 
 // Send email function
 export const sendEmail = async (to, subject, html, text = '') => {
-  if (!transporter) {
-    console.warn(`⚠️ Email transporter not available, skipping email to ${to}`)
+  if (!transporter && !process.env.RESEND_API_KEY) {
+    console.warn(`⚠️ Email transporter not available and RESEND_API_KEY missing, skipping email to ${to}`)
     console.warn(`⚠️ Email configuration check - USER: ${(process.env.ZOHO_SMTP_USER || process.env.EMAIL_USER) ? 'SET' : 'MISSING'}, PASS: ${(process.env.ZOHO_SMTP_PASS || process.env.EMAIL_PASS) ? 'SET' : 'MISSING'}`)
     return { success: false, error: 'Email service not configured' }
   }
@@ -527,6 +527,36 @@ export const sendEmail = async (to, subject, html, text = '') => {
     }
 
     console.log(`📧 Attempting to send email to ${to} from ${process.env.MAIL_FROM_ADDRESS || process.env.ZOHO_SMTP_USER || process.env.EMAIL_USER}`)
+    const apiKeyEarly = process.env.RESEND_API_KEY
+    if (apiKeyEarly) {
+      try {
+        const rEarly = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKeyEarly}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: mailOptions.from,
+            to: Array.isArray(mailOptions.to) ? mailOptions.to : [mailOptions.to],
+            subject: mailOptions.subject,
+            html: mailOptions.html,
+            text: mailOptions.text
+          })
+        })
+        if (rEarly.ok) {
+          const dataEarly = await rEarly.json()
+          const messageIdEarly = dataEarly?.id || dataEarly?.data?.id || 'resend'
+          console.log(`✅ Email sent via Resend to ${to} with id: ${messageIdEarly}`)
+          return { success: true, messageId: messageIdEarly }
+        } else {
+          const bodyEarly = await rEarly.text()
+          console.warn(`⚠️ Resend HTTP send failed (early): ${rEarly.status} ${bodyEarly}, falling back to SMTP`)
+        }
+      } catch (resendErrEarly) {
+        console.warn(`⚠️ Resend HTTP send error (early): ${resendErrEarly?.message || resendErrEarly}, falling back to SMTP`)
+      }
+    }
     let result
     try {
       result = await transporter.sendMail(mailOptions)

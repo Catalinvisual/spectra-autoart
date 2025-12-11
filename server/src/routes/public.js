@@ -740,7 +740,7 @@ router.post('/bookings', async (req, res) => {
     // Start async operations but don't wait for them
     saveBookingAsync();
     processNewsletterAsync();
-    await sendEmailsAsync();
+    sendEmailsAsync();
     
     const totalTime = Date.now() - startTime;
     console.log(`✅ Booking request completed successfully in ${totalTime}ms`);
