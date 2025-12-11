@@ -23,6 +23,8 @@ const makeTransport = (override = {}) => {
     pool: false,
     maxConnections: 1,
     maxMessages: 1,
+    requireTLS: override.requireTLS || false,
+    name: override.name,
     tls: { rejectUnauthorized: false, minVersion: 'TLSv1.2' }
   })
 }
@@ -528,21 +530,40 @@ export const sendEmail = async (to, subject, html, text = '') => {
     let result
     try {
       result = await transporter.sendMail(mailOptions)
-    } catch (err) {
-      const isZohoAuthError = err && (err.code === 'EAUTH' || String(err.responseCode) === '554')
-      const usingPro = (process.env.ZOHO_SMTP_HOST || '').includes('smtppro.zoho.eu')
-      if (isZohoAuthError && usingPro) {
-        try {
-          const fallback = makeTransport({ host: 'smtp.zoho.eu' })
-          console.log('🔁 Retrying email via smtp.zoho.eu fallback')
-          result = await fallback.sendMail(mailOptions)
-        } catch (retryErr) {
-          throw retryErr
-        }
-      } else {
-        throw err
-      }
-    }
+            } catch (err) {
+              const isZohoAuthError = err && (err.code === 'EAUTH' || String(err.responseCode) === '554')
+              const usingPro = (process.env.ZOHO_SMTP_HOST || '').includes('smtppro.zoho.eu')
+              const isNetworkTimeout = err && (err.code === 'ETIMEDOUT' || err.code === 'ECONNRESET' || err.code === 'ENETUNREACH' || err.code === 'EAI_AGAIN')
+              if (isZohoAuthError && usingPro) {
+                try {
+                  const fallback = makeTransport({ host: 'smtp.zoho.eu' })
+                  console.log('🔁 Retrying email via smtp.zoho.eu fallback')
+                  result = await fallback.sendMail(mailOptions)
+                } catch (retryErr) {
+                  throw retryErr
+                }
+              } else if (isNetworkTimeout) {
+                try {
+                  const fallback587 = makeTransport({ host: 'smtp.zoho.eu', port: 587, secure: false, requireTLS: true })
+                  console.log('🔁 Retrying email via smtp.zoho.eu:587 STARTTLS fallback')
+                  result = await fallback587.sendMail(mailOptions)
+                } catch (retryErr2) {
+                  if (usingPro) {
+                    try {
+                      const fallbackPro587 = makeTransport({ host: 'smtppro.zoho.eu', port: 587, secure: false, requireTLS: true })
+                      console.log('🔁 Retrying email via smtppro.zoho.eu:587 STARTTLS fallback')
+                      result = await fallbackPro587.sendMail(mailOptions)
+                    } catch (retryErr3) {
+                      throw retryErr3
+                    }
+                  } else {
+                    throw retryErr2
+                  }
+                }
+              } else {
+                throw err
+              }
+            }
     console.log(`✅ Email sent successfully to ${to} with messageId: ${result.messageId}`)
     return { success: true, messageId: result.messageId }
   } catch (error) {
