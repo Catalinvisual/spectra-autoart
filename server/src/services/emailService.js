@@ -554,10 +554,58 @@ export const sendEmail = async (to, subject, html, text = '') => {
                       console.log('🔁 Retrying email via smtppro.zoho.eu:587 STARTTLS fallback')
                       result = await fallbackPro587.sendMail(mailOptions)
                     } catch (retryErr3) {
-                      throw retryErr3
+                      const apiKey = process.env.RESEND_API_KEY
+                      if (apiKey) {
+                        const r = await fetch('https://api.resend.com/emails', {
+                          method: 'POST',
+                          headers: {
+                            Authorization: `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json'
+                          },
+                          body: JSON.stringify({
+                            from: mailOptions.from,
+                            to: Array.isArray(mailOptions.to) ? mailOptions.to : [mailOptions.to],
+                            subject: mailOptions.subject,
+                            html: mailOptions.html,
+                            text: mailOptions.text
+                          })
+                        })
+                        if (!r.ok) {
+                          const body = await r.text()
+                          throw new Error(`RESEND_HTTP_FAIL ${r.status} ${body}`)
+                        }
+                        const data = await r.json()
+                        result = { messageId: data?.id || data?.data?.id || 'resend' }
+                      } else {
+                        throw retryErr3
+                      }
                     }
                   } else {
-                    throw retryErr2
+                    const apiKey = process.env.RESEND_API_KEY
+                    if (apiKey) {
+                      const r = await fetch('https://api.resend.com/emails', {
+                        method: 'POST',
+                        headers: {
+                          Authorization: `Bearer ${apiKey}`,
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                          from: mailOptions.from,
+                          to: Array.isArray(mailOptions.to) ? mailOptions.to : [mailOptions.to],
+                          subject: mailOptions.subject,
+                          html: mailOptions.html,
+                          text: mailOptions.text
+                        })
+                      })
+                      if (!r.ok) {
+                        const body = await r.text()
+                        throw new Error(`RESEND_HTTP_FAIL ${r.status} ${body}`)
+                      }
+                      const data = await r.json()
+                      result = { messageId: data?.id || data?.data?.id || 'resend' }
+                    } else {
+                      throw retryErr2
+                    }
                   }
                 }
               } else {
