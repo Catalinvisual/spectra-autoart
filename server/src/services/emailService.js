@@ -220,6 +220,8 @@ const emailTemplates = {
           bookingDetails: 'Afspraak Details',
           selectedServices: 'Geselecteerde Diensten',
           name: 'Naam', email: 'Email', phone: 'Telefoon', date: 'Datum', time: 'Tijd', vehicle: 'Voertuig', body: 'Carrosserie',
+          locationTitle: 'Locatie',
+          locationAddress: 'Voorbeeldstraat 123, Amsterdam, Nederland',
           autoNote: 'Dit e-mailbericht is automatisch gegenereerd.'
         },
         en: {
@@ -228,6 +230,8 @@ const emailTemplates = {
           bookingDetails: 'Booking Details',
           selectedServices: 'Selected Services',
           name: 'Name', email: 'Email', phone: 'Phone', date: 'Date', time: 'Time', vehicle: 'Vehicle', body: 'Body Type',
+          locationTitle: 'Location',
+          locationAddress: 'Example Street 123, London, UK',
           autoNote: 'This email was generated automatically.'
         },
         es: {
@@ -236,6 +240,8 @@ const emailTemplates = {
           bookingDetails: 'Detalles de la Reserva',
           selectedServices: 'Servicios Seleccionados',
           name: 'Nombre', email: 'Correo', phone: 'Teléfono', date: 'Fecha', time: 'Hora', vehicle: 'Vehículo', body: 'Tipo de Carrocería',
+          locationTitle: 'Ubicación',
+          locationAddress: 'Calle Ejemplo 123, Madrid, España',
           autoNote: 'Este correo fue generado automáticamente.'
         },
         pl: {
@@ -244,6 +250,8 @@ const emailTemplates = {
           bookingDetails: 'Szczegóły Rezerwacji',
           selectedServices: 'Wybrane Usługi',
           name: 'Imię', email: 'Email', phone: 'Telefon', date: 'Data', time: 'Godzina', vehicle: 'Pojazd', body: 'Typ Nadwozia',
+          locationTitle: 'Lokalizacja',
+          locationAddress: 'Przykładowa Ulica 123, Warszawa, Polska',
           autoNote: 'Ten email został wygenerowany automatycznie.'
         },
         ro: {
@@ -252,6 +260,8 @@ const emailTemplates = {
           bookingDetails: 'Detalii Programare',
           selectedServices: 'Servicii Selectate',
           name: 'Nume', email: 'Email', phone: 'Telefon', date: 'Data', time: 'Ora', vehicle: 'Vehicul', body: 'Tip Caroserie',
+          locationTitle: 'Locație',
+          locationAddress: 'Strada Exemplu 123, București, România',
           autoNote: 'Acest email a fost generat automat. Nu răspunde la acest mesaj.'
         }
       }
@@ -261,7 +271,7 @@ const emailTemplates = {
       return services.map(service => `
         <div style="margin-bottom: 10px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
           <span style="font-weight: 600; color: #212529;">${service.name}</span>
-          ${service.price ? `<span style="color: #007bff; font-weight: 700;">€${service.price}</span>` : ''}
+          <span style="color: #007bff; font-weight: 700;">€${service.price || 0}</span>
         </div>
       `).join('')
     }
@@ -276,7 +286,7 @@ const emailTemplates = {
         <style>
           body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
           .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-          .header { background: linear-gradient(135deg, #00bcd4 0%, #2196f3 100%); color: white; padding: 18px 24px; text-align: center; }
+          .header { background-color: #2196f3; background: linear-gradient(135deg, #00bcd4 0%, #2196f3 100%); color: white; padding: 18px 24px; text-align: center; }
           .header h1 { margin: 0; font-size: 24px; font-weight: 500; }
           .content { padding: 30px; }
           .booking-details { background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
@@ -293,9 +303,8 @@ const emailTemplates = {
       </head>
       <body>
         <div class="container">
-          <div class="header">
-            <h1>Spectra AutoArt</h1>
-            <p>${t.confirmHeader}</p>
+          <div class="header" style="background-color: #2196f3; background: linear-gradient(135deg, #00bcd4 0%, #2196f3 100%); color: white; padding: 18px 24px; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: 500;">Spectra AutoArt</h1>
           </div>
           
           <div class="content">
@@ -343,8 +352,8 @@ const emailTemplates = {
             </div>
 
             <div class="highlight">
-              <h4>📍</h4>
-              <p></p>
+              <h4>📍 ${t.locationTitle}</h4>
+              <p>${t.locationAddress}</p>
             </div>
           </div>
 
@@ -353,7 +362,7 @@ const emailTemplates = {
             <div class="contact-info">
               <p>📧 Email: contact@spectraautoart.nl</p>
               <p>📞 Telefon: +40 712 345 678</p>
-              <p>🌐 Website: www.spectraautoart.ro</p>
+              <p>🌐 Website: www.spectraautoart.nl</p>
             </div>
             <p style="margin-top: 15px; font-size: 12px; opacity: 0.8;">
               ${t.autoNote}
@@ -420,7 +429,7 @@ const emailTemplates = {
       return services.map(service => `
         <div style="margin-bottom: 10px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
           <span style="font-weight: 600; color: #212529;">${service.name}</span>
-          ${service.price ? `<span style="color: #007bff; font-weight: 700; margin-left: 12px;">€${service.price}</span>` : ''}
+          <span style="color: #007bff; font-weight: 700; margin-left: 12px;">€${service.price || 0}</span>
         </div>
       `).join('')
     }
@@ -493,7 +502,7 @@ const emailTemplates = {
             <p><strong>Spectra AutoArt - Detailing Auto Premium</strong></p>
             <div class="contact-info">
               <p>📧 Email: contact@spectraautoart.nl</p>
-              <p>🌐 Website: www.spectraautoart.ro</p>
+              <p>🌐 Website: www.spectraautoart.nl</p>
             </div>
             <p style="margin-top: 15px; font-size: 12px; opacity: 0.8;">${t.autoNote}</p>
           </div>
