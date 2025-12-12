@@ -300,7 +300,7 @@ router.get('/bookings', requireAuth, async (req, res) => {
         make: make,
         model: model,
         type: type,
-        body: body,
+        body: '',
         services: servicesArray,
         total: total,
         user: {
@@ -444,7 +444,7 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
       time: timeVal,
       make: makeIndex !== -1 ? (data[actualRowIndex][makeIndex] || '') : (makeIn || ''),
       model: modelIndex !== -1 ? (data[actualRowIndex][modelIndex] || '') : (modelIn || ''),
-      body: body,
+      body: bodyIn || '',
       type: typeIndex !== -1 ? (data[actualRowIndex][typeIndex] || '') : (typeIn || ''),
       newsletter: false,
       locale: (() => {
@@ -588,7 +588,7 @@ router.put('/bookings/:id', requireAuth, async (req, res) => {
       time: timeVal,
       make: makeIndex2 !== -1 ? (data[actualRowIndex][makeIndex2] || '') : (makeIn || ''),
       model: modelIndex2 !== -1 ? (data[actualRowIndex][modelIndex2] || '') : (modelIn || ''),
-      body: body,
+      body: bodyIn || '',
       type: typeIndex2 !== -1 ? (data[actualRowIndex][typeIndex2] || '') : (typeIn || ''),
       newsletter: false,
       locale: (() => {

@@ -420,12 +420,8 @@ const startServer = async () => {
         }
       })
 
-      // Initialize services in BACKGROUND after server starts
-      setTimeout(() => {
-        initializeServices().catch(error => {
-          console.error('❌ Failed to initialize services:', error.message)
-        })
-      }, 100)
+      // Services are now initialized before server starts
+      console.log('✅ Server fully ready with all services initialized')
     })
     
     server.on('error', (error) => {
@@ -440,5 +436,18 @@ const startServer = async () => {
   }
 }
 
-// Start the server immediately
-startServer()
+// Initialize services before starting server
+async function initializeAndStartServer() {
+  try {
+    console.log('🔄 Initializing services before server startup...')
+    await initializeServices()
+    console.log('✅ Services initialized successfully, starting server...')
+    await startServer()
+  } catch (error) {
+    console.error('❌ Failed to initialize services or start server:', error.message)
+    process.exit(1)
+  }
+}
+
+// Start the server after services are initialized
+initializeAndStartServer()

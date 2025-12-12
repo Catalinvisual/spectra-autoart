@@ -164,6 +164,7 @@ const Admin: React.FC = () => {
       try {
         await adminAPI.deleteBooking(bookingToDelete)
         toast.showSuccess(t('admin.bookingDeleted'))
+        
         // Refresh bookings list after successful deletion
         setBookingsRefreshKey(prev => prev + 1)
       } catch (error) {
@@ -501,6 +502,10 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
       })
       
       setBookings(transformedBookings)
+      
+      // Actualizează lista de bookedDates bazată pe toate programările încărcate
+      updateBookedDatesFromBookings(transformedBookings)
+      
     } catch (error) {
       console.error('Error loading bookings:', error)
     } finally {
@@ -607,6 +612,17 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     setShowEditModal(false)
   }
 
+  // Funcție pentru a actualiza lista de bookedDates bazată pe toate programările existente
+  const updateBookedDatesFromBookings = (bookingsList: Booking[]) => {
+    const bookedDatesSet = new Set<string>()
+    bookingsList.forEach(booking => {
+      if (booking.date) {
+        bookedDatesSet.add(booking.date)
+      }
+    })
+    setBookedDatesAdmin(Array.from(bookedDatesSet))
+  }
+
   useEffect(() => {
     const active = showDetailsModal || showEditModal
     const prevHtmlOverflow = document.documentElement.style.overflow
@@ -644,8 +660,41 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     if (!editingBooking) return
     
     try {
+      // Obține data veche înainte de actualizare
+      const oldDate = bookings.find((b: Booking) => b.id === editingBooking.id)?.date
+      
       await adminAPI.updateBooking(editingBooking.id, { status: editingBooking.status, date: editingBooking.date, time: editingBooking.time })
-      setBookings(prev => prev.map(b => b.id === editingBooking.id ? { ...b, status: editingBooking.status, date: editingBooking.date, time: editingBooking.time } : b))
+      setBookings(prev => prev.map((b: Booking) => b.id === editingBooking.id ? { ...b, status: editingBooking.status, date: editingBooking.date, time: editingBooking.time } : b))
+      
+      // Actualizează lista de bookedDates pentru calendar
+      setBookedDatesAdmin((prev: string[]) => {
+        const newBookedDates = [...prev]
+        
+        // Dacă data s-a schimbat, actualizăm ambele date
+        if (oldDate && oldDate !== editingBooking.date) {
+          // Eliminăm data veche din lista de date ocupate (dacă nu mai există alte programări pe acea dată)
+          const remainingBookingsOnOldDate = bookings.filter((b: Booking) => b.id !== editingBooking.id && b.date === oldDate)
+          if (remainingBookingsOnOldDate.length === 0) {
+            const oldDateIndex = newBookedDates.indexOf(oldDate)
+            if (oldDateIndex > -1) {
+              newBookedDates.splice(oldDateIndex, 1)
+            }
+          }
+          
+          // Adăugăm noua dată în lista de date ocupate
+          if (!newBookedDates.includes(editingBooking.date)) {
+            newBookedDates.push(editingBooking.date)
+          }
+        } else if (!oldDate) {
+          // Dacă nu există dată veche, doar adăugăm noua dată
+          if (!newBookedDates.includes(editingBooking.date)) {
+            newBookedDates.push(editingBooking.date)
+          }
+        }
+        
+        return newBookedDates
+      })
+      
       toast.showSuccess(t('admin.status') + ' ' + t(`admin.${editingBooking.status}`))
       closeEditModal()
     } catch (error) {

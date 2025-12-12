@@ -141,8 +141,18 @@ try {
     transporter = null
     fallbackTransporters = []
   } else {
-    // For non-Railway environments, use normal SMTP initialization
-    initializeTransporters()
+    // For non-Railway environments, check if credentials are available first
+    const hasUser = !!(process.env.ZOHO_SMTP_USER || process.env.EMAIL_USER)
+    const hasPass = !!(process.env.ZOHO_SMTP_PASS || process.env.EMAIL_PASS)
+    if (!hasUser || !hasPass) {
+      console.log('⚠️ Email credentials not configured - skipping SMTP transporter initialization at module level')
+      transporter = null
+      fallbackTransporters = []
+    } else {
+      // For non-Railway environments with credentials, use normal SMTP initialization
+      console.log('📧 Email credentials found - initializing SMTP transporters')
+      initializeTransporters()
+    }
   }
 } catch (error) {
   console.error('❌ Failed to initialize email transporters:', error.message)
@@ -161,6 +171,14 @@ const verifyTransporter = async (retries = 3) => {
       console.warn('⚠️ No Resend API key available in Railway environment')
       return false
     }
+  }
+  
+  // Skip verification if email credentials are not configured
+  const hasUser = !!(process.env.ZOHO_SMTP_USER || process.env.EMAIL_USER)
+  const hasPass = !!(process.env.ZOHO_SMTP_PASS || process.env.EMAIL_PASS)
+  if (!hasUser || !hasPass) {
+    console.log('⚠️ Email credentials not configured - skipping SMTP verification')
+    return false
   }
   
   const allTransporters = [transporter, ...fallbackTransporters].filter(Boolean)
@@ -853,6 +871,14 @@ export const initializeEmailService = async () => {
     console.warn('⚠️ Email credentials not configured - email service disabled')
     return false
   }
+  
+  // Skip verification in development mode to avoid startup timeouts
+  if (process.env.NODE_ENV === 'development') {
+    console.log('⚠️ Development mode detected - skipping email service verification to avoid timeouts')
+    console.log('📧 Email service initialized (verification skipped in development)')
+    return true
+  }
+  
   try {
     const isVerified = await verifyTransporter()
     if (!isVerified) {
