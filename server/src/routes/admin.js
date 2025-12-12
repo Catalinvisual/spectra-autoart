@@ -438,7 +438,8 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
       }).filter(service => service.name.length > 0)
     }
 
-    const bookingData = {\      user: { name, email, phone },
+    const bookingData = {
+      user: { name, email, phone },
       date: dateVal,
       time: timeVal,
       make: makeIndex !== -1 ? (data[actualRowIndex][makeIndex] || '') : (makeIn || ''),
