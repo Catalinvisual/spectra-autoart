@@ -382,7 +382,7 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     const servicesString = data[actualRowIndex][servicesIndex] || ''
     
     // Define body variable before using it in services mapping
-    const body = bodyIndex2 !== -1 ? (data[actualRowIndex][bodyIndex2] || '') : (bodyIn || '')
+    const body = bodyIndex !== -1 ? (data[actualRowIndex][bodyIndex] || '') : (bodyIn || '')
 
     let servicesArr = []
     if (servicesString && typeof servicesString === 'string') {
@@ -499,7 +499,7 @@ router.put('/bookings/:id', requireAuth, async (req, res) => {
     const makeIndex2 = findCol('Make','Marca','Vehicle_Make')
     const modelIndex2 = findCol('Model','Vehicle_Model')
     const typeIndex2 = findCol('Type','Vehicle_Type')
-    const bodyIndex2 = findCol('Body','Caroserie','Body_Type')
+    const bodyIndex = findCol('Body','Caroserie','Body_Type')
     const statusIndex = findCol('Status') !== -1 ? findCol('Status') : 8
     const targetId = String(id).trim()
     const rowIndex = data.slice(1).findIndex(row => String(row[idIndex] || '').trim() === targetId)
@@ -513,7 +513,7 @@ router.put('/bookings/:id', requireAuth, async (req, res) => {
     if (makeIn && makeIndex2 !== -1) data[actualRowIndex][makeIndex2] = String(makeIn)
     if (modelIn && modelIndex2 !== -1) data[actualRowIndex][modelIndex2] = String(modelIn)
     if (typeIn && typeIndex2 !== -1) data[actualRowIndex][typeIndex2] = String(typeIn)
-    if (bodyIn && bodyIndex2 !== -1) data[actualRowIndex][bodyIndex2] = String(bodyIn)
+    if (bodyIn && bodyIndex !== -1) data[actualRowIndex][bodyIndex] = String(bodyIn)
     await GoogleSheetsService.updateData('Bookings', actualRowIndex + 1, data[actualRowIndex])
 
     const name = data[actualRowIndex][nameIndex] || ''

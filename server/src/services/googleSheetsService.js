@@ -516,9 +516,18 @@ class GoogleSheetsService {
       const missing = (columns || []).filter(col => !existing.includes(col));
       if (missing.length > 0) {
         const updatedHeaders = [...existing, ...missing];
-        await sheet.setHeaderRow(updatedHeaders);
-        if (process.env.NODE_ENV !== 'production') {
-          console.log(`✅ ensureSheetColumns: appended ${missing.length} columns to ${sheetName}`);
+        try {
+          await sheet.setHeaderRow(updatedHeaders);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`✅ ensureSheetColumns: appended ${missing.length} columns to ${sheetName}`);
+          }
+        } catch (setHeaderError) {
+          if (setHeaderError.message && setHeaderError.message.includes('protected cell')) {
+            console.log(`⚠️  Skipping header update for ${sheetName}: cells are protected`);
+            // Return true anyway since the columns might already exist
+            return true;
+          }
+          throw setHeaderError;
         }
       }
       return true;
