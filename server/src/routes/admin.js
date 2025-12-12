@@ -230,6 +230,12 @@ router.get('/bookings', requireAuth, async (req, res) => {
         combinedDateTime = `${cleanDate}T${cleanTime}:00`
       }
       
+      // Extract make/model/body from the row data first
+      const make = ''
+      const model = ''
+      const type = ''
+      const body = ''
+      
       let servicesArray = []
       if (servicesString && typeof servicesString === 'string') {
         const cleanServices = servicesString.replace(/^'/, '').replace(/'$/, '').trim()
@@ -286,12 +292,6 @@ router.get('/bookings', requireAuth, async (req, res) => {
       if (total <= 0 && Array.isArray(servicesArray) && servicesArray.length > 0) {
         total = servicesArray.reduce((acc, s) => acc + (typeof s.price === 'number' ? s.price : 0), 0)
       }
-      
-      // Extract make/model from services or use defaults
-      const make = ''
-      const model = ''
-      const type = ''
-      const body = ''
       
       return {
         id: id,
@@ -380,6 +380,9 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     const dateVal = data[actualRowIndex][dateIndex] || ''
     const timeVal = data[actualRowIndex][timeIndex] || ''
     const servicesString = data[actualRowIndex][servicesIndex] || ''
+    
+    // Define body variable before using it in services mapping
+    const body = bodyIndex2 !== -1 ? (data[actualRowIndex][bodyIndex2] || '') : (bodyIn || '')
 
     let servicesArr = []
     if (servicesString && typeof servicesString === 'string') {
@@ -435,13 +438,12 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
       }).filter(service => service.name.length > 0)
     }
 
-    const bookingData = {
-      user: { name, email, phone },
+    const bookingData = {\      user: { name, email, phone },
       date: dateVal,
       time: timeVal,
       make: makeIndex !== -1 ? (data[actualRowIndex][makeIndex] || '') : (makeIn || ''),
       model: modelIndex !== -1 ? (data[actualRowIndex][modelIndex] || '') : (modelIn || ''),
-      body: bodyIndex !== -1 ? (data[actualRowIndex][bodyIndex] || '') : (bodyIn || ''),
+      body: body,
       type: typeIndex !== -1 ? (data[actualRowIndex][typeIndex] || '') : (typeIn || ''),
       newsletter: false,
       locale: (() => {
@@ -579,7 +581,7 @@ router.put('/bookings/:id', requireAuth, async (req, res) => {
       time: timeVal,
       make: makeIndex2 !== -1 ? (data[actualRowIndex][makeIndex2] || '') : (makeIn || ''),
       model: modelIndex2 !== -1 ? (data[actualRowIndex][modelIndex2] || '') : (modelIn || ''),
-      body: bodyIndex2 !== -1 ? (data[actualRowIndex][bodyIndex2] || '') : (bodyIn || ''),
+      body: body,
       type: typeIndex2 !== -1 ? (data[actualRowIndex][typeIndex2] || '') : (typeIn || ''),
       newsletter: false,
       locale: (() => {
