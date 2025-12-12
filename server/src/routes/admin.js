@@ -423,7 +423,7 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
         
         // Try to get body-type specific price first
         let price = 0
-        const bodyTypeKey = String(bookingData.body || '').toLowerCase()
+        const bodyTypeKey = String(body || '').toLowerCase()
         if (bodyTypeKey && sid) {
           const bodySpecificKey = `${sid}:${bodyTypeKey}`
           price = bookingsEnrichmentCache.serviceBodyPrices.get(bodySpecificKey) || 0
@@ -567,7 +567,7 @@ router.put('/bookings/:id', requireAuth, async (req, res) => {
         
         // Try to get body-type specific price first
         let price = 0
-        const bodyTypeKey = String(bookingData.body || '').toLowerCase()
+        const bodyTypeKey = String(bodyIn || '').toLowerCase()
         if (bodyTypeKey && sid) {
           const bodySpecificKey = `${sid}:${bodyTypeKey}`
           price = bookingsEnrichmentCache.serviceBodyPrices.get(bodySpecificKey) || 0
