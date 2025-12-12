@@ -821,14 +821,28 @@ export const sendAdminNotification = async (bookingData, services) => {
 export const sendBookingUpdate = async (bookingData, services) => {
   const html = emailTemplates.clientUpdate(bookingData, services)
   const subject = html.match(/<title>(.*?)<\/title>/)?.[1] || 'Programare Modificată'
-  return await sendEmail(bookingData.user.email, subject, html)
+  const result = await sendEmail(bookingData.user.email, subject, html)
+  
+  if (!result.success) {
+    console.error('❌ Failed to send booking update email:', result.error)
+    throw new Error(`Email sending failed: ${result.error}`)
+  }
+  
+  return result
 }
 
 export const sendAdminUpdate = async (bookingData, services) => {
   const html = emailTemplates.clientUpdate(bookingData, services)
   const subject = html.match(/<title>(.*?)<\/title>/)?.[1] || 'Programare Modificată'
   const adminRecipient = process.env.ADMIN_NOTIFICATION_EMAIL || process.env.MAIL_FROM_ADDRESS || 'contact@spectraautoart.nl'
-  return await sendEmail(adminRecipient, subject, html)
+  const result = await sendEmail(adminRecipient, subject, html)
+  
+  if (!result.success) {
+    console.error('❌ Failed to send admin update email:', result.error)
+    throw new Error(`Admin email sending failed: ${result.error}`)
+  }
+  
+  return result
 }
 
 // Initialize and verify email service

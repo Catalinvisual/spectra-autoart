@@ -454,13 +454,19 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
       })()
     }
 
-    await sendBookingUpdate(bookingData, servicesArr)
-    await sendAdminUpdate(bookingData, servicesArr)
+    console.log('📧 Sending booking update email...')
+    const bookingEmailResult = await sendBookingUpdate(bookingData, servicesArr)
+    console.log('📧 Booking update email result:', bookingEmailResult)
+    
+    console.log('📧 Sending admin update email...')
+    const adminEmailResult = await sendAdminUpdate(bookingData, servicesArr)
+    console.log('📧 Admin update email result:', adminEmailResult)
 
     res.json({ success: true, message: 'Programare actualizată și notificări trimise' })
   } catch (error) {
     console.error('Update booking error:', error)
-    res.status(500).json({ error: 'Failed to update booking' })
+    console.error('Error stack:', error.stack)
+    res.status(500).json({ error: 'Failed to update booking', details: error.message })
   }
 })
 
@@ -591,12 +597,18 @@ router.put('/bookings/:id', requireAuth, async (req, res) => {
         return String(raw || 'nl').toLowerCase()
       })()
     }
-    await sendBookingUpdate(bookingData, servicesArr)
-    await sendAdminUpdate(bookingData, servicesArr)
+    console.log('📧 Sending booking update email (PUT)...')
+    const bookingEmailResult = await sendBookingUpdate(bookingData, servicesArr)
+    console.log('📧 Booking update email result (PUT):', bookingEmailResult)
+    
+    console.log('📧 Sending admin update email (PUT)...')
+    const adminEmailResult = await sendAdminUpdate(bookingData, servicesArr)
+    console.log('📧 Admin update email result (PUT):', adminEmailResult)
     res.json({ success: true, message: 'Programare actualizată și notificări trimise' })
   } catch (error) {
     console.error('Update booking error (PUT):', error)
-    res.status(500).json({ error: 'Failed to update booking' })
+    console.error('Error stack (PUT):', error.stack)
+    res.status(500).json({ error: 'Failed to update booking', details: error.message })
   }
 })
 
