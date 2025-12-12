@@ -372,7 +372,7 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     if (modelIn && modelIndex !== -1) data[actualRowIndex][modelIndex] = String(modelIn)
     if (typeIn && typeIndex !== -1) data[actualRowIndex][typeIndex] = String(typeIn)
     if (bodyIn && bodyIndex !== -1) data[actualRowIndex][bodyIndex] = String(bodyIn)
-    await GoogleSheetsService.updateData('Bookings', actualRowIndex + 1, data[actualRowIndex])
+    await GoogleSheetsService.updateData('Bookings', actualRowIndex, data[actualRowIndex])
 
     const name = data[actualRowIndex][nameIndex] || ''
     const email = data[actualRowIndex][emailIndex] || ''
@@ -514,7 +514,7 @@ router.put('/bookings/:id', requireAuth, async (req, res) => {
     if (modelIn && modelIndex2 !== -1) data[actualRowIndex][modelIndex2] = String(modelIn)
     if (typeIn && typeIndex2 !== -1) data[actualRowIndex][typeIndex2] = String(typeIn)
     if (bodyIn && bodyIndex !== -1) data[actualRowIndex][bodyIndex] = String(bodyIn)
-    await GoogleSheetsService.updateData('Bookings', actualRowIndex + 1, data[actualRowIndex])
+    await GoogleSheetsService.updateData('Bookings', actualRowIndex, data[actualRowIndex])
 
     const name = data[actualRowIndex][nameIndex] || ''
     const email = data[actualRowIndex][emailIndex] || ''
@@ -652,7 +652,7 @@ router.patch('/messages/:id', requireAuth, async (req, res) => {
     data[actualRowIndex][7] = status
 
     // Update the data in Google Sheets
-    await GoogleSheetsService.updateData('Messages', actualRowIndex + 1, data[actualRowIndex]) // +1 because Google Sheets is 1-indexed
+    await GoogleSheetsService.updateData('Messages', actualRowIndex, data[actualRowIndex]) // Google Sheets is 1-indexed
 
     res.json({ success: true, message: 'Status updated successfully' })
   } catch (error) {
@@ -954,7 +954,7 @@ router.put('/gallery/*', requireAuth, async (req, res) => {
     }
 
     // Update the data in Google Sheets
-    await GoogleSheetsService.updateData('Gallery', actualRowIndex + 1, currentRow)
+    await GoogleSheetsService.updateData('Gallery', actualRowIndex, currentRow)
     console.log('✅ Gallery image updated successfully:', id)
 
     res.json({ 
