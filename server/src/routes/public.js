@@ -473,6 +473,11 @@ router.get('/bookings/availability', async (req, res) => {
           return cleanBookingDate === dateString && bookingStatus !== 'cancelled';
         });
 
+        // Prevent browser caching to ensure fresh availability data after booking updates
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        
         res.json({ 
           success: true,
           available: !hasBookingForDate,
@@ -493,6 +498,11 @@ router.get('/bookings/availability', async (req, res) => {
     } else {
       // Get all booked dates (for calendar coloring)
       try {
+        // Prevent browser caching to ensure fresh data after booking updates
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        
         const data = await GoogleSheetsService.getData('Bookings');
         
         if (data.length <= 1) {

@@ -444,7 +444,7 @@ const emailTemplates = {
         <style>
           body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
           .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-          .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 18px 24px; text-align: center; }
+          .header { background-color: #2196f3; background: linear-gradient(135deg, #00bcd4 0%, #2196f3 100%); color: white; padding: 18px 24px; text-align: center; }
           .header h1 { margin: 0; font-size: 24px; font-weight: 500; }
           .content { padding: 30px; }
           .booking-details { background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }

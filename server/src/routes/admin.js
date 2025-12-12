@@ -16,6 +16,7 @@ let bookingsEnrichmentCache = {
   idToName: new Map(),
   nameToId: new Map(),
   serviceMinPrice: new Map(),
+  serviceBodyPrices: new Map(), // New: stores prices per service-body type combination
   lastFetch: 0
 }
 
@@ -30,6 +31,7 @@ async function ensureEnrichmentCache() {
     const idToName = new Map()
     const nameToId = new Map()
     const serviceMinPrice = new Map()
+    const serviceBodyPrices = new Map()
     if (servicesData && servicesData.length > 1) {
       const hs = servicesData[0]
       const idIdx = hs.indexOf('ID')
@@ -51,6 +53,7 @@ async function ensureEnrichmentCache() {
     const sidIdx = hp.indexOf('Service_ID')
     const pminIdx = hp.indexOf('Price_Min')
     const activeIdx = hp.indexOf('Is_Active')
+    const bodyTypeKeyIdx = hp.indexOf('Body_Type_Key') || hp.indexOf('body_type_key') || -1
     if (sidIdx !== -1 && pminIdx !== -1) {
       pricesData.slice(1).forEach(row => {
         const sid = String(row[sidIdx] || '').trim()
@@ -59,13 +62,21 @@ async function ensureEnrichmentCache() {
           ? true
           : (activeVal === 'true' || activeVal === true || activeVal === 'TRUE' || activeVal === 'True' || activeVal === 1)
         const pmin = parseFloat(row[pminIdx]) || 0
+        const bodyTypeKey = bodyTypeKeyIdx !== -1 ? String(row[bodyTypeKeyIdx] || '').trim().toLowerCase() : ''
         if (!sid) return
         if (isActive) {
+          // Store minimum price for backward compatibility
           if (!serviceMinPrice.has(sid)) {
             serviceMinPrice.set(sid, pmin)
           } else {
             const cur = serviceMinPrice.get(sid) || 0
             serviceMinPrice.set(sid, Math.min(cur, pmin))
+          }
+          
+          // Store price per service-body type combination
+          if (bodyTypeKey) {
+            const key = `${sid}:${bodyTypeKey}`
+            serviceBodyPrices.set(key, pmin)
           }
         }
       })
@@ -75,6 +86,7 @@ async function ensureEnrichmentCache() {
       idToName,
       nameToId,
       serviceMinPrice,
+      serviceBodyPrices,
       lastFetch: Date.now()
     }
   } catch (err) {
@@ -254,7 +266,20 @@ router.get('/bookings', requireAuth, async (req, res) => {
             sid = trimmed.toLowerCase().replace(/\s+/g, '_')
             sname = trimmed
           }
-          const price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
+          
+          // Try to get body-type specific price first
+          let price = 0
+          const bodyTypeKey = String(body || '').toLowerCase()
+          if (bodyTypeKey && sid) {
+            const bodySpecificKey = `${sid}:${bodyTypeKey}`
+            price = bookingsEnrichmentCache.serviceBodyPrices.get(bodySpecificKey) || 0
+          }
+          
+          // Fallback to minimum price if body-specific price not found
+          if (!price && sid) {
+            price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
+          }
+          
           return { id: sid, name: sname, price }
         }).filter(service => service.name.length > 0)
       }
@@ -392,7 +417,20 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
           sid = trimmed.toLowerCase().replace(/\s+/g, '_')
           sname = trimmed
         }
-        const price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
+        
+        // Try to get body-type specific price first
+        let price = 0
+        const bodyTypeKey = String(bookingData.body || '').toLowerCase()
+        if (bodyTypeKey && sid) {
+          const bodySpecificKey = `${sid}:${bodyTypeKey}`
+          price = bookingsEnrichmentCache.serviceBodyPrices.get(bodySpecificKey) || 0
+        }
+        
+        // Fallback to minimum price if body-specific price not found
+        if (!price && sid) {
+          price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
+        }
+        
         return { id: sid, name: sname, price }
       }).filter(service => service.name.length > 0)
     }
@@ -517,7 +555,20 @@ router.put('/bookings/:id', requireAuth, async (req, res) => {
           sid = trimmed.toLowerCase().replace(/\s+/g, '_')
           sname = trimmed
         }
-        const price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
+        
+        // Try to get body-type specific price first
+        let price = 0
+        const bodyTypeKey = String(bookingData.body || '').toLowerCase()
+        if (bodyTypeKey && sid) {
+          const bodySpecificKey = `${sid}:${bodyTypeKey}`
+          price = bookingsEnrichmentCache.serviceBodyPrices.get(bodySpecificKey) || 0
+        }
+        
+        // Fallback to minimum price if body-specific price not found
+        if (!price && sid) {
+          price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
+        }
+        
         return { id: sid, name: sname, price }
       }).filter(service => service.name.length > 0)
     }
