@@ -272,22 +272,18 @@ class GoogleSheetsService {
         throw new Error('Google Sheets service not properly initialized for getting data');
       }
 
-      // Ensure document info is loaded
-      try {
-        if (!this.doc.title) {
-          await this.doc.loadInfo();
-        }
-      } catch (loadError) {
-        console.log(`⚠️  Document info not loaded, loading now: ${loadError.message}`);
-        await this.doc.loadInfo();
-      }
+      // Force reload document info to avoid caching issues
+      console.log(`🔄 Forcing document reload for fresh data from ${sheetName}`);
+      await this.doc.loadInfo();
 
       const sheet = this.doc.sheetsByTitle[sheetName];
       if (!sheet) {
         throw new Error(`Sheet ${sheetName} not found`);
       }
 
-      await sheet.loadHeaderRow();
+      // Force reload sheet data by re-getting the sheet
+      const freshSheet = this.doc.sheetsByTitle[sheetName];
+      await freshSheet.loadHeaderRow();
       const headers = sheet.headerValues || [];
       const rows = await sheet.getRows();
       if (process.env.NODE_ENV !== 'production') {
@@ -457,6 +453,9 @@ class GoogleSheetsService {
 
   async updateData(sheetName, rowIndex, data) {
     try {
+      console.log(`📊 GoogleSheetsService.updateData called with sheetName: ${sheetName}, rowIndex: ${rowIndex}`);
+      console.log(`📊 Data to update:`, data);
+      
       // Force real Google Sheets operation - no more demo mode
       if (!this.isInitialized || !this.doc) {
         throw new Error('Google Sheets service not properly initialized for updating data');
@@ -478,13 +477,16 @@ class GoogleSheetsService {
       }
 
       const rows = await sheet.getRows();
+      console.log(`📊 Found ${rows.length} rows in ${sheetName}`);
+      
       if (rowIndex >= 0 && rowIndex < rows.length) {
+        console.log(`📊 Updating row ${rowIndex} with data:`, data);
         Object.assign(rows[rowIndex], data);
         await rows[rowIndex].save();
         console.log(`✅ Successfully updated row ${rowIndex} in ${sheetName}`);
         return true;
       }
-      console.log(`❌ Row index ${rowIndex} not found in ${sheetName}`);
+      console.log(`❌ Row index ${rowIndex} not found in ${sheetName} (total rows: ${rows.length})`);
       return false;
     } catch (error) {
       console.error(`❌ Error updating data in ${sheetName}:`, error);

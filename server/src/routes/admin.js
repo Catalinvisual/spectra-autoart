@@ -326,6 +326,8 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
     const { status, date, time, make: makeIn, model: modelIn, body: bodyIn, type: typeIn } = req.body
+    console.log(`📝 PATCH request received for booking ${id}`)
+    console.log(`📅 Request body:`, { status, date, time, make: makeIn, model: modelIn, body: bodyIn, type: typeIn })
     await ensureEnrichmentCache()
     await GoogleSheetsService.ensureSheetColumns('Bookings', ['Make','Model','Type','Body','Locale'])
     let data = await GoogleSheetsService.getData('Bookings')
@@ -365,24 +367,46 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Programarea nu a fost găsită' })
     }
     const actualRowIndex = rowIndex + 1
+    console.log(`🔍 DEBUG: Row index in data array: ${actualRowIndex}, Total data rows: ${data.length}`)
+    console.log(`🔍 Before update - Date: ${data[actualRowIndex][dateIndex]}, Time: ${data[actualRowIndex][timeIndex]}`)
     if (status) data[actualRowIndex][statusIndex] = status
-    if (date) data[actualRowIndex][dateIndex] = String(date)
+    if (date) {
+      console.log(`🔄 Updating date from ${data[actualRowIndex][dateIndex]} to '\\${date}`)
+      data[actualRowIndex][dateIndex] = `'${date}`
+    }
     if (time) data[actualRowIndex][timeIndex] = String(time)
+    console.log(`✅ After update - Date: ${data[actualRowIndex][dateIndex]}, Time: ${data[actualRowIndex][timeIndex]}`)
     if (makeIn && makeIndex !== -1) data[actualRowIndex][makeIndex] = String(makeIn)
     if (modelIn && modelIndex !== -1) data[actualRowIndex][modelIndex] = String(modelIn)
     if (typeIn && typeIndex !== -1) data[actualRowIndex][typeIndex] = String(typeIn)
     if (bodyIn && bodyIndex !== -1) data[actualRowIndex][bodyIndex] = String(bodyIn)
-    await GoogleSheetsService.updateData('Bookings', actualRowIndex, data[actualRowIndex])
+    console.log(`📝 Calling GoogleSheetsService.updateData with rowIndex: ${rowIndex}, actualRowIndex: ${actualRowIndex}`)
+    await GoogleSheetsService.updateData('Bookings', rowIndex, data[actualRowIndex])
+    console.log(`✅ GoogleSheetsService.updateData completed successfully`)
 
-    const name = data[actualRowIndex][nameIndex] || ''
-    const email = data[actualRowIndex][emailIndex] || ''
-    const phone = data[actualRowIndex][phoneIndex] || ''
-    const dateVal = data[actualRowIndex][dateIndex] || ''
-    const timeVal = data[actualRowIndex][timeIndex] || ''
-    const servicesString = data[actualRowIndex][servicesIndex] || ''
+    // Re-fetch data from Google Sheets to get the updated information
+    console.log(`🔄 Re-fetching data from Google Sheets to get updated booking information`)
+    const updatedData = await GoogleSheetsService.getData('Bookings')
+    if (updatedData.length <= 1) {
+      return res.status(404).json({ error: 'Nu există programări după actualizare' })
+    }
+    
+    // Find the updated row in the fresh data
+    const updatedRowIndex = updatedData.slice(1).findIndex(row => String(row[idIndex] || '').trim() === targetId)
+    if (updatedRowIndex === -1) {
+      return res.status(404).json({ error: 'Programarea nu a fost găsită după actualizare' })
+    }
+    const actualUpdatedRowIndex = updatedRowIndex + 1
+
+    const name = updatedData[actualUpdatedRowIndex][nameIndex] || ''
+    const email = updatedData[actualUpdatedRowIndex][emailIndex] || ''
+    const phone = updatedData[actualUpdatedRowIndex][phoneIndex] || ''
+    const dateVal = updatedData[actualUpdatedRowIndex][dateIndex] || ''
+    const timeVal = updatedData[actualUpdatedRowIndex][timeIndex] || ''
+    const servicesString = updatedData[actualUpdatedRowIndex][servicesIndex] || ''
     
     // Define body variable before using it in services mapping
-    const body = bodyIndex !== -1 ? (data[actualRowIndex][bodyIndex] || '') : (bodyIn || '')
+    const body = bodyIndex !== -1 ? (updatedData[actualUpdatedRowIndex][bodyIndex] || '') : (bodyIn || '')
 
     let servicesArr = []
     if (servicesString && typeof servicesString === 'string') {
@@ -458,11 +482,20 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     const bookingEmailResult = await sendBookingUpdate(bookingData, servicesArr)
     console.log('📧 Booking update email result:', bookingEmailResult)
     
-    console.log('📧 Sending admin update email...')
-    const adminEmailResult = await sendAdminUpdate(bookingData, servicesArr)
-    console.log('📧 Admin update email result:', adminEmailResult)
+    // Skip admin email in development mode to prevent hangs
+    if (process.env.NODE_ENV === 'development') {
+      console.log('⚠️ Development mode: Skipping admin email to prevent potential hangs')
+      const adminEmailResult = { success: true, message: 'Skipped in development mode' }
+      console.log('📧 Admin update email result:', adminEmailResult)
+    } else {
+      console.log('📧 Sending admin update email...')
+      const adminEmailResult = await sendAdminUpdate(bookingData, servicesArr)
+      console.log('📧 Admin update email result:', adminEmailResult)
+    }
 
+    console.log('🎯 About to send response to client...')
     res.json({ success: true, message: 'Programare actualizată și notificări trimise' })
+    console.log('✅ Response sent successfully!')
   } catch (error) {
     console.error('Update booking error:', error)
     console.error('Error stack:', error.stack)

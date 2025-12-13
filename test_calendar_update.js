@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 const API_BASE = 'http://localhost:8081/api';
-const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2NTU2NTQxOSwiZXhwIjoxNzY1NTY5MDE5fQ.HwiCmrIdoz8zRslXKjq7zKxBmt_sotzV0dvOhWogf1Y';
+const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQHNwZWN0cmEuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzY1NTY5MDcxLCJleHAiOjE3NjU2NTU0NzF9.ifYBKCBYTkBZskjwJY7VqPotXBRCmCraI_wLHettf8Y';
 
 const adminAPI = {
   getBookings: async () => {
@@ -53,7 +53,7 @@ async function testCalendarUpdate() {
     const currentDate = new Date(testBooking.date);
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + 7); // Adaugă 7 zile
-    const newDateString = newDate.toISOString().split('T')[0];
+    const newDateString = newDate.toISOString().split('T')[0]; // Doar partea de dată YYYY-MM-DD
     
     console.log(`\n🔄 Updating booking date from ${testBooking.date} to ${newDateString}...`);
     

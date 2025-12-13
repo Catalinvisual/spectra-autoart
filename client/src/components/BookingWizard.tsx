@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useState, useEffect } from 'react'
 import { publicAPI } from '../services/api'
 import { useToast } from '../contexts/ToastContext'
+import { useCalendarSync, calendarSyncManager } from '../hooks/useCalendarSync'
 import SummaryCard from './SummaryCard'
 import './BookingWizard.css'
 
@@ -105,7 +106,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
   const [makes, setMakes] = useState<string[]>(['BMW', 'Mercedes-Benz', 'Audi', 'Volkswagen', 'Porsche'])
   const [models, setModels] = useState<string[]>([])
   const [error, setError] = useState('')
-  const [bookedDates, setBookedDates] = useState<string[]>([])
+  const { bookedDates } = useCalendarSync()
   const [validationErrors, setValidationErrors] = useState<{
     name?: string
     email?: string
@@ -235,7 +236,6 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
 
   useEffect(() => {
     loadInitialData()
-    loadAvailabilityData()
   }, [])
 
   // Re-încărcăm serviciile când se schimbă bodyType pentru a avea prețurile corecte
@@ -261,21 +261,6 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
         console.error('Fallback services loading also failed:', fallbackError);
         setServices([]);
       }
-    }
-  }
-
-  const loadAvailabilityData = async () => {
-    try {
-      const response = await publicAPI.getAvailability();
-      console.log('📅 Availability response:', response);
-      
-      if (response.data && response.data.success && response.data.bookedDates) {
-        setBookedDates(response.data.bookedDates);
-      }
-    } catch (error) {
-      console.error('Error loading availability data:', error);
-      // Fallback: allow all dates if error
-      setBookedDates([]);
     }
   }
 
@@ -561,6 +546,9 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       const response = await publicAPI.createBooking({ ...bookingData, total: computedTotal })
       
       if (response.data.success) {
+        // Notifică toate componentele să reîmprospăteze calendarul
+        calendarSyncManager.notifyRefresh()
+        
         // Show success notification immediately
         console.log('Calling showSuccess with message:', t('bookingConfirmed') || 'Programarea a fost confirmată!')
         showSuccess(t('bookingConfirmed') || 'Programarea a fost confirmată!')
