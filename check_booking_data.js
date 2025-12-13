@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 const API_BASE = 'http://localhost:8081/api';
-const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQHNwZWN0cmEuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzY1NTY5MDcxLCJleHAiOjE3NjU2NTU0NzF9.ifYBKCBYTkBZskjwJY7VqPotXBRCmCraI_wLHettf8Y';
+const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQHNwZWN0cmEuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzY1NjE5MjU0LCJleHAiOjE3NjU3MDU2NTR9.yOMwIwbwdGx8M5ijmqqndbZxLUzH4YGjqS9Po29gCoY';
 
 async function checkBookingData() {
   try {
@@ -20,28 +20,23 @@ async function checkBookingData() {
     const bookings = response.data;
     console.log(`Found ${bookings.length} bookings`);
     
-    // Debug: Show raw booking data for our test booking
-    const rawTestBooking = bookings.find(b => b.id === '1765210107161');
-    if (rawTestBooking) {
-      console.log('\n🔍 Raw test booking data from server:');
-      console.log(`ID: ${rawTestBooking.id}`);
-      console.log(`Date: ${rawTestBooking.date}`);
-      console.log(`Time: ${rawTestBooking.time}`);
-      console.log(`Status: ${rawTestBooking.status}`);
-      console.log(`User: ${rawTestBooking.user.name} (${rawTestBooking.user.email})`);
-    }
+    // Show all bookings first
+    console.log('\n📋 All bookings:');
+    bookings.forEach((booking, index) => {
+      console.log(`${index + 1}. ID: ${booking.id}, Date: ${booking.date}, Time: ${booking.time}, Status: ${booking.status}`);
+    });
     
-    // Find the specific booking we updated
-    const testBooking = bookings.find(b => b.id === '1765210107161');
+    // Use the first booking for testing
+    const testBooking = bookings[0];
     if (testBooking) {
-      console.log('\n📝 Test booking details:');
+      console.log(`\n📝 Using first booking for testing:`);
       console.log(`ID: ${testBooking.id}`);
       console.log(`Date: ${testBooking.date}`);
       console.log(`Time: ${testBooking.time}`);
       console.log(`Status: ${testBooking.status}`);
       console.log(`User: ${testBooking.user.name} (${testBooking.user.email})`);
     } else {
-      console.log('❌ Test booking not found!');
+      console.log('❌ No bookings found!');
     }
     
     // Check availability

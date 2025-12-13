@@ -328,6 +328,9 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     const { status, date, time, make: makeIn, model: modelIn, body: bodyIn, type: typeIn } = req.body
     console.log(`📝 PATCH request received for booking ${id}`)
     console.log(`📅 Request body:`, { status, date, time, make: makeIn, model: modelIn, body: bodyIn, type: typeIn })
+    console.log(`🔍 DEBUG: date type: ${typeof date}, value: "${date}"`)
+    console.log(`🔍 DEBUG: time type: ${typeof time}, value: "${time}"`)
+    console.log(`🔍 DEBUG: status type: ${typeof status}, value: "${status}"`)
     await ensureEnrichmentCache()
     await GoogleSheetsService.ensureSheetColumns('Bookings', ['Make','Model','Type','Body','Locale'])
     let data = await GoogleSheetsService.getData('Bookings')
@@ -372,22 +375,34 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     
     // Stocăm valorile originale pentru comparație
     const originalStatus = data[actualRowIndex][statusIndex]
-    const originalDate = data[actualRowIndex][dateIndex]
+    const originalDateRaw = data[actualRowIndex][dateIndex]
     const originalTime = data[actualRowIndex][timeIndex]
     const originalMake = makeIndex !== -1 ? data[actualRowIndex][makeIndex] : ''
     const originalModel = modelIndex !== -1 ? data[actualRowIndex][modelIndex] : ''
     const originalType = typeIndex !== -1 ? data[actualRowIndex][typeIndex] : ''
     const originalBody = bodyIndex !== -1 ? data[actualRowIndex][bodyIndex] : ''
     
+    // Extragem doar partea de dată (YYYY-MM-DD) din stringul ISO complet
+    const originalDate = originalDateRaw ? originalDateRaw.split('T')[0] : ''
+    
+    console.log(`🔍 DEBUG: Original values - Status: ${originalStatus}, Date: "${originalDate}" (raw: "${originalDateRaw}"), Time: "${originalTime}" (${typeof originalTime})`)
+    console.log(`🔍 DEBUG: New values - Status: ${status}, Date: "${date}" (${typeof date}), Time: "${time}" (${typeof time})`)
+    console.log(`🔍 DEBUG: Make original: ${originalMake}, new: ${makeIn}`)
+    console.log(`🔍 DEBUG: Model original: ${originalModel}, new: ${modelIn}`)
+    console.log(`🔍 DEBUG: Type original: ${originalType}, new: ${typeIn}`)
+    console.log(`🔍 DEBUG: Body original: ${originalBody}, new: ${bodyIn}`)
+    
     // Verificăm dacă există modificări
     const hasChanges = 
-      (status && status !== originalStatus) ||
-      (date && date !== originalDate) ||
-      (time && time !== originalTime) ||
-      (makeIn && makeIn !== originalMake) ||
-      (modelIn && modelIn !== originalModel) ||
-      (typeIn && typeIn !== originalType) ||
-      (bodyIn && bodyIn !== originalBody)
+      (status !== undefined && status !== originalStatus) ||
+      (date !== undefined && date !== originalDate) ||
+      (time !== undefined && time !== originalTime) ||
+      (makeIn !== undefined && makeIn !== originalMake) ||
+      (modelIn !== undefined && modelIn !== originalModel) ||
+      (typeIn !== undefined && typeIn !== originalType) ||
+      (bodyIn !== undefined && bodyIn !== originalBody)
+    
+    console.log(`🔍 DEBUG: hasChanges result: ${hasChanges}`)
     
     if (!hasChanges) {
       console.log(`⚠️ Nu există modificări pentru programarea ${id}`)
