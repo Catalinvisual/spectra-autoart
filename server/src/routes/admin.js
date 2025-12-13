@@ -369,10 +369,36 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     const actualRowIndex = rowIndex + 1
     console.log(`🔍 DEBUG: Row index in data array: ${actualRowIndex}, Total data rows: ${data.length}`)
     console.log(`🔍 Before update - Date: ${data[actualRowIndex][dateIndex]}, Time: ${data[actualRowIndex][timeIndex]}`)
+    
+    // Stocăm valorile originale pentru comparație
+    const originalStatus = data[actualRowIndex][statusIndex]
+    const originalDate = data[actualRowIndex][dateIndex]
+    const originalTime = data[actualRowIndex][timeIndex]
+    const originalMake = makeIndex !== -1 ? data[actualRowIndex][makeIndex] : ''
+    const originalModel = modelIndex !== -1 ? data[actualRowIndex][modelIndex] : ''
+    const originalType = typeIndex !== -1 ? data[actualRowIndex][typeIndex] : ''
+    const originalBody = bodyIndex !== -1 ? data[actualRowIndex][bodyIndex] : ''
+    
+    // Verificăm dacă există modificări
+    const hasChanges = 
+      (status && status !== originalStatus) ||
+      (date && date !== originalDate) ||
+      (time && time !== originalTime) ||
+      (makeIn && makeIn !== originalMake) ||
+      (modelIn && modelIn !== originalModel) ||
+      (typeIn && typeIn !== originalType) ||
+      (bodyIn && bodyIn !== originalBody)
+    
+    if (!hasChanges) {
+      console.log(`⚠️ Nu există modificări pentru programarea ${id}`)
+      return res.json({ success: true, message: 'Nu există modificări de salvat' })
+    }
+    
+    // Aplicăm modificările doar dacă există schimbări
     if (status) data[actualRowIndex][statusIndex] = status
     if (date) {
-      console.log(`🔄 Updating date from ${data[actualRowIndex][dateIndex]} to '\\${date}`)
-      data[actualRowIndex][dateIndex] = `'${date}`
+      console.log(`🔄 Updating date from ${data[actualRowIndex][dateIndex]} to ${date}`)
+      data[actualRowIndex][dateIndex] = date
     }
     if (time) data[actualRowIndex][timeIndex] = String(time)
     console.log(`✅ After update - Date: ${data[actualRowIndex][dateIndex]}, Time: ${data[actualRowIndex][timeIndex]}`)
@@ -478,23 +504,34 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
       })()
     }
 
-    console.log('📧 Sending booking update email...')
-    const bookingEmailResult = await sendBookingUpdate(bookingData, servicesArr)
-    console.log('📧 Booking update email result:', bookingEmailResult)
+    // Trimitem emailuri doar dacă există modificări reale
+    let bookingEmailResult = null
+    let adminEmailResult = null
     
-    // Skip admin email in development mode to prevent hangs
-    if (process.env.NODE_ENV === 'development') {
-      console.log('⚠️ Development mode: Skipping admin email to prevent potential hangs')
-      const adminEmailResult = { success: true, message: 'Skipped in development mode' }
-      console.log('📧 Admin update email result:', adminEmailResult)
+    if (hasChanges) {
+      console.log('📧 Sending booking update email...')
+      bookingEmailResult = await sendBookingUpdate(bookingData, servicesArr)
+      console.log('📧 Booking update email result:', bookingEmailResult)
+      
+      // Skip admin email in development mode to prevent hangs
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⚠️ Development mode: Skipping admin email to prevent potential hangs')
+        adminEmailResult = { success: true, message: 'Skipped in development mode' }
+        console.log('📧 Admin update email result:', adminEmailResult)
+      } else {
+        console.log('📧 Sending admin update email...')
+        adminEmailResult = await sendAdminUpdate(bookingData, servicesArr)
+        console.log('📧 Admin update email result:', adminEmailResult)
+      }
     } else {
-      console.log('📧 Sending admin update email...')
-      const adminEmailResult = await sendAdminUpdate(bookingData, servicesArr)
-      console.log('📧 Admin update email result:', adminEmailResult)
+      console.log('ℹ️ No changes detected, skipping email notifications')
     }
 
     console.log('🎯 About to send response to client...')
-    res.json({ success: true, message: 'Programare actualizată și notificări trimise' })
+    const responseMessage = hasChanges 
+      ? 'Programare actualizată și notificări trimise' 
+      : 'Nu există modificări de salvat'
+    res.json({ success: true, message: responseMessage, hasChanges })
     console.log('✅ Response sent successfully!')
   } catch (error) {
     console.error('Update booking error:', error)
@@ -503,147 +540,7 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
   }
 })
 
-// Support PUT for clients that cannot use PATCH (CORS or legacy)
-router.put('/bookings/:id', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params
-    const { status, date, time, make: makeIn, model: modelIn, body: bodyIn, type: typeIn } = req.body
-    await ensureEnrichmentCache()
-    await GoogleSheetsService.ensureSheetColumns('Bookings', ['Make','Model','Type','Body','Locale'])
-    let data = await GoogleSheetsService.getData('Bookings')
-    if (data.length <= 1) {
-      return res.status(404).json({ error: 'Nu există programări' })
-    }
-    const headers = Array.isArray(data[0]) ? data[0] : []
-    const findCol = (...names) => {
-      const lowered = headers.map(h => String(h || '').toLowerCase())
-      for (const n of names) {
-        const idx = lowered.indexOf(String(n).toLowerCase())
-        if (idx !== -1) return idx
-      }
-      for (let i = 0; i < lowered.length; i++) {
-        for (const n of names) {
-          if (lowered[i].includes(String(n).toLowerCase())) return i
-        }
-      }
-      return -1
-    }
-    const idIndex = findCol('ID') !== -1 ? findCol('ID') : 0
-    const nameIndex = findCol('Name','Customer_Name','Client_Name') !== -1 ? findCol('Name','Customer_Name','Client_Name') : 1
-    const emailIndex = findCol('Email') !== -1 ? findCol('Email') : 2
-    const phoneIndex = findCol('Phone') !== -1 ? findCol('Phone') : 3
-    const dateIndex = findCol('Date') !== -1 ? findCol('Date') : 4
-    const timeIndex = findCol('Time') !== -1 ? findCol('Time') : 5
-    const servicesIndex = findCol('Services','Service','Diensten') !== -1 ? findCol('Services','Service','Diensten') : 6
-    const makeIndex2 = findCol('Make','Marca','Vehicle_Make')
-    const modelIndex2 = findCol('Model','Vehicle_Model')
-    const typeIndex2 = findCol('Type','Vehicle_Type')
-    const bodyIndex = findCol('Body','Caroserie','Body_Type')
-    const statusIndex = findCol('Status') !== -1 ? findCol('Status') : 8
-    const targetId = String(id).trim()
-    const rowIndex = data.slice(1).findIndex(row => String(row[idIndex] || '').trim() === targetId)
-    if (rowIndex === -1) {
-      return res.status(404).json({ error: 'Programarea nu a fost găsită' })
-    }
-    const actualRowIndex = rowIndex + 1
-    if (status) data[actualRowIndex][statusIndex] = status
-    if (date) data[actualRowIndex][dateIndex] = String(date)
-    if (time) data[actualRowIndex][timeIndex] = String(time)
-    if (makeIn && makeIndex2 !== -1) data[actualRowIndex][makeIndex2] = String(makeIn)
-    if (modelIn && modelIndex2 !== -1) data[actualRowIndex][modelIndex2] = String(modelIn)
-    if (typeIn && typeIndex2 !== -1) data[actualRowIndex][typeIndex2] = String(typeIn)
-    if (bodyIn && bodyIndex !== -1) data[actualRowIndex][bodyIndex] = String(bodyIn)
-    await GoogleSheetsService.updateData('Bookings', actualRowIndex, data[actualRowIndex])
-
-    const name = data[actualRowIndex][nameIndex] || ''
-    const email = data[actualRowIndex][emailIndex] || ''
-    const phone = data[actualRowIndex][phoneIndex] || ''
-    const dateVal = data[actualRowIndex][dateIndex] || ''
-    const timeVal = data[actualRowIndex][timeIndex] || ''
-    const servicesString = data[actualRowIndex][servicesIndex] || ''
-    let servicesArr = []
-    if (servicesString && typeof servicesString === 'string') {
-      const cleanServices = servicesString.replace(/^'/, '').replace(/'$/, '').trim()
-      let tokens = []
-      if (cleanServices.startsWith('[')) {
-        try {
-          const arr = JSON.parse(cleanServices)
-          if (Array.isArray(arr)) {
-            tokens = arr.map(item => {
-              if (typeof item === 'string') return item
-              if (item && typeof item === 'object') {
-                return item.id || item.service_id || item.name || ''
-              }
-              return ''
-            }).filter(x => x)
-          }
-        } catch {
-          tokens = cleanServices.split(/[,|;]+/)
-        }
-      } else {
-        tokens = cleanServices.split(/[,|;]+/)
-      }
-      servicesArr = tokens.map(token => {
-        const trimmed = token.trim()
-        let sid = ''
-        let sname = ''
-        if (bookingsEnrichmentCache.idToName.has(trimmed)) {
-          sid = trimmed
-          sname = bookingsEnrichmentCache.idToName.get(trimmed)
-        } else if (bookingsEnrichmentCache.nameToId.has(trimmed.toLowerCase())) {
-          sid = bookingsEnrichmentCache.nameToId.get(trimmed.toLowerCase())
-          sname = bookingsEnrichmentCache.idToName.get(sid) || trimmed
-        } else {
-          sid = trimmed.toLowerCase().replace(/\s+/g, '_')
-          sname = trimmed
-        }
-        
-        // Try to get body-type specific price first
-        let price = 0
-        const bodyTypeKey = String(bodyIn || '').toLowerCase()
-        if (bodyTypeKey && sid) {
-          const bodySpecificKey = `${sid}:${bodyTypeKey}`
-          price = bookingsEnrichmentCache.serviceBodyPrices.get(bodySpecificKey) || 0
-        }
-        
-        // Fallback to minimum price if body-specific price not found
-        if (!price && sid) {
-          price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
-        }
-        
-        return { id: sid, name: sname, price }
-      }).filter(service => service.name.length > 0)
-    }
-
-    const bookingData = {
-      user: { name, email, phone },
-      date: dateVal,
-      time: timeVal,
-      make: makeIndex2 !== -1 ? (data[actualRowIndex][makeIndex2] || '') : (makeIn || ''),
-      model: modelIndex2 !== -1 ? (data[actualRowIndex][modelIndex2] || '') : (modelIn || ''),
-      body: bodyIn || '',
-      type: typeIndex2 !== -1 ? (data[actualRowIndex][typeIndex2] || '') : (typeIn || ''),
-      newsletter: false,
-      locale: (() => {
-        const localeIndex = findCol('Locale','Language')
-        const raw = localeIndex !== -1 ? (data[actualRowIndex][localeIndex] || '') : ''
-        return String(raw || 'nl').toLowerCase()
-      })()
-    }
-    console.log('📧 Sending booking update email (PUT)...')
-    const bookingEmailResult = await sendBookingUpdate(bookingData, servicesArr)
-    console.log('📧 Booking update email result (PUT):', bookingEmailResult)
-    
-    console.log('📧 Sending admin update email (PUT)...')
-    const adminEmailResult = await sendAdminUpdate(bookingData, servicesArr)
-    console.log('📧 Admin update email result (PUT):', adminEmailResult)
-    res.json({ success: true, message: 'Programare actualizată și notificări trimise' })
-  } catch (error) {
-    console.error('Update booking error (PUT):', error)
-    console.error('Error stack (PUT):', error.stack)
-    res.status(500).json({ error: 'Failed to update booking', details: error.message })
-  }
-})
+// PUT endpoint eliminat - folosiți PATCH în schimb
 
 // Get all messages
 router.get('/messages', requireAuth, async (req, res) => {

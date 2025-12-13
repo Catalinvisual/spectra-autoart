@@ -605,7 +605,31 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     setShowEditModal(true)
   }
 
+  const hasUnsavedChanges = () => {
+    if (!editingBooking) return false
+    
+    const originalBooking = bookings.find((b: Booking) => b.id === editingBooking.id)
+    if (!originalBooking) return false
+    
+    return (
+      originalBooking.status !== editingBooking.status ||
+      originalBooking.date !== editingBooking.date ||
+      originalBooking.time !== editingBooking.time ||
+      originalBooking.user.name !== editingBooking.user.name ||
+      originalBooking.user.email !== editingBooking.user.email ||
+      originalBooking.user.phone !== editingBooking.user.phone
+    )
+  }
+
   const closeEditModal = () => {
+    // Verificăm dacă există modificări nesalvate
+    if (hasUnsavedChanges()) {
+      const confirmClose = window.confirm('Aveți modificări nesalvate. Sigur doriți să închideți?')
+      if (!confirmClose) {
+        return
+      }
+    }
+    
     setEditingBooking(null)
     setShowEditModal(false)
   }
@@ -659,13 +683,21 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
       }
       
       // Obține data veche înainte de actualizare
-      await adminAPI.updateBooking(editingBooking.id, { status: editingBooking.status, date: editingBooking.date, time: editingBooking.time })
-      setBookings(prev => prev.map((b: Booking) => b.id === editingBooking.id ? { ...b, status: editingBooking.status, date: editingBooking.date, time: editingBooking.time } : b))
+      const response = await adminAPI.updateBooking(editingBooking.id, { status: editingBooking.status, date: editingBooking.date, time: editingBooking.time })
       
-      // Notifică toate componentele să reîmprospăteze calendarul
-      calendarSyncManager.notifyRefresh()
-      
-      toast.showSuccess(t('admin.status') + ' ' + t(`admin.${editingBooking.status}`))
+      // Verificăm răspunsul de la server
+      if (response.data && response.data.hasChanges === false) {
+        // Nu există modificări, doar închide modalul
+        toast.showInfo(response.data.message || 'Nu există modificări de salvat')
+      } else {
+        // Actualizăm lista de programări doar dacă există modificări
+        setBookings(prev => prev.map((b: Booking) => b.id === editingBooking.id ? { ...b, status: editingBooking.status, date: editingBooking.date, time: editingBooking.time } : b))
+        
+        // Notifică toate componentele să reîmprospăteze calendarul
+        calendarSyncManager.notifyRefresh()
+        
+        toast.showSuccess(t('admin.status') + ' ' + t(`admin.${editingBooking.status}`))
+      }
       closeEditModal()
     } catch (error) {
       console.error('Error updating booking:', error)
@@ -839,10 +871,10 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
 
       {/* Edit Modal */}
       {showEditModal && editingBooking && (
-        <PortalModal isOpen={showEditModal} onClose={closeEditModal} contentClass="modal-content edit-modal-content">
+        <PortalModal isOpen={showEditModal} onClose={closeEditModal} contentClass="modal-content edit-modal-content" preventOverlayClose={true}>
             <div className="modal-header">
               <h2>{t('admin.editBooking')}</h2>
-              <button onClick={closeEditModal} className="close-btn" aria-label={t('close')}>×</button>
+              <button onClick={closeEditModal} className="close-btn" aria-label={t('close')} style={{cursor: 'pointer'}}>×</button>
             </div>
             <div className="modal-body">
               <form onSubmit={(e) => { e.preventDefault(); saveBookingEdit(); }}>
@@ -2226,10 +2258,19 @@ const NewsletterManagement: React.FC<NewsletterManagementProps> = ({ isAuthentic
 }
 
 export default Admin
-  const PortalModal: React.FC<{ isOpen: boolean; onClose: () => void; overlayClass?: string; contentClass?: string; children: React.ReactNode }> = ({ isOpen, onClose, overlayClass, contentClass, children }) => {
+  const PortalModal: React.FC<{ isOpen: boolean; onClose: () => void; overlayClass?: string; contentClass?: string; children: React.ReactNode; preventOverlayClose?: boolean }> = ({ isOpen, onClose, overlayClass, contentClass, children, preventOverlayClose = false }) => {
     if (!isOpen) return null
+    
+    const handleOverlayClick = () => {
+      // Prevenim închiderea dacă preventOverlayClose este true
+      if (preventOverlayClose) {
+        return
+      }
+      onClose()
+    }
+    
     return ReactDOM.createPortal(
-      <div className={['portal-modal-overlay', overlayClass].filter(Boolean).join(' ')} onClick={onClose}>
+      <div className={['portal-modal-overlay', overlayClass].filter(Boolean).join(' ')} onClick={handleOverlayClick}>
         <div className={['portal-modal-content', contentClass].filter(Boolean).join(' ')} onClick={(e) => e.stopPropagation()}>
           {children}
         </div>
