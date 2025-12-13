@@ -2306,7 +2306,7 @@ export default Admin
   const PortalModal: React.FC<{ isOpen: boolean; onClose: () => void; overlayClass?: string; contentClass?: string; children: React.ReactNode; preventOverlayClose?: boolean }> = ({ isOpen, onClose, overlayClass, contentClass, children, preventOverlayClose = false }) => {
     if (!isOpen) return null
     
-    const handleOverlayClick = (e: React.MouseEvent) => {
+    const handleOverlayClick = () => {
       console.log('🎯 Overlay clicked, preventOverlayClose:', preventOverlayClose)
       // Prevenim închiderea dacă preventOverlayClose este true
       if (preventOverlayClose) {
