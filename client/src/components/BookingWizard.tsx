@@ -1050,18 +1050,24 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
   }
 
   const handleDayClick = (dayInfo: any, e?: React.MouseEvent) => {
+    console.log('📅 Calendar handleDayClick called with dayInfo:', dayInfo)
     if (!dayInfo || dayInfo.isSunday || dayInfo.isPast || !dayInfo.isAvailable) return
     // Prevenim propagarea evenimentului către modal
     if (e) {
+      console.log('🛑 Stopping propagation for day click')
       e.stopPropagation()
+      e.preventDefault()
     }
     onDateSelect(dayInfo.dateString)
   }
 
   const changeMonth = (direction: number, e?: React.MouseEvent) => {
+    console.log('🔄 Calendar changeMonth called with direction:', direction)
     // Prevenim propagarea evenimentului către modal
     if (e) {
+      console.log('🛑 Stopping propagation for calendar navigation')
       e.stopPropagation()
+      e.preventDefault()
     }
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1))
   }
@@ -1094,7 +1100,10 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
   const days = getDaysInMonth()
 
   return (
-    <div className="calendar-component">
+    <div className="calendar-component" onClick={(e) => {
+      console.log('📅 Calendar component clicked, stopping propagation')
+      e.stopPropagation()
+    }}>
       {loading && (
         <div className="calendar-loading">
           {t('checkingAvailability') || 'Se verifică disponibilitatea...'}
@@ -1104,7 +1113,14 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
       <div className="calendar-header">
         <button 
           className="calendar-nav-btn" 
-          onClick={(e) => changeMonth(-1, e)}
+          onClick={(e) => {
+            console.log('⬅️ Previous month button clicked')
+            changeMonth(-1, e)
+          }}
+          onMouseDown={(e) => {
+            console.log('🖱️ Previous month mousedown, stopping propagation')
+            e.stopPropagation()
+          }}
           disabled={loading}
         >
           ‹
@@ -1114,7 +1130,14 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
         </div>
         <button 
           className="calendar-nav-btn" 
-          onClick={(e) => changeMonth(1, e)}
+          onClick={(e) => {
+            console.log('➡️ Next month button clicked')
+            changeMonth(1, e)
+          }}
+          onMouseDown={(e) => {
+            console.log('🖱️ Next month mousedown, stopping propagation')
+            e.stopPropagation()
+          }}
           disabled={loading}
         >
           ›
@@ -1142,7 +1165,14 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
               dayInfo.isToday ? 'today' :
               'available'
             }`}
-            onClick={(e) => handleDayClick(dayInfo, e)}
+            onClick={(e) => {
+              console.log('📅 Calendar day div clicked, calling handleDayClick')
+              handleDayClick(dayInfo, e)
+            }}
+            onMouseDown={(e) => {
+              console.log('🖱️ Calendar day mousedown, stopping propagation')
+              e.stopPropagation()
+            }}
           >
             {dayInfo && (
               <>

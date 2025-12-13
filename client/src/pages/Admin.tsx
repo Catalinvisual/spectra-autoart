@@ -451,6 +451,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null)
+  const [originalBooking, setOriginalBooking] = useState<Booking | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const { bookedDates: bookedDatesAdmin } = useCalendarSync()
 
@@ -602,17 +603,28 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
 
   const openEditModal = (booking: Booking) => {
     console.log('📝 DEBUG openEditModal called with booking:', booking)
+    // Stocăm o copie deep a datelor originale pentru comparație
+    const originalCopy = JSON.parse(JSON.stringify(booking))
+    setOriginalBooking(originalCopy)
     setEditingBooking(booking)
     setShowEditModal(true)
   }
 
   const hasUnsavedChanges = () => {
-    if (!editingBooking) return false
+    if (!editingBooking || !originalBooking) return false
     
-    const originalBooking = bookings.find((b: Booking) => b.id === editingBooking.id)
-    if (!originalBooking) return false
+    console.log('🔍 DEBUG hasUnsavedChanges:')
+    console.log('📋 Original:', originalBooking)
+    console.log('✏️ Current:', editingBooking)
+    console.log('📅 Original date:', JSON.stringify(originalBooking.date))
+    console.log('📅 Current date:', JSON.stringify(editingBooking.date))
+    console.log('📅 Date comparison:', originalBooking.date !== editingBooking.date)
+    console.log('⏰ Original time:', JSON.stringify(originalBooking.time))
+    console.log('⏰ Current time:', JSON.stringify(editingBooking.time))
+    console.log('⏰ Time changed:', originalBooking.time !== editingBooking.time)
+    console.log('📊 Status changed:', originalBooking.status !== editingBooking.status)
     
-    return (
+    const hasChanges = (
       originalBooking.status !== editingBooking.status ||
       originalBooking.date !== editingBooking.date ||
       originalBooking.time !== editingBooking.time ||
@@ -620,18 +632,27 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
       originalBooking.user.email !== editingBooking.user.email ||
       originalBooking.user.phone !== editingBooking.user.phone
     )
+    
+    console.log('🔄 Has unsaved changes:', hasChanges)
+    return hasChanges
   }
 
   const closeEditModal = () => {
+    console.log('🚪 closeEditModal called')
     // Verificăm dacă există modificări nesalvate
     if (hasUnsavedChanges()) {
+      console.log('⚠️ Unsaved changes detected, showing confirmation dialog')
       const confirmClose = window.confirm('Aveți modificări nesalvate. Sigur doriți să închideți?')
       if (!confirmClose) {
+        console.log('❌ User cancelled modal close')
         return
       }
+      console.log('✅ User confirmed modal close despite unsaved changes')
     }
     
+    console.log('🔄 Closing edit modal and resetting state')
     setEditingBooking(null)
+    setOriginalBooking(null)
     setShowEditModal(false)
   }
 
@@ -658,16 +679,9 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
 
 
   const saveBookingEdit = async () => {
-    if (!editingBooking) return
+    if (!editingBooking || !originalBooking) return
     
     try {
-      // Obține programarea originală pentru comparație
-      const originalBooking = bookings.find((b: Booking) => b.id === editingBooking.id)
-      if (!originalBooking) {
-        toast.showError('Programarea originală nu a fost găsită')
-        return
-      }
-      
       console.log('🔍 DEBUG saveBookingEdit:')
       console.log('📋 Original booking:', originalBooking)
       console.log('✏️ Editing booking:', editingBooking)
@@ -685,8 +699,10 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
         originalBooking.user.phone !== editingBooking.user.phone
       
       if (!hasChanges) {
-        // Nu există modificări, doar închide modalul
-        closeEditModal()
+        // Nu există modificări, doar închide modalul fără să verificăm din nou
+        setEditingBooking(null)
+        setOriginalBooking(null)
+        setShowEditModal(false)
         return
       }
       
@@ -713,7 +729,11 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
         
         toast.showSuccess(t('admin.status') + ' ' + t(`admin.${editingBooking.status}`))
       }
-      closeEditModal()
+      
+      // Închide modalul fără să verificăm din nou modificările
+      setEditingBooking(null)
+      setOriginalBooking(null)
+      setShowEditModal(false)
     } catch (error) {
       console.error('Error updating booking:', error)
       toast.showError(t('admin.status') + ' ' + t('admin.updateFailed'))
@@ -889,7 +909,10 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
         <PortalModal isOpen={showEditModal} onClose={closeEditModal} contentClass="modal-content edit-modal-content" preventOverlayClose={true}>
             <div className="modal-header">
               <h2>{t('admin.editBooking')}</h2>
-              <button onClick={closeEditModal} className="close-btn" aria-label={t('close')} style={{cursor: 'pointer'}}>×</button>
+              <button onClick={() => {
+                console.log('❌ Close button clicked')
+                closeEditModal()
+              }} className="close-btn" aria-label={t('close')} style={{cursor: 'pointer'}}>×</button>
             </div>
             <div className="modal-body">
               <form onSubmit={(e) => { 
@@ -984,7 +1007,10 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
                 </div>
                 <div className="form-actions">
                   <button type="submit" className="save-btn">{t('admin.save')}</button>
-                  <button type="button" onClick={closeEditModal} className="cancel-btn">{t('admin.cancel')}</button>
+                  <button type="button" onClick={() => {
+                    console.log('🚫 Cancel button clicked')
+                    closeEditModal()
+                  }} className="cancel-btn">{t('admin.cancel')}</button>
                 </div>
               </form>
             </div>
@@ -2280,17 +2306,23 @@ export default Admin
   const PortalModal: React.FC<{ isOpen: boolean; onClose: () => void; overlayClass?: string; contentClass?: string; children: React.ReactNode; preventOverlayClose?: boolean }> = ({ isOpen, onClose, overlayClass, contentClass, children, preventOverlayClose = false }) => {
     if (!isOpen) return null
     
-    const handleOverlayClick = () => {
+    const handleOverlayClick = (e: React.MouseEvent) => {
+      console.log('🎯 Overlay clicked, preventOverlayClose:', preventOverlayClose)
       // Prevenim închiderea dacă preventOverlayClose este true
       if (preventOverlayClose) {
+        console.log('🚫 Modal close prevented by preventOverlayClose')
         return
       }
+      console.log('🔄 Calling onClose from overlay click')
       onClose()
     }
     
     return ReactDOM.createPortal(
       <div className={['portal-modal-overlay', overlayClass].filter(Boolean).join(' ')} onClick={handleOverlayClick}>
-        <div className={['portal-modal-content', contentClass].filter(Boolean).join(' ')} onClick={(e) => e.stopPropagation()}>
+        <div className={['portal-modal-content', contentClass].filter(Boolean).join(' ')} onClick={(e) => {
+          console.log('📦 Modal content clicked, stopping propagation')
+          e.stopPropagation()
+        }}>
           {children}
         </div>
       </div>,
