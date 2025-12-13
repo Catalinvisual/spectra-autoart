@@ -1049,12 +1049,20 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
     return days
   }
 
-  const handleDayClick = (dayInfo: any) => {
+  const handleDayClick = (dayInfo: any, e?: React.MouseEvent) => {
     if (!dayInfo || dayInfo.isSunday || dayInfo.isPast || !dayInfo.isAvailable) return
+    // Prevenim propagarea evenimentului către modal
+    if (e) {
+      e.stopPropagation()
+    }
     onDateSelect(dayInfo.dateString)
   }
 
-  const changeMonth = (direction: number) => {
+  const changeMonth = (direction: number, e?: React.MouseEvent) => {
+    // Prevenim propagarea evenimentului către modal
+    if (e) {
+      e.stopPropagation()
+    }
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1))
   }
 
@@ -1096,7 +1104,7 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
       <div className="calendar-header">
         <button 
           className="calendar-nav-btn" 
-          onClick={() => changeMonth(-1)}
+          onClick={(e) => changeMonth(-1, e)}
           disabled={loading}
         >
           ‹
@@ -1106,7 +1114,7 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
         </div>
         <button 
           className="calendar-nav-btn" 
-          onClick={() => changeMonth(1)}
+          onClick={(e) => changeMonth(1, e)}
           disabled={loading}
         >
           ›
@@ -1134,7 +1142,7 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
               dayInfo.isToday ? 'today' :
               'available'
             }`}
-            onClick={() => handleDayClick(dayInfo)}
+            onClick={(e) => handleDayClick(dayInfo, e)}
           >
             {dayInfo && (
               <>

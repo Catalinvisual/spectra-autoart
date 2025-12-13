@@ -406,8 +406,8 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     if (modelIn && modelIndex !== -1) data[actualRowIndex][modelIndex] = String(modelIn)
     if (typeIn && typeIndex !== -1) data[actualRowIndex][typeIndex] = String(typeIn)
     if (bodyIn && bodyIndex !== -1) data[actualRowIndex][bodyIndex] = String(bodyIn)
-    console.log(`📝 Calling GoogleSheetsService.updateData with rowIndex: ${rowIndex}, actualRowIndex: ${actualRowIndex}`)
-    await GoogleSheetsService.updateData('Bookings', rowIndex, data[actualRowIndex])
+    console.log(`📝 Calling GoogleSheetsService.updateData with actualRowIndex: ${actualRowIndex}`)
+    await GoogleSheetsService.updateData('Bookings', actualRowIndex, data[actualRowIndex])
     console.log(`✅ GoogleSheetsService.updateData completed successfully`)
 
     // Re-fetch data from Google Sheets to get the updated information
@@ -492,10 +492,10 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
       user: { name, email, phone },
       date: dateVal,
       time: timeVal,
-      make: makeIndex !== -1 ? (data[actualRowIndex][makeIndex] || '') : (makeIn || ''),
-      model: modelIndex !== -1 ? (data[actualRowIndex][modelIndex] || '') : (modelIn || ''),
-      body: bodyIn || '',
-      type: typeIndex !== -1 ? (data[actualRowIndex][typeIndex] || '') : (typeIn || ''),
+      make: makeIndex !== -1 ? (updatedData[actualUpdatedRowIndex][makeIndex] || '') : (makeIn || ''),
+      model: modelIndex !== -1 ? (updatedData[actualUpdatedRowIndex][modelIndex] || '') : (modelIn || ''),
+      body: bodyIndex !== -1 ? (updatedData[actualUpdatedRowIndex][bodyIndex] || '') : (bodyIn || ''),
+      type: typeIndex !== -1 ? (updatedData[actualUpdatedRowIndex][typeIndex] || '') : (typeIn || ''),
       newsletter: false,
       locale: (() => {
         const localeIndex = findCol('Locale','Language')

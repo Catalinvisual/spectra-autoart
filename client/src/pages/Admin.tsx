@@ -601,6 +601,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
   }
 
   const openEditModal = (booking: Booking) => {
+    console.log('📝 DEBUG openEditModal called with booking:', booking)
     setEditingBooking(booking)
     setShowEditModal(true)
   }
@@ -667,6 +668,13 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
         return
       }
       
+      console.log('🔍 DEBUG saveBookingEdit:')
+      console.log('📋 Original booking:', originalBooking)
+      console.log('✏️ Editing booking:', editingBooking)
+      console.log('📅 Date comparison:', originalBooking.date, '!==', editingBooking.date, '=', originalBooking.date !== editingBooking.date)
+      console.log('⏰ Time comparison:', originalBooking.time, '!==', editingBooking.time, '=', originalBooking.time !== editingBooking.time)
+      console.log('📊 Status comparison:', originalBooking.status, '!==', editingBooking.status, '=', originalBooking.status !== editingBooking.status)
+      
       // Verifică dacă există modificări
       const hasChanges = 
         originalBooking.status !== editingBooking.status ||
@@ -683,7 +691,14 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
       }
       
       // Obține data veche înainte de actualizare
-      const response = await adminAPI.updateBooking(editingBooking.id, { status: editingBooking.status, date: editingBooking.date, time: editingBooking.time })
+      const response = await adminAPI.updateBooking(editingBooking.id, { 
+        status: editingBooking.status, 
+        date: editingBooking.date, 
+        time: editingBooking.time,
+        make: editingBooking.make,
+        model: editingBooking.model,
+        body: editingBooking.body
+      })
       
       // Verificăm răspunsul de la server
       if (response.data && response.data.hasChanges === false) {
@@ -877,7 +892,11 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
               <button onClick={closeEditModal} className="close-btn" aria-label={t('close')} style={{cursor: 'pointer'}}>×</button>
             </div>
             <div className="modal-body">
-              <form onSubmit={(e) => { e.preventDefault(); saveBookingEdit(); }}>
+              <form onSubmit={(e) => { 
+                console.log('📝 DEBUG: Form submitted!') 
+                e.preventDefault(); 
+                saveBookingEdit(); 
+              }}>
                 <div className="form-group">
                   <label>{t('admin.customerName')}:</label>
                   <input
