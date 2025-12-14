@@ -56,7 +56,28 @@ server.listen(port, host, () => {
   // Start the main Express server after healthcheck server is running
   console.log('🚨 Starting main Express server...');
   try {
-    require('./server/src/index.js');
+    const { spawn } = require('child_process');
+    
+    // Change to server directory and start the Express server
+    const serverProcess = spawn('npm', ['start'], {
+      cwd: '/app/server',
+      stdio: 'inherit',
+      env: { ...process.env, PORT: process.env.MAIN_SERVER_PORT }
+    });
+    
+    serverProcess.on('error', (error) => {
+      console.error('🚨 Failed to start main server process:', error.message);
+    });
+    
+    serverProcess.on('exit', (code, signal) => {
+      if (code !== 0) {
+        console.error(`🚨 Main server exited with code ${code} and signal ${signal}`);
+      } else {
+        console.log('🚨 Main server exited normally');
+      }
+    });
+    
+    console.log('🚨 Main Express server process started successfully');
   } catch (error) {
     console.error('🚨 Failed to start main server:', error.message);
     // Continue running healthcheck server even if main server fails
