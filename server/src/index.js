@@ -473,9 +473,15 @@ const startServer = async () => {
       app.use('/uploads', express.static(uploadsPath))
 
       // Serve static files from React build if available
-      const clientBuildPath = path.join(__dirname, '../../client/dist')
+      const clientBuildPath = path.join(__dirname, '../client/dist')
       if (fs.existsSync(clientBuildPath)) {
         app.use(express.static(clientBuildPath))
+        console.log('✅ Serving static files from:', clientBuildPath)
+        
+        // Serve React app for all other routes
+        app.get('*', (req, res) => {
+          res.sendFile(path.join(clientBuildPath, 'index.html'))
+        })
       } else {
         console.log('⚠️  Client build folder not found:', clientBuildPath)
       }
