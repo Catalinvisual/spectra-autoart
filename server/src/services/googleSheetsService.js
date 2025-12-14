@@ -72,10 +72,20 @@ class GoogleSheetsService {
           
           // Fallback to environment variables
           if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
-            console.log('⚠️  Google Sheets credentials not configured - service will not initialize');
-            this.isDemoMode = false;
-            this.isInitialized = false;
-            return false;
+            console.log('⚠️  Google Sheets credentials not configured');
+            
+            // Check if we're in production (Railway) environment
+            if (process.env.RAILWAY_PROJECT_ID || process.env.NODE_ENV === 'production') {
+              console.log('🚀 Production environment detected - enabling demo mode');
+              this.isDemoMode = true;
+              this.isInitialized = true;
+              return true;
+            } else {
+              console.log('⚠️  Development environment: Service will not initialize');
+              this.isDemoMode = false;
+              this.isInitialized = false;
+              return false;
+            }
           }
 
           // Clean private key - remove surrounding quotes if present and handle formatting
