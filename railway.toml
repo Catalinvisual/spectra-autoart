@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "railway-hybrid-prod.Dockerfile"
 
 [deploy]
-startCommand = "cd server && npm start"
+startCommand = "/app/start-railway-server.sh"
 healthcheckPath = "/ping"
 healthcheckTimeout = 600
 restartPolicyType = "ON_FAILURE"
@@ -11,7 +11,7 @@ restartPolicyMaxRetries = 10
 
 [environments]
   [environments.production]
-    startCommand = "cd server && npm start"
+    startCommand = "/app/start-railway-server.sh"
 
 # EMERGENCY HEALTHCHECK CONFIGURATION
 # This configuration ensures Railway can properly healthcheck the service

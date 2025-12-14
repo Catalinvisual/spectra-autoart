@@ -29,9 +29,8 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:${PORT:-8080}/ping || exit 1
 
-# Start with full Express server
-WORKDIR /app/server
-CMD ["npm", "start"]
+# Make script executable and start server
+RUN chmod +x /app/start-railway-server.sh
 
-# Switch back to app root for healthcheck compatibility
-WORKDIR /app
+# Start with full Express server via script
+CMD ["/app/start-railway-server.sh"]
