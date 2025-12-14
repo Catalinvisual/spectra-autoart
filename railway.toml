@@ -1,6 +1,6 @@
 [build]
-builder = "NIXPACKS"
-buildCommand = "cd server && npm ci"
+builder = "DOCKERFILE"
+dockerfilePath = "railway.Dockerfile"
 
 [deploy]
 startCommand = "cd server && npm run start"
