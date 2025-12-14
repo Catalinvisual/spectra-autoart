@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "railway-hybrid-prod.Dockerfile"
 
 [deploy]
-startCommand = "/app/start-railway-server.sh"
+startCommand = "cd server && npm start"
 healthcheckPath = "/ping"
 healthcheckTimeout = 600
 restartPolicyType = "ON_FAILURE"
