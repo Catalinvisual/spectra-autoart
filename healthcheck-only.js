@@ -1,1 +1,0 @@
-require("http").createServer((q,r)=>r.writeHead(q.url==="/ping"?200:404).end(q.url==="/ping"?"pong":"")).listen(process.env.PORT||8080,"0.0.0.0",()=>console.log("✅ HEALTHCHECK ALIVE"));

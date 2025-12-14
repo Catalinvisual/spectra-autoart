@@ -1,6 +1,3 @@
-// Ultima actualizare: 2025-12-14T17:22:20.001Z
-// Forțat push pentru rezolvare Not Found în producție
-
 // HEALTHCHECK SERVER - Railway deployment
 const http = require('http');
 

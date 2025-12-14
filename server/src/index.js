@@ -5,28 +5,14 @@ import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
 
-// Define __dirname for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 // LOG STARTUP DETALIAT PENTRU DEBUGGING CONTAINER
 console.log('🚀 SERVER STARTUP - Container Debug Log - Deployment Fix')
 console.log('📍 Current directory:', process.cwd())
-console.log('📍 __dirname:', __dirname)
-console.log('📍 __filename:', __filename)
-console.log('📍 Process ID:', process.pid)
-console.log('📍 Node version:', process.version)
-console.log('📍 Platform:', process.platform)
-console.log('📍 Architecture:', process.arch)
-
 if (!process.env.NODE_ENV && (process.env.RAILWAY_PROJECT_ID || process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_STATIC_URL)) {
   process.env.NODE_ENV = 'production'
 }
 console.log('🔧 NODE_ENV:', process.env.NODE_ENV)
 console.log('📋 Process arguments:', process.argv)
-console.log('🔧 PORT from env:', process.env.PORT)
-console.log('🔧 RAILWAY_PROJECT_ID:', process.env.RAILWAY_PROJECT_ID)
-console.log('🔧 RAILWAY_ENVIRONMENT:', process.env.RAILWAY_ENVIRONMENT)
 
 // Handler pentru erori neașteptate
 process.on('uncaughtException', (error) => {
@@ -52,7 +38,7 @@ process.on('unhandledRejection', (reason, promise) => {
 let serverReady = false
 
 // Timeout de siguranță pentru startup - mai lung pentru Railway
-const startupTimeoutMs = process.env.RAILWAY_PROJECT_ID ? 300000 : 30000 // 5 minute pentru Railway
+const startupTimeoutMs = process.env.RAILWAY_PROJECT_ID ? 120000 : 30000 // 2 minute pentru Railway
 const startupTimeout = setTimeout(() => {
   console.error(`❌ Server startup timeout - server failed to start within ${startupTimeoutMs/1000} seconds`)
   process.exit(1)
@@ -62,87 +48,62 @@ const startupTimeout = setTimeout(() => {
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const envLocalPath = path.join(__dirname, '..', '.env.local')
+const envPath = path.join(__dirname, '..', '.env')
+const envProductionPath = path.join(__dirname, '..', '.env.production')
 
-// Încarcă variabilele de mediu imediat pentru Railway
-if (process.env.NODE_ENV === 'production' || process.env.RAILWAY_PROJECT_ID) {
-  console.log('🔧 Production environment detected - skipping dotenv load')
-} else {
-  // Doar în development încărcăm .env.local
-  if (fs.existsSync(envLocalPath)) {
-    console.log('🔧 Loading .env.local from:', envLocalPath)
-    dotenv.config({ path: envLocalPath })
-  } else {
-    console.log('⚠️  .env.local not found, using environment variables')
-  }
-}
-// În producție, nu încercăm să încărcăm fișiere .env - folosim doar variabilele de mediu
-if (process.env.NODE_ENV !== 'production' && !process.env.RAILWAY_PROJECT_ID) {
-  const envPath = path.join(__dirname, '..', '.env')
-  const envProductionPath = path.join(__dirname, '..', '.env.production')
+console.log('📂 __dirname:', __dirname)
+console.log('🎯 __filename:', __filename)
 
-  console.log('📂 __dirname:', __dirname)
-  console.log('🎯 __filename:', __filename)
+try {
+  const isProduction = process.env.NODE_ENV === 'production'
+  const primaryPath = isProduction ? envProductionPath : envLocalPath
+  const secondaryPath = isProduction ? envLocalPath : envProductionPath
 
-  try {
-    const isProduction = process.env.NODE_ENV === 'production'
-    const primaryPath = isProduction ? envProductionPath : envLocalPath
-    const secondaryPath = isProduction ? envLocalPath : envProductionPath
-
-    const primaryResult = dotenv.config({ path: primaryPath })
-    if (primaryResult.error) {
-      console.log('⚠️  Fișierul primar de env nu a putut fi încărcat, încerc fallback:', primaryResult.error.message)
-      const secondaryResult = dotenv.config({ path: secondaryPath })
-      if (secondaryResult.error) {
-        console.log('⚠️  Fișierul secundar de env nu a putut fi încărcat, încerc .env:', secondaryResult.error.message)
-        const fallbackResult = dotenv.config({ path: envPath })
-        if (fallbackResult.error) {
-          console.log('⚠️  Nici fișierul .env nu a putut fi încărcat, dar serverul va continua:', fallbackResult.error.message)
-        } else {
-          console.log('✅ Fișierul .env a fost încărcat cu succes (fallback)')
-        }
+  const primaryResult = dotenv.config({ path: primaryPath })
+  if (primaryResult.error) {
+    console.log('⚠️  Fișierul primar de env nu a putut fi încărcat, încerc fallback:', primaryResult.error.message)
+    const secondaryResult = dotenv.config({ path: secondaryPath })
+    if (secondaryResult.error) {
+      console.log('⚠️  Fișierul secundar de env nu a putut fi încărcat, încerc .env:', secondaryResult.error.message)
+      const fallbackResult = dotenv.config({ path: envPath })
+      if (fallbackResult.error) {
+        console.log('⚠️  Nici fișierul .env nu a putut fi încărcat, dar serverul va continua:', fallbackResult.error.message)
       } else {
-        console.log('✅ Fișierul secundar de env a fost încărcat cu succes')
+        console.log('✅ Fișierul .env a fost încărcat cu succes (fallback)')
       }
     } else {
-      console.log('✅ Fișierul primar de env a fost încărcat cu succes')
+      console.log('✅ Fișierul secundar de env a fost încărcat cu succes')
     }
-  } catch (error) {
-    console.log('⚠️  Eroare la încărcarea fișierului de configurare, dar serverul va continua:', error.message)
+  } else {
+    console.log('✅ Fișierul primar de env a fost încărcat cu succes')
   }
-} else {
-  console.log('🔧 Production environment - skipping dotenv file loading')
+} catch (error) {
+  console.log('⚠️  Eroare la încărcarea fișierului de configurare, dar serverul va continua:', error.message)
 }
 
-// Fallback-uri pentru variabile critice - doar în development
+// Fallback-uri pentru variabile critice
 if (!process.env.PORT) {
   process.env.PORT = '8080'
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('⚠️  PORT nu este setat, se folosește valoarea implicită: 8080')
-  }
+  console.log('⚠️  PORT nu este setat, se folosește valoarea implicită: 8080')
 }
 if (!process.env.JWT_SECRET) {
-  process.env.JWT_SECRET = process.env.NODE_ENV === 'production' ? 'production-fallback-jwt-secret' : 'fallback-jwt-secret-key-for-development'
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('⚠️  JWT_SECRET nu este setat, se folosește valoarea implicită (NU folosi în producție!)')
-  }
+  process.env.JWT_SECRET = 'fallback-jwt-secret-key-for-development'
+  console.log('⚠️  JWT_SECRET nu este setat, se folosește valoarea implicită (NU folosi în producție!)')
 }
 if (!process.env.CLIENT_ORIGIN) {
-  process.env.CLIENT_ORIGIN = process.env.RAILWAY_STATIC_URL || 'https://spectra-autoart-production.up.railway.app'
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('⚠️  CLIENT_ORIGIN nu este setat, se folosește valoarea implicită:', process.env.CLIENT_ORIGIN)
-  }
+  process.env.CLIENT_ORIGIN = 'https://spectra-autoart-production.up.railway.app'
+  console.log('⚠️  CLIENT_ORIGIN nu este setat, se folosește valoarea implicită:', process.env.CLIENT_ORIGIN)
 }
 
-// Debug logging pentru verificare variabile Google Sheets - doar în development
-if (process.env.NODE_ENV !== 'production') {
-  console.log('🔍 Server index.js - Verificare încărcare variabile din dotenv:')
-  console.log('📊 GOOGLE_SHEETS_SPREADSHEET_ID:', process.env.GOOGLE_SHEETS_SPREADSHEET_ID)
-  console.log('📧 GOOGLE_SERVICE_ACCOUNT_EMAIL:', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)
-  console.log('🔑 GOOGLE_PRIVATE_KEY exists:', !!process.env.GOOGLE_PRIVATE_KEY)
-  console.log('🔑 GOOGLE_PRIVATE_KEY length:', process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.length : 'undefined')
-  console.log('🔑 DEEPL_KEY exists:', !!process.env.DEEPL_KEY)
-  console.log('🔑 DEEPL_KEY format:', process.env.DEEPL_KEY ? process.env.DEEPL_KEY.substring(0, 8) + '...' + process.env.DEEPL_KEY.slice(-4) : 'undefined')
-}
+// Debug logging pentru verificare variabile Google Sheets
+console.log('🔍 Server index.js - Verificare încărcare variabile din dotenv:')
+console.log('📁 .env path:', envPath)
+console.log('📊 GOOGLE_SHEETS_SPREADSHEET_ID:', process.env.GOOGLE_SHEETS_SPREADSHEET_ID)
+console.log('📧 GOOGLE_SERVICE_ACCOUNT_EMAIL:', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)
+console.log('🔑 GOOGLE_PRIVATE_KEY exists:', !!process.env.GOOGLE_PRIVATE_KEY)
+console.log('🔑 GOOGLE_PRIVATE_KEY length:', process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.length : 'undefined')
+console.log('🔑 DEEPL_KEY exists:', !!process.env.DEEPL_KEY)
+console.log('🔑 DEEPL_KEY format:', process.env.DEEPL_KEY ? process.env.DEEPL_KEY.substring(0, 8) + '...' + process.env.DEEPL_KEY.slice(-4) : 'undefined')
 
 import publicRouter from './routes/public.js'
 import adminRouter from './routes/admin.js'
@@ -167,9 +128,14 @@ const app = express()
 app.head('/', (req, res) => {
   res.sendStatus(200)
 })
+app.head('/', (req, res) => {
+  res.sendStatus(200)
+})
 
 app.get('/ping', (req, res) => {
-  // Always respond to ping, even during startup
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('📍 PING endpoint hit - server responding')
+  }
   res.status(200).send('pong')
 })
 app.head('/ping', (req, res) => {
@@ -278,81 +244,52 @@ console.log('✅ API routes mounted')
 
 // Static and catch-all are mounted after API routes inside start callback
 
-// Initialize Google Sheets Service - non-blocking for production
+// Initialize Google Sheets Service
 async function initializeServices() {
   try {
-    console.log('🔄 Starting service initialization...')
-    
-    // Email service - optional
-    try {
-      if (!initializeEmailService) {
-        ({ initializeEmailService } = await import('./services/emailService.js'))
-      }
-      const emailServiceInitialized = await initializeEmailService();
-      if (emailServiceInitialized) {
-        console.log('✅ Email service initialized successfully');
-      } else {
-        console.log('⚠️  Email service initialization failed - emails may not be sent');
-      }
-    } catch (error) {
-      console.log('⚠️  Email service initialization error (non-blocking):', error.message);
+    if (!initializeEmailService) {
+      ({ initializeEmailService } = await import('./services/emailService.js'))
+    }
+    const emailServiceInitialized = await initializeEmailService();
+    if (emailServiceInitialized) {
+      console.log('✅ Email service initialized successfully');
+    } else {
+      console.log('⚠️  Email service initialization failed - emails may not be sent');
     }
     
-    // Vehicles API service - optional
-    try {
-      if (!VehiclesAPIService) {
-        VehiclesAPIService = (await import('./services/vehiclesAPIService.js')).default
-      }
-      const vehiclesAPIInitialized = await VehiclesAPIService.initialize();
-      if (vehiclesAPIInitialized) {
-        console.log('✅ Vehicles API service initialized successfully');
-      } else {
-        console.log('⚠️  Vehicles API not configured - using comprehensive demo data');
-      }
-    } catch (error) {
-      console.log('⚠️  Vehicles API initialization error (non-blocking):', error.message);
+    if (!VehiclesAPIService) {
+      VehiclesAPIService = (await import('./services/vehiclesAPIService.js')).default
+    }
+    const vehiclesAPIInitialized = await VehiclesAPIService.initialize();
+    if (vehiclesAPIInitialized) {
+      console.log('✅ Vehicles API service initialized successfully');
+    } else {
+      console.log('⚠️  Vehicles API not configured - using comprehensive demo data');
     }
     
-    // Google Sheets service - optional
-    try {
-      if (!GoogleSheetsService) {
-        GoogleSheetsService = (await import('./services/googleSheetsService.js')).default
-      }
-      const sheetsInitialized = await GoogleSheetsService.initialize();
-      if (sheetsInitialized) {
-        console.log('✅ Google Sheets service initialized successfully');
-        
-        // Create spreadsheet structure if configured
-        if (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
-          try {
-            const spreadsheetId = await GoogleSheetsService.createSpreadsheetStructure();
-            console.log(`📊 Google Sheets structure created: ${spreadsheetId}`);
-          } catch (error) {
-            console.log('⚠️  Google Sheets structure may already exist or creation failed');
-          }
+    if (!GoogleSheetsService) {
+      GoogleSheetsService = (await import('./services/googleSheetsService.js')).default
+    }
+    const sheetsInitialized = await GoogleSheetsService.initialize();
+    if (sheetsInitialized) {
+      console.log('✅ Google Sheets service initialized successfully');
+      
+      // Create spreadsheet structure if configured
+      if (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
+        try {
+          const spreadsheetId = await GoogleSheetsService.createSpreadsheetStructure();
+          console.log(`📊 Google Sheets structure created: ${spreadsheetId}`);
+        } catch (error) {
+          console.log('⚠️  Google Sheets structure may already exist or creation failed');
         }
-      } else {
-        console.log('⚠️  Google Sheets not configured - using demo data');
       }
-    } catch (error) {
-      console.log('⚠️  Google Sheets initialization error (non-blocking):', error.message);
+    } else {
+      console.log('⚠️  Google Sheets not configured - using demo data');
     }
-    
-    console.log('✅ Service initialization completed')
-  } catch (error) {
-    console.log('❌ Service initialization failed:', error.message)
-    // Continue anyway - server should start even if services fail
-  }
-}
 
-// Initialize vehicle services separately
-const initializeVehicleServices = async () => {
-  try {
-    let vehicleServicesService;
     if (!vehicleServicesService) {
       ({ vehicleServicesService } = await import('./services/vehicleServicesService.js'))
     }
-    
     // Initialize Vehicle Services
     try {
       const canUseSheets = (
@@ -387,15 +324,14 @@ const initializeVehicleServices = async () => {
       console.log('⚠️  Vehicle services initialization failed:', error.message);
     }
   } catch (error) {
-    console.error('❌ Failed to initialize vehicle services:', error.message);
+    console.error('❌ Failed to initialize services:', error.message);
   }
 }
 
 // Start server immediately without waiting for services initialization
 const startServer = async () => {
   try {
-    // Use MAIN_SERVER_PORT if set (for emergency healthcheck setup), otherwise use PORT
-    const port = process.env.MAIN_SERVER_PORT || process.env.PORT || 8080
+    const port = process.env.PORT || 8080
     const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost'
 
     console.log('🚀 STARTING SERVER - Railway Production Debug')
@@ -403,10 +339,8 @@ const startServer = async () => {
     console.log(`🎯 PORT: ${port}`)
     console.log(`🎯 HOST: ${host}`)
     console.log(`🎯 Railway environment: ${!!process.env.RAILWAY_PROJECT_ID ? 'YES' : 'NO'}`)
-    console.log(`🎯 Startup timeout: ${startupTimeoutMs}ms`)
     console.log('🔥 CRITICAL: About to call app.listen()')
     console.log('🔥 RAILWAY_DEBUG: Server starting with ultra-early endpoints already mounted')
-    console.log('🔥 RAILWAY_DEBUG: Starting server on all interfaces (0.0.0.0) for Railway compatibility')
     
     // Start server IMMEDIATELY - don't wait for services initialization
     console.log(`🔥 CRITICAL: Calling app.listen(${port}, ${host})`)
@@ -415,17 +349,15 @@ const startServer = async () => {
     console.log(`🔥 RAILWAY_DEBUG: http://${host}:${port}/health`)
     console.log(`🔥 RAILWAY_DEBUG: http://${host}:${port}/debug`)
     
-    // For Railway, we need to be more explicit about the binding
-    const server = app.listen(port, host, () => {
+    const server = app.listen(port, () => {
       clearTimeout(startupTimeout) // Stop safety timeout
       serverReady = true // Mark server as ready for healthchecks
       console.log('🔥 RAILWAY_DEBUG: SERVER SUCCESSFULLY STARTED!')
-      console.log(`🔥 RAILWAY_DEBUG: Listening on ${host}:${port}`)
-      console.log(`✅ Server Spectra AutoArt STARTED SUCCESSFULLY on ${host}:${port}`)
-      console.log(`🏥 Healthcheck available at: http://${host}:${port}/health`)
-      console.log(`🏓 Ping healthcheck available at: http://${host}:${port}/ping`)
+      console.log(`🔥 RAILWAY_DEBUG: Listening on 0.0.0.0:${port}`)
+      console.log(`✅ Server Spectra AutoArt STARTED SUCCESSFULLY on 0.0.0.0:${port}`)
+      console.log(`🏥 Healthcheck available at: http://0.0.0.0:${port}/health`)
+      console.log(`🏓 Ping healthcheck available at: http://0.0.0.0:${port}/ping`)
       console.log(`🔄 Server ready state: ${serverReady}`)
-      console.log(`🔥 RAILWAY_DEBUG: Server should be accessible from Railway healthcheck`)
       
       // Test the healthcheck endpoints immediately
       setTimeout(() => {
@@ -433,37 +365,6 @@ const startServer = async () => {
         console.log(`🔥 Testing: http://localhost:${port}/ping`)
         console.log(`🔥 Testing: http://localhost:${port}/health`)
         console.log(`🔥 Testing: http://localhost:${port}/debug`)
-        
-        // Test if endpoints are actually responding
-        try {
-          const http = require('http')
-          
-          // Test /ping
-          const pingReq = http.request({
-            hostname: 'localhost',
-            port: port,
-            path: '/ping',
-            method: 'GET',
-            timeout: 5000
-          }, (res) => {
-            console.log(`🔥 SELF-TEST /ping: ${res.statusCode} ${res.statusMessage}`)
-            res.on('data', () => {})
-          })
-          
-          pingReq.on('error', (err) => {
-            console.log(`🔥 SELF-TEST /ping FAILED:`, err.message)
-          })
-          
-          pingReq.on('timeout', () => {
-            console.log(`🔥 SELF-TEST /ping TIMEOUT`)
-            pingReq.destroy()
-          })
-          
-          pingReq.end()
-          
-        } catch (testError) {
-          console.log(`🔥 SELF-TEST ERROR:`, testError.message)
-        }
       }, 1000)
       
       // Routes already mounted before static files
@@ -473,57 +374,11 @@ const startServer = async () => {
       app.use('/uploads', express.static(uploadsPath))
 
       // Serve static files from React build if available
-      const clientBuildPath = path.join(__dirname, '../client/dist')
-      if (fs.existsSync(clientBuildPath)) {
-        app.use(express.static(clientBuildPath))
-        console.log('✅ Serving static files from:', clientBuildPath)
-        
-        // Serve React app for all other routes
-        app.get('*', (req, res) => {
-          res.sendFile(path.join(clientBuildPath, 'index.html'))
-        })
-      } else {
-        console.log('⚠️  Client build folder not found:', clientBuildPath)
-      }
-
-      app.get('/site.webmanifest', (req, res) => {
-        res.set('Content-Type', 'application/manifest+json')
-        const manifestPath = path.join(clientBuildPath, 'site.webmanifest')
-        if (fs.existsSync(manifestPath)) {
-          res.sendFile(manifestPath)
-        } else {
-          res.send(JSON.stringify({
-            name: 'Spectra AutoArt',
-            short_name: 'Spectra AutoArt',
-            icons: [],
-            theme_color: '#ffffff',
-            background_color: '#ffffff',
-            display: 'standalone',
-            start_url: '/',
-            scope: '/'
-          }))
-        }
-      })
-
-      // Handle React routing, return all requests to React app
-      app.get('*', (req, res) => {
-        const indexPath = path.join(clientBuildPath, 'index.html')
-        if (fs.existsSync(indexPath)) {
-          res.sendFile(indexPath)
-        } else {
-          res.status(200).send(
-            `<!doctype html><html><head><meta charset="utf-8"/><title>Spectra AutoArt API</title></head><body>
-            <h1>Spectra AutoArt</h1>
-            <p>Frontend build indisponibil în container. API-ul rulează.</p>
-            <ul>
-              <li><a href="/ping">/ping</a></li>
-              <li><a href="/health">/health</a></li>
-              <li><a href="/api/public/vehicles">/api/public/vehicles</a></li>
-            </ul>
-            </body></html>`
-          )
-        }
-      })
+const clientBuildPath = path.join(__dirname, '../../client/dist')
+if (fs.existsSync(clientBuildPath)) {
+  app.use(express.static(clientBuildPath))
+  console.log('✅ Serving static files from:', clientBuildPath)
+}
 
       // Services are now initialized before server starts
       console.log('✅ Server fully ready with all services initialized')
@@ -531,25 +386,7 @@ const startServer = async () => {
     
     server.on('error', (error) => {
       console.error('❌ Server startup error:', error.message)
-      console.error('❌ Server error code:', error.code)
-      console.error('❌ Server error syscall:', error.syscall)
-      if (error.code === 'EADDRINUSE') {
-        console.error(`❌ Port ${port} is already in use`)
-      } else if (error.code === 'EACCES') {
-        console.error(`❌ Permission denied to bind to port ${port}`)
-      }
-      // În producție, nu ieșim imediat - încercăm să recuperăm
-      if (process.env.NODE_ENV === 'production') {
-        console.error('⚠️  In production - attempting to continue despite server error')
-      } else {
-        process.exit(1)
-      }
-    })
-    
-    // Adaugă un handler pentru a detecta când serverul este cu adevărat gata
-    server.on('listening', () => {
-      const address = server.address()
-      console.log(`🔥 SERVER CONFIRMED LISTENING on ${address.address}:${address.port}`)
+      process.exit(1)
     })
     
   } catch (error) {
@@ -559,63 +396,18 @@ const startServer = async () => {
   }
 }
 
-// Start server immediately, initialize services in background
+// Initialize services before starting server
 async function initializeAndStartServer() {
   try {
-    console.log('🚀 Starting server immediately for healthcheck availability...')
-    
-    // Start server FIRST - for healthcheck availability
+    console.log('🔄 Initializing services before server startup...')
+    await initializeServices()
+    console.log('✅ Services initialized successfully, starting server...')
     await startServer()
-    
-    // Initialize services in background - non-blocking
-    console.log('🔄 Starting background service initialization...')
-    setTimeout(async () => {
-      try {
-        await initializeServices()
-        console.log('✅ Background service initialization completed')
-        
-        // Initialize vehicle services separately
-        console.log('🔄 Starting vehicle services initialization...')
-        await initializeVehicleServices()
-        console.log('✅ Vehicle services initialization completed')
-      } catch (error) {
-        console.error('⚠️  Background service initialization failed (non-blocking):', error.message)
-      }
-    }, 100) // Small delay to ensure server is fully started
-    
   } catch (error) {
-    console.error('❌ Failed to start server:', error.message)
-    // În producție, încercăm să continuăm oricum
-    if (process.env.NODE_ENV === 'production') {
-      console.error('⚠️  Attempting to continue despite startup error in production')
-    } else {
-      process.exit(1)
-    }
+    console.error('❌ Failed to initialize services or start server:', error.message)
+    process.exit(1)
   }
 }
 
 // Start the server after services are initialized
-initializeAndStartServer().catch(error => {
-  console.error('❌ CRITICAL: Failed to initialize and start server:', error.message)
-  console.error('❌ This should never happen - healthcheck endpoints may not be available')
-  // Ultimă încercare de a porni serverul doar cu healthcheck
-  try {
-    console.log('🚨 EMERGENCY: Attempting to start minimal server with only healthcheck endpoints...')
-    const port = process.env.PORT || 8080
-    const host = '0.0.0.0'
-    const emergencyApp = express()
-    
-    // Doar endpoint-urile de healthcheck
-    emergencyApp.get('/ping', (req, res) => res.status(200).send('pong'))
-    emergencyApp.head('/ping', (req, res) => res.sendStatus(200))
-    emergencyApp.get('/health', (req, res) => res.json({ status: 'emergency', timestamp: new Date().toISOString() }))
-    
-    emergencyApp.listen(port, host, () => {
-      console.log(`🚨 EMERGENCY SERVER STARTED on ${host}:${port}`)
-      console.log(`🚨 Healthcheck available at: http://${host}:${port}/ping`)
-    })
-  } catch (emergencyError) {
-    console.error('❌ EMERGENCY SERVER FAILED:', emergencyError.message)
-    process.exit(1)
-  }
-})
+initializeAndStartServer()

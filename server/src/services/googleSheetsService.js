@@ -481,12 +481,7 @@ class GoogleSheetsService {
       
       if (rowIndex >= 0 && rowIndex < rows.length) {
         console.log(`📊 Updating row ${rowIndex} with data:`, data);
-        
-        // Use the set() method to properly update Google Sheets data
-        for (const [key, value] of Object.entries(data)) {
-          rows[rowIndex].set(key, value);
-        }
-        
+        Object.assign(rows[rowIndex], data);
         await rows[rowIndex].save();
         console.log(`✅ Successfully updated row ${rowIndex} in ${sheetName}`);
         return true;

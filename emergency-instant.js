@@ -1,1 +1,0 @@
-const h=require("http"),p=process.env.PORT||8080;h.createServer((q,r)=>{if(q.url==="/ping"){r.writeHead(200);r.end("pong")}else{r.writeHead(404);r.end()}}).listen(p,"0.0.0.0",()=>console.log("✅ EMERGENCY HEALTHCHECK READY"));
