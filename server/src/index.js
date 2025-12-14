@@ -329,7 +329,8 @@ async function initializeServices() {
 }
 
 // Check if we're being loaded as a module (by h.js healthcheck server)
-const isModule = require.main !== module && !process.argv.includes('--standalone')
+// In ES modules, we can't use require.main, so we check if we're being imported
+const isModule = import.meta.url !== `file://${process.argv[1]}` && !process.argv.includes('--standalone')
 
 // Start server immediately without waiting for services initialization
 const startServer = async () => {
