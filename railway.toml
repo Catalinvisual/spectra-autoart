@@ -1,6 +1,6 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "railway-healthcheck-only.Dockerfile"
+dockerfilePath = "railway-hybrid-prod.Dockerfile"
 
 [deploy]
 startCommand = "node h.js"
