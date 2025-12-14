@@ -12,3 +12,7 @@ restartPolicyMaxRetries = 10
 [environments]
   [environments.production]
     startCommand = "node h.js"
+
+# EMERGENCY HEALTHCHECK CONFIGURATION
+# This configuration ensures Railway can properly healthcheck the service
+# The h.js file provides a minimal /ping endpoint for healthchecks
