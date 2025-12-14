@@ -390,7 +390,8 @@ const initializeVehicleServices = async () => {
 // Start server immediately without waiting for services initialization
 const startServer = async () => {
   try {
-    const port = process.env.PORT || 8080
+    // Use MAIN_SERVER_PORT if set (for emergency healthcheck setup), otherwise use PORT
+    const port = process.env.MAIN_SERVER_PORT || process.env.PORT || 8080
     const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost'
 
     console.log('🚀 STARTING SERVER - Railway Production Debug')
