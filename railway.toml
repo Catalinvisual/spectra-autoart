@@ -1,6 +1,6 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "railway-bulletproof-v2.Dockerfile"
+dockerfilePath = "railway-healthcheck-only.Dockerfile"
 
 [deploy]
 startCommand = "node emergency.js"
