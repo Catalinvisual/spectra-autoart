@@ -1,5 +1,6 @@
 // Emergency server for Railway - starts immediately
-const express = require('express');
+import express from 'express';
+
 const app = express();
 const PORT = process.env.PORT || 8080;
 
