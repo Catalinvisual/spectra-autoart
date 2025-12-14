@@ -132,6 +132,15 @@ router.post('/auth/login', async (req, res) => {
 // Get dashboard stats
 router.get('/dashboard', requireAuth, async (req, res) => {
   try {
+    // Check if Google Sheets is properly initialized
+    if (!GoogleSheetsService.isInitialized) {
+      return res.status(503).json({ 
+        error: 'Google Sheets service not initialized',
+        message: 'The dashboard is temporarily unavailable. Please try again later.',
+        demoMode: GoogleSheetsService.isDemoMode
+      })
+    }
+    
     const bookings = await GoogleSheetsService.getData('Bookings')
     const gallery = await GoogleSheetsService.getData('Gallery')
     const messages = await GoogleSheetsService.getData('Messages')
@@ -1596,6 +1605,15 @@ router.delete('/vehicle-services/:id', requireAuth, async (req, res) => {
 // Get body types
 router.get('/body-types', requireAuth, async (req, res) => {
   try {
+    // Check if Google Sheets is properly initialized
+    if (!GoogleSheetsService.isInitialized) {
+      return res.status(503).json({ 
+        error: 'Google Sheets service not initialized',
+        message: 'The body types system is temporarily unavailable. Please try again later.',
+        demoMode: GoogleSheetsService.isDemoMode
+      })
+    }
+    
     const data = await GoogleSheetsService.getData('Body_Types')
     
     if (data.length <= 1) {
@@ -1792,6 +1810,15 @@ router.delete('/body-types/:id', requireAuth, async (req, res) => {
 // Get newsletter subscribers
 router.get('/newsletter-subscribers', requireAuth, async (req, res) => {
   try {
+    // Check if Google Sheets is properly initialized
+    if (!GoogleSheetsService.isInitialized) {
+      return res.status(503).json({ 
+        error: 'Google Sheets service not initialized',
+        message: 'The newsletter system is temporarily unavailable. Please try again later.',
+        demoMode: GoogleSheetsService.isDemoMode
+      })
+    }
+    
     const data = await GoogleSheetsService.getData('Newsletter_subscribers')
     
     if (data.length <= 1) {
