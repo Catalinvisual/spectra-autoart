@@ -689,10 +689,14 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
       console.log('⏰ Time comparison:', originalBooking.time, '!==', editingBooking.time, '=', originalBooking.time !== editingBooking.time)
       console.log('📊 Status comparison:', originalBooking.status, '!==', editingBooking.status, '=', originalBooking.status !== editingBooking.status)
       
+      // Ensure date is in ISO format (YYYY-MM-DD) without time
+      const cleanDate = editingBooking.date && editingBooking.date.includes('T') ? editingBooking.date.split('T')[0] : editingBooking.date
+      console.log('📅 Cleaned date for server:', cleanDate)
+      
       // Verifică dacă există modificări
       const hasChanges = 
         originalBooking.status !== editingBooking.status ||
-        originalBooking.date !== editingBooking.date ||
+        originalBooking.date !== cleanDate ||
         originalBooking.time !== editingBooking.time ||
         originalBooking.user.name !== editingBooking.user.name ||
         originalBooking.user.email !== editingBooking.user.email ||
@@ -709,7 +713,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
       // Obține data veche înainte de actualizare
       const response = await adminAPI.updateBooking(editingBooking.id, { 
         status: editingBooking.status, 
-        date: editingBooking.date, 
+        date: cleanDate, 
         time: editingBooking.time,
         make: editingBooking.make,
         model: editingBooking.model,
@@ -722,7 +726,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
         toast.showInfo(response.data.message || 'Nu există modificări de salvat')
       } else {
         // Actualizăm lista de programări doar dacă există modificări
-        setBookings(prev => prev.map((b: Booking) => b.id === editingBooking.id ? { ...b, status: editingBooking.status, date: editingBooking.date, time: editingBooking.time } : b))
+        setBookings(prev => prev.map((b: Booking) => b.id === editingBooking.id ? { ...b, status: editingBooking.status, date: cleanDate, time: editingBooking.time } : b))
         
         // Notifică toate componentele să reîmprospăteze calendarul
         calendarSyncManager.notifyRefresh()
