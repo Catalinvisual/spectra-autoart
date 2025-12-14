@@ -8,11 +8,21 @@ import { fileURLToPath } from 'url'
 // LOG STARTUP DETALIAT PENTRU DEBUGGING CONTAINER
 console.log('🚀 SERVER STARTUP - Container Debug Log - Deployment Fix')
 console.log('📍 Current directory:', process.cwd())
+console.log('📍 __dirname:', __dirname)
+console.log('📍 __filename:', __filename)
+console.log('📍 Process ID:', process.pid)
+console.log('📍 Node version:', process.version)
+console.log('📍 Platform:', process.platform)
+console.log('📍 Architecture:', process.arch)
+
 if (!process.env.NODE_ENV && (process.env.RAILWAY_PROJECT_ID || process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_STATIC_URL)) {
   process.env.NODE_ENV = 'production'
 }
 console.log('🔧 NODE_ENV:', process.env.NODE_ENV)
 console.log('📋 Process arguments:', process.argv)
+console.log('🔧 PORT from env:', process.env.PORT)
+console.log('🔧 RAILWAY_PROJECT_ID:', process.env.RAILWAY_PROJECT_ID)
+console.log('🔧 RAILWAY_ENVIRONMENT:', process.env.RAILWAY_ENVIRONMENT)
 
 // Handler pentru erori neașteptate
 process.on('uncaughtException', (error) => {
@@ -418,6 +428,37 @@ const startServer = async () => {
         console.log(`🔥 Testing: http://localhost:${port}/ping`)
         console.log(`🔥 Testing: http://localhost:${port}/health`)
         console.log(`🔥 Testing: http://localhost:${port}/debug`)
+        
+        // Test if endpoints are actually responding
+        try {
+          const http = require('http')
+          
+          // Test /ping
+          const pingReq = http.request({
+            hostname: 'localhost',
+            port: port,
+            path: '/ping',
+            method: 'GET',
+            timeout: 5000
+          }, (res) => {
+            console.log(`🔥 SELF-TEST /ping: ${res.statusCode} ${res.statusMessage}`)
+            res.on('data', () => {})
+          })
+          
+          pingReq.on('error', (err) => {
+            console.log(`🔥 SELF-TEST /ping FAILED:`, err.message)
+          })
+          
+          pingReq.on('timeout', () => {
+            console.log(`🔥 SELF-TEST /ping TIMEOUT`)
+            pingReq.destroy()
+          })
+          
+          pingReq.end()
+          
+        } catch (testError) {
+          console.log(`🔥 SELF-TEST ERROR:`, testError.message)
+        }
       }, 1000)
       
       // Routes already mounted before static files

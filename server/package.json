@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "cross-env PORT=8081 NODE_ENV=development NODE_OPTIONS=--openssl-legacy-provider node src/index.js",
-    "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider node src/index.js",
+    "start": "node src/index.js",
+    "start:prod": "cross-env NODE_OPTIONS=--openssl-legacy-provider node src/index.js",
     "build": "node -e \"console.log('No server build step; skipping.')\""
   },
   "keywords": [
@@ -21,6 +22,7 @@
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
+    "cross-env": "^10.1.0",
     "deepl-node": "^1.13.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
@@ -35,8 +37,5 @@
   "engines": {
     "node": "20.x",
     "npm": ">=9.0.0"
-  },
-  "devDependencies": {
-    "cross-env": "^10.1.0"
   }
 }
