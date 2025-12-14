@@ -30,7 +30,7 @@ server.listen(PORT, () => {
     console.log('🚀 Pornesc Express serverul principal...');
     
     try {
-      require('../server/src/index.js');
+      require('./server/src/index.js');
       console.log('✅ Express server pornit cu succes!');
     } catch (error) {
       console.error('❌ Eroare la pornirea Express server:', error.message);

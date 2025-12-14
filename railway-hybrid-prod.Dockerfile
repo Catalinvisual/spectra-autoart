@@ -13,7 +13,8 @@ COPY server/package*.json ./server/
 
 # Install dependencies
 RUN npm ci --omit=dev && \
-    npm --prefix server ci --omit=dev
+    npm --prefix server ci --omit=dev && \
+    npm --prefix client ci --omit=dev
 
 # Copy source code
 COPY . .
@@ -25,8 +26,8 @@ RUN npm --prefix client ci --include=dev && \
 # Expose port
 EXPOSE 8080
 
-# Set working directory to server
-WORKDIR /app/server
+# Set working directory to root (where h.js is located)
+WORKDIR /app
 
-# Start the server
-CMD ["npm", "start"]
+# Start the healthcheck server which will then start Express
+CMD ["node", "h.js"]
