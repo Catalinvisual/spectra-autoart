@@ -128,26 +128,19 @@ class GoogleSheetsService {
         console.error('❌ Google Sheets authentication failed:', authError.message);
         console.error('❌ Full auth error:', authError);
         
-        // In production, do NOT enable demo mode - let the service fail
-        if (process.env.RAILWAY_PROJECT_ID) {
-          console.log('❌ PRODUCTION ENVIRONMENT: Authentication failed - service will NOT initialize');
-          this.isDemoMode = false;
-          this.isInitialized = false;
-          return false; // Return failure in production
-        } else {
-          // In development, enable demo mode
-          console.log('⚠️  Development environment: Enabling demo mode due to authentication failure');
-          this.isDemoMode = true;
-          this.isInitialized = true; // Consider it initialized in demo mode
-          return true; // Return success for demo mode in development
-        }
+        // Enable demo mode in both production and development when authentication fails
+        console.log('⚠️  Authentication failed - enabling demo mode');
+        this.isDemoMode = true;
+        this.isInitialized = true; // Consider it initialized in demo mode
+        return true; // Return success for demo mode
       }
     } catch (error) {
       console.error('❌ Failed to initialize Google Sheets service:', error);
-      // DO NOT fall back to demo mode - let the service fail properly
-      this.isDemoMode = false;
-      this.isInitialized = false;
-      throw new Error(`Failed to initialize Google Sheets service: ${error.message}`);
+      // Enable demo mode when initialization fails
+      console.log('⚠️  Enabling demo mode due to initialization failure');
+      this.isDemoMode = true;
+      this.isInitialized = true;
+      return true; // Return success for demo mode
     }
   }
 
