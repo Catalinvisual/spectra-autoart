@@ -5,7 +5,7 @@
     "dockerfilePath": "railway-healthcheck-only.Dockerfile"
   },
   "deploy": {
-    "startCommand": "node emergency.js",
+    "startCommand": "node h.js",
     "healthcheckPath": "/ping",
     "healthcheckTimeout": 600,
     "restartPolicyType": "ON_FAILURE",
