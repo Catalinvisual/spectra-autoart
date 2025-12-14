@@ -30,4 +30,8 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:${PORT:-8080}/ping || exit 1
 
 # Start with full Express server
-CMD cd server && npm start
+WORKDIR /app/server
+CMD ["npm", "start"]
+
+# Switch back to app root for healthcheck compatibility
+WORKDIR /app
