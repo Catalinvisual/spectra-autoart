@@ -36,9 +36,15 @@ class GoogleSheetsService {
         console.log(`   - SERVICE_ACCOUNT_EMAIL: ${hasServiceAccountEmail ? '✅' : '❌'}`);
         console.log(`   - PRIVATE_KEY: ${hasPrivateKey ? '✅' : '❌'}`);
         
-        // In production with Railway, enable demo mode to allow server to start
-        if (process.env.RAILWAY_PROJECT_ID) {
-          console.log('⚠️  PRODUCTION ENVIRONMENT: Google Sheets credentials missing - enabling demo mode');
+        // Check if we're in production environment
+        const isProduction = process.env.RAILWAY_PROJECT_ID || 
+                           process.env.NODE_ENV === 'production' || 
+                           process.env.RAILWAY_SERVICE_ID ||
+                           process.env.PORT === '8080' || // Railway default port
+                           !process.env.CLIENT_ORIGIN?.includes('localhost');
+        
+        if (isProduction) {
+          console.log('🚀 PRODUCTION ENVIRONMENT: Google Sheets credentials missing - enabling demo mode');
           this.isDemoMode = true; // Enable demo mode in production to allow server to start
           this.isInitialized = true; // Consider initialized in demo mode
           return true; // Return success so server can start
@@ -74,8 +80,14 @@ class GoogleSheetsService {
           if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
             console.log('⚠️  Google Sheets credentials not configured');
             
-            // Check if we're in production (Railway) environment
-            if (process.env.RAILWAY_PROJECT_ID || process.env.NODE_ENV === 'production') {
+            // Check if we're in production environment (multiple detection methods)
+            const isProduction = process.env.RAILWAY_PROJECT_ID || 
+                               process.env.NODE_ENV === 'production' || 
+                               process.env.RAILWAY_SERVICE_ID ||
+                               process.env.PORT === '8080' || // Railway default port
+                               !process.env.CLIENT_ORIGIN?.includes('localhost');
+            
+            if (isProduction) {
               console.log('🚀 Production environment detected - enabling demo mode');
               this.isDemoMode = true;
               this.isInitialized = true;
