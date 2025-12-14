@@ -29,5 +29,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:${PORT:-8080}/ping || exit 1
 
-# Pornește aplicația reală care are healthcheck-uri integrate
-CMD ["sh", "-c", "cd /app/server && npm start"]
+# Start with ultra-emergency server immediately
+CMD ["node", "/app/ultra-emergency.js"]
