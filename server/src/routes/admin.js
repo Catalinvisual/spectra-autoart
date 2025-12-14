@@ -132,8 +132,8 @@ router.post('/auth/login', async (req, res) => {
 // Get dashboard stats
 router.get('/dashboard', requireAuth, async (req, res) => {
   try {
-    // Check if Google Sheets is properly initialized
-    if (!GoogleSheetsService.isInitialized) {
+    // Check if Google Sheets is properly initialized or in demo mode
+    if (!GoogleSheetsService.isInitialized && !GoogleSheetsService.isDemoMode) {
       return res.status(503).json({ 
         error: 'Google Sheets service not initialized',
         message: 'The dashboard is temporarily unavailable. Please try again later.',
@@ -175,8 +175,8 @@ router.get('/dashboard', requireAuth, async (req, res) => {
 // Get all bookings
 router.get('/bookings', requireAuth, async (req, res) => {
   try {
-    // Check if Google Sheets is properly initialized
-    if (!GoogleSheetsService.isInitialized) {
+    // Check if Google Sheets is properly initialized or in demo mode
+    if (!GoogleSheetsService.isInitialized && !GoogleSheetsService.isDemoMode) {
       return res.status(503).json({ 
         error: 'Google Sheets service not initialized',
         message: 'The booking system is temporarily unavailable. Please try again later.',
@@ -1605,8 +1605,8 @@ router.delete('/vehicle-services/:id', requireAuth, async (req, res) => {
 // Get body types
 router.get('/body-types', requireAuth, async (req, res) => {
   try {
-    // Check if Google Sheets is properly initialized
-    if (!GoogleSheetsService.isInitialized) {
+    // Check if Google Sheets is properly initialized or in demo mode
+    if (!GoogleSheetsService.isInitialized && !GoogleSheetsService.isDemoMode) {
       return res.status(503).json({ 
         error: 'Google Sheets service not initialized',
         message: 'The body types system is temporarily unavailable. Please try again later.',
@@ -1810,8 +1810,8 @@ router.delete('/body-types/:id', requireAuth, async (req, res) => {
 // Get newsletter subscribers
 router.get('/newsletter-subscribers', requireAuth, async (req, res) => {
   try {
-    // Check if Google Sheets is properly initialized
-    if (!GoogleSheetsService.isInitialized) {
+    // Check if Google Sheets is properly initialized or in demo mode
+    if (!GoogleSheetsService.isInitialized && !GoogleSheetsService.isDemoMode) {
       return res.status(503).json({ 
         error: 'Google Sheets service not initialized',
         message: 'The newsletter system is temporarily unavailable. Please try again later.',

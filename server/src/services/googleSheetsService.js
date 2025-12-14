@@ -24,6 +24,9 @@ class GoogleSheetsService {
       console.log('🔑 PRIVATE_KEY exists:', !!process.env.GOOGLE_PRIVATE_KEY)
       console.log('🌍 NODE_ENV:', process.env.NODE_ENV)
       console.log('🏭 RAILWAY_PROJECT_ID:', process.env.RAILWAY_PROJECT_ID)
+      console.log('🔧 RAILWAY_SERVICE_ID:', process.env.RAILWAY_SERVICE_ID)
+      console.log('📡 PORT:', process.env.PORT)
+      console.log('🌐 CLIENT_ORIGIN:', process.env.CLIENT_ORIGIN)
       
       // Validate all required credentials are present
       const hasSpreadsheetId = !!process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
@@ -47,6 +50,7 @@ class GoogleSheetsService {
           console.log('🚀 PRODUCTION ENVIRONMENT: Google Sheets credentials missing - enabling demo mode');
           this.isDemoMode = true; // Enable demo mode in production to allow server to start
           this.isInitialized = true; // Consider initialized in demo mode
+          console.log('✅ DEMO MODE ACTIVATED: isInitialized =', this.isInitialized, 'isDemoMode =', this.isDemoMode);
           return true; // Return success so server can start
         } else {
           console.log('⚠️  Development environment: Service will not initialize');
@@ -154,6 +158,7 @@ class GoogleSheetsService {
         console.log('⚠️  Authentication failed - enabling demo mode');
         this.isDemoMode = true;
         this.isInitialized = true; // Consider it initialized in demo mode
+        console.log('✅ DEMO MODE ACTIVATED (auth failure): isInitialized =', this.isInitialized, 'isDemoMode =', this.isDemoMode);
         return true; // Return success for demo mode
       }
     } catch (error) {
@@ -162,6 +167,7 @@ class GoogleSheetsService {
       console.log('⚠️  Enabling demo mode due to initialization failure');
       this.isDemoMode = true;
       this.isInitialized = true;
+      console.log('✅ DEMO MODE ACTIVATED (init failure): isInitialized =', this.isInitialized, 'isDemoMode =', this.isDemoMode);
       return true; // Return success for demo mode
     }
   }
