@@ -156,6 +156,19 @@ app.head('/health', (req, res) => {
   res.sendStatus(200)
 })
 
+// Serve static files from React build if available (moved here for module compatibility)
+const clientBuildPath = path.join(__dirname, '../../client/dist')
+if (fs.existsSync(clientBuildPath)) {
+  app.use(express.static(clientBuildPath))
+  console.log('✅ Serving static files from:', clientBuildPath)
+}
+
+// Serve uploaded files
+const uploadsPath = path.join(__dirname, '../uploads')
+if (fs.existsSync(uploadsPath)) {
+  app.use('/uploads', express.static(uploadsPath))
+}
+
 // Readiness endpoint returns 200 only when services are marked ready
 app.get('/ready', (req, res) => {
   const statusCode = serverReady ? 200 : 503
@@ -377,18 +390,7 @@ const startServer = async () => {
         console.log(`🔥 Testing: http://localhost:${port}/debug`)
       }, 1000)
       
-      // Routes already mounted before static files
-
-      // Serve uploaded files
-      const uploadsPath = path.join(__dirname, '../uploads')
-      app.use('/uploads', express.static(uploadsPath))
-
-      // Serve static files from React build if available
-const clientBuildPath = path.join(__dirname, '../../client/dist')
-if (fs.existsSync(clientBuildPath)) {
-  app.use(express.static(clientBuildPath))
-  console.log('✅ Serving static files from:', clientBuildPath)
-}
+      // Routes and static files already mounted before server starts
 
       // Services are now initialized before server starts
       console.log('✅ Server fully ready with all services initialized')
