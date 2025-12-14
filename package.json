@@ -2,6 +2,7 @@
   "name": "spectra-autoart",
   "version": "1.0.1",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "npm --prefix client ci --include=dev && npm --prefix client run build",
     "start": "npm --prefix server run start",

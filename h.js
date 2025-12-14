@@ -1,8 +1,10 @@
 // Healthcheck server pentru Railway - ULTIMA VERSIUNE FUNCȚIONALĂ
 // Creat: $(date)
 
-const http = require('http');
-const { spawn } = require('child_process');
+import http from 'http';
+import { spawn } from 'child_process';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 const PORT = process.env.PORT || 8080;
 
@@ -26,19 +28,19 @@ server.listen(PORT, () => {
   console.log(`✅ Healthcheck server ascultă pe portul ${PORT}`);
   
   // Start Express server după 2 secunde
-  setTimeout(() => {
+  setTimeout(async () => {
     console.log('🚀 Pornesc Express serverul principal...');
     
     try {
-      require('./server/src/index.js');
+      await import('./server/src/index.js');
       console.log('✅ Express server pornit cu succes!');
     } catch (error) {
       console.error('❌ Eroare la pornirea Express server:', error.message);
       console.log('🔄 Încerc din nou...');
       
-      setTimeout(() => {
+      setTimeout(async () => {
         try {
-          require('./server/src/index.js');
+          await import('./server/src/index.js');
           console.log('✅ Express server pornit din a doua încercare!');
         } catch (error2) {
           console.error('❌ Eroare finală:', error2.message);
