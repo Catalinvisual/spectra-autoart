@@ -128,14 +128,9 @@ const app = express()
 app.head('/', (req, res) => {
   res.sendStatus(200)
 })
-app.head('/', (req, res) => {
-  res.sendStatus(200)
-})
 
 app.get('/ping', (req, res) => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('📍 PING endpoint hit - server responding')
-  }
+  // Always respond to ping, even during startup
   res.status(200).send('pong')
 })
 app.head('/ping', (req, res) => {
