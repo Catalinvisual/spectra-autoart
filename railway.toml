@@ -1,6 +1,6 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "railway-emergency-native.Dockerfile"
+dockerfilePath = "railway-final-prod.Dockerfile"
 
 [deploy]
 startCommand = "node emergency.js"
