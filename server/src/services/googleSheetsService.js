@@ -9,6 +9,10 @@ class GoogleSheetsService {
     this.doc = null;
     this.isInitialized = false;
     this.isDemoMode = false;
+    this.cache = new Map();
+    this.cacheTimeout = 60000; // 1 minute cache timeout
+    this.lastRequestTime = 0;
+    this.minRequestInterval = 1000; // Minimum 1 second between requests
   }
 
   async initialize() {
@@ -262,11 +266,72 @@ class GoogleSheetsService {
     }
   }
 
+  // Rate limiting function
+  async rateLimitDelay() {
+    const now = Date.now();
+    const timeSinceLastRequest = now - this.lastRequestTime;
+    
+    if (timeSinceLastRequest < this.minRequestInterval) {
+      const delay = this.minRequestInterval - timeSinceLastRequest;
+      console.log(`⏱️  Rate limiting: waiting ${delay}ms before next request`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+    
+    this.lastRequestTime = Date.now();
+  }
+
+  // Cache management
+  getCacheKey(sheetName) {
+    return `sheet_${sheetName}`;
+  }
+
+  getCachedData(sheetName) {
+    const key = this.getCacheKey(sheetName);
+    const cached = this.cache.get(key);
+    
+    if (cached && (Date.now() - cached.timestamp) < this.cacheTimeout) {
+      console.log(`📊 Using cached data for ${sheetName} (age: ${Date.now() - cached.timestamp}ms)`);
+      return cached.data;
+    }
+    
+    return null;
+  }
+
+  setCachedData(sheetName, data) {
+    const key = this.getCacheKey(sheetName);
+    this.cache.set(key, {
+      data: data,
+      timestamp: Date.now()
+    });
+    console.log(`📊 Cached data for ${sheetName}`);
+  }
+
+  clearCache(sheetName = null) {
+    if (sheetName) {
+      const key = this.getCacheKey(sheetName);
+      this.cache.delete(key);
+      console.log(`🗑️  Cleared cache for ${sheetName}`);
+    } else {
+      this.cache.clear();
+      console.log('🗑️  Cleared all cache');
+    }
+  }
+
   async getData(sheetName) {
     try {
       if (this.isDemoMode) {
         return this.getDemoData(sheetName);
       }
+      
+      // Check cache first
+      const cachedData = this.getCachedData(sheetName);
+      if (cachedData) {
+        return cachedData;
+      }
+      
+      // Apply rate limiting
+      await this.rateLimitDelay();
+      
       // Force real Google Sheets operation - no more demo mode
       if (!this.isInitialized || !this.doc) {
         throw new Error('Google Sheets service not properly initialized for getting data');
@@ -318,6 +383,8 @@ class GoogleSheetsService {
         console.log(`⚠️  No data rows found in ${sheetName}`);
       }
 
+      // Cache the result before returning
+      this.setCachedData(sheetName, result);
       return result;
     } catch (error) {
       console.error(`❌ Error getting data from ${sheetName}:`, error);
@@ -371,6 +438,9 @@ class GoogleSheetsService {
         try {
           await sheet.addRow(paddedData);
           console.log(`✅ Successfully appended data to ${sheetName} using addRow`);
+          
+          // Clear cache for this sheet since data was modified
+          this.clearCache(sheetName);
         } catch (addRowError) {
           console.log(`⚠️  addRow failed, trying loadCells approach: ${addRowError.message}`);
           
@@ -394,12 +464,18 @@ class GoogleSheetsService {
           
           await sheet.saveUpdatedCells();
           console.log(`✅ Successfully saved data to row ${firstEmptyRow}`);
+          
+          // Clear cache for this sheet since data was modified
+          this.clearCache(sheetName);
         }
       } else {
         // Dacă datele au suficiente coloane, folosim addRow direct
         await sheet.addRow(data);
         console.log(`✅ Successfully appended data to ${sheetName}`);
       }
+      
+      // Clear cache for this sheet since data was modified
+      this.clearCache(sheetName);
       
       return true;
     } catch (error) {
