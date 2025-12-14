@@ -34,4 +34,44 @@ const readmeContent = `# Upload Manual pentru GitHub
 5. **server/src/index.js** - Server Express cu configurație corectă
 
 ## Problemă rezolvată:
-- ✅ "Not Found
+- ✅ "Not Found" - Pagina principală este acum accesibilă
+- ✅ Healthcheck funcțional pentru Railway
+- ✅ Build React inclus în container
+
+## Instrucțiuni upload:
+1. Creează un nou release pe GitHub
+2. Încarcă această arhivă ca asset
+3. Railway va descărca automat și construi proiectul
+
+## Comenzi utile:
+\`\`\`bash
+# Pentru a crea această arhivă:
+node create_github_package.js
+\`\`\`
+`
+
+// Scrie fișierul README
+fs.writeFileSync(path.join(tempDir, 'README_UPLOAD.md'), readmeContent)
+
+console.log('✅ Fișier README creat cu succes!')
+console.log('📁 Conținutul arhivei este gata în directorul:', tempDir)
+console.log('🚀 Urmează să creezi arhiva zip și să o încarci pe GitHub!')
+console.log('')
+console.log('📋 Instrucțiuni:')
+console.log('1. Creează o arhivă zip din conținutul directorului github-upload/')
+console.log('2. Încarcă arhiva ca asset la un nou release pe GitHub')
+console.log('3. Railway va descărca automat arhiva și va construi proiectul')
+
+// Creează scriptul de upload
+const uploadScript = `cd github-upload
+zip -r spectraautoart-upload.zip .
+echo "Arhiva creata cu succes!"
+echo "Urmeaza sa incarci arhiva pe GitHub ca asset la un release nou."
+`
+
+fs.writeFileSync(path.join(tempDir, 'UPLOAD_GITHUB.bat'), uploadScript)
+console.log('✅ Script de upload creat: UPLOAD_GITHUB.bat')
+
+console.log('')
+console.log('🎉 Proces complet! Fișierele sunt gata în directorul github-upload/')
+console.log('📦 Urmează să creezi arhiva zip și să o încarci pe GitHub!')

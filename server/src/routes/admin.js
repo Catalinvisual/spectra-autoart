@@ -166,6 +166,15 @@ router.get('/dashboard', requireAuth, async (req, res) => {
 // Get all bookings
 router.get('/bookings', requireAuth, async (req, res) => {
   try {
+    // Check if Google Sheets is properly initialized
+    if (!GoogleSheetsService.isInitialized) {
+      return res.status(503).json({ 
+        error: 'Google Sheets service not initialized',
+        message: 'The booking system is temporarily unavailable. Please try again later.',
+        demoMode: GoogleSheetsService.isDemoMode
+      })
+    }
+    
     const data = await GoogleSheetsService.getData('Bookings')
     await ensureEnrichmentCache()
     
