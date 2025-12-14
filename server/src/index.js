@@ -329,10 +329,16 @@ async function initializeServices() {
     console.log('❌ Service initialization failed:', error.message)
     // Continue anyway - server should start even if services fail
   }
+}
 
+// Initialize vehicle services separately
+const initializeVehicleServices = async () => {
+  try {
+    let vehicleServicesService;
     if (!vehicleServicesService) {
       ({ vehicleServicesService } = await import('./services/vehicleServicesService.js'))
     }
+    
     // Initialize Vehicle Services
     try {
       const canUseSheets = (
@@ -367,7 +373,7 @@ async function initializeServices() {
       console.log('⚠️  Vehicle services initialization failed:', error.message);
     }
   } catch (error) {
-    console.error('❌ Failed to initialize services:', error.message);
+    console.error('❌ Failed to initialize vehicle services:', error.message);
   }
 }
 
@@ -512,6 +518,11 @@ async function initializeAndStartServer() {
       try {
         await initializeServices()
         console.log('✅ Background service initialization completed')
+        
+        // Initialize vehicle services separately
+        console.log('🔄 Starting vehicle services initialization...')
+        await initializeVehicleServices()
+        console.log('✅ Vehicle services initialization completed')
       } catch (error) {
         console.error('⚠️  Background service initialization failed (non-blocking):', error.message)
       }
