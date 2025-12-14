@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "railway-emergency-only.Dockerfile"
 
 [deploy]
-startCommand = "./start.sh"
+startCommand = "node emergency.js"
 healthcheckPath = "/ping"
 healthcheckTimeout = 600
 restartPolicyType = "ON_FAILURE"
@@ -11,4 +11,4 @@ restartPolicyMaxRetries = 10
 
 [environments]
   [environments.production]
-    startCommand = "./start.sh"
+    startCommand = "node emergency.js"
