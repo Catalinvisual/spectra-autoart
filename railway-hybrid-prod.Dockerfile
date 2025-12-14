@@ -29,5 +29,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:${PORT:-8080}/ping || exit 1
 
-# Start with Railway-compatible healthcheck server
-CMD ["node", "h.js"]
+# Start with full Express server
+CMD cd server && npm start
