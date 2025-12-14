@@ -48,62 +48,87 @@ const startupTimeout = setTimeout(() => {
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const envLocalPath = path.join(__dirname, '..', '.env.local')
-const envPath = path.join(__dirname, '..', '.env')
-const envProductionPath = path.join(__dirname, '..', '.env.production')
 
-console.log('📂 __dirname:', __dirname)
-console.log('🎯 __filename:', __filename)
+// Încarcă variabilele de mediu imediat pentru Railway
+if (process.env.NODE_ENV === 'production' || process.env.RAILWAY_PROJECT_ID) {
+  console.log('🔧 Production environment detected - skipping dotenv load')
+} else {
+  // Doar în development încărcăm .env.local
+  if (fs.existsSync(envLocalPath)) {
+    console.log('🔧 Loading .env.local from:', envLocalPath)
+    dotenv.config({ path: envLocalPath })
+  } else {
+    console.log('⚠️  .env.local not found, using environment variables')
+  }
+}
+// În producție, nu încercăm să încărcăm fișiere .env - folosim doar variabilele de mediu
+if (process.env.NODE_ENV !== 'production' && !process.env.RAILWAY_PROJECT_ID) {
+  const envPath = path.join(__dirname, '..', '.env')
+  const envProductionPath = path.join(__dirname, '..', '.env.production')
 
-try {
-  const isProduction = process.env.NODE_ENV === 'production'
-  const primaryPath = isProduction ? envProductionPath : envLocalPath
-  const secondaryPath = isProduction ? envLocalPath : envProductionPath
+  console.log('📂 __dirname:', __dirname)
+  console.log('🎯 __filename:', __filename)
 
-  const primaryResult = dotenv.config({ path: primaryPath })
-  if (primaryResult.error) {
-    console.log('⚠️  Fișierul primar de env nu a putut fi încărcat, încerc fallback:', primaryResult.error.message)
-    const secondaryResult = dotenv.config({ path: secondaryPath })
-    if (secondaryResult.error) {
-      console.log('⚠️  Fișierul secundar de env nu a putut fi încărcat, încerc .env:', secondaryResult.error.message)
-      const fallbackResult = dotenv.config({ path: envPath })
-      if (fallbackResult.error) {
-        console.log('⚠️  Nici fișierul .env nu a putut fi încărcat, dar serverul va continua:', fallbackResult.error.message)
+  try {
+    const isProduction = process.env.NODE_ENV === 'production'
+    const primaryPath = isProduction ? envProductionPath : envLocalPath
+    const secondaryPath = isProduction ? envLocalPath : envProductionPath
+
+    const primaryResult = dotenv.config({ path: primaryPath })
+    if (primaryResult.error) {
+      console.log('⚠️  Fișierul primar de env nu a putut fi încărcat, încerc fallback:', primaryResult.error.message)
+      const secondaryResult = dotenv.config({ path: secondaryPath })
+      if (secondaryResult.error) {
+        console.log('⚠️  Fișierul secundar de env nu a putut fi încărcat, încerc .env:', secondaryResult.error.message)
+        const fallbackResult = dotenv.config({ path: envPath })
+        if (fallbackResult.error) {
+          console.log('⚠️  Nici fișierul .env nu a putut fi încărcat, dar serverul va continua:', fallbackResult.error.message)
+        } else {
+          console.log('✅ Fișierul .env a fost încărcat cu succes (fallback)')
+        }
       } else {
-        console.log('✅ Fișierul .env a fost încărcat cu succes (fallback)')
+        console.log('✅ Fișierul secundar de env a fost încărcat cu succes')
       }
     } else {
-      console.log('✅ Fișierul secundar de env a fost încărcat cu succes')
+      console.log('✅ Fișierul primar de env a fost încărcat cu succes')
     }
-  } else {
-    console.log('✅ Fișierul primar de env a fost încărcat cu succes')
+  } catch (error) {
+    console.log('⚠️  Eroare la încărcarea fișierului de configurare, dar serverul va continua:', error.message)
   }
-} catch (error) {
-  console.log('⚠️  Eroare la încărcarea fișierului de configurare, dar serverul va continua:', error.message)
+} else {
+  console.log('🔧 Production environment - skipping dotenv file loading')
 }
 
-// Fallback-uri pentru variabile critice
+// Fallback-uri pentru variabile critice - doar în development
 if (!process.env.PORT) {
   process.env.PORT = '8080'
-  console.log('⚠️  PORT nu este setat, se folosește valoarea implicită: 8080')
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('⚠️  PORT nu este setat, se folosește valoarea implicită: 8080')
+  }
 }
 if (!process.env.JWT_SECRET) {
-  process.env.JWT_SECRET = 'fallback-jwt-secret-key-for-development'
-  console.log('⚠️  JWT_SECRET nu este setat, se folosește valoarea implicită (NU folosi în producție!)')
+  process.env.JWT_SECRET = process.env.NODE_ENV === 'production' ? 'production-fallback-jwt-secret' : 'fallback-jwt-secret-key-for-development'
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('⚠️  JWT_SECRET nu este setat, se folosește valoarea implicită (NU folosi în producție!)')
+  }
 }
 if (!process.env.CLIENT_ORIGIN) {
-  process.env.CLIENT_ORIGIN = 'https://spectra-autoart-production.up.railway.app'
-  console.log('⚠️  CLIENT_ORIGIN nu este setat, se folosește valoarea implicită:', process.env.CLIENT_ORIGIN)
+  process.env.CLIENT_ORIGIN = process.env.RAILWAY_STATIC_URL || 'https://spectra-autoart-production.up.railway.app'
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('⚠️  CLIENT_ORIGIN nu este setat, se folosește valoarea implicită:', process.env.CLIENT_ORIGIN)
+  }
 }
 
-// Debug logging pentru verificare variabile Google Sheets
-console.log('🔍 Server index.js - Verificare încărcare variabile din dotenv:')
-console.log('📁 .env path:', envPath)
-console.log('📊 GOOGLE_SHEETS_SPREADSHEET_ID:', process.env.GOOGLE_SHEETS_SPREADSHEET_ID)
-console.log('📧 GOOGLE_SERVICE_ACCOUNT_EMAIL:', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)
-console.log('🔑 GOOGLE_PRIVATE_KEY exists:', !!process.env.GOOGLE_PRIVATE_KEY)
-console.log('🔑 GOOGLE_PRIVATE_KEY length:', process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.length : 'undefined')
-console.log('🔑 DEEPL_KEY exists:', !!process.env.DEEPL_KEY)
-console.log('🔑 DEEPL_KEY format:', process.env.DEEPL_KEY ? process.env.DEEPL_KEY.substring(0, 8) + '...' + process.env.DEEPL_KEY.slice(-4) : 'undefined')
+// Debug logging pentru verificare variabile Google Sheets - doar în development
+if (process.env.NODE_ENV !== 'production') {
+  console.log('🔍 Server index.js - Verificare încărcare variabile din dotenv:')
+  console.log('📊 GOOGLE_SHEETS_SPREADSHEET_ID:', process.env.GOOGLE_SHEETS_SPREADSHEET_ID)
+  console.log('📧 GOOGLE_SERVICE_ACCOUNT_EMAIL:', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)
+  console.log('🔑 GOOGLE_PRIVATE_KEY exists:', !!process.env.GOOGLE_PRIVATE_KEY)
+  console.log('🔑 GOOGLE_PRIVATE_KEY length:', process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.length : 'undefined')
+  console.log('🔑 DEEPL_KEY exists:', !!process.env.DEEPL_KEY)
+  console.log('🔑 DEEPL_KEY format:', process.env.DEEPL_KEY ? process.env.DEEPL_KEY.substring(0, 8) + '...' + process.env.DEEPL_KEY.slice(-4) : 'undefined')
+}
 
 import publicRouter from './routes/public.js'
 import adminRouter from './routes/admin.js'
@@ -239,48 +264,71 @@ console.log('✅ API routes mounted')
 
 // Static and catch-all are mounted after API routes inside start callback
 
-// Initialize Google Sheets Service
+// Initialize Google Sheets Service - non-blocking for production
 async function initializeServices() {
   try {
-    if (!initializeEmailService) {
-      ({ initializeEmailService } = await import('./services/emailService.js'))
-    }
-    const emailServiceInitialized = await initializeEmailService();
-    if (emailServiceInitialized) {
-      console.log('✅ Email service initialized successfully');
-    } else {
-      console.log('⚠️  Email service initialization failed - emails may not be sent');
-    }
+    console.log('🔄 Starting service initialization...')
     
-    if (!VehiclesAPIService) {
-      VehiclesAPIService = (await import('./services/vehiclesAPIService.js')).default
-    }
-    const vehiclesAPIInitialized = await VehiclesAPIService.initialize();
-    if (vehiclesAPIInitialized) {
-      console.log('✅ Vehicles API service initialized successfully');
-    } else {
-      console.log('⚠️  Vehicles API not configured - using comprehensive demo data');
-    }
-    
-    if (!GoogleSheetsService) {
-      GoogleSheetsService = (await import('./services/googleSheetsService.js')).default
-    }
-    const sheetsInitialized = await GoogleSheetsService.initialize();
-    if (sheetsInitialized) {
-      console.log('✅ Google Sheets service initialized successfully');
-      
-      // Create spreadsheet structure if configured
-      if (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
-        try {
-          const spreadsheetId = await GoogleSheetsService.createSpreadsheetStructure();
-          console.log(`📊 Google Sheets structure created: ${spreadsheetId}`);
-        } catch (error) {
-          console.log('⚠️  Google Sheets structure may already exist or creation failed');
-        }
+    // Email service - optional
+    try {
+      if (!initializeEmailService) {
+        ({ initializeEmailService } = await import('./services/emailService.js'))
       }
-    } else {
-      console.log('⚠️  Google Sheets not configured - using demo data');
+      const emailServiceInitialized = await initializeEmailService();
+      if (emailServiceInitialized) {
+        console.log('✅ Email service initialized successfully');
+      } else {
+        console.log('⚠️  Email service initialization failed - emails may not be sent');
+      }
+    } catch (error) {
+      console.log('⚠️  Email service initialization error (non-blocking):', error.message);
     }
+    
+    // Vehicles API service - optional
+    try {
+      if (!VehiclesAPIService) {
+        VehiclesAPIService = (await import('./services/vehiclesAPIService.js')).default
+      }
+      const vehiclesAPIInitialized = await VehiclesAPIService.initialize();
+      if (vehiclesAPIInitialized) {
+        console.log('✅ Vehicles API service initialized successfully');
+      } else {
+        console.log('⚠️  Vehicles API not configured - using comprehensive demo data');
+      }
+    } catch (error) {
+      console.log('⚠️  Vehicles API initialization error (non-blocking):', error.message);
+    }
+    
+    // Google Sheets service - optional
+    try {
+      if (!GoogleSheetsService) {
+        GoogleSheetsService = (await import('./services/googleSheetsService.js')).default
+      }
+      const sheetsInitialized = await GoogleSheetsService.initialize();
+      if (sheetsInitialized) {
+        console.log('✅ Google Sheets service initialized successfully');
+        
+        // Create spreadsheet structure if configured
+        if (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
+          try {
+            const spreadsheetId = await GoogleSheetsService.createSpreadsheetStructure();
+            console.log(`📊 Google Sheets structure created: ${spreadsheetId}`);
+          } catch (error) {
+            console.log('⚠️  Google Sheets structure may already exist or creation failed');
+          }
+        }
+      } else {
+        console.log('⚠️  Google Sheets not configured - using demo data');
+      }
+    } catch (error) {
+      console.log('⚠️  Google Sheets initialization error (non-blocking):', error.message);
+    }
+    
+    console.log('✅ Service initialization completed')
+  } catch (error) {
+    console.log('❌ Service initialization failed:', error.message)
+    // Continue anyway - server should start even if services fail
+  }
 
     if (!vehicleServicesService) {
       ({ vehicleServicesService } = await import('./services/vehicleServicesService.js'))
@@ -344,7 +392,8 @@ const startServer = async () => {
     console.log(`🔥 RAILWAY_DEBUG: http://${host}:${port}/health`)
     console.log(`🔥 RAILWAY_DEBUG: http://${host}:${port}/debug`)
     
-    const server = app.listen(port, () => {
+    // For Railway, we need to be more explicit about the binding
+    const server = app.listen(port, host, () => {
       clearTimeout(startupTimeout) // Stop safety timeout
       serverReady = true // Mark server as ready for healthchecks
       console.log('🔥 RAILWAY_DEBUG: SERVER SUCCESSFULLY STARTED!')
@@ -421,7 +470,25 @@ const startServer = async () => {
     
     server.on('error', (error) => {
       console.error('❌ Server startup error:', error.message)
-      process.exit(1)
+      console.error('❌ Server error code:', error.code)
+      console.error('❌ Server error syscall:', error.syscall)
+      if (error.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${port} is already in use`)
+      } else if (error.code === 'EACCES') {
+        console.error(`❌ Permission denied to bind to port ${port}`)
+      }
+      // În producție, nu ieșim imediat - încercăm să recuperăm
+      if (process.env.NODE_ENV === 'production') {
+        console.error('⚠️  In production - attempting to continue despite server error')
+      } else {
+        process.exit(1)
+      }
+    })
+    
+    // Adaugă un handler pentru a detecta când serverul este cu adevărat gata
+    server.on('listening', () => {
+      const address = server.address()
+      console.log(`🔥 SERVER CONFIRMED LISTENING on ${address.address}:${address.port}`)
     })
     
   } catch (error) {
@@ -431,18 +498,58 @@ const startServer = async () => {
   }
 }
 
-// Initialize services before starting server
+// Start server immediately, initialize services in background
 async function initializeAndStartServer() {
   try {
-    console.log('🔄 Initializing services before server startup...')
-    await initializeServices()
-    console.log('✅ Services initialized successfully, starting server...')
+    console.log('🚀 Starting server immediately for healthcheck availability...')
+    
+    // Start server FIRST - for healthcheck availability
     await startServer()
+    
+    // Initialize services in background - non-blocking
+    console.log('🔄 Starting background service initialization...')
+    setTimeout(async () => {
+      try {
+        await initializeServices()
+        console.log('✅ Background service initialization completed')
+      } catch (error) {
+        console.error('⚠️  Background service initialization failed (non-blocking):', error.message)
+      }
+    }, 100) // Small delay to ensure server is fully started
+    
   } catch (error) {
-    console.error('❌ Failed to initialize services or start server:', error.message)
-    process.exit(1)
+    console.error('❌ Failed to start server:', error.message)
+    // În producție, încercăm să continuăm oricum
+    if (process.env.NODE_ENV === 'production') {
+      console.error('⚠️  Attempting to continue despite startup error in production')
+    } else {
+      process.exit(1)
+    }
   }
 }
 
 // Start the server after services are initialized
-initializeAndStartServer()
+initializeAndStartServer().catch(error => {
+  console.error('❌ CRITICAL: Failed to initialize and start server:', error.message)
+  console.error('❌ This should never happen - healthcheck endpoints may not be available')
+  // Ultimă încercare de a porni serverul doar cu healthcheck
+  try {
+    console.log('🚨 EMERGENCY: Attempting to start minimal server with only healthcheck endpoints...')
+    const port = process.env.PORT || 8080
+    const host = '0.0.0.0'
+    const emergencyApp = express()
+    
+    // Doar endpoint-urile de healthcheck
+    emergencyApp.get('/ping', (req, res) => res.status(200).send('pong'))
+    emergencyApp.head('/ping', (req, res) => res.sendStatus(200))
+    emergencyApp.get('/health', (req, res) => res.json({ status: 'emergency', timestamp: new Date().toISOString() }))
+    
+    emergencyApp.listen(port, host, () => {
+      console.log(`🚨 EMERGENCY SERVER STARTED on ${host}:${port}`)
+      console.log(`🚨 Healthcheck available at: http://${host}:${port}/ping`)
+    })
+  } catch (emergencyError) {
+    console.error('❌ EMERGENCY SERVER FAILED:', emergencyError.message)
+    process.exit(1)
+  }
+})
