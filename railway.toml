@@ -1,6 +1,6 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "railway.Dockerfile"
+dockerfilePath = "railway-final.Dockerfile"
 
 [deploy]
 startCommand = "cd server && npm run start"
