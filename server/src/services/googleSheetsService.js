@@ -234,13 +234,24 @@ class GoogleSheetsService {
 
   async initializeSpreadsheetStructure() {
     try {
+      // Ensure document info is loaded before accessing sheets
+      if (!this.doc.sheetsByTitle) {
+        console.log('🔄 Loading document info before accessing sheets...');
+        await this.doc.loadInfo();
+      }
+      
       // Create sheets if they don't exist
       for (const [sheetKey, config] of Object.entries(GOOGLE_SHEETS_STRUCTURE)) {
         let sheet = this.doc.sheetsByTitle[config.sheetName];
         
         if (!sheet) {
-          sheet = await this.doc.addSheet({ title: config.sheetName });
-          console.log(`📊 Created sheet: ${config.sheetName}`);
+          try {
+            sheet = await this.doc.addSheet({ title: config.sheetName });
+            console.log(`📊 Created sheet: ${config.sheetName}`);
+          } catch (addError) {
+            console.warn(`⚠️ Could not create sheet ${config.sheetName}: ${addError.message}`);
+            continue; // Skip to next sheet if we can't create it
+          }
         }
 
         try {
@@ -270,7 +281,7 @@ class GoogleSheetsService {
               console.warn(`⚠️ Sheet ${config.sheetName} has protected cells - skipping header setup`);
               console.log(`📝 Sheet ${config.sheetName} will work with existing structure`);
             } else {
-              throw protectionError;
+              console.warn(`⚠️ Could not set headers for ${config.sheetName}: ${protectionError.message}`);
             }
           }
         }
