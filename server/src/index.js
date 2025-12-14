@@ -250,6 +250,22 @@ app.use('/api/translate', translateRouter)
 // Removed debug routes
 console.log('✅ API routes mounted')
 
+// Catch-all route for React frontend - serve index.html for any non-API route
+app.get('*', (req, res) => {
+  const clientBuildPath = path.join(__dirname, '../../client/dist')
+  const indexPath = path.join(clientBuildPath, 'index.html')
+  
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath)
+  } else {
+    res.status(404).json({ 
+      error: 'Frontend not found', 
+      message: 'React build not found. Please ensure the client has been built.',
+      path: indexPath
+    })
+  }
+})
+
 // Healthcheck endpoints are defined EARLIER in the file (right after app creation)
 // This ensures they respond even during startup issues
 
