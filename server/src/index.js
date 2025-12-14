@@ -38,7 +38,7 @@ process.on('unhandledRejection', (reason, promise) => {
 let serverReady = false
 
 // Timeout de siguranță pentru startup - mai lung pentru Railway
-const startupTimeoutMs = process.env.RAILWAY_PROJECT_ID ? 120000 : 30000 // 2 minute pentru Railway
+const startupTimeoutMs = process.env.RAILWAY_PROJECT_ID ? 300000 : 30000 // 5 minute pentru Railway
 const startupTimeout = setTimeout(() => {
   console.error(`❌ Server startup timeout - server failed to start within ${startupTimeoutMs/1000} seconds`)
   process.exit(1)
@@ -388,8 +388,10 @@ const startServer = async () => {
     console.log(`🎯 PORT: ${port}`)
     console.log(`🎯 HOST: ${host}`)
     console.log(`🎯 Railway environment: ${!!process.env.RAILWAY_PROJECT_ID ? 'YES' : 'NO'}`)
+    console.log(`🎯 Startup timeout: ${startupTimeoutMs}ms`)
     console.log('🔥 CRITICAL: About to call app.listen()')
     console.log('🔥 RAILWAY_DEBUG: Server starting with ultra-early endpoints already mounted')
+    console.log('🔥 RAILWAY_DEBUG: Starting server on all interfaces (0.0.0.0) for Railway compatibility')
     
     // Start server IMMEDIATELY - don't wait for services initialization
     console.log(`🔥 CRITICAL: Calling app.listen(${port}, ${host})`)
@@ -403,11 +405,12 @@ const startServer = async () => {
       clearTimeout(startupTimeout) // Stop safety timeout
       serverReady = true // Mark server as ready for healthchecks
       console.log('🔥 RAILWAY_DEBUG: SERVER SUCCESSFULLY STARTED!')
-      console.log(`🔥 RAILWAY_DEBUG: Listening on 0.0.0.0:${port}`)
-      console.log(`✅ Server Spectra AutoArt STARTED SUCCESSFULLY on 0.0.0.0:${port}`)
-      console.log(`🏥 Healthcheck available at: http://0.0.0.0:${port}/health`)
-      console.log(`🏓 Ping healthcheck available at: http://0.0.0.0:${port}/ping`)
+      console.log(`🔥 RAILWAY_DEBUG: Listening on ${host}:${port}`)
+      console.log(`✅ Server Spectra AutoArt STARTED SUCCESSFULLY on ${host}:${port}`)
+      console.log(`🏥 Healthcheck available at: http://${host}:${port}/health`)
+      console.log(`🏓 Ping healthcheck available at: http://${host}:${port}/ping`)
       console.log(`🔄 Server ready state: ${serverReady}`)
+      console.log(`🔥 RAILWAY_DEBUG: Server should be accessible from Railway healthcheck`)
       
       // Test the healthcheck endpoints immediately
       setTimeout(() => {
