@@ -445,3 +445,6 @@ if (!isModule) {
   console.log('🔥 MODULE MODE: Skipping service initialization and server startup')
   console.log('🔥 MODULE MODE: Express app configured and ready for parent server')
 }
+
+// Export the Express app for use by h.js healthcheck server
+export default app;

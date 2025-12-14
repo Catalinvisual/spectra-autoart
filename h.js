@@ -1,4 +1,4 @@
-// Healthcheck server pentru Railway - ULTIMA VERSIUNE FUNCȚIONALĂ
+// Healthcheck server pentru Railway - Integrat cu Express
 // Creat: $(date)
 
 import http from 'http';
@@ -10,6 +10,9 @@ const PORT = process.env.PORT || 8080;
 
 console.log('🚀 Healthcheck server pornit pe portul:', PORT);
 
+let expressApp = null;
+let expressServer = null;
+
 const server = http.createServer((req, res) => {
   console.log(`📍 Request primit: ${req.url} la ${new Date().toISOString()}`);
   
@@ -17,10 +20,14 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end('OK');
     console.log('✅ Healthcheck răspuns: OK');
+  } else if (expressApp) {
+    // Forward request to Express server
+    console.log(`📍 Forwarding request to Express: ${req.url}`);
+    expressApp(req, res);
   } else {
-    res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('Not Found');
-    console.log('❌ Răspuns 404 pentru:', req.url);
+    res.writeHead(503, { 'Content-Type': 'text/plain' });
+    res.end('Express server not ready');
+    console.log('❌ Express server not ready pentru:', req.url);
   }
 });
 
@@ -32,15 +39,23 @@ server.listen(PORT, () => {
     console.log('🚀 Pornesc Express serverul principal...');
     
     try {
-      await import('./server/src/index.js');
-      console.log('✅ Express server pornit cu succes!');
+      const module = await import('./server/src/index.js');
+      expressApp = module.default || module.app;
+      console.log('✅ Express server module loaded successfully!');
+      
+      if (expressApp && typeof expressApp === 'function') {
+        console.log('✅ Express app function available for request forwarding');
+      } else {
+        console.log('⚠️  Express app function not found in module');
+      }
     } catch (error) {
       console.error('❌ Eroare la pornirea Express server:', error.message);
       console.log('🔄 Încerc din nou...');
       
       setTimeout(async () => {
         try {
-          await import('./server/src/index.js');
+          const module = await import('./server/src/index.js');
+          expressApp = module.default || module.app;
           console.log('✅ Express server pornit din a doua încercare!');
         } catch (error2) {
           console.error('❌ Eroare finală:', error2.message);
