@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "railway-final.Dockerfile"
 
 [deploy]
-startCommand = "cd server && npm run start"
+startCommand = "./start.sh"
 healthcheckPath = "/ping"
 healthcheckTimeout = 600
 restartPolicyType = "ON_FAILURE"
@@ -11,5 +11,4 @@ restartPolicyMaxRetries = 10
 
 [environments]
   [environments.production]
-    buildCommand = "cd server && npm ci"
-    startCommand = "cd server && npm run start"
+    startCommand = "./start.sh"
