@@ -328,8 +328,17 @@ async function initializeServices() {
   }
 }
 
+// Check if we're being loaded as a module (by h.js healthcheck server)
+const isModule = require.main !== module && !process.argv.includes('--standalone')
+
 // Start server immediately without waiting for services initialization
 const startServer = async () => {
+  // Don't start HTTP server if we're being loaded as a module
+  if (isModule) {
+    console.log('🔥 MODULE MODE: Express server loaded as module, skipping HTTP server startup')
+    console.log('🔥 MODULE MODE: Routes and middleware are available, but HTTP server is handled by parent')
+    return
+  }
   try {
     const port = process.env.PORT || 8080
     const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost'
@@ -410,4 +419,10 @@ async function initializeAndStartServer() {
 }
 
 // Start the server after services are initialized
-initializeAndStartServer()
+// But only if we're not being loaded as a module
+if (!isModule) {
+  initializeAndStartServer()
+} else {
+  console.log('🔥 MODULE MODE: Skipping service initialization and server startup')
+  console.log('🔥 MODULE MODE: Express app configured and ready for parent server')
+}
