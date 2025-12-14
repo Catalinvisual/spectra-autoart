@@ -5,7 +5,6 @@
     "dockerfilePath": "railway-hybrid-prod.Dockerfile"
   },
   "deploy": {
-    "startCommand": "cd server && npm start",
     "healthcheckPath": "/ping",
     "healthcheckTimeout": 600,
     "restartPolicyType": "ON_FAILURE",

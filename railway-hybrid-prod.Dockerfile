@@ -29,6 +29,6 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:${PORT:-8080}/ping || exit 1
 
-# Start server directly - simplified approach
+# Set working directory to server and start directly
 WORKDIR /app/server
-CMD ["npm", "start"]
+CMD ["node", "src/index.js"]
