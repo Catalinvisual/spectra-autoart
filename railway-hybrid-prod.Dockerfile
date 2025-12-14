@@ -29,6 +29,6 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:${PORT:-8080}/ping || exit 1
 
-# Set working directory and start emergency healthcheck server
+# Start with the emergency healthcheck server - Railway compatible
 WORKDIR /app
-CMD ["node", "emergency-healthcheck.js"]
+CMD ["node", "h.js"]

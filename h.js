@@ -8,11 +8,15 @@ const http = require('http');
 const port = process.env.PORT || 8080;
 const host = '0.0.0.0';
 
+// Set main server to use different port
+process.env.MAIN_SERVER_PORT = '8081';
+
 console.log('🚨 RAILWAY EMERGENCY HEALTHCHECK SERVER');
 console.log('🚨 Starting at:', new Date().toISOString());
 console.log('🚨 PID:', process.pid);
 console.log('🚨 Port:', port);
 console.log('🚨 Host:', host);
+console.log('🚨 Main server will run on port:', process.env.MAIN_SERVER_PORT);
 
 // Create ultra-minimal HTTP server for Railway healthcheck
 const server = http.createServer((req, res) => {
@@ -48,6 +52,15 @@ server.listen(port, host, () => {
   console.log(`🚨 Server listening on http://${host}:${port}`);
   console.log(`🚨 Healthcheck available at: http://${host}:${port}/ping`);
   console.log(`🚨 Health endpoint: http://${host}:${port}/health`);
+  
+  // Start the main Express server after healthcheck server is running
+  console.log('🚨 Starting main Express server...');
+  try {
+    require('./server/src/index.js');
+  } catch (error) {
+    console.error('🚨 Failed to start main server:', error.message);
+    // Continue running healthcheck server even if main server fails
+  }
 });
 
 // Handle errors gracefully
