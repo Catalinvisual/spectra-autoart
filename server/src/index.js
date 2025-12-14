@@ -5,6 +5,10 @@ import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
 
+// Define __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // LOG STARTUP DETALIAT PENTRU DEBUGGING CONTAINER
 console.log('🚀 SERVER STARTUP - Container Debug Log - Deployment Fix')
 console.log('📍 Current directory:', process.cwd())
