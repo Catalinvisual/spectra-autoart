@@ -765,20 +765,32 @@ router.patch('/bookings/:id', async (req, res, next) => {
           sname = trimmed
         }
         
-        // Try to get body-type specific price first
+        // Calculăm prețul corect pentru serviciu și tipul de caroserie
         let price = 0
         const bodyTypeKey = String(body || '').toLowerCase()
-        if (bodyTypeKey && sid) {
-          const bodySpecificKey = `${sid}:${bodyTypeKey}`
-          price = bookingsEnrichmentCache.serviceBodyPrices.get(bodySpecificKey) || 0
+        
+        if (sid && bodyTypeKey) {
+          // Căutăm serviciul în cache-ul de servicii
+          const allServices = bookingsEnrichmentCache.idToName.size > 0 ? Array.from(bookingsEnrichmentCache.idToName.entries()).map(([id, name]) => ({ id, name })) : []
+          const byId = new Map(allServices.map(s => [String(s.id), s]))
+          const byNameLower = new Map(allServices.map(s => [String(s.name || '').toLowerCase(), s]))
+          
+          // Găsim serviciul după ID sau nume
+          const svc = byId.get(sid) || byNameLower.get(sid.toLowerCase())
+          
+          if (svc) {
+            // Căutăm prețul specific pentru acest tip de caroserie în cache
+            const bodySpecificKey = `${sid}:${bodyTypeKey}`
+            price = bookingsEnrichmentCache.serviceBodyPrices.get(bodySpecificKey) || 0
+            
+            // Fallback la prețul minim dacă nu găsim preț specific
+            if (!price) {
+              price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
+            }
+          }
         }
         
-        // Fallback to minimum price if body-specific price not found
-        if (!price && sid) {
-          price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
-        }
-        
-        return { id: sid, name: sname, price }
+        return { id: sid, name: sname, price: price || 0 }
       }).filter(service => service.name.length > 0)
     }
 

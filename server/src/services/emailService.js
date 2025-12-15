@@ -237,7 +237,7 @@ const emailTemplates = {
           confirmHeader: 'Afspraak bevestigd',
           bookingDetails: 'Afspraak Details',
           selectedServices: 'Geselecteerde Diensten',
-          name: 'Naam', email: 'Email', phone: 'Telefoon', date: 'Datum', time: 'Tijd', vehicle: 'Voertuig', body: 'Carrosserie',
+          name: 'Naam', email: 'Email', phone: 'Telefoon', date: 'Datum', time: 'Tijd', vehicle: 'Voertuig', body: 'Carrosserie', category: 'Categorie', make: 'Merk',
           locationTitle: 'Locatie',
           locationAddress: 'Voorbeeldstraat 123, Amsterdam, Nederland',
           autoNote: 'Dit e-mailbericht is automatisch gegenereerd.'
@@ -247,7 +247,7 @@ const emailTemplates = {
           confirmHeader: 'Booking confirmed',
           bookingDetails: 'Booking Details',
           selectedServices: 'Selected Services',
-          name: 'Name', email: 'Email', phone: 'Phone', date: 'Date', time: 'Time', vehicle: 'Vehicle', body: 'Body Type',
+          name: 'Name', email: 'Email', phone: 'Phone', date: 'Date', time: 'Time', vehicle: 'Vehicle', body: 'Body Type', category: 'Category', make: 'Make',
           locationTitle: 'Location',
           locationAddress: 'Example Street 123, London, UK',
           autoNote: 'This email was generated automatically.'
@@ -257,7 +257,7 @@ const emailTemplates = {
           confirmHeader: 'Reserva confirmada',
           bookingDetails: 'Detalles de la Reserva',
           selectedServices: 'Servicios Seleccionados',
-          name: 'Nombre', email: 'Correo', phone: 'Teléfono', date: 'Fecha', time: 'Hora', vehicle: 'Vehículo', body: 'Tipo de Carrocería',
+          name: 'Nombre', email: 'Correo', phone: 'Teléfono', date: 'Fecha', time: 'Hora', vehicle: 'Vehículo', body: 'Tipo de Carrocería', category: 'Categoría', make: 'Marca',
           locationTitle: 'Ubicación',
           locationAddress: 'Calle Ejemplo 123, Madrid, España',
           autoNote: 'Este correo fue generado automáticamente.'
@@ -267,7 +267,7 @@ const emailTemplates = {
           confirmHeader: 'Rezerwacja potwierdzona',
           bookingDetails: 'Szczegóły Rezerwacji',
           selectedServices: 'Wybrane Usługi',
-          name: 'Imię', email: 'Email', phone: 'Telefon', date: 'Data', time: 'Godzina', vehicle: 'Pojazd', body: 'Typ Nadwozia',
+          name: 'Imię', email: 'Email', phone: 'Telefon', date: 'Data', time: 'Godzina', vehicle: 'Pojazd', body: 'Typ Nadwozia', category: 'Kategoria', make: 'Marka',
           locationTitle: 'Lokalizacja',
           locationAddress: 'Przykładowa Ulica 123, Warszawa, Polska',
           autoNote: 'Ten email został wygenerowany automatycznie.'
@@ -277,7 +277,7 @@ const emailTemplates = {
           confirmHeader: 'Confirmare Programare',
           bookingDetails: 'Detalii Programare',
           selectedServices: 'Servicii Selectate',
-          name: 'Nume', email: 'Email', phone: 'Telefon', date: 'Data', time: 'Ora', vehicle: 'Vehicul', body: 'Tip Caroserie',
+          name: 'Nume', email: 'Email', phone: 'Telefon', date: 'Data', time: 'Ora', vehicle: 'Vehicul', body: 'Tip Caroserie', category: 'Categorie', make: 'Marcă',
           locationTitle: 'Locație',
           locationAddress: 'Strada Exemplu 123, București, România',
           autoNote: 'Acest email a fost generat automat. Nu răspunde la acest mesaj.'
@@ -355,8 +355,16 @@ const emailTemplates = {
                 <span class="value">${bookingData.time}</span>
               </div>
               <div class="detail-row">
+                <span class="label">${t.make}:</span>
+                <span class="value">${bookingData.make}</span>
+              </div>
+              <div class="detail-row">
                 <span class="label">${t.vehicle}:</span>
-                <span class="value">${bookingData.make} ${bookingData.model}</span>
+                <span class="value">${bookingData.model}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">${t.category}:</span>
+                <span class="value">${bookingData.type || bookingData.category || 'N/A'}</span>
               </div>
               <div class="detail-row">
                 <span class="label">${t.body}:</span>
@@ -437,7 +445,7 @@ const emailTemplates = {
           updateNotice: 'Detaliile programării au fost modificate conform solicitării.',
           bookingDetails: 'Detalii Programare',
           services: 'Servicii',
-          date: 'Data', time: 'Ora', vehicle: 'Vehicul', body: 'Tip Caroserie', name: 'Nume', email: 'Email', phone: 'Telefon',
+          date: 'Data', time: 'Ora', vehicle: 'Vehicul', body: 'Tip Caroserie', name: 'Nume', email: 'Email', phone: 'Telefon', category: 'Categorie', make: 'Marcă',
           autoNote: 'Acest email a fost generat automat.'
         }
       }
@@ -501,8 +509,16 @@ const emailTemplates = {
                 <span class="value">${bookingData.time}</span>
               </div>
               <div class="detail-row">
+                <span class="label">${t.make}:</span>
+                <span class="value">${bookingData.make || ''}</span>
+              </div>
+              <div class="detail-row">
                 <span class="label">${t.vehicle}:</span>
-                <span class="value">${bookingData.make || ''} ${bookingData.model || ''}</span>
+                <span class="value">${bookingData.model || ''}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">${t.category}:</span>
+                <span class="value">${bookingData.type || bookingData.category || 'N/A'}</span>
               </div>
               <div class="detail-row">
                 <span class="label">${t.body}:</span>
@@ -535,10 +551,10 @@ const emailTemplates = {
     const lang = String(bookingData?.locale || 'nl').toLowerCase()
     const t = (function(){
       const M = {
-        nl: { titleNew: 'Nieuwe Afspraak', adminSystem: 'Spectra AutoArt - Notificatiesysteem', clientInfo: 'Klantinformatie', vehicleDetails: 'Voertuig Details', bookingTitle: 'Afspraak', date: 'Datum', time: 'Tijd', vehicle: 'Voertuig', body: 'Carrosserie', services: 'Diensten', name: 'Naam', email: 'Email', phone: 'Telefoon', model: 'Model', alertTitle: 'Let op!', alertBody: 'Er is een nieuwe afspraak gemaakt via het online boekingssysteem.', quickActionsTitle: 'Snelle Acties', quickActionsBody: 'Neem contact op met de klant voor definitieve bevestiging of wijzigingen:', btnEmail: '📧 E-mail Klant', btnCall: '📞 Bel Klant', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Afspraak gemaakt op:', footerTitle: 'Spectra AutoArt - Afsprakenbeheersysteem', footerNote: 'Deze e-mail wordt automatisch verzonden wanneer een nieuwe afspraak is gemaakt.', newsletter: 'Nieuwsbrief', subscribed: 'Geabonneerd', unsubscribed: 'Niet abonat' },
-        en: { titleNew: 'New Booking', adminSystem: 'Spectra AutoArt - Notification System', clientInfo: 'Client Information', vehicleDetails: 'Vehicle Details', bookingTitle: 'Booking', date: 'Date', time: 'Time', vehicle: 'Vehicle', body: 'Body Type', services: 'Services', name: 'Name', email: 'Email', phone: 'Phone', model: 'Model', alertTitle: 'Attention!', alertBody: 'A new booking has been made through the online booking system.', quickActionsTitle: 'Quick Actions', quickActionsBody: 'Contact the client for final confirmation or changes:', btnEmail: '📧 Email Client', btnCall: '📞 Call Client', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Booking made at:', footerTitle: 'Spectra AutoArt - Booking Management System', footerNote: 'This email is sent automatically when a new booking is made.', newsletter: 'Newsletter', subscribed: 'Subscribed', unsubscribed: 'Unsubscribed' },
-        es: { titleNew: 'Nueva Reserva', adminSystem: 'Spectra AutoArt - Sistema de Notificaciones', clientInfo: 'Información del Cliente', vehicleDetails: 'Detalles del Vehículo', bookingTitle: 'Reserva', date: 'Fecha', time: 'Hora', vehicle: 'Vehículo', body: 'Tipo de Carrocería', services: 'Servicios', name: 'Nombre', email: 'Correo', phone: 'Teléfono', model: 'Modelo', alertTitle: '¡Atención!', alertBody: 'Se ha realizado una nueva reserva mediante el sistema de reservas en línea.', quickActionsTitle: 'Acciones Rápidas', quickActionsBody: 'Contacte al cliente para confirmación final o cambios:', btnEmail: '📧 Email Cliente', btnCall: '📞 Llamar al Cliente', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Reserva realizada en:', footerTitle: 'Spectra AutoArt - Sistema de Gestión de Reservas', footerNote: 'Este correo se envía automáticamente cuando se realiza una nueva reserva.', newsletter: 'Boletín', subscribed: 'Suscrito', unsubscribed: 'No suscrito' },
-        pl: { titleNew: 'Nowa Rezerwacja', adminSystem: 'Spectra AutoArt - System Powiadomień', clientInfo: 'Informacje o Kliencie', vehicleDetails: 'Szczegóły Pojazdu', bookingTitle: 'Rezerwacja', date: 'Data', time: 'Godzina', vehicle: 'Pojazd', body: 'Typ Nadwozia', services: 'Usługi', name: 'Imię', email: 'Email', phone: 'Telefon', model: 'Model', alertTitle: 'Uwaga!', alertBody: 'Nowa rezerwacja została dokonana przez system rezerwacji online.', quickActionsTitle: 'Szybkie Akcje', quickActionsBody: 'Skontaktuj się z klientem w celu ostatecznego potwierdzenia lub zmian:', btnEmail: '📧 Email do Klienta', btnCall: '📞 Zadzwoń do Klienta', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Rezerwacja dokonana o:', footerTitle: 'Spectra AutoArt - System Zarządzania Rezerwacjami', footerNote: 'Ten email jest wysyłany automatycznie po dokonaniu nowej rezerwacji.', newsletter: 'Newsletter', subscribed: 'Zapisany', unsubscribed: 'Niezapisany' },
+        nl: { titleNew: 'Nieuwe Afspraak', adminSystem: 'Spectra AutoArt - Notificatiesysteem', clientInfo: 'Klantinformatie', vehicleDetails: 'Voertuig Details', bookingTitle: 'Afspraak', date: 'Datum', time: 'Tijd', vehicle: 'Voertuig', body: 'Carrosserie', services: 'Diensten', name: 'Naam', email: 'Email', phone: 'Telefoon', model: 'Model', category: 'Categorie', make: 'Merk', alertTitle: 'Let op!', alertBody: 'Er is een nieuwe afspraak gemaakt via het online boekingssysteem.', quickActionsTitle: 'Snelle Acties', quickActionsBody: 'Neem contact op met de klant voor definitieve bevestiging of wijzigingen:', btnEmail: '📧 E-mail Klant', btnCall: '📞 Bel Klant', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Afspraak gemaakt op:', footerTitle: 'Spectra AutoArt - Afsprakenbeheersysteem', footerNote: 'Deze e-mail wordt automatisch verzonden wanneer een nieuwe afspraak is gemaakt.', newsletter: 'Nieuwsbrief', subscribed: 'Geabonneerd', unsubscribed: 'Niet abonat' },
+        en: { titleNew: 'New Booking', adminSystem: 'Spectra AutoArt - Notification System', clientInfo: 'Client Information', vehicleDetails: 'Vehicle Details', bookingTitle: 'Booking', date: 'Date', time: 'Time', vehicle: 'Vehicle', body: 'Body Type', services: 'Services', name: 'Name', email: 'Email', phone: 'Phone', model: 'Model', category: 'Category', make: 'Make', alertTitle: 'Attention!', alertBody: 'A new booking has been made through the online booking system.', quickActionsTitle: 'Quick Actions', quickActionsBody: 'Contact the client for final confirmation or changes:', btnEmail: '📧 Email Client', btnCall: '📞 Call Client', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Booking made at:', footerTitle: 'Spectra AutoArt - Booking Management System', footerNote: 'This email is sent automatically when a new booking is made.', newsletter: 'Newsletter', subscribed: 'Subscribed', unsubscribed: 'Unsubscribed' },
+        es: { titleNew: 'Nueva Reserva', adminSystem: 'Spectra AutoArt - Sistema de Notificaciones', clientInfo: 'Información del Cliente', vehicleDetails: 'Detalles del Vehículo', bookingTitle: 'Reserva', date: 'Fecha', time: 'Hora', vehicle: 'Vehículo', body: 'Tipo de Carrocería', services: 'Servicios', name: 'Nombre', email: 'Correo', phone: 'Teléfono', model: 'Modelo', category: 'Categoría', make: 'Marca', alertTitle: '¡Atención!', alertBody: 'Se ha realizado una nueva reserva mediante el sistema de reservas en línea.', quickActionsTitle: 'Acciones Rápidas', quickActionsBody: 'Contacte al cliente para confirmación final o cambios:', btnEmail: '📧 Email Cliente', btnCall: '📞 Llamar al Cliente', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Reserva realizada en:', footerTitle: 'Spectra AutoArt - Sistema de Gestión de Reservas', footerNote: 'Este correo se envía automáticamente cuando se realiza una nueva reserva.', newsletter: 'Boletín', subscribed: 'Suscrito', unsubscribed: 'No suscrito' },
+        pl: { titleNew: 'Nowa Rezerwacja', adminSystem: 'Spectra AutoArt - System Powiadomień', clientInfo: 'Informacje o Kliencie', vehicleDetails: 'Szczegóły Pojazdu', bookingTitle: 'Rezerwacja', date: 'Data', time: 'Godzina', vehicle: 'Pojazd', body: 'Typ Nadwozia', services: 'Usługi', name: 'Imię', email: 'Email', phone: 'Telefon', model: 'Model', category: 'Kategoria', make: 'Marka', alertTitle: 'Uwaga!', alertBody: 'Nowa rezerwacja została dokonana przez system rezerwacji online.', quickActionsTitle: 'Szybkie Akcje', quickActionsBody: 'Skontaktuj się z klientem w celu ostatecznego potwierdzenia lub zmian:', btnEmail: '📧 Email do Klienta', btnCall: '📞 Zadzwoń do Klienta', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Rezerwacja dokonana o:', footerTitle: 'Spectra AutoArt - System Zarządzania Rezerwacjami', footerNote: 'Ten email jest wysyłany automatycznie po dokonaniu nowej rezerwacji.', newsletter: 'Newsletter', subscribed: 'Zapisany', unsubscribed: 'Niezapisany' },
         ro: { titleNew: 'Nouă Programare', adminSystem: 'Spectra AutoArt - Sistem de Notificare', clientInfo: 'Informații Client', vehicleDetails: 'Detalii Vehicul', bookingTitle: 'Programare', date: 'Data', time: 'Ora', vehicle: 'Vehicul', body: 'Tip Caroserie', services: 'Servicii Solicitate', name: 'Nume', email: 'Email', phone: 'Telefon', model: 'Model', alertTitle: 'ATENȚIE!', alertBody: 'O nouă programare a fost efectuată prin sistemul de rezervări online.', quickActionsTitle: 'Acțiuni Rapide', quickActionsBody: 'Contactează clientul pentru confirmare finală sau modificări:', btnEmail: '📧 Email Client', btnCall: '📞 Apelează Client', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Programare efectuată la:', footerTitle: 'Spectra AutoArt - Sistem de Management al Programărilor', footerNote: 'Acest email este trimis automat când o programare nouă este efectuată.', newsletter: 'Newsletter', subscribed: 'Abonat', unsubscribed: 'Neabonat' }
       }
       return M[lang] || M.nl
@@ -620,12 +636,16 @@ const emailTemplates = {
               <h3>🚗 ${t.vehicleDetails}</h3>
               <div class="info-grid">
                 <div class="info-item">
-                  <span class="info-label">${t.vehicle}</span>
+                  <span class="info-label">${t.make}</span>
                   <span class="info-value">${bookingData.make}</span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">${t.model}</span>
                   <span class="info-value">${bookingData.model}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">${t.category}</span>
+                  <span class="info-value">${bookingData.type || bookingData.category || 'N/A'}</span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">${t.body}</span>
