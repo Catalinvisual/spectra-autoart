@@ -606,8 +606,20 @@ router.post('/bookings', async (req, res) => {
         const svc = byId.get(sid) || vehicleServicesService.services?.find(s => String(s.id) === sid)
         if (svc) {
           names.push(svc.name || sid)
-          const p = Array.isArray(svc.prices) && svc.prices.length > 0 ? svc.prices[0] : null
-          const priceMin = p ? (parseFloat(p.price_min) || 0) : 0
+          // Find price for specific body type
+          let priceMin = 0
+          if (Array.isArray(svc.prices) && svc.prices.length > 0) {
+            const bodySpecificPrice = svc.prices.find(p => 
+              String(p.body_type_key).toLowerCase() === normalizedKey && p.is_active
+            )
+            if (bodySpecificPrice) {
+              priceMin = parseFloat(bodySpecificPrice.price_min) || 0
+            } else {
+              // Fallback to first available price
+              const firstPrice = svc.prices.find(p => p.is_active)
+              priceMin = firstPrice ? (parseFloat(firstPrice.price_min) || 0) : 0
+            }
+          }
           sum += priceMin
         } else {
           names.push(sid)
