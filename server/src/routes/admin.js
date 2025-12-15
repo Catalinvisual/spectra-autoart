@@ -193,6 +193,8 @@ router.get('/bookings', requireAuth, async (req, res) => {
 
     // Convert rows to booking objects
     const headers = Array.isArray(data[0]) ? data[0] : []
+    console.log(`📊 HEADERS from Google Sheets:`, headers);
+    
     const findCol = (...names) => {
       const lowered = headers.map(h => String(h || '').toLowerCase())
       for (const n of names) {
@@ -346,7 +348,7 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     const { status, date, time, make: makeIn, model: modelIn, body: bodyIn, type: typeIn, name: nameIn, email: emailIn, phone: phoneIn } = req.body
     console.log(`📝 PATCH request received for booking ${id}`)
     console.log(`📅 Request body:`, { status, date, time, make: makeIn, model: modelIn, body: bodyIn, type: typeIn })
-    console.log(`🔍 DEBUG: date type: ${typeof date}, value: "${date}"`)
+    console.log(`🔍 DEBUG: nameIn = "${nameIn}", emailIn = "${emailIn}", phoneIn = "${phoneIn}"`)
     console.log(`🔍 DEBUG: time type: ${typeof time}, value: "${time}"`)
     console.log(`🔍 DEBUG: status type: ${typeof status}, value: "${status}"`)
     await ensureEnrichmentCache()
@@ -390,6 +392,20 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     const actualRowIndex = rowIndex + 1
     console.log(`🔍 DEBUG: Row index in data array: ${actualRowIndex}, Total data rows: ${data.length}`)
     console.log(`🔍 Before update - Date: ${data[actualRowIndex][dateIndex]}, Time: ${data[actualRowIndex][timeIndex]}`)
+    
+    // CRITICAL: Afișăm rândul complet înainte de modificare
+    console.log(`📊 ROW ${actualRowIndex} COMPLETE DATA:`, data[actualRowIndex]);
+    console.log(`📊 Column mapping:`, {
+      id: data[actualRowIndex][idIndex],
+      name: data[actualRowIndex][nameIndex],
+      email: data[actualRowIndex][emailIndex],
+      phone: data[actualRowIndex][phoneIndex],
+      date: data[actualRowIndex][dateIndex],
+      time: data[actualRowIndex][timeIndex],
+      make: makeIndex !== -1 ? data[actualRowIndex][makeIndex] : 'N/A',
+      model: modelIndex !== -1 ? data[actualRowIndex][modelIndex] : 'N/A',
+      status: data[actualRowIndex][statusIndex]
+    });
     
     // Stocăm valorile originale pentru comparație
     const originalStatus = data[actualRowIndex][statusIndex]
@@ -435,6 +451,8 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
       console.log(`⚠️ Nu există modificări pentru programarea ${id}`)
       return res.json({ success: true, message: 'Nu există modificări de salvat' })
     }
+    
+    console.log(`✅ hasChanges este TRUE, continuăm cu update-ul...`)
     
     // CRITICAL: Creăm un obiect cu numele coloanelor pentru Google Sheets API
     const updateData = {};
@@ -487,18 +505,29 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     console.log(`📝 Calling GoogleSheetsService.updateData with actualRowIndex: ${actualRowIndex}`);
     console.log(`📊 Update data object:`, updateData);
     
-    // CRITICAL: Facem update direct în Google Sheets pentru FIECARE celulă modificată
-    console.log(`🎯 Starting direct cell updates in Google Sheets...`);
+    // CRITICAL: Facem update direct în Google Sheets pentru FIECARE celulă modificată folosind index-uri
+    console.log(`🎯 Starting direct cell updates in Google Sheets using column indexes...`);
+    console.log(`📊 updateData object:`, updateData);
+    console.log(`📊 Object.entries(updateData):`, Object.entries(updateData));
     for (const [columnName, value] of Object.entries(updateData)) {
       try {
-        console.log(`🔄 Updating cell: ${columnName} = "${value}"`);
-        await GoogleSheetsService.updateCellDirectly('Bookings', actualRowIndex, columnName, value);
-        console.log(`✅ Cell updated successfully: ${columnName}`);
+        // Obținem index-ul coloanei
+        const columnIndex = await GoogleSheetsService.getColumnIndex('Bookings', columnName);
+        if (columnIndex === -1) {
+          console.log(`❌ Column "${columnName}" not found, skipping...`);
+          continue;
+        }
+        
+        console.log(`🔄 Updating cell by index: ${columnName}[${columnIndex}] = "${value}"`);
+        await GoogleSheetsService.updateCellByIndex('Bookings', actualRowIndex, columnIndex, value);
+        console.log(`✅ Cell updated successfully: ${columnName}[${columnIndex}]`);
       } catch (cellError) {
         console.error(`❌ Failed to update cell ${columnName}:`, cellError);
         // Continuăm cu celelalte celule chiar dacă una eșuează
       }
     }
+    
+    console.log(`✅ Loop updateCellByIndex completed for all columns`);
     
     // De asemenea, încercăm și metoda tradițională ca backup
     try {

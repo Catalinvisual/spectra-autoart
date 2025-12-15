@@ -247,6 +247,16 @@ app.use('/api/vehicles', vehicleRouter)
 app.use('/api/services', servicesRouter)
 app.use('/api/vehicle-services', vehicleServicesRouter)
 app.use('/api/bookings', bookingsRouter)
+
+// CRITICAL: Adăugăm router de test pentru Google Sheets
+try {
+  const { default: testGoogleSheetsRouter } = await import('./routes/test-google-sheets.js')
+  app.use('/api/test-sheets', testGoogleSheetsRouter)
+  console.log('✅ Test Google Sheets routes mounted')
+} catch (error) {
+  console.log('⚠️  Test Google Sheets routes not available:', error.message)
+}
+
 app.use('/api/gallery', galleryRouter)
 app.use('/api/testimonials', testimonialsRouter)
 app.use('/api/translate', translateRouter)
