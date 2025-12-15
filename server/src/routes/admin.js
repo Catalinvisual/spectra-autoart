@@ -750,11 +750,27 @@ router.patch('/bookings/:id', async (req, res, next) => {
       } else {
         tokens = cleanServices.split(/[,|;]+/)
       }
+      // Use the same price calculation logic as public.js
+      const allServices = (vehicleServicesService && Array.isArray(vehicleServicesService.services)) ? vehicleServicesService.services : []
+      const byId = new Map(allServices.map(s => [String(s.id), s]))
+      const byNameLower = new Map(allServices.map(s => [String(String(s.name || '')).toLowerCase(), s]))
+      const resolvedBodyKey = String(
+        vehicleServicesService && typeof vehicleServicesService.mapFrontendKeyToBodyType === 'function'
+          ? (vehicleServicesService.mapFrontendKeyToBodyType(String(body || '').toLowerCase()) || {}).key
+          : (body || '')
+      ).toLowerCase()
+      
       servicesArr = tokens.map(token => {
         const trimmed = token.trim()
         let sid = ''
         let sname = ''
-        if (bookingsEnrichmentCache.idToName.has(trimmed)) {
+        
+        // First try to find service in vehicleServicesService
+        const svc = byId.get(trimmed) || byNameLower.get(trimmed.toLowerCase())
+        if (svc) {
+          sid = String(svc.id || trimmed)
+          sname = svc.name || trimmed
+        } else if (bookingsEnrichmentCache.idToName.has(trimmed)) {
           sid = trimmed
           sname = bookingsEnrichmentCache.idToName.get(trimmed)
         } else if (bookingsEnrichmentCache.nameToId.has(trimmed.toLowerCase())) {
@@ -765,36 +781,29 @@ router.patch('/bookings/:id', async (req, res, next) => {
           sname = trimmed
         }
         
-        // Calculăm prețul corect pentru serviciu și tipul de caroserie
+        // Calculate price using vehicleServicesService like public.js
         let price = 0
         const bodyTypeKey = String(body || '').toLowerCase()
         
-        console.log(`💰 DEBUG: Calcul preț pentru serviciu '${sid}', caroserie '${bodyTypeKey}'`)
-        console.log(`💰 DEBUG: Cache serviceBodyPrices:`, bookingsEnrichmentCache.serviceBodyPrices)
-        console.log(`💰 DEBUG: Cache serviceMinPrice:`, bookingsEnrichmentCache.serviceMinPrice)
+        console.log(`💰 DEBUG: Calcul preț pentru serviciu '${sid}', caroserie '${bodyTypeKey}' (resolved: '${resolvedBodyKey}')`)
         
-        if (sid && bodyTypeKey) {
-          // Căutăm serviciul în cache-ul de servicii
-          const allServices = bookingsEnrichmentCache.idToName.size > 0 ? Array.from(bookingsEnrichmentCache.idToName.entries()).map(([id, name]) => ({ id, name })) : []
-          const byId = new Map(allServices.map(s => [String(s.id), s]))
-          const byNameLower = new Map(allServices.map(s => [String(s.name || '').toLowerCase(), s]))
+        if (svc && Array.isArray(svc.prices)) {
+          const priceEntry = svc.prices.find(p => 
+            String(p.body_type_key).toLowerCase() === resolvedBodyKey && p.is_active
+          )
+          price = priceEntry && priceEntry.price_min !== undefined ? Number(priceEntry.price_min) : 0
+          console.log(`💰 DEBUG: Preț găsit în vehicleServicesService:`, price, 'priceEntry:', priceEntry)
+        }
+        
+        // Fallback to bookingsEnrichmentCache if no price found
+        if (!price && sid && bodyTypeKey) {
+          const bodySpecificKey = `${sid}:${bodyTypeKey}`
+          price = bookingsEnrichmentCache.serviceBodyPrices.get(bodySpecificKey) || 0
+          console.log(`💰 DEBUG: Fallback la cache, preț găsit:`, price)
           
-          // Găsim serviciul după ID sau nume
-          const svc = byId.get(sid) || byNameLower.get(sid.toLowerCase())
-          
-          console.log(`💰 DEBUG: Serviciu găsit:`, svc)
-          
-          if (svc) {
-            // Căutăm prețul specific pentru acest tip de caroserie în cache
-            const bodySpecificKey = `${sid}:${bodyTypeKey}`
-            price = bookingsEnrichmentCache.serviceBodyPrices.get(bodySpecificKey) || 0
-            console.log(`💰 DEBUG: Cheie specifică '${bodySpecificKey}', preț găsit:`, price)
-            
-            // Fallback la prețul minim dacă nu găsim preț specific
-            if (!price) {
-              price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
-              console.log(`💰 DEBUG: Fallback la preț minim pentru '${sid}':`, price)
-            }
+          if (!price) {
+            price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
+            console.log(`💰 DEBUG: Fallback la preț minim:`, price)
           }
         }
         
@@ -817,6 +826,10 @@ router.patch('/bookings/:id', async (req, res, next) => {
         return String(raw || 'nl').toLowerCase()
       })()
     }
+    
+    // Debug log for bookingData and services
+    console.log(`📧 DEBUG bookingData:`, JSON.stringify(bookingData, null, 2))
+    console.log(`📧 DEBUG servicesArr:`, JSON.stringify(servicesArr, null, 2))
 
     // Trimitem emailuri doar dacă există modificări reale
     let bookingEmailResult = null

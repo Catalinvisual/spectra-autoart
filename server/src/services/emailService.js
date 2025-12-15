@@ -858,7 +858,7 @@ export const sendBookingUpdate = async (bookingData, services) => {
 }
 
 export const sendAdminUpdate = async (bookingData, services) => {
-  const html = emailTemplates.clientUpdate(bookingData, services)
+  const html = emailTemplates.adminNotification(bookingData, services)
   const subject = html.match(/<title>(.*?)<\/title>/)?.[1] || 'Programare Modificată'
   const adminRecipient = process.env.ADMIN_NOTIFICATION_EMAIL || process.env.MAIL_FROM_ADDRESS || 'contact@spectraautoart.nl'
   const result = await sendEmail(adminRecipient, subject, html)
