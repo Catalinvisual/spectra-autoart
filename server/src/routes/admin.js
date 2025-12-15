@@ -436,24 +436,77 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
       return res.json({ success: true, message: 'Nu există modificări de salvat' })
     }
     
+    // CRITICAL: Creăm un obiect cu numele coloanelor pentru Google Sheets API
+    const updateData = {};
+    
     // Aplicăm modificările doar dacă există schimbări
-    if (status) data[actualRowIndex][statusIndex] = status
-    if (date) {
-      console.log(`🔄 Updating date from ${data[actualRowIndex][dateIndex]} to ${date}`)
-      data[actualRowIndex][dateIndex] = date
+    if (status) {
+      data[actualRowIndex][statusIndex] = status;
+      updateData[headers[statusIndex]] = status;
     }
-    if (time) data[actualRowIndex][timeIndex] = String(time)
-    console.log(`✅ After update - Date: ${data[actualRowIndex][dateIndex]}, Time: ${data[actualRowIndex][timeIndex]}`)
-    if (makeIn && makeIndex !== -1) data[actualRowIndex][makeIndex] = String(makeIn)
-    if (modelIn && modelIndex !== -1) data[actualRowIndex][modelIndex] = String(modelIn)
-    if (typeIn && typeIndex !== -1) data[actualRowIndex][typeIndex] = String(typeIn)
-    if (bodyIn && bodyIndex !== -1) data[actualRowIndex][bodyIndex] = String(bodyIn)
-    if (nameIn && nameIndex !== -1) data[actualRowIndex][nameIndex] = String(nameIn)
-    if (emailIn && emailIndex !== -1) data[actualRowIndex][emailIndex] = String(emailIn)
-    if (phoneIn && phoneIndex !== -1) data[actualRowIndex][phoneIndex] = String(phoneIn)
-    console.log(`📝 Calling GoogleSheetsService.updateData with actualRowIndex: ${actualRowIndex}`)
-    await GoogleSheetsService.updateData('Bookings', actualRowIndex, data[actualRowIndex])
-    console.log(`✅ GoogleSheetsService.updateData completed successfully`)
+    if (date) {
+      console.log(`🔄 Updating date from ${data[actualRowIndex][dateIndex]} to ${date}`);
+      data[actualRowIndex][dateIndex] = date;
+      updateData[headers[dateIndex]] = date;
+    }
+    if (time) {
+      data[actualRowIndex][timeIndex] = String(time);
+      updateData[headers[timeIndex]] = String(time);
+    }
+    console.log(`✅ After update - Date: ${data[actualRowIndex][dateIndex]}, Time: ${data[actualRowIndex][timeIndex]}`);
+    
+    if (makeIn && makeIndex !== -1) {
+      data[actualRowIndex][makeIndex] = String(makeIn);
+      updateData[headers[makeIndex]] = String(makeIn);
+    }
+    if (modelIn && modelIndex !== -1) {
+      data[actualRowIndex][modelIndex] = String(modelIn);
+      updateData[headers[modelIndex]] = String(modelIn);
+    }
+    if (typeIn && typeIndex !== -1) {
+      data[actualRowIndex][typeIndex] = String(typeIn);
+      updateData[headers[typeIndex]] = String(typeIn);
+    }
+    if (bodyIn && bodyIndex !== -1) {
+      data[actualRowIndex][bodyIndex] = String(bodyIn);
+      updateData[headers[bodyIndex]] = String(bodyIn);
+    }
+    if (nameIn && nameIndex !== -1) {
+      data[actualRowIndex][nameIndex] = String(nameIn);
+      updateData[headers[nameIndex]] = String(nameIn);
+    }
+    if (emailIn && emailIndex !== -1) {
+      data[actualRowIndex][emailIndex] = String(emailIn);
+      updateData[headers[emailIndex]] = String(emailIn);
+    }
+    if (phoneIn && phoneIndex !== -1) {
+      data[actualRowIndex][phoneIndex] = String(phoneIn);
+      updateData[headers[phoneIndex]] = String(phoneIn);
+    }
+    
+    console.log(`📝 Calling GoogleSheetsService.updateData with actualRowIndex: ${actualRowIndex}`);
+    console.log(`📊 Update data object:`, updateData);
+    
+    // CRITICAL: Facem update direct în Google Sheets pentru FIECARE celulă modificată
+    console.log(`🎯 Starting direct cell updates in Google Sheets...`);
+    for (const [columnName, value] of Object.entries(updateData)) {
+      try {
+        console.log(`🔄 Updating cell: ${columnName} = "${value}"`);
+        await GoogleSheetsService.updateCellDirectly('Bookings', actualRowIndex, columnName, value);
+        console.log(`✅ Cell updated successfully: ${columnName}`);
+      } catch (cellError) {
+        console.error(`❌ Failed to update cell ${columnName}:`, cellError);
+        // Continuăm cu celelalte celule chiar dacă una eșuează
+      }
+    }
+    
+    // De asemenea, încercăm și metoda tradițională ca backup
+    try {
+      await GoogleSheetsService.updateData('Bookings', actualRowIndex, updateData);
+      console.log(`✅ GoogleSheetsService.updateData completed successfully`);
+    } catch (backupError) {
+      console.log(`⚠️ Backup updateData method failed (expected if direct updates work):`, backupError.message);
+    }
 
     // Clear cache to ensure fresh data is fetched
     console.log(`🗑️ Clearing cache for Bookings sheet`)

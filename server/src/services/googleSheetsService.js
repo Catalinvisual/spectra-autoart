@@ -589,9 +589,31 @@ class GoogleSheetsService {
       
       if (rowIndex >= 0 && rowIndex < rows.length) {
         console.log(`📊 Updating row ${rowIndex} with data:`, data);
-        Object.assign(rows[rowIndex], data);
-        await rows[rowIndex].save();
-        console.log(`✅ Successfully updated row ${rowIndex} in ${sheetName}`);
+        
+        // CRITICAL: Update fiecare celulă individual pentru a fi sigur că se salvează în Google Sheets
+        const row = rows[rowIndex];
+        let hasChanges = false;
+        
+        // CRITICAL: Afișăm structura actuală a rândului pentru debug
+        console.log(`📊 Current row structure:`, Object.keys(row));
+        console.log(`📊 Current row data:`, row);
+        
+        for (const [key, value] of Object.entries(data)) {
+          console.log(`🔍 Checking key: "${key}", current value: "${row[key]}", new value: "${value}"`);
+          if (row[key] !== value) {
+            console.log(`🔄 Updating ${key}: "${row[key]}" -> "${value}"`);
+            row[key] = value;
+            hasChanges = true;
+          }
+        }
+        
+        if (hasChanges) {
+          console.log(`💾 Saving changes to Google Sheets...`);
+          await row.save();
+          console.log(`✅ Successfully saved row ${rowIndex} in ${sheetName}`);
+        } else {
+          console.log(`⚠️ No changes detected for row ${rowIndex}`);
+        }
         
         // CRITICAL: Clear cache immediately after successful update
         // This ensures fresh data is fetched on next request
@@ -608,6 +630,62 @@ class GoogleSheetsService {
       return false;
     } catch (error) {
       console.error(`❌ Error updating data in ${sheetName}:`, error);
+      throw error;
+    }
+  }
+
+  // CRITICAL: Metodă nouă pentru update direct în Google Sheets folosind API-ul oficial
+  async updateCellDirectly(sheetName, rowIndex, columnName, value) {
+    try {
+      console.log(`🎯 GoogleSheetsService.updateCellDirectly called: ${sheetName}, row: ${rowIndex}, col: ${columnName}, value: "${value}"`);
+      
+      if (!this.isInitialized || !this.doc) {
+        throw new Error('Google Sheets service not properly initialized');
+      }
+
+      // Ensure document info is loaded
+      try {
+        if (!this.doc.title) {
+          await this.doc.loadInfo();
+        }
+      } catch (loadError) {
+        console.log(`⚠️  Document info not loaded, loading now: ${loadError.message}`);
+        await this.doc.loadInfo();
+      }
+
+      const sheet = this.doc.sheetsByTitle[sheetName];
+      if (!sheet) {
+        throw new Error(`Sheet ${sheetName} not found`);
+      }
+
+      const rows = await sheet.getRows();
+      console.log(`📊 Found ${rows.length} rows in ${sheetName}`);
+      
+      if (rowIndex >= 0 && rowIndex < rows.length) {
+        const row = rows[rowIndex];
+        
+        // Verificăm dacă coloana există în rând
+        if (row[columnName] !== undefined) {
+          console.log(`🔄 Updating cell [${rowIndex}, ${columnName}]: "${row[columnName]}" -> "${value}"`);
+          row[columnName] = value;
+          await row.save();
+          console.log(`✅ Successfully updated cell in Google Sheets`);
+          
+          // Clear cache for fresh data
+          this.clearCache(sheetName);
+          
+          return true;
+        } else {
+          console.log(`❌ Column "${columnName}" not found in row structure`);
+          console.log(`📊 Available columns:`, Object.keys(row));
+          return false;
+        }
+      }
+      
+      console.log(`❌ Row index ${rowIndex} not found in ${sheetName} (total rows: ${rows.length})`);
+      return false;
+    } catch (error) {
+      console.error(`❌ Error updating cell directly in ${sheetName}:`, error);
       throw error;
     }
   }
