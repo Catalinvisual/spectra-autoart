@@ -10,7 +10,7 @@ class GoogleSheetsService {
     this.isInitialized = false;
     this.isDemoMode = false;
     this.cache = new Map();
-    this.cacheTimeout = 60000; // 1 minute cache timeout
+    this.cacheTimeout = 10000; // 10 seconds cache timeout - CRITICAL: Reduced to prevent stale data persistence
     this.lastRequestTime = 0;
     this.minRequestInterval = 1000; // Minimum 1 second between requests
   }
@@ -592,6 +592,16 @@ class GoogleSheetsService {
         Object.assign(rows[rowIndex], data);
         await rows[rowIndex].save();
         console.log(`✅ Successfully updated row ${rowIndex} in ${sheetName}`);
+        
+        // CRITICAL: Clear cache immediately after successful update
+        // This ensures fresh data is fetched on next request
+        console.log(`🗑️ Clearing cache for ${sheetName} after update`);
+        this.clearCache(sheetName);
+        
+        // CRITICAL: Force reload of data to update cache with fresh data
+        console.log(`🔄 Force reloading data for ${sheetName} to update cache`);
+        await this.getData(sheetName);
+        
         return true;
       }
       console.log(`❌ Row index ${rowIndex} not found in ${sheetName} (total rows: ${rows.length})`);

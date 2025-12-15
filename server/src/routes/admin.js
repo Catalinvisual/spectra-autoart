@@ -343,7 +343,7 @@ router.get('/bookings', requireAuth, async (req, res) => {
 router.patch('/bookings/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
-    const { status, date, time, make: makeIn, model: modelIn, body: bodyIn, type: typeIn } = req.body
+    const { status, date, time, make: makeIn, model: modelIn, body: bodyIn, type: typeIn, name: nameIn, email: emailIn, phone: phoneIn } = req.body
     console.log(`📝 PATCH request received for booking ${id}`)
     console.log(`📅 Request body:`, { status, date, time, make: makeIn, model: modelIn, body: bodyIn, type: typeIn })
     console.log(`🔍 DEBUG: date type: ${typeof date}, value: "${date}"`)
@@ -399,6 +399,9 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     const originalModel = modelIndex !== -1 ? data[actualRowIndex][modelIndex] : ''
     const originalType = typeIndex !== -1 ? data[actualRowIndex][typeIndex] : ''
     const originalBody = bodyIndex !== -1 ? data[actualRowIndex][bodyIndex] : ''
+    const originalName = nameIndex !== -1 ? data[actualRowIndex][nameIndex] : ''
+    const originalEmail = emailIndex !== -1 ? data[actualRowIndex][emailIndex] : ''
+    const originalPhone = phoneIndex !== -1 ? data[actualRowIndex][phoneIndex] : ''
     
     // Extragem doar partea de dată (YYYY-MM-DD) din stringul ISO complet
     const originalDate = originalDateRaw ? originalDateRaw.split('T')[0] : ''
@@ -409,6 +412,9 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     console.log(`🔍 DEBUG: Model original: ${originalModel}, new: ${modelIn}`)
     console.log(`🔍 DEBUG: Type original: ${originalType}, new: ${typeIn}`)
     console.log(`🔍 DEBUG: Body original: ${originalBody}, new: ${bodyIn}`)
+    console.log(`🔍 DEBUG: Name original: ${originalName}, new: ${nameIn}`)
+    console.log(`🔍 DEBUG: Email original: ${originalEmail}, new: ${emailIn}`)
+    console.log(`🔍 DEBUG: Phone original: ${originalPhone}, new: ${phoneIn}`)
     
     // Verificăm dacă există modificări
     const hasChanges = 
@@ -418,7 +424,10 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
       (makeIn !== undefined && makeIn !== originalMake) ||
       (modelIn !== undefined && modelIn !== originalModel) ||
       (typeIn !== undefined && typeIn !== originalType) ||
-      (bodyIn !== undefined && bodyIn !== originalBody)
+      (bodyIn !== undefined && bodyIn !== originalBody) ||
+      (nameIn !== undefined && nameIn !== originalName) ||
+      (emailIn !== undefined && emailIn !== originalEmail) ||
+      (phoneIn !== undefined && phoneIn !== originalPhone)
     
     console.log(`🔍 DEBUG: hasChanges result: ${hasChanges}`)
     
@@ -439,6 +448,9 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     if (modelIn && modelIndex !== -1) data[actualRowIndex][modelIndex] = String(modelIn)
     if (typeIn && typeIndex !== -1) data[actualRowIndex][typeIndex] = String(typeIn)
     if (bodyIn && bodyIndex !== -1) data[actualRowIndex][bodyIndex] = String(bodyIn)
+    if (nameIn && nameIndex !== -1) data[actualRowIndex][nameIndex] = String(nameIn)
+    if (emailIn && emailIndex !== -1) data[actualRowIndex][emailIndex] = String(emailIn)
+    if (phoneIn && phoneIndex !== -1) data[actualRowIndex][phoneIndex] = String(phoneIn)
     console.log(`📝 Calling GoogleSheetsService.updateData with actualRowIndex: ${actualRowIndex}`)
     await GoogleSheetsService.updateData('Bookings', actualRowIndex, data[actualRowIndex])
     console.log(`✅ GoogleSheetsService.updateData completed successfully`)

@@ -9,6 +9,10 @@ router.get('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params
     
+    // CRITICAL: Force refresh cache to ensure we get latest data
+    console.log(`🔄 Force refreshing cache before getting booking ${id}`)
+    GoogleSheetsService.clearCache('Bookings')
+    
     // Get real bookings data from Google Sheets
     const data = await GoogleSheetsService.getData('Bookings')
     
@@ -70,6 +74,10 @@ router.get('/:id', auth, async (req, res) => {
 // Get all bookings
 router.get('/', auth, async (req, res) => {
   try {
+    // CRITICAL: Force refresh cache to ensure we get latest data
+    console.log(`🔄 Force refreshing cache before getting all bookings`)
+    GoogleSheetsService.clearCache('Bookings')
+    
     // Get real bookings data from Google Sheets
     const data = await GoogleSheetsService.getData('Bookings')
     
@@ -163,6 +171,88 @@ router.put('/:id/status', auth, async (req, res) => {
       success: false, 
       error: 'Failed to update booking status',
       demo: true 
+    })
+  }
+})
+
+// Update booking (full update with Google Sheets sync)
+router.put('/:id', auth, async (req, res) => {
+  try {
+    const { id } = req.params
+    const { date, time, customer_name, customer_email, customer_phone, make, model, type, body, services, total, status } = req.body
+
+    console.log(`📝 Full booking update request for ID: ${id}`)
+    console.log(`📅 Update data:`, { date, time, customer_name, customer_email, customer_phone, make, model, type, body, services, total, status })
+
+    // Get current data from Google Sheets
+    const data = await GoogleSheetsService.getData('Bookings')
+    
+    if (data.length <= 1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'No bookings found' 
+      })
+    }
+
+    const headers = data[0]
+    const idIndex = headers.indexOf('ID')
+    const nameIndex = headers.indexOf('Name')
+    const emailIndex = headers.indexOf('Email')
+    const phoneIndex = headers.indexOf('Phone')
+    const dateIndex = headers.indexOf('Date')
+    const timeIndex = headers.indexOf('Time')
+    const makeIndex = headers.indexOf('Make')
+    const modelIndex = headers.indexOf('Model')
+    const typeIndex = headers.indexOf('Type')
+    const bodyIndex = headers.indexOf('Body')
+    const servicesIndex = headers.indexOf('Services')
+    const totalIndex = headers.indexOf('Total')
+    const statusIndex = headers.indexOf('Status')
+
+    // Find the booking row
+    const rowIndex = data.slice(1).findIndex(row => row[idIndex] === id)
+    if (rowIndex === -1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Booking not found' 
+      })
+    }
+
+    const actualRowIndex = rowIndex + 1
+
+    // Update the row data
+    if (customer_name !== undefined) data[actualRowIndex][nameIndex] = customer_name
+    if (customer_email !== undefined) data[actualRowIndex][emailIndex] = customer_email
+    if (customer_phone !== undefined) data[actualRowIndex][phoneIndex] = customer_phone
+    if (date !== undefined) data[actualRowIndex][dateIndex] = date
+    if (time !== undefined) data[actualRowIndex][timeIndex] = time
+    if (make !== undefined) data[actualRowIndex][makeIndex] = make
+    if (model !== undefined) data[actualRowIndex][modelIndex] = model
+    if (type !== undefined) data[actualRowIndex][typeIndex] = type
+    if (body !== undefined) data[actualRowIndex][bodyIndex] = body
+    if (services !== undefined) data[actualRowIndex][servicesIndex] = JSON.stringify(services)
+    if (total !== undefined) data[actualRowIndex][totalIndex] = total
+    if (status !== undefined) data[actualRowIndex][statusIndex] = status
+
+    // Update in Google Sheets
+    await GoogleSheetsService.updateData('Bookings', actualRowIndex, data[actualRowIndex])
+
+    // CRITICAL: Force cache refresh to ensure data persistence
+    console.log(`🔄 Force refreshing cache after booking update`)
+    GoogleSheetsService.clearCache('Bookings')
+    await GoogleSheetsService.getData('Bookings')
+
+    res.json({ 
+      success: true, 
+      message: 'Booking updated successfully',
+      data: { id, ...req.body }
+    })
+  } catch (error) {
+    console.error('Error updating booking:', error)
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to update booking',
+      details: error.message
     })
   }
 })
