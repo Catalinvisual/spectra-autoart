@@ -588,6 +588,7 @@ router.post('/bookings', async (req, res) => {
     let servicesList = ''
     let servicesListIds = ''
     let total = 0
+    let calculatedServices = [] // Array to store services with prices for email
     try {
       const selected = Array.isArray(services) ? services.map(s => String(s)) : []
       const bodyKeyRaw = String(body || '').trim().toLowerCase()
@@ -602,6 +603,8 @@ router.post('/bookings', async (req, res) => {
 
       let names = []
       let sum = 0
+      calculatedServices = [] // Reset and use external variable
+      
       for (const sid of selected) {
         const svc = byId.get(sid) || vehicleServicesService.services?.find(s => String(s.id) === sid)
         if (svc) {
@@ -621,8 +624,19 @@ router.post('/bookings', async (req, res) => {
             }
           }
           sum += priceMin
+          
+          // Store service with calculated price for email
+          calculatedServices.push({
+            name: svc.name || sid,
+            price: priceMin
+          })
         } else {
           names.push(sid)
+          // Store service with zero price if not found
+          calculatedServices.push({
+            name: sid,
+            price: 0
+          })
         }
       }
 
@@ -634,6 +648,7 @@ router.post('/bookings', async (req, res) => {
       servicesList = Array.isArray(services) ? services.join(', ') : (services || '')
       servicesListIds = Array.isArray(services) ? services.map(s => String(s)).join(', ') : ''
       total = 0
+      calculatedServices = Array.isArray(services) ? services.map(name => ({ name: String(name), price: 0 })) : []
     }
     
     // Save booking to Google Sheets with optimized timeout - fire and forget approach
@@ -688,27 +703,9 @@ router.post('/bookings', async (req, res) => {
           return;
         }
         
-        const allServices = (vehicleServicesService && Array.isArray(vehicleServicesService.services)) ? vehicleServicesService.services : []
-        const byId = new Map(allServices.map(s => [String(s.id), s]))
-        const byNameLower = new Map(allServices.map(s => [String(String(s.name || '')).toLowerCase(), s]))
-        const resolvedBodyKey = String(
-          vehicleServicesService && typeof vehicleServicesService.mapFrontendKeyToBodyType === 'function'
-            ? (vehicleServicesService.mapFrontendKeyToBodyType(String(body || '').toLowerCase()) || {}).key
-            : (body || '')
-        ).toLowerCase()
-
-        const emailServices = Array.isArray(services)
-          ? services.map(s => {
-              const key = typeof s === 'object' && s ? (s.id ?? s.name ?? s) : s
-              const keyStr = String(key)
-              const svc = byId.get(keyStr) || byNameLower.get(keyStr.toLowerCase()) || allServices.find(x => String(x.id) === keyStr)
-              const priceEntry = svc && Array.isArray(svc.prices)
-                ? svc.prices.find(p => String(p.body_type_key).toLowerCase() === resolvedBodyKey && p.is_active)
-                : null
-              const priceMin = priceEntry && priceEntry.price_min !== undefined ? Number(priceEntry.price_min) : 0
-              return { name: svc && svc.name ? svc.name : keyStr, price: priceMin }
-            })
-          : []
+        // Use pre-calculated services with prices from the total calculation above
+        const emailServices = calculatedServices || []
+        console.log(`📧 Email services calculated:`, emailServices.map(s => `${s.name}: €${s.price}`).join(', '))
         
         // Send confirmation email to client
         console.log(`📧 Sending client confirmation email to: ${req.body.user.email}`);
