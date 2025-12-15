@@ -4,9 +4,12 @@ import cors from 'cors'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
+import { applyDeploymentFix } from './deployment_fix.js'
 
-// LOG STARTUP DETALIAT PENTRU DEBUGGING CONTAINER
+// APLICĂ FIX DE DEPLOYMENT IMEDIAT
 console.log('🚀 SERVER STARTUP - Container Debug Log - Deployment Fix')
+applyDeploymentFix();
+console.log('✅ Deployment fix aplicat cu succes');
 console.log('📍 Current directory:', process.cwd())
 if (!process.env.NODE_ENV && (process.env.RAILWAY_PROJECT_ID || process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_STATIC_URL)) {
   process.env.NODE_ENV = 'production'
