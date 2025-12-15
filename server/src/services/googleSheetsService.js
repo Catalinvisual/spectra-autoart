@@ -465,16 +465,20 @@ class GoogleSheetsService {
     }
   }
 
-  async getData(sheetName) {
+  async getData(sheetName, forceReload = false) {
     try {
       if (this.isDemoMode) {
         return this.getDemoData(sheetName);
       }
       
-      // Check cache first
-      const cachedData = this.getCachedData(sheetName);
-      if (cachedData) {
-        return cachedData;
+      // Check cache first (skip if forceReload)
+      if (!forceReload) {
+        const cachedData = this.getCachedData(sheetName);
+        if (cachedData) {
+          return cachedData;
+        }
+      } else {
+        console.log(`🔄 Force reload requested - bypassing cache for ${sheetName}`);
       }
       
       // Apply rate limiting

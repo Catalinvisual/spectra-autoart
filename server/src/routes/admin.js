@@ -342,9 +342,128 @@ router.get('/bookings', requireAuth, async (req, res) => {
   }
 })
 
-router.patch('/bookings/:id', requireAuth, async (req, res) => {
+// Get single booking by ID
+router.get('/bookings/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
+    const { fresh } = req.query // Parametru pentru a forța reîncărcarea
+    console.log(`🔍 GET request for booking ${id}${fresh ? ' (FRESH DATA REQUESTED)' : ''}`)
+    
+    // Check if Google Sheets is properly initialized
+    if (!GoogleSheetsService.isInitialized && !GoogleSheetsService.isDemoMode) {
+      return res.status(503).json({ 
+        error: 'Google Sheets service not initialized',
+        message: 'The booking system is temporarily unavailable. Please try again later.',
+        demoMode: GoogleSheetsService.isDemoMode
+      })
+    }
+    
+    // Forțăm reîncărcarea dacă este cerut fresh data
+    const data = await GoogleSheetsService.getData('Bookings', fresh === 'true')
+    await ensureEnrichmentCache()
+    
+    if (data.length <= 1) {
+      return res.status(404).json({ error: 'Booking not found' })
+    }
+
+    // Convert rows to booking objects
+    const headers = Array.isArray(data[0]) ? data[0] : []
+    console.log(`📊 HEADERS from Google Sheets:`, headers);
+    
+    const findCol = (...names) => {
+      const lowered = headers.map(h => String(h || '').toLowerCase())
+      for (const n of names) {
+        const idx = lowered.indexOf(String(n).toLowerCase())
+        if (idx !== -1) return idx
+      }
+      // fallback: try partial includes
+      for (let i = 0; i < lowered.length; i++) {
+        for (const n of names) {
+          if (lowered[i].includes(String(n).toLowerCase())) return i
+        }
+      }
+      return -1
+    }
+    const idIndex = findCol('ID') !== -1 ? findCol('ID') : 0
+    const nameIndex = findCol('Name', 'Customer_Name', 'Client_Name') !== -1 ? findCol('Name', 'Customer_Name', 'Client_Name') : 1
+    const emailIndex = findCol('Email') !== -1 ? findCol('Email') : 2
+    const phoneIndex = findCol('Phone') !== -1 ? findCol('Phone') : 3
+    const dateIndex = findCol('Date') !== -1 ? findCol('Date') : 4
+    const timeIndex = findCol('Time') !== -1 ? findCol('Time') : 5
+    const servicesIndex = findCol('Services', 'Service', 'Diensten') !== -1 ? findCol('Services', 'Service', 'Diensten') : 6
+    const totalIndex = findCol('Total', 'Amount') !== -1 ? findCol('Total', 'Amount') : 7
+    const statusIndex = findCol('Status') !== -1 ? findCol('Status') : 8
+    const createdIndex = findCol('Created', 'Created_At', 'Timestamp') !== -1 ? findCol('Created', 'Created_At', 'Timestamp') : 9
+    const makeIndex = findCol('Make', 'Brand', 'Merk') !== -1 ? findCol('Make', 'Brand', 'Merk') : 10
+    const modelIndex = findCol('Model') !== -1 ? findCol('Model') : 11
+    const bodyIndex = findCol('Body', 'Body_Type') !== -1 ? findCol('Body', 'Body_Type') : 12
+    const typeIndex = findCol('Type', 'Vehicle_Type') !== -1 ? findCol('Type', 'Vehicle_Type') : 13
+
+    // Find booking by ID
+    let booking = null
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i]
+      const rowId = String(row[idIndex] || '').trim()
+      if (rowId === String(id).trim()) {
+        console.log(`✅ Found booking at row ${i}:`, row)
+        
+        const name = String(row[nameIndex] || '').trim()
+        const email = String(row[emailIndex] || '').trim()
+        const phone = String(row[phoneIndex] || '').trim()
+        const date = String(row[dateIndex] || '').trim()
+        const time = String(row[timeIndex] || '').trim()
+        const servicesString = String(row[servicesIndex] || '').trim()
+        const total = String(row[totalIndex] || '').trim()
+        const status = String(row[statusIndex] || '').trim()
+        const created = String(row[createdIndex] || '').trim()
+        const make = String(row[makeIndex] || '').trim()
+        const model = String(row[modelIndex] || '').trim()
+        const body = String(row[bodyIndex] || '').trim()
+        const type = String(row[typeIndex] || '').trim()
+
+        booking = {
+          id: rowId,
+          name: name,
+          email: email,
+          phone: phone,
+          date: date,
+          time: time,
+          services: servicesString,
+          total: total,
+          status: status,
+          created: created,
+          make: make,
+          model: model,
+          body: body,
+          type: type
+        }
+        break
+      }
+    }
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' })
+    }
+
+    console.log(`✅ Returning booking:`, booking)
+    res.json(booking)
+    
+  } catch (error) {
+    console.error('Get booking error:', error)
+    res.status(500).json({ error: 'Failed to get booking' })
+  }
+})
+
+router.patch('/bookings/:id', async (req, res, next) => {
+  console.log(`🔥 DEBUG: PATCH /bookings/${req.params.id} - Request received BEFORE auth`)
+  next()
+}, requireAuth, async (req, res) => {
+  console.log(`🔥 DEBUG: PATCH /bookings/${req.params.id} - Authentication passed, processing request...`)
+  try {
+    const { id } = req.params
+    console.log(`🔥 DEBUG: PATCH /bookings/${id} - Request received at ${new Date().toISOString()}`)
+    console.log(`🔥 DEBUG: Request headers:`, req.headers)
+    console.log(`🔥 DEBUG: Request body:`, req.body)
     const { status, date, time, make: makeIn, model: modelIn, body: bodyIn, type: typeIn, name: nameIn, email: emailIn, phone: phoneIn } = req.body
     console.log(`📝 PATCH request received for booking ${id}`)
     console.log(`📅 Request body:`, { status, date, time, make: makeIn, model: modelIn, body: bodyIn, type: typeIn })
@@ -490,8 +609,11 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
       updateData[headers[bodyIndex]] = String(bodyIn);
     }
     if (nameIn && nameIndex !== -1) {
+      console.log(`🔥 DEBUG: Updating name from "${data[actualRowIndex][nameIndex]}" to "${String(nameIn)}"`);
+      console.log(`🔥 DEBUG: nameIndex = ${nameIndex}, headers[nameIndex] = "${headers[nameIndex]}"`);
       data[actualRowIndex][nameIndex] = String(nameIn);
       updateData[headers[nameIndex]] = String(nameIn);
+      console.log(`🔥 DEBUG: After name update, data[actualRowIndex][nameIndex] = "${data[actualRowIndex][nameIndex]}"`);
     }
     if (emailIn && emailIndex !== -1) {
       data[actualRowIndex][emailIndex] = String(emailIn);
@@ -511,16 +633,18 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     console.log(`📊 Object.entries(updateData):`, Object.entries(updateData));
     for (const [columnName, value] of Object.entries(updateData)) {
       try {
+        console.log(`🔥 DEBUG: Processing column "${columnName}" with value "${value}"`);
         // Obținem index-ul coloanei
         const columnIndex = await GoogleSheetsService.getColumnIndex('Bookings', columnName);
+        console.log(`🔥 DEBUG: Column "${columnName}" has index ${columnIndex}`);
         if (columnIndex === -1) {
           console.log(`❌ Column "${columnName}" not found, skipping...`);
           continue;
         }
         
-        console.log(`🔄 Updating cell by index: ${columnName}[${columnIndex}] = "${value}"`);
-        await GoogleSheetsService.updateCellByIndex('Bookings', actualRowIndex, columnIndex, value);
-        console.log(`✅ Cell updated successfully: ${columnName}[${columnIndex}]`);
+        console.log(`🔄 Updating cell by index: row=${actualRowIndex - 1}, col=${columnIndex}, value="${value}"`);
+        await GoogleSheetsService.updateCellByIndex('Bookings', actualRowIndex - 1, columnIndex, value);
+        console.log(`✅ Cell updated successfully: row=${actualRowIndex - 1}, col=${columnIndex}, value="${value}"`);
       } catch (cellError) {
         console.error(`❌ Failed to update cell ${columnName}:`, cellError);
         // Continuăm cu celelalte celule chiar dacă una eșuează
@@ -541,9 +665,9 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     console.log(`🗑️ Clearing cache for Bookings sheet`)
     GoogleSheetsService.clearCache('Bookings')
 
-    // Re-fetch data from Google Sheets to get the updated information
-    console.log(`🔄 Re-fetching data from Google Sheets to get updated booking information`)
-    const updatedData = await GoogleSheetsService.getData('Bookings')
+    // Re-fetch data from Google Sheets to get the updated information (force reload)
+    console.log(`🔄 Re-fetching data from Google Sheets to get updated booking information (FORCE RELOAD)`)
+    const updatedData = await GoogleSheetsService.getData('Bookings', true)
     if (updatedData.length <= 1) {
       return res.status(404).json({ error: 'Nu există programări după actualizare' })
     }
@@ -561,6 +685,45 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     const dateVal = updatedData[actualUpdatedRowIndex][dateIndex] || ''
     const timeVal = updatedData[actualUpdatedRowIndex][timeIndex] || ''
     const servicesString = updatedData[actualUpdatedRowIndex][servicesIndex] || ''
+    
+    // 🔍 VERIFICARE CRITICĂ: Comparăm valorile actualizate cu cele trimise
+    console.log(`🔍 VERIFICARE FINALĂ: Comparam valorile din Google Sheets cu cele trimise:`)
+    console.log(`   - Name: "${name}" (expected: "${updateData.name || name}")`)
+    console.log(`   - Email: "${email}" (expected: "${updateData.email || email}")`)
+    console.log(`   - Phone: "${phone}" (expected: "${updateData.phone || phone}")`)
+    console.log(`   - Date: "${dateVal}" (expected: "${updateData.date || dateVal}")`)
+    console.log(`   - Time: "${timeVal}" (expected: "${updateData.time || timeVal}")`)
+    
+    // Verificăm dacă modificările au fost salvate
+    const hasNameChanged = updateData.name && updateData.name !== originalName
+    const hasEmailChanged = updateData.email && updateData.email !== originalEmail  
+    const hasPhoneChanged = updateData.phone && updateData.phone !== originalPhone
+    const hasDateChanged = updateData.date && updateData.date !== originalDate
+    const hasTimeChanged = updateData.time && updateData.time !== originalTime
+    
+    if (hasNameChanged && name !== updateData.name) {
+      console.log(`❌ CRITICAL: Numele nu a fost actualizat în Google Sheets!`)
+      return res.status(500).json({ 
+        error: 'Modificarea nu a fost salvată în Google Sheets', 
+        details: 'Numele nu a fost actualizat' 
+      })
+    }
+    if (hasEmailChanged && email !== updateData.email) {
+      console.log(`❌ CRITICAL: Emailul nu a fost actualizat în Google Sheets!`)
+      return res.status(500).json({ 
+        error: 'Modificarea nu a fost salvată în Google Sheets', 
+        details: 'Emailul nu a fost actualizat' 
+      })
+    }
+    if (hasPhoneChanged && phone !== updateData.phone) {
+      console.log(`❌ CRITICAL: Telefonul nu a fost actualizat în Google Sheets!`)
+      return res.status(500).json({ 
+        error: 'Modificarea nu a fost salvată în Google Sheets', 
+        details: 'Telefonul nu a fost actualizat' 
+      })
+    }
+    
+    console.log(`✅ VERIFICARE FINALĂ: Toate modificările au fost salvate cu succes în Google Sheets!`)
     
     // Define body variable before using it in services mapping
     const body = bodyIndex !== -1 ? (updatedData[actualUpdatedRowIndex][bodyIndex] || '') : (bodyIn || '')
