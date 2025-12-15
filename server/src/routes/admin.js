@@ -443,6 +443,10 @@ router.patch('/bookings/:id', requireAuth, async (req, res) => {
     await GoogleSheetsService.updateData('Bookings', actualRowIndex, data[actualRowIndex])
     console.log(`✅ GoogleSheetsService.updateData completed successfully`)
 
+    // Clear cache to ensure fresh data is fetched
+    console.log(`🗑️ Clearing cache for Bookings sheet`)
+    GoogleSheetsService.clearCache('Bookings')
+
     // Re-fetch data from Google Sheets to get the updated information
     console.log(`🔄 Re-fetching data from Google Sheets to get updated booking information`)
     const updatedData = await GoogleSheetsService.getData('Bookings')

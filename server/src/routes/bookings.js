@@ -4,67 +4,138 @@ import GoogleSheetsService from '../services/googleSheetsService.js'
 
 const router = Router()
 
-// Get all bookings
-router.get('/', auth, async (req, res) => {
+// Get specific booking by ID
+router.get('/:id', auth, async (req, res) => {
   try {
-    // Return demo bookings data
-    const demoBookings = [
-      {
-        id: 'booking-1',
-        date: '2024-01-15',
-        time: '09:00',
-        customer_name: 'John Doe',
-        customer_email: 'john@example.com',
-        customer_phone: '+1234567890',
-        make: 'BMW',
-        model: 'Seria 3',
-        type: 'Sedan',
-        body: 'Sedan',
-        services: [
-          { name: 'Premium Detailing', price: 150 },
-          { name: 'Interior Cleaning', price: 80 }
-        ],
-        total: '230',
-        status: 'confirmed',
-        notes: '',
-        created_date: '2024-01-01T10:00:00.000Z',
-        updated_date: '2024-01-01T10:00:00.000Z'
-      },
-      {
-        id: 'booking-2',
-        date: '2024-01-16',
-        time: '14:00',
-        customer_name: 'Jane Smith',
-        customer_email: 'jane@example.com',
-        customer_phone: '+0987654321',
-        make: 'Audi',
-        model: 'A4',
-        type: 'Sedan',
-        body: 'Sedan',
-        services: [
-          { name: 'Exterior Wash', price: 45 }
-        ],
-        total: '45',
-        status: 'pending',
-        notes: '',
-        created_date: '2024-01-02T11:00:00.000Z',
-        updated_date: '2024-01-02T11:00:00.000Z'
-      }
-    ]
+    const { id } = req.params
+    
+    // Get real bookings data from Google Sheets
+    const data = await GoogleSheetsService.getData('Bookings')
+    
+    if (data.length <= 1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Booking not found' 
+      })
+    }
+
+    const headers = data[0]
+    const bookingRow = data.slice(1).find(row => row[headers.indexOf('ID')] === id)
+    
+    if (!bookingRow) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Booking not found' 
+      })
+    }
+
+    const booking = {}
+    headers.forEach((header, colIndex) => {
+      booking[header.toLowerCase().replace(/\s+/g, '_')] = bookingRow[colIndex] || ''
+    })
+
+    // Convert to frontend format
+    const formattedBooking = {
+      id: booking.id,
+      date: booking.date || '',
+      time: booking.time || '',
+      customer_name: booking.name || '',
+      customer_email: booking.email || '',
+      customer_phone: booking.phone || '',
+      make: booking.make || '',
+      model: booking.model || '',
+      type: booking.type || '',
+      body: booking.body || '',
+      services: parseServices(booking.services || ''),
+      total: booking.total || '0',
+      status: booking.status || 'pending',
+      notes: '',
+      created_date: booking.created_at || new Date().toISOString(),
+      updated_date: new Date().toISOString()
+    }
 
     res.json({ 
       success: true, 
-      data: demoBookings 
+      data: formattedBooking 
+    })
+  } catch (error) {
+    console.error('Error getting booking:', error)
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to get booking' 
+    })
+  }
+})
+
+// Get all bookings
+router.get('/', auth, async (req, res) => {
+  try {
+    // Get real bookings data from Google Sheets
+    const data = await GoogleSheetsService.getData('Bookings')
+    
+    if (data.length <= 1) {
+      return res.json({ 
+        success: true, 
+        data: [] 
+      })
+    }
+
+    const headers = data[0]
+    const bookings = data.slice(1).map((row, index) => {
+      const booking = {}
+      headers.forEach((header, colIndex) => {
+        booking[header.toLowerCase().replace(/\s+/g, '_')] = row[colIndex] || ''
+      })
+      
+      // Convert to frontend format
+      return {
+        id: booking.id || `booking-${index + 1}`,
+        date: booking.date || '',
+        time: booking.time || '',
+        customer_name: booking.name || '',
+        customer_email: booking.email || '',
+        customer_phone: booking.phone || '',
+        make: booking.make || '',
+        model: booking.model || '',
+        type: booking.type || '',
+        body: booking.body || '',
+        services: parseServices(booking.services || ''),
+        total: booking.total || '0',
+        status: booking.status || 'pending',
+        notes: '',
+        created_date: booking.created_at || new Date().toISOString(),
+        updated_date: new Date().toISOString()
+      }
+    })
+
+    res.json({ 
+      success: true, 
+      data: bookings 
     })
   } catch (error) {
     console.error('Error getting bookings:', error)
     res.status(500).json({ 
       success: false, 
-      error: 'Failed to get bookings',
-      demo: true 
+      error: 'Failed to get bookings' 
     })
   }
 })
+
+// Helper function to parse services string
+function parseServices(servicesString) {
+  if (!servicesString) return []
+  
+  try {
+    // Try to parse as JSON first
+    return JSON.parse(servicesString)
+  } catch (e) {
+    // If not JSON, try to parse as comma-separated list
+    return servicesString.split(',').map(service => ({
+      name: service.trim(),
+      price: 0
+    }))
+  }
+}
 
 // Update booking status
 router.put('/:id/status', auth, async (req, res) => {
