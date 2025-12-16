@@ -490,3 +490,36 @@
     height: 200px;
   }
 }
+
+/* View All Button Styles */
+.view-all-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  width: 100%;
+}
+
+.view-all-btn {
+  background: linear-gradient(135deg, #00e5ff 0%, #00a8cc 100%);
+  color: #0a0e16;
+  border: none;
+  padding: 15px 30px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 229, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.view-all-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 229, 255, 0.4);
+  background: linear-gradient(135deg, #00c4e6 0%, #0099b8 100%);
+}
+
+.view-all-btn:active {
+  transform: translateY(0);
+}

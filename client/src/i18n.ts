@@ -34,6 +34,8 @@ const resources = {
       galleryPage: {
         title: 'Galerij',
         subtitle: 'Bekijk ons premium auto detailing werk',
+        viewAll: 'Bekijk Alles',
+        noImages: 'Geen afbeeldingen gevonden voor deze categorie.',
         categories: {
           all: 'Alles',
           'detailing-interior': 'Interieur Detailing',
@@ -1061,6 +1063,8 @@ const resources = {
       galleryPage: {
         title: 'Gallery',
         subtitle: 'View our premium auto detailing work',
+        viewAll: 'View All',
+        noImages: 'No images found for this category.',
         categories: {
           all: 'All',
           'detailing-interior': 'Interieur Detailing',
@@ -2076,6 +2080,8 @@ const resources = {
       galleryPage: {
         title: 'Galería',
         subtitle: 'Vea nuestro trabajo premium de detailing de autos',
+        viewAll: 'Ver Todo',
+        noImages: 'No se encontraron imágenes para esta categoría.',
         categories: {
           all: 'Todo',
           'detailing-interior': 'Interieur Detailing',
@@ -2934,6 +2940,8 @@ const resources = {
       galleryPage: {
         title: 'Galeria',
         subtitle: 'Zobacz naszą premium pracę detailingu samochodów',
+        viewAll: 'Zobacz Wszystkie',
+        noImages: 'Nie znaleziono obrazów dla tej kategorii.',
         categories: {
           all: 'Wszystko',
           'detailing-interior': 'Interieur Detailing',
@@ -3789,6 +3797,8 @@ const resources = {
       galleryPage: {
         title: 'Galerie',
         subtitle: 'Vezi lucrările noastre premium de detailing auto',
+        viewAll: 'Vezi Toate',
+        noImages: 'Nu au fost găsite imagini pentru această categorie.',
         categories: {
           all: 'Tot',
           'detailing-interior': 'Detailing Interior',

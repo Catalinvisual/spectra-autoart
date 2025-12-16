@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { publicAPI } from '../services/api'
 import { useScrollAnimation } from '../hooks/useAnimations'
 import { useLanguage } from '../contexts/LanguageContext'
@@ -15,6 +16,7 @@ interface GalleryImage {
 
 const Gallery: React.FC = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { currentLanguage } = useLanguage()
   const [images, setImages] = useState<GalleryImage[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -22,6 +24,8 @@ const Gallery: React.FC = () => {
   const [setAnimationElement] = useScrollAnimation()
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isSmallMobile, setIsSmallMobile] = useState(false)
 
   const categories = ['all', 'detailing-interior', 'detailing-exterior', 'ambient-lights', 'starlight-ceiling', 'chrome-delete', 'trim-wrapping', 'polish-auto', 'ceramic-protection', 'before-after']
 
@@ -29,9 +33,26 @@ const Gallery: React.FC = () => {
     setSelectedImage(selectedImage === imageId ? null : imageId)
   }
 
+  const handleViewAllClick = () => {
+    navigate('/gallery', { state: { selectedCategory } })
+  }
+
   useEffect(() => {
     loadGalleryImages()
   }, [currentLanguage])
+
+  // Detect screen size for responsive image limits
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768)
+      setIsSmallMobile(window.innerWidth <= 480)
+    }
+    
+    checkScreenSize()
+    window.addEventListener('resize', checkScreenSize)
+    
+    return () => window.removeEventListener('resize', checkScreenSize)
+  }, [])
 
   const loadGalleryImages = async () => {
     try {
@@ -117,6 +138,16 @@ const Gallery: React.FC = () => {
     ? images 
     : images.filter(image => image.category === selectedCategory)
 
+  // Limit images based on screen size
+  const getLimitedImages = (images: GalleryImage[]) => {
+    if (isSmallMobile) return images.slice(0, 3)
+    if (isMobile) return images.slice(0, 3)
+    return images.slice(0, 8) // Desktop: max 8 images
+  }
+
+  const displayImages = getLimitedImages(filteredImages)
+  const hasMoreImages = filteredImages.length > displayImages.length
+
   if (loading) {
     return (
       <section className="gallery-section">
@@ -177,7 +208,7 @@ const Gallery: React.FC = () => {
         </div>
 
         <div className="gallery-grid">
-          {Array.isArray(filteredImages) && filteredImages.map((image, index) => (
+          {Array.isArray(displayImages) && displayImages.map((image, index) => (
             <div 
               key={image.id} 
               className={`gallery-item ${selectedImage === image.id ? 'active' : ''}`}
@@ -201,6 +232,14 @@ const Gallery: React.FC = () => {
             </div>
           ))}
         </div>
+        
+        {hasMoreImages && (
+          <div className="view-all-container">
+            <button className="view-all-btn" onClick={handleViewAllClick}>
+              {t('galleryPage.viewAll')}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   )
