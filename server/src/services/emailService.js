@@ -625,7 +625,7 @@ const emailTemplates = {
           updateNotice: 'De details van uw afspraak zijn bijgewerkt. Controleer de informatie hieronder.',
           bookingDetails: 'Afspraak Details',
           services: 'Diensten',
-          date: 'Datum', time: 'Tijd', vehicle: 'Voertuig', body: 'Carrosserie', name: 'Naam', email: 'Email', phone: 'Telefoon',
+          date: 'Datum', time: 'Tijd', make: 'Merk', vehicle: 'Voertuig', body: 'Carrosserie', name: 'Naam', email: 'Email', phone: 'Telefoon',
           autoNote: 'Dit e-mailbericht is automatisch gegenereerd.'
         },
         en: {
@@ -634,7 +634,7 @@ const emailTemplates = {
           updateNotice: 'Your booking details have been updated. Please review the information below.',
           bookingDetails: 'Booking Details',
           services: 'Services',
-          date: 'Date', time: 'Time', vehicle: 'Vehicle', body: 'Body Type', name: 'Name', email: 'Email', phone: 'Phone',
+          date: 'Date', time: 'Time', make: 'Make', vehicle: 'Vehicle', body: 'Body Type', name: 'Name', email: 'Email', phone: 'Phone',
           autoNote: 'This email was generated automatically.'
         },
         es: {
@@ -643,7 +643,7 @@ const emailTemplates = {
           updateNotice: 'Los detalles de su reserva han sido actualizados. Revise la información abajo.',
           bookingDetails: 'Detalles de la Reserva',
           services: 'Servicios',
-          date: 'Fecha', time: 'Hora', vehicle: 'Vehículo', body: 'Tipo de Carrocería', name: 'Nombre', email: 'Correo', phone: 'Teléfono',
+          date: 'Fecha', time: 'Hora', make: 'Marca', vehicle: 'Vehículo', body: 'Tipo de Carrocería', name: 'Nombre', email: 'Correo', phone: 'Teléfono',
           autoNote: 'Este correo fue generado automáticamente.'
         },
         pl: {
@@ -652,7 +652,7 @@ const emailTemplates = {
           updateNotice: 'Szczegóły Twojej rezerwacji zostały zaktualizowane. Sprawdź informacje poniżej.',
           bookingDetails: 'Szczegóły Rezerwacji',
           services: 'Usługi',
-          date: 'Data', time: 'Godzina', vehicle: 'Pojazd', body: 'Typ Nadwozia', name: 'Imię', email: 'Email', phone: 'Telefon',
+          date: 'Data', time: 'Godzina', make: 'Marka', vehicle: 'Pojazd', body: 'Typ Nadwozia', name: 'Imię', email: 'Email', phone: 'Telefon',
           autoNote: 'Ten email został wygenerowany automatycznie.'
         },
         ro: {
@@ -720,10 +720,24 @@ const emailTemplates = {
               <h3>📋 ${t.bookingDetails}</h3>
               <div class="spacer"></div>
               <div class="detail-row">
+                <span class="label"><strong>${t.name}:</strong></span>
+                <span class="value">${bookingData.user.name}</span>
+              </div>
+              <div class="spacer"></div>
+              <div class="detail-row">
+                <span class="label"><strong>${t.email}:</strong></span>
+                <span class="value">${bookingData.user.email}</span>
+              </div>
+              <div class="spacer"></div>
+              <div class="detail-row">
+                <span class="label"><strong>${t.phone}:</strong></span>
+                <span class="value">${bookingData.user.phone}</span>
+              </div>
+              <div class="spacer"></div>
+              <div class="detail-row">
                 <span class="label"><strong>${t.date}:</strong></span>
                 <span class="value">${new Date(bookingData.date).toLocaleDateString(({nl:'nl-NL',en:'en-GB',es:'es-ES',pl:'pl-PL',ro:'ro-RO'})[lang] || 'nl-NL')}</span>
               </div>
-              <div class="spacer"></div>
               <div class="spacer"></div>
               <div class="detail-row">
                 <span class="label"><strong>${t.time}:</strong></span>

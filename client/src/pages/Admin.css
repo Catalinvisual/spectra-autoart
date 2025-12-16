@@ -491,6 +491,17 @@ h2:hover {
   .delete-modal .modal-body {
     padding: 20px;
   }
+  
+  /* Asigură că avatarul rămâne perfect circular pe ecrane mici */
+  .customer-avatar {
+    width: 45px;
+    height: 45px;
+    min-width: 45px;
+    min-height: 45px;
+    font-size: 18px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
 }
 
 @media (max-width: 480px) {
@@ -533,6 +544,17 @@ h2:hover {
     min-width: 100px;
     width: 100%;
     max-width: 140px;
+  }
+  
+  /* Avatar și mai mic pentru ecrane foarte mici */
+  .customer-avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
   }
 }
 
