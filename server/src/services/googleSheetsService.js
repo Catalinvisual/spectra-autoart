@@ -10,9 +10,9 @@ class GoogleSheetsService {
     this.isInitialized = false;
     this.isDemoMode = false;
     this.cache = new Map();
-    this.cacheTimeout = 10000; // 10 seconds cache timeout - CRITICAL: Reduced to prevent stale data persistence
+    this.cacheTimeout = 30000; // 30 seconds cache timeout - echilibru între performanță și actualizări
     this.lastRequestTime = 0;
-    this.minRequestInterval = 1000; // Minimum 1 second between requests
+    this.minRequestInterval = 500; // Redus la 500ms pentru performanță mai bună
   }
 
   // Helper pentru a obține index-ul coloanei după nume

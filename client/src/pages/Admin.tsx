@@ -110,6 +110,7 @@ const Admin: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [showResetForm, setShowResetForm] = useState(false)
   const [resetEmail, setResetEmail] = useState('')
+  
 
 
   // Force Dutch or Romanian for admin panel
@@ -454,6 +455,10 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
   const [originalBooking, setOriginalBooking] = useState<Booking | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const { bookedDates: bookedDatesAdmin } = useCalendarSync()
+  const [bookingOperations, setBookingOperations] = useState<{
+    updating: string[]
+    deleting: string[]
+  }>({ updating: [], deleting: [] })
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -512,8 +517,33 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     }
   }
 
-  const handleDeleteBooking = (id: string) => {
-    onDeleteBooking(id)
+  const handleDeleteBooking = async (id: string) => {
+    try {
+      // Marchează operațiunea ca în desfășurare
+      setBookingOperations(prev => ({ ...prev, deleting: [...prev.deleting, id] }))
+      
+      // Optimizare: elimină imediat din UI pentru feedback instant
+      setBookings(prev => prev.filter((booking: Booking) => booking.id !== id))
+      toast.showSuccess(t('admin.bookingDeleted'))
+      
+      // Apoi șterge de pe server în background
+      await adminAPI.deleteBooking(id)
+      
+      // Notifică componenta părinte pentru refresh complet (backup)
+      onDeleteBooking(id)
+    } catch (error) {
+      console.error('Error deleting booking:', error)
+      // Re-adaugă booking-ul înapoi dacă ștergerea eșuează
+      toast.showError(t('admin.errorDeletingBooking'))
+      // Reîmprospătează lista completă
+      loadBookings()
+    } finally {
+      // Elimină din lista de operațiuni active
+      setBookingOperations(prev => ({ 
+        ...prev, 
+        deleting: prev.deleting.filter(bookingId => bookingId !== id) 
+      }))
+    }
   }
 
   const formatDate = (dateString: string, time?: string) => {
@@ -706,32 +736,58 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
         return
       }
       
-      // Obține data veche înainte de actualizare
-      const response = await adminAPI.updateBooking(editingBooking.id, { 
+      // Marchează operațiunea ca în desfășurare
+      setBookingOperations(prev => ({ ...prev, updating: [...prev.updating, editingBooking.id] }))
+      
+      // Optimizare: Actualizează imediat UI pentru feedback instant
+      setBookings(prev => prev.map((b: Booking) => b.id === editingBooking.id ? { 
+        ...b, 
         status: editingBooking.status, 
         date: editingBooking.date, 
         time: editingBooking.time,
         make: editingBooking.make,
         model: editingBooking.model,
         body: editingBooking.body
-      })
+      } : b))
       
-      // Verificăm răspunsul de la server
-      if (response.data && response.data.hasChanges === false) {
-        // Nu există modificări, doar închide modalul
-        toast.showInfo(response.data.message || 'Nu există modificări de salvat')
-      } else {
-        // Actualizăm lista de programări doar dacă există modificări
-        setBookings(prev => prev.map((b: Booking) => b.id === editingBooking.id ? { ...b, status: editingBooking.status, date: editingBooking.date, time: editingBooking.time } : b))
+      // Închide modalul imediat
+      setShowEditModal(false)
+      setEditingBooking(null)
+      
+      // Afișează notificare de succes imediat
+      toast.showSuccess(t('admin.status') + ' ' + t(`admin.${editingBooking.status}`))
+      
+      // Salvează pe server în background fără să blocheze UI
+      try {
+        const response = await adminAPI.updateBooking(editingBooking.id, { 
+          status: editingBooking.status, 
+          date: editingBooking.date, 
+          time: editingBooking.time,
+          make: editingBooking.make,
+          model: editingBooking.model,
+          body: editingBooking.body
+        })
+        
+        // Verificăm răspunsul de la server doar pentru debugging
+        if (response.data && response.data.hasChanges === false) {
+          console.log('No changes detected on server')
+        }
         
         // Notifică toate componentele să reîmprospăteze calendarul
         calendarSyncManager.notifyRefresh()
         
-        toast.showSuccess(t('admin.status') + ' ' + t(`admin.${editingBooking.status}`))
+      } catch (error) {
+        console.error('Error updating booking:', error)
+        // Dacă actualizarea eșuează, reîmprospătează lista completă
+        toast.showError(t('admin.errorUpdatingBooking') || 'Error updating booking')
+        loadBookings()
+      } finally {
+        // Elimină din lista de operațiuni active
+        setBookingOperations(prev => ({ 
+          ...prev, 
+          updating: prev.updating.filter(id => id !== editingBooking.id) 
+        }))
       }
-      
-      // Închide modalul fără să verificăm din nou modificările
-      setEditingBooking(null)
       setOriginalBooking(null)
       setShowEditModal(false)
     } catch (error) {
@@ -810,8 +866,9 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
                 onClick={() => openEditModal(booking)}
                 className="edit-btn"
                 title={t('admin.editBooking')}
+                disabled={bookingOperations.updating.includes(booking.id) || bookingOperations.deleting.includes(booking.id)}
               >
-                ✏️ {t('admin.edit')}
+                {bookingOperations.updating.includes(booking.id) ? '⏳' : '✏️'} {t('admin.edit')}
               </button>
 
               
@@ -820,8 +877,9 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
                 onClick={() => handleDeleteBooking(booking.id)} 
                 className="delete-btn"
                 title={t('admin.deleteBooking')}
+                disabled={bookingOperations.updating.includes(booking.id) || bookingOperations.deleting.includes(booking.id)}
               >
-                🗑️
+                {bookingOperations.deleting.includes(booking.id) ? '⏳' : '🗑️'}
               </button>
             </div>
           </div>
