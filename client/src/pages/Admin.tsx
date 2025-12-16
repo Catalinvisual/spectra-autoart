@@ -164,31 +164,18 @@ const Admin: React.FC = () => {
   const confirmDeleteBooking = async () => {
     if (bookingToDelete) {
       try {
-        // Marchează operațiunea ca în desfășurare
-        setBookingOperations(prev => ({ ...prev, deleting: [...prev.deleting, bookingToDelete] }))
-        
         // Apel către server pentru ștergere
         await adminAPI.deleteBooking(bookingToDelete)
         
-        // După confirmarea ștergerii, elimină din UI
-        setBookings(prev => prev.filter((booking: Booking) => booking.id !== bookingToDelete))
+        // Incrementează cheia de refresh pentru a reîmprospăta lista de bookings
+        setBookingsRefreshKey(prev => prev + 1)
         toast.showSuccess(t('admin.bookingDeleted'))
-        
-        // Notifică componenta părinte pentru refresh complet (backup)
-        onDeleteBooking(bookingToDelete)
       } catch (error) {
         console.error('Error deleting booking:', error)
         toast.showError(t('admin.errorDeletingBooking'))
-        // Reîmprospătează lista completă în caz de eroare
-        loadBookings()
       } finally {
         setShowDeleteModal(false)
         setBookingToDelete(null)
-        // Elimină din lista de operațiuni active
-        setBookingOperations(prev => ({ 
-          ...prev, 
-          deleting: prev.deleting.filter(id => id !== bookingToDelete) 
-        }))
       }
     }
   }
@@ -531,34 +518,6 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     }
   }
 
-  const handleDeleteBooking = async (id: string) => {
-    try {
-      // Marchează operațiunea ca în desfășurare
-      setBookingOperations(prev => ({ ...prev, deleting: [...prev.deleting, id] }))
-      
-      // Apel către server pentru ștergere
-      await adminAPI.deleteBooking(id)
-      
-      // După confirmarea ștergerii, elimină din UI
-      setBookings(prev => prev.filter((booking: Booking) => booking.id !== id))
-      toast.showSuccess(t('admin.bookingDeleted'))
-      
-      // Notifică componenta părinte pentru refresh complet (backup)
-      onDeleteBooking(id)
-    } catch (error) {
-      console.error('Error deleting booking:', error)
-      toast.showError(t('admin.errorDeletingBooking'))
-      // Reîmprospătează lista completă în caz de eroare
-      loadBookings()
-    } finally {
-      // Elimină din lista de operațiuni active
-      setBookingOperations(prev => ({ 
-        ...prev, 
-        deleting: prev.deleting.filter(bookingId => bookingId !== id) 
-      }))
-    }
-  }
-
   const formatDate = (dateString: string, time?: string) => {
     if (!dateString || dateString === 'Invalid Date') {
       return t('admin.noDate') || 'No date specified'
@@ -887,7 +846,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
               
 
               <button 
-                onClick={() => deleteBooking(booking.id)} 
+                onClick={() => onDeleteBooking(booking.id)} 
                 className="delete-btn"
                 title={t('admin.deleteBooking')}
                 disabled={bookingOperations.updating.includes(booking.id) || bookingOperations.deleting.includes(booking.id)}
