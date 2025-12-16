@@ -1217,6 +1217,155 @@ const emailTemplates = {
       </body>
       </html>
     `
+  },
+
+  // Admin modification notification email template
+  adminModification: (bookingData, services) => {
+    const lang = String(bookingData?.locale || 'nl').toLowerCase()
+    const t = (function(){
+      const M = {
+        nl: { titleModified: 'Afspraak Gewijzigd', adminSystem: 'Spectra AutoArt - Notificatiesysteem', clientInfo: 'Klantinformatie', vehicleDetails: 'Voertuig Details', bookingTitle: 'Afspraak', date: 'Datum', time: 'Tijd', vehicle: 'Voertuig', body: 'Carrosserie', services: 'Diensten', name: 'Naam', email: 'Email', phone: 'Telefoon', model: 'Model', make: 'Merk', alertTitle: 'Let op!', alertBody: 'Een afspraak is gewijzigd via het online boekingssysteem.', quickActionsTitle: 'Snelle Acties', quickActionsBody: 'Neem contact op met de klant voor definitieve bevestiging of wijzigingen:', btnEmail: '📧 E-mail Klant', btnCall: '📞 Bel Klant', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Afspraak gewijzigd op:', footerTitle: 'Spectra AutoArt - Afsprakenbeheersysteem', footerNote: 'Deze e-mail wordt automatisch verzonden wanneer een afspraak is gewijzigd.', newsletter: 'Nieuwsbrief', subscribed: 'Geabonneerd', unsubscribed: 'Niet abonat' },
+        en: { titleModified: 'Booking Modified', adminSystem: 'Spectra AutoArt - Notification System', clientInfo: 'Client Information', vehicleDetails: 'Vehicle Details', bookingTitle: 'Booking', date: 'Date', time: 'Time', vehicle: 'Vehicle', body: 'Body Type', services: 'Services', name: 'Name', email: 'Email', phone: 'Phone', model: 'Model', make: 'Make', alertTitle: 'Attention!', alertBody: 'A booking has been modified through the online booking system.', quickActionsTitle: 'Quick Actions', quickActionsBody: 'Contact the client for final confirmation or changes:', btnEmail: '📧 Email Client', btnCall: '📞 Call Client', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Booking modified at:', footerTitle: 'Spectra AutoArt - Booking Management System', footerNote: 'This email is sent automatically when a booking is modified.', newsletter: 'Newsletter', subscribed: 'Subscribed', unsubscribed: 'Unsubscribed' },
+        es: { titleModified: 'Reserva Modificada', adminSystem: 'Spectra AutoArt - Sistema de Notificaciones', clientInfo: 'Información del Cliente', vehicleDetails: 'Detalles del Vehículo', bookingTitle: 'Reserva', date: 'Fecha', time: 'Hora', vehicle: 'Vehículo', body: 'Tipo de Carrocería', services: 'Servicios', name: 'Nombre', email: 'Correo', phone: 'Teléfono', model: 'Modelo', make: 'Marca', alertTitle: '¡Atención!', alertBody: 'Se ha modificado una reserva mediante el sistema de reservas en línea.', quickActionsTitle: 'Acciones Rápidas', quickActionsBody: 'Contacte al cliente para confirmación final o cambios:', btnEmail: '📧 Email Cliente', btnCall: '📞 Llamar al Cliente', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Reserva modificada en:', footerTitle: 'Spectra AutoArt - Sistema de Gestión de Reservas', footerNote: 'Este correo se envía automáticamente cuando se modifica una reserva.', newsletter: 'Boletín', subscribed: 'Suscrito', unsubscribed: 'No suscrito' },
+        pl: { titleModified: 'Rezerwacja Zmodyfikowana', adminSystem: 'Spectra AutoArt - System Powiadomień', clientInfo: 'Informacje o Kliencie', vehicleDetails: 'Szczegóły Pojazdu', bookingTitle: 'Rezerwacja', date: 'Data', time: 'Godzina', vehicle: 'Pojazd', body: 'Typ Nadwozia', services: 'Usługi', name: 'Imię', email: 'Email', phone: 'Telefon', model: 'Model', make: 'Marka', alertTitle: 'Uwaga!', alertBody: 'Rezerwacja została zmodyfikowana za pośrednictwem systemu rezerwacji online.', quickActionsTitle: 'Szybkie Akcje', quickActionsBody: 'Skontaktuj się z klientem w celu ostatecznego potwierdzenia lub zmian:', btnEmail: '📧 Email do Klienta', btnCall: '📞 Zadzwoń do Klienta', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Rezerwacja zmodyfikowana o:', footerTitle: 'Spectra AutoArt - System Zarządzania Rezerwacjami', footerNote: 'Ten email jest wysyłany automatycznie po zmodyfikowaniu rezerwacji.', newsletter: 'Newsletter', subscribed: 'Zapisany', unsubscribed: 'Niezapisany' },
+        ro: { titleModified: 'Programare Modificată', adminSystem: 'Spectra AutoArt - Sistem de Notificare', clientInfo: 'Informații Client', vehicleDetails: 'Detalii Vehicul', bookingTitle: 'Programare', date: 'Data', time: 'Ora', vehicle: 'Vehicul', body: 'Tip Caroserie', services: 'Servicii', name: 'Nume', email: 'Email', phone: 'Telefon', model: 'Model', make: 'Marcă', alertTitle: 'ATENȚIE!', alertBody: 'O programare a fost modificată prin sistemul de rezervări online.', quickActionsTitle: 'Acțiuni Rapide', quickActionsBody: 'Contactează clientul pentru confirmare finală sau modificări:', btnEmail: '📧 Email Client', btnCall: '📞 Apelează Client', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Programare modificată la:', footerTitle: 'Spectra AutoArt - Sistem de Management al Programărilor', footerNote: 'Acest email este trimis automat când o programare este modificată.', newsletter: 'Newsletter', subscribed: 'Abonat', unsubscribed: 'Neabonat' }
+      }
+      return M[lang] || M.nl
+    })()
+    const formatServices = (services) => {
+      return services.map(service => `
+        <div style="margin-bottom: 8px; padding: 8px; background-color: #fff3cd; border-radius: 4px; border-left: 3px solid #ffc107;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong style="margin-right: 15px; flex: 1;">${service.name}</strong>
+            <span style="color: #dc3545; font-weight: 700; white-space: nowrap;">€${service.price || 'N/A'}</span>
+          </div>
+          ${service.description ? `<div style="margin-top: 4px; font-size: 12px; color: #6c757d;">${service.description}</div>` : ''}
+        </div>
+      `).join('')
+    }
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${t.titleModified} - Spectra AutoArt</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8f9fa; }
+          .container { max-width: 650px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .header { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 20px; text-align: center; }
+          .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+          .content { padding: 20px; }
+          .alert { background-color: #cce5ff; border: 1px solid #b8daff; color: #004085; padding: 12px; border-radius: 5px; margin-bottom: 15px; }
+          .booking-info { background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin: 15px 0; }
+          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+          .info-item { margin-bottom: 10px; }
+          .info-label { font-weight: 600; color: #495057; display: block; font-size: 14px; text-transform: uppercase; }
+          .info-value { color: #212529; font-size: 16px; }
+          .services-section { margin: 20px 0; }
+          .services-title { font-size: 16px; font-weight: 600; color: #495057; margin-bottom: 10px; }
+          .action-buttons { margin-top: 25px; padding: 20px; background-color: #e9ecef; border-radius: 8px; text-align: center; }
+          .btn { display: inline-block; padding: 10px 20px; margin: 5px; text-decoration: none; border-radius: 5px; font-weight: 600; }
+          .btn-primary { background-color: #007bff; color: white; }
+          .btn-success { background-color: #28a745; color: white; }
+          .btn-danger { background-color: #dc3545; color: white; }
+          .footer { background-color: #343a40; color: white; padding: 15px; text-align: center; font-size: 12px; }
+          .timestamp { color: #6c757d; font-size: 12px; text-align: right; margin-top: 10px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>📝 ${t.titleModified}</h1>
+            <p>${t.adminSystem}</p>
+          </div>
+          
+          <div class="content">
+            <div class="alert">
+              <strong>⚡ ${t.alertTitle}</strong> ${t.alertBody}
+            </div>
+
+            <div class="booking-info">
+              <h3>👤 ${t.clientInfo}</h3>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">${t.name || 'Nume'}</span>
+                  <span class="info-value">${bookingData.user.name}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">${t.email || 'Email'}</span>
+                  <span class="info-value">${bookingData.user.email}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">${t.phone || 'Telefon'}</span>
+                  <span class="info-value">${bookingData.user.phone}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">${t.newsletter}</span>
+                  <span class="info-value">${bookingData.newsletter ? `✅ ${t.subscribed}` : `❌ ${t.unsubscribed}`}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="booking-info">
+              <h3>🚗 ${t.vehicleDetails}</h3>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">${t.make}</span>
+                  <span class="info-value">${bookingData.make}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">${t.model}</span>
+                  <span class="info-value">${bookingData.model}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">${t.body}</span>
+                  <span class="info-value">${bookingData.body}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="booking-info">
+              <h3>📅 ${t.bookingTitle}</h3>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">${t.date}</span>
+                  <span class="info-value">${new Date(bookingData.date).toLocaleDateString(({nl:'nl-NL',en:'en-GB',es:'es-ES',pl:'pl-PL',ro:'ro-RO'})[lang] || 'nl-NL')}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">${t.time}</span>
+                  <span class="info-value">${bookingData.time}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="services-section">
+              <h3>🔧 ${t.services}</h3>
+              ${formatServices(services)}
+            </div>
+
+            <div class="action-buttons">
+              <h4>${t.quickActionsTitle}</h4>
+              <p>${t.quickActionsBody}</p>
+              <a href="mailto:${bookingData.user.email}" class="btn btn-primary">${t.btnEmail}</a>
+              <a href="tel:${bookingData.user.phone}" class="btn btn-success">${t.btnCall}</a>
+              <a href="https://wa.me/${bookingData.user.phone.replace(/\D/g, '')}" class="btn btn-danger">${t.btnWhatsApp}</a>
+            </div>
+
+            <div class="timestamp">
+              <p>⏰ ${t.timestampLabel} ${new Date().toLocaleString(({nl:'nl-NL',en:'en-GB',es:'es-ES',pl:'pl-PL',ro:'ro-RO'})[lang] || 'nl-NL')}</p>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p><strong>${t.footerTitle}</strong></p>
+            <p>${t.footerNote}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
   }
 }
 
@@ -1394,7 +1543,7 @@ export const sendBookingUpdate = async (bookingData, services) => {
 }
 
 export const sendAdminUpdate = async (bookingData, services) => {
-  const html = emailTemplates.adminNotification(bookingData, services)
+  const html = emailTemplates.adminModification(bookingData, services)
   const subject = html.match(/<title>(.*?)<\/title>/)?.[1] || 'Programare Modificată'
   const adminRecipient = process.env.ADMIN_NOTIFICATION_EMAIL || process.env.MAIL_FROM_ADDRESS || 'contact@spectraautoart.nl'
   const result = await sendEmail(adminRecipient, subject, html)
