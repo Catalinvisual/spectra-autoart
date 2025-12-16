@@ -588,6 +588,8 @@ router.patch('/bookings/:id', async (req, res, next) => {
     const originalName = nameIndex !== -1 ? data[actualRowIndex][nameIndex] : ''
     const originalEmail = emailIndex !== -1 ? data[actualRowIndex][emailIndex] : ''
     const originalPhone = phoneIndex !== -1 ? data[actualRowIndex][phoneIndex] : ''
+    const originalServices = servicesIndex !== -1 ? data[actualRowIndex][servicesIndex] : ''
+    const originalTotal = totalIndex !== -1 ? data[actualRowIndex][totalIndex] : ''
     
     // Extragem doar partea de dată (YYYY-MM-DD) din stringul ISO complet
     const originalDate = originalDateRaw ? originalDateRaw.split('T')[0] : ''
@@ -735,7 +737,8 @@ router.patch('/bookings/:id', async (req, res, next) => {
     const phone = updatedData[actualUpdatedRowIndex][phoneIndex] || ''
     const dateVal = updatedData[actualUpdatedRowIndex][dateIndex] || ''
     const timeVal = updatedData[actualUpdatedRowIndex][timeIndex] || ''
-    const servicesString = updatedData[actualUpdatedRowIndex][servicesIndex] || ''
+    // Use ORIGINAL services from when booking was first created to ensure consistent pricing
+    const servicesString = originalServices || ''
     
     // 🔍 VERIFICARE CRITICĂ: Comparăm valorile actualizate cu cele trimise
     console.log(`🔍 VERIFICARE FINALĂ: Comparam valorile din Google Sheets cu cele trimise:`)
@@ -818,10 +821,11 @@ router.patch('/bookings/:id', async (req, res, next) => {
       user: { name, email, phone },
       date: dateVal,
       time: timeVal,
-      make: makeIndex !== -1 ? (updatedData[actualUpdatedRowIndex][makeIndex] || '') : (makeIn || ''),
-      model: modelIndex !== -1 ? (updatedData[actualUpdatedRowIndex][modelIndex] || '') : (modelIn || ''),
-      body: bodyIndex !== -1 ? (updatedData[actualUpdatedRowIndex][bodyIndex] || '') : (bodyIn || ''),
-      type: typeIndex !== -1 ? (updatedData[actualUpdatedRowIndex][typeIndex] || '') : (typeIn || ''),
+      // Use ORIGINAL vehicle details from when booking was first created to ensure consistency
+      make: originalMake || '',
+      model: originalModel || '',
+      body: originalBody || '',
+      type: originalType || '',
       newsletter: false,
       locale: (() => {
         const localeIndex = findCol('Locale','Language')
