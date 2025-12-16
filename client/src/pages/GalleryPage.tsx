@@ -23,6 +23,8 @@ const GalleryPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   const categories = ['all', 'detailing-interior', 'detailing-exterior', 'ambient-lights', 'starlight-ceiling', 'chrome-delete', 'trim-wrapping', 'polish-auto', 'ceramic-protection', 'before-after']
 
@@ -32,6 +34,16 @@ const GalleryPage: React.FC = () => {
       setSelectedCategory(location.state.selectedCategory)
     }
     loadGalleryImages()
+    
+    // Check if mobile screen
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
   }, [currentLanguage, location.state])
 
   const loadGalleryImages = async () => {
@@ -114,6 +126,15 @@ const GalleryPage: React.FC = () => {
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category)
+    setIsDropdownOpen(false)
+  }
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen)
+  }
+
+  const getCurrentCategoryLabel = () => {
+    return t(`galleryPage.categories.${selectedCategory}`)
   }
 
   const filteredImages = selectedCategory === 'all' 
@@ -147,15 +168,42 @@ const GalleryPage: React.FC = () => {
           </div>
 
           <div className="gallery-filters">
-            {categories.map(category => (
-              <button
-                key={category}
-                className={`filter-btn ${selectedCategory === category ? 'active' : ''}`}
-                onClick={() => handleCategoryChange(category)}
-              >
-                {t(`galleryPage.categories.${category}`)}
-              </button>
-            ))}
+            {isMobile ? (
+              <div className="category-dropdown">
+                <button 
+                  className="dropdown-toggle"
+                  onClick={toggleDropdown}
+                >
+                  <span>{getCurrentCategoryLabel()}</span>
+                  <span className={`dropdown-arrow ${isDropdownOpen ? 'open' : ''}`}>▼</span>
+                </button>
+                {isDropdownOpen && (
+                  <div className="dropdown-menu">
+                    {categories.map(category => (
+                      <button
+                        key={category}
+                        className={`dropdown-item ${selectedCategory === category ? 'active' : ''}`}
+                        onClick={() => handleCategoryChange(category)}
+                      >
+                        {t(`galleryPage.categories.${category}`)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                {categories.map(category => (
+                  <button
+                    key={category}
+                    className={`filter-btn ${selectedCategory === category ? 'active' : ''}`}
+                    onClick={() => handleCategoryChange(category)}
+                  >
+                    {t(`galleryPage.categories.${category}`)}
+                  </button>
+                ))}
+              </>
+            )}
           </div>
 
           <div className="gallery-grid">
