@@ -547,10 +547,11 @@ router.patch('/bookings/:id', async (req, res, next) => {
     const phoneIndex = findCol('Phone') !== -1 ? findCol('Phone') : 3
     const dateIndex = findCol('Date') !== -1 ? findCol('Date') : 4
     const timeIndex = findCol('Time') !== -1 ? findCol('Time') : 5
-    const makeIndex = findCol('Make','Marca','Vehicle_Make') !== -1 ? findCol('Make','Marca','Vehicle_Make') : 10
-    const modelIndex = findCol('Model','Vehicle_Model') !== -1 ? findCol('Model','Vehicle_Model') : 11
-    const typeIndex = findCol('Type','Vehicle_Type') !== -1 ? findCol('Type','Vehicle_Type') : 12
-    const bodyIndex = findCol('Body','Caroserie','Body_Type') !== -1 ? findCol('Body','Caroserie','Body_Type') : 13
+    // Vehicle columns don't exist in Google Sheets - set to -1
+    const makeIndex = -1
+    const modelIndex = -1  
+    const typeIndex = -1
+    const bodyIndex = -1
     const servicesIndex = findCol('Services','Service','Diensten') !== -1 ? findCol('Services','Service','Diensten') : 6
     const totalIndex = findCol('Total','Amount') !== -1 ? findCol('Total','Amount') : 7
     const statusIndex = findCol('Status') !== -1 ? findCol('Status') : 8
@@ -612,6 +613,12 @@ router.patch('/bookings/:id', async (req, res, next) => {
     const originalPhone = phoneIndex !== -1 ? data[actualRowIndex][phoneIndex] : ''
     const originalServices = servicesIndex !== -1 ? data[actualRowIndex][servicesIndex] : ''
     const originalTotal = totalIndex !== -1 ? data[actualRowIndex][totalIndex] : ''
+    
+    // Vehicle details don't exist in Google Sheets - set to empty
+    const originalMake = ''
+    const originalModel = ''
+    const originalType = ''
+    const originalBody = ''
     
     // Extragem doar partea de dată (YYYY-MM-DD) din stringul ISO complet
     const originalDate = originalDateRaw ? originalDateRaw.split('T')[0] : ''

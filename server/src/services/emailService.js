@@ -745,20 +745,27 @@ const emailTemplates = {
                 <span class="value">${bookingData.time}</span>
               </div>
               <div class="spacer"></div>
+              ${bookingData.make ? `
+              <div class="spacer"></div>
               <div class="detail-row">
                 <span class="label"><strong>${t.make}:</strong></span>
-                <span class="value">${bookingData.make || ''}</span>
+                <span class="value">${bookingData.make}</span>
               </div>
+              ` : ''}
+              ${bookingData.model ? `
               <div class="spacer"></div>
               <div class="detail-row">
                 <span class="label"><strong>${t.vehicle}:</strong></span>
-                <span class="value">${bookingData.model || ''}</span>
+                <span class="value">${bookingData.model}</span>
               </div>
+              ` : ''}
+              ${bookingData.body ? `
               <div class="spacer"></div>
               <div class="detail-row">
                 <span class="label"><strong>${t.body}:</strong></span>
-                <span class="value">${bookingData.body || ''}</span>
+                <span class="value">${bookingData.body}</span>
               </div>
+              ` : ''}
               ${bookingData.total ? `
               <div class="spacer"></div>
               <div class="detail-row">
