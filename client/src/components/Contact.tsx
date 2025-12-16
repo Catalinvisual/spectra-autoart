@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useScrollAnimation } from '../hooks/useAnimations'
 import InteractiveMap from './InteractiveMap'
+import { publicAPI } from '../services/api'
 import './Contact.css'
 
 const Contact: React.FC = () => {
@@ -30,8 +31,8 @@ const Contact: React.FC = () => {
     setSuccess(false)
 
     try {
-      // Simulate form submission - replace with actual API call when available
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Submit contact form via API
+      await publicAPI.submitContact(formData)
       setSuccess(true)
       setFormData({
         name: '',
@@ -40,8 +41,8 @@ const Contact: React.FC = () => {
         subject: '',
         message: ''
       })
-    } catch (err) {
-      setError('Failed to send message. Please try again.')
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to send message. Please try again.')
     } finally {
       setLoading(false)
     }

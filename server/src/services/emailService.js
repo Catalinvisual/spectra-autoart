@@ -227,6 +227,215 @@ const verifyTransporter = async (retries = 3) => {
 
 // Email templates
 const emailTemplates = {
+  // Contact form submission email template
+  contactSubmission: (contactData) => {
+    const { name, email, phone, subject, message } = contactData
+    const subjectText = {
+      general: 'General Inquiry',
+      booking: 'Booking Inquiry', 
+      services: 'Services Inquiry',
+      pricing: 'Pricing Inquiry',
+      other: 'Other Inquiry'
+    }[subject] || 'Contact Form Submission'
+    
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Contact Form Submission - Spectra AutoArt</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, #00bcd4 0%, #00838f 100%);
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .header p {
+      margin: 10px 0 0 0;
+      opacity: 0.9;
+    }
+    .content {
+      padding: 30px;
+      background: white;
+      margin: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+    .contact-details {
+      background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%);
+      border: 1px solid #b2ebf2;
+      border-radius: 10px;
+      padding: 25px;
+      margin-bottom: 25px;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      padding: 12px 0;
+      border-bottom: 1px solid #e0f7fa;
+    }
+    .detail-row:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    .label {
+      font-weight: 600;
+      color: #00838f;
+      margin-right: 15px;
+      min-width: 80px;
+    }
+    .value {
+      color: #006064;
+      text-align: right;
+      flex: 1;
+      font-weight: 500;
+    }
+    .message-section {
+      background: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%);
+      border: 1px solid #c5e1a5;
+      border-radius: 10px;
+      padding: 25px;
+      margin-top: 20px;
+    }
+    .message-section h3 {
+      color: #2e7d32;
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    .message-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #4caf50;
+      font-style: normal;
+      line-height: 1.7;
+      color: #424242;
+      white-space: pre-wrap;
+    }
+    .footer {
+      background: linear-gradient(135deg, #00838f 0%, #006064 100%);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 14px;
+    }
+    .footer p {
+      margin: 5px 0;
+    }
+    .highlight {
+      background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+      border: 1px solid #ffcc02;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .highlight p {
+      margin: 0;
+      color: #e65100;
+      font-weight: 500;
+    }
+    .spacer {
+      margin: 8px 0;
+    }
+    @media (max-width: 600px) {
+      .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .value {
+        text-align: left;
+        margin-top: 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📝 New Contact Form Submission</h1>
+      <p>Spectra AutoArt - Premium Auto Detailing</p>
+    </div>
+    
+    <div class="content">
+      <div class="highlight">
+        <p>📧 You have received a new message through the contact form on your website.</p>
+      </div>
+      
+      <div class="contact-details">
+        <h3 style="color: #00838f; margin-top: 0; margin-bottom: 20px;">👤 Contact Information</h3>
+        <div class="detail-row">
+          <span class="label"><strong>Name:</strong></span>
+          <span class="value">${name}</span>
+        </div>
+        <div class="spacer"></div>
+        <div class="detail-row">
+          <span class="label"><strong>Email:</strong></span>
+          <span class="value">${email}</span>
+        </div>
+        <div class="spacer"></div>
+        ${phone ? `
+        <div class="detail-row">
+          <span class="label"><strong>Phone:</strong></span>
+          <span class="value">${phone}</span>
+        </div>
+        <div class="spacer"></div>
+        ` : ''}
+        <div class="detail-row">
+          <span class="label"><strong>Subject:</strong></span>
+          <span class="value">${subjectText}</span>
+        </div>
+      </div>
+      
+      <div class="message-section">
+        <h3>💬 Message</h3>
+        <div class="message-content">${message}</div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p><strong>Spectra AutoArt - Premium Auto Detailing</strong></p>
+      <p>📧 contact@spectraautoart.nl</p>
+      <p>📅 ${new Date().toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })}</p>
+    </div>
+  </div>
+</body>
+</html>
+    `
+  },
+  
   // Client confirmation email template
   clientConfirmation: (bookingData, services) => {
     const lang = String(bookingData?.locale || 'nl').toLowerCase()
@@ -1162,6 +1371,28 @@ export const sendAdminUpdate = async (bookingData, services) => {
   return result
 }
 
+// Send contact form submission email to admin
+export const sendContactFormEmail = async (contactData) => {
+  const html = emailTemplates.contactSubmission(contactData)
+  const subject = `📝 New Contact Form: ${contactData.subject || 'General Inquiry'}`
+  const adminRecipient = process.env.ADMIN_NOTIFICATION_EMAIL || process.env.MAIL_FROM_ADDRESS || 'contact@spectraautoart.nl'
+  
+  try {
+    const result = await sendEmail(adminRecipient, subject, html)
+    
+    if (!result.success) {
+      console.error('❌ Failed to send contact form email:', result.error)
+      throw new Error(`Contact form email sending failed: ${result.error}`)
+    }
+    
+    console.log('✅ Contact form email sent successfully to:', adminRecipient)
+    return result
+  } catch (error) {
+    console.error('❌ Error sending contact form email:', error)
+    throw error
+  }
+}
+
 // Initialize and verify email service
 export const initializeEmailService = async () => {
   const hasUser = !!(process.env.ZOHO_SMTP_USER || process.env.EMAIL_USER)
@@ -1232,6 +1463,7 @@ export default {
   sendAdminNotification,
   sendBookingUpdate,
   sendAdminUpdate,
+  sendContactFormEmail,
   initializeEmailService,
   testEmailService
 }

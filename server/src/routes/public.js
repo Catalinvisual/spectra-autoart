@@ -8,7 +8,7 @@ import NotificationService from '../services/notificationService.js'
 import { getActiveBodyTypes } from '../config/bodyTypesConfig.js'
 import { translateMultipleWithDeepL, detectLanguageWithDeepL } from '../services/deeplTranslationService.js'
 import CloudinaryService from '../services/cloudinaryService.js'
-import { sendBookingConfirmation, sendAdminNotification } from '../services/emailService.js'
+import { sendBookingConfirmation, sendAdminNotification, sendContactFormEmail } from '../services/emailService.js'
 
 // Cache for service mapping (same as admin panel)
 let bookingsEnrichmentCache = {
@@ -914,6 +914,51 @@ router.post('/bookings', async (req, res) => {
       success: false,
       error: 'Failed to create booking',
       demo: true 
+    })
+  }
+})
+
+// Contact form endpoint
+router.post('/contact', async (req, res) => {
+  try {
+    const { name, email, phone, subject, message } = req.body
+    
+    // Validate required fields
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Toate câmpurile obligatorii trebuie completate' 
+      })
+    }
+    
+    // Validate email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Email invalid' 
+      })
+    }
+    
+    // Send contact form email
+    const emailResult = await sendContactFormEmail({ name, email, phone, subject, message })
+    
+    if (emailResult.success) {
+      res.json({ 
+        success: true,
+        message: 'Mesajul a fost trimis cu succes' 
+      })
+    } else {
+      console.error('❌ Failed to send contact form email:', emailResult.error)
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to send message' 
+      })
+    }
+  } catch (error) {
+    console.error('❌ Error processing contact form:', error)
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to process contact form' 
     })
   }
 })

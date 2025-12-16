@@ -165,6 +165,7 @@ api.interceptors.response.use(
   getTestimonials: (lang?: string) => api.get('/public/testimonials' + (lang ? `?lang=${lang}` : '')),
   submitTestimonial: (data: { name: string; rating: number; comment: string }) => api.post('/public/testimonials', data),
   createBooking: (data: BookingData) => api.post('/public/bookings', data),
+  submitContact: (data: { name: string; email: string; phone?: string; subject: string; message: string }) => api.post('/public/contact', data),
   subscribeNewsletter: (data: { email: string; locale?: string }) => api.post('/public/newsletter/subscribe', data),
   translateText: (data: { text: string; target: string; source?: string }) => api.post('/translate', data),
   translateBatch: (data: { texts: string[]; target: string; source?: string }) => api.post('/translate/batch', data),
