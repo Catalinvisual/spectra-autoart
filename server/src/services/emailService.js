@@ -287,9 +287,9 @@ const emailTemplates = {
     })()
     const formatServices = (services) => {
       return services.map(service => `
-        <div style="margin-bottom: 10px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: 600; color: #212529;">${service.name}</span>
-          <span style="color: #007bff; font-weight: 700;">€${service.price || 0}</span>
+        <div style="margin-bottom: 15px; padding: 16px; background-color: #f8f9fa; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #dee2e6;">
+          <span style="font-weight: 600; color: #212529; font-size: 16px;">${service.name}</span>
+          <span style="color: #007bff; font-weight: 700; font-size: 18px;">€${service.price || 0}</span>
         </div>
       `).join('')
     }
@@ -308,10 +308,12 @@ const emailTemplates = {
           .header h1 { margin: 0; font-size: 24px; font-weight: 500; }
           .content { padding: 30px; }
           .booking-details { background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
-          .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid #e9ecef; }
+          .detail-row { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 12px 0; border-bottom: 1px solid #e9ecef; }
           .detail-row:last-child { border-bottom: none; }
-          .label { font-weight: 600; color: #495057; }
-          .value { color: #212529; text-align: right; }
+          .label { font-weight: 600; color: #495057; margin-right: 15px; }
+          .value { color: #212529; text-align: right; flex: 1; }
+          .spacer { margin: 8px 0; }
+          .detail-row strong { display: inline-block; margin-right: 10px; }
           .services-section { margin: 20px 0; }
           .services-title { font-size: 18px; font-weight: 600; color: #495057; margin-bottom: 15px; }
           .footer { background-color: #343a40; color: white; padding: 20px; text-align: center; }
@@ -334,42 +336,51 @@ const emailTemplates = {
 
             <div class="booking-details">
               <h3>📋 ${t.bookingDetails}</h3>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.name}:</span>
+                <span class="label"><strong>${t.name}:</strong></span>
                 <span class="value">${bookingData.user.name}</span>
               </div>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.email}:</span>
+                <span class="label"><strong>${t.email}:</strong></span>
                 <span class="value">${bookingData.user.email}</span>
               </div>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.phone}:</span>
+                <span class="label"><strong>${t.phone}:</strong></span>
                 <span class="value">${bookingData.user.phone}</span>
               </div>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.date}:</span>
+                <span class="label"><strong>${t.date}:</strong></span>
                 <span class="value">${new Date(bookingData.date).toLocaleDateString(({nl:'nl-NL',en:'en-GB',es:'es-ES',pl:'pl-PL',ro:'ro-RO'})[lang] || 'nl-NL')}</span>
               </div>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.time}:</span>
+                <span class="label"><strong>${t.time}:</strong></span>
                 <span class="value">${bookingData.time}</span>
               </div>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.make}:</span>
+                <span class="label"><strong>${t.make}:</strong></span>
                 <span class="value">${bookingData.make}</span>
               </div>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.vehicle}:</span>
+                <span class="label"><strong>${t.vehicle}:</strong></span>
                 <span class="value">${bookingData.model}</span>
               </div>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.body}:</span>
+                <span class="label"><strong>${t.body}:</strong></span>
                 <span class="value">${bookingData.body}</span>
               </div>
             </div>
 
             <div class="services-section">
               <h3 class="services-title">🔧 ${t.selectedServices}</h3>
+              <div class="spacer"></div>
               ${formatServices(services)}
             </div>
 
@@ -449,9 +460,9 @@ const emailTemplates = {
     })()
     const formatServices = (services) => {
       return services.map(service => `
-        <div style="margin-bottom: 10px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
-          <span style="font-weight: 600; color: #212529;">${service.name}</span>
-          <span style="color: #007bff; font-weight: 700; margin-left: 12px;">€${service.price || 0}</span>
+        <div style="margin-bottom: 15px; padding: 16px; background-color: #f8f9fa; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #dee2e6;">
+          <span style="font-weight: 600; color: #212529; font-size: 16px;">${service.name}</span>
+          <span style="color: #007bff; font-weight: 700; font-size: 18px;">€${service.price || 0}</span>
         </div>
       `).join('')
     }
@@ -470,10 +481,12 @@ const emailTemplates = {
           .header h1 { margin: 0; font-size: 24px; font-weight: 500; }
           .content { padding: 30px; }
           .booking-details { background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
-          .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid #e9ecef; }
+          .detail-row { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 12px 0; border-bottom: 1px solid #e9ecef; }
           .detail-row:last-child { border-bottom: none; }
-          .label { font-weight: 600; color: #495057; }
-          .value { color: #212529; text-align: right; }
+          .label { font-weight: 600; color: #495057; margin-right: 15px; }
+          .value { color: #212529; text-align: right; flex: 1; }
+          .spacer { margin: 8px 0; }
+          .detail-row strong { display: inline-block; margin-right: 10px; }
           .services-section { margin: 20px 0; }
           .services-title { font-size: 18px; font-weight: 600; color: #495057; margin-bottom: 15px; }
           .footer { background-color: #343a40; color: white; padding: 20px; text-align: center; }
@@ -496,30 +509,37 @@ const emailTemplates = {
 
             <div class="booking-details">
               <h3>📋 ${t.bookingDetails}</h3>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.date}:</span>
+                <span class="label"><strong>${t.date}:</strong></span>
                 <span class="value">${new Date(bookingData.date).toLocaleDateString(({nl:'nl-NL',en:'en-GB',es:'es-ES',pl:'pl-PL',ro:'ro-RO'})[lang] || 'nl-NL')}</span>
               </div>
+              <div class="spacer"></div>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.time}:</span>
+                <span class="label"><strong>${t.time}:</strong></span>
                 <span class="value">${bookingData.time}</span>
               </div>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.make}:</span>
+                <span class="label"><strong>${t.make}:</strong></span>
                 <span class="value">${bookingData.make || ''}</span>
               </div>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.vehicle}:</span>
+                <span class="label"><strong>${t.vehicle}:</strong></span>
                 <span class="value">${bookingData.model || ''}</span>
               </div>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.body}:</span>
+                <span class="label"><strong>${t.body}:</strong></span>
                 <span class="value">${bookingData.body || ''}</span>
               </div>
             </div>
 
             <div class="services-section">
               <h3 class="services-title">🔧 ${t.services}</h3>
+              <div class="spacer"></div>
               ${formatServices(services)}
             </div>
           </div>
@@ -658,6 +678,7 @@ const emailTemplates = {
 
             <div class="services-section">
               <h3 class="services-title">🔧 ${t.services}</h3>
+              <div class="spacer"></div>
               ${formatServices(services)}
             </div>
 
@@ -739,9 +760,9 @@ const emailTemplates = {
     })()
     const formatServices = (services) => {
       return services.map(service => `
-        <div style="margin-bottom: 10px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
-          <span style="font-weight: 600; color: #212529;">${service.name}</span>
-          <span style="color: #dc3545; font-weight: 700; margin-left: 12px;">€${service.price || 0}</span>
+        <div style="margin-bottom: 15px; padding: 16px; background-color: #f8f9fa; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #dee2e6;">
+          <span style="font-weight: 600; color: #212529; font-size: 16px;">${service.name}</span>
+          <span style="color: #dc3545; font-weight: 700; font-size: 18px;">€${service.price || 0}</span>
         </div>
       `).join('')
     }
@@ -760,10 +781,12 @@ const emailTemplates = {
           .header h1 { margin: 0; font-size: 24px; font-weight: 500; }
           .content { padding: 30px; }
           .booking-details { background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
-          .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid #e9ecef; }
+          .detail-row { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 12px 0; border-bottom: 1px solid #e9ecef; }
           .detail-row:last-child { border-bottom: none; }
-          .label { font-weight: 600; color: #495057; }
-          .value { color: #212529; text-align: right; }
+          .label { font-weight: 600; color: #495057; margin-right: 15px; }
+          .value { color: #212529; text-align: right; flex: 1; }
+          .spacer { margin: 8px 0; }
+          .detail-row strong { display: inline-block; margin-right: 10px; }
           .services-section { margin: 20px 0; }
           .services-title { font-size: 18px; font-weight: 600; color: #495057; margin-bottom: 15px; }
           .footer { background-color: #343a40; color: white; padding: 20px; text-align: center; }
@@ -786,24 +809,30 @@ const emailTemplates = {
 
             <div class="booking-details">
               <h3>📋 ${t.bookingDetails}</h3>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.date}:</span>
+                <span class="label"><strong>${t.date}:</strong></span>
                 <span class="value">${new Date(bookingData.date).toLocaleDateString(({nl:'nl-NL',en:'en-GB',es:'es-ES',pl:'pl-PL',ro:'ro-RO'})[lang] || 'nl-NL')}</span>
               </div>
+              <div class="spacer"></div>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.time}:</span>
+                <span class="label"><strong>${t.time}:</strong></span>
                 <span class="value">${bookingData.time}</span>
               </div>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.make}:</span>
+                <span class="label"><strong>${t.make}:</strong></span>
                 <span class="value">${bookingData.make || ''}</span>
               </div>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.vehicle}:</span>
+                <span class="label"><strong>${t.vehicle}:</strong></span>
                 <span class="value">${bookingData.model || ''}</span>
               </div>
+              <div class="spacer"></div>
               <div class="detail-row">
-                <span class="label">${t.body}:</span>
+                <span class="label"><strong>${t.body}:</strong></span>
                 <span class="value">${bookingData.body || ''}</span>
               </div>
             </div>
