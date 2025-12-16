@@ -766,13 +766,6 @@ const emailTemplates = {
                 <span class="value">${bookingData.body}</span>
               </div>
               ` : ''}
-              ${bookingData.total ? `
-              <div class="spacer"></div>
-              <div class="detail-row">
-                <span class="label"><strong>${t.total}:</strong></span>
-                <span class="value" style="color: #007bff; font-weight: 700;">€${bookingData.total}</span>
-              </div>
-              ` : ''}
             </div>
 
             <div class="services-section">
