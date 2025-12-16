@@ -565,6 +565,7 @@ router.patch('/bookings/:id', async (req, res, next) => {
     
     // CRITICAL: Afișăm rândul complet înainte de modificare
     console.log(`📊 ROW ${actualRowIndex} COMPLETE DATA:`, data[actualRowIndex]);
+    console.log(`📊 Column indices: id:${idIndex}, name:${nameIndex}, email:${emailIndex}, phone:${phoneIndex}, date:${dateIndex}, time:${timeIndex}, make:${makeIndex}, model:${modelIndex}, type:${typeIndex}, body:${bodyIndex}, services:${servicesIndex}, total:${totalIndex}, status:${statusIndex}`);
     console.log(`📊 Column mapping:`, {
       id: data[actualRowIndex][idIndex],
       name: data[actualRowIndex][nameIndex],
@@ -574,6 +575,10 @@ router.patch('/bookings/:id', async (req, res, next) => {
       time: data[actualRowIndex][timeIndex],
       make: makeIndex !== -1 ? data[actualRowIndex][makeIndex] : 'N/A',
       model: modelIndex !== -1 ? data[actualRowIndex][modelIndex] : 'N/A',
+      type: typeIndex !== -1 ? data[actualRowIndex][typeIndex] : 'N/A',
+      body: bodyIndex !== -1 ? data[actualRowIndex][bodyIndex] : 'N/A',
+      services: servicesIndex !== -1 ? data[actualRowIndex][servicesIndex] : 'N/A',
+      total: totalIndex !== -1 ? data[actualRowIndex][totalIndex] : 'N/A',
       status: data[actualRowIndex][statusIndex]
     });
     
@@ -829,6 +834,7 @@ router.patch('/bookings/:id', async (req, res, next) => {
       model: originalModel || '',
       body: originalBody || '',
       type: originalType || '',
+      total: originalTotal || '', // Add original total price
       newsletter: false,
       locale: (() => {
         const localeIndex = findCol('Locale','Language')
@@ -854,6 +860,13 @@ router.patch('/bookings/:id', async (req, res, next) => {
     let adminEmailResult = null
     
     if (hasChanges) {
+      console.log('📧 FINAL DEBUG before sending email:')
+      console.log('📧 bookingData.make:', bookingData.make)
+      console.log('📧 bookingData.model:', bookingData.model) 
+      console.log('📧 bookingData.body:', bookingData.body)
+      console.log('📧 bookingData.type:', bookingData.type)
+      console.log('📧 bookingData.total:', bookingData.total)
+      console.log('📧 servicesArr length:', servicesArr.length)
       console.log('📧 Sending booking update email...')
       bookingEmailResult = await sendBookingUpdate(bookingData, servicesArr)
       console.log('📧 Booking update email result:', bookingEmailResult)
