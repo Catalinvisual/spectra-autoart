@@ -149,11 +149,14 @@ app.get('/health', (req, res) => {
   if (process.env.NODE_ENV !== 'production') {
     console.log('📍 HEALTH endpoint hit - server responding')
   }
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    serverReady: serverReady
-  })
+  
+  // Log healthcheck hits in production for debugging
+  if (process.env.NODE_ENV === 'production') {
+    console.log('🏥 Healthcheck received at:', new Date().toISOString())
+  }
+  
+  // Simple text response for better compatibility with healthcheck systems
+  res.status(200).send('OK')
 })
 app.head('/health', (req, res) => {
   res.sendStatus(200)
@@ -414,6 +417,40 @@ const startServer = async () => {
         console.log(`🔥 Testing: http://localhost:${port}/ping`)
         console.log(`🔥 Testing: http://localhost:${port}/health`)
         console.log(`🔥 Testing: http://localhost:${port}/debug`)
+        
+        // Actually test the health endpoint
+        try {
+          const http = require('http')
+          const options = {
+            hostname: 'localhost',
+            port: port,
+            path: '/health',
+            method: 'GET',
+            timeout: 5000
+          }
+          
+          const req = http.request(options, (res) => {
+            console.log(`🔥 HEALTH TEST: Status ${res.statusCode}`)
+            if (res.statusCode === 200) {
+              console.log('✅ Health endpoint responding correctly')
+            } else {
+              console.log(`⚠️ Health endpoint returned ${res.statusCode}`)
+            }
+          })
+          
+          req.on('error', (err) => {
+            console.log(`❌ Health endpoint test failed: ${err.message}`)
+          })
+          
+          req.on('timeout', () => {
+            console.log('❌ Health endpoint test timeout')
+            req.destroy()
+          })
+          
+          req.end()
+        } catch (testError) {
+          console.log(`❌ Health endpoint test error: ${testError.message}`)
+        }
       }, 1000)
       
       // Routes and static files already mounted before server starts

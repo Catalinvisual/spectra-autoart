@@ -55,7 +55,7 @@ function healthCheck() {
     port: process.env.PORT || 8080,
     path: '/health',
     method: 'GET',
-    timeout: 5000
+    timeout: 10000 // Increased timeout to 10 seconds
   };
 
   const req = http.request(options, (res) => {
@@ -71,7 +71,7 @@ function healthCheck() {
   });
 
   req.on('timeout', () => {
-    console.log('❌ Health check timeout');
+    console.log('❌ Health check timeout after 10 seconds');
     req.destroy();
   });
 
