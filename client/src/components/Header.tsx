@@ -36,6 +36,16 @@ const Header = () => {
     setIsMobileMenuOpen(false)
   }
 
+  const handleLogoClick = () => {
+    // Dacă suntem pe pagina principală, scroll la hero
+    // Dacă suntem pe altă pagină, navighează la home
+    if (window.location.pathname === '/') {
+      scrollToSection('hero')
+    } else {
+      navigate('/')
+    }
+  }
+
   const navigateToAdmin = () => {
     navigate('/admin')
     setIsMobileMenuOpen(false)
@@ -46,7 +56,7 @@ const Header = () => {
   return (
     <header className="header">
       <nav className="nav">
-        <div className="logo" onClick={() => scrollToSection('hero')} style={{ cursor: 'pointer' }}>
+        <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
           <img 
             src={spectraHeader} 
             alt="Spectra AutoArt" 
