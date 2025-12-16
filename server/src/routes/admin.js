@@ -547,10 +547,10 @@ router.patch('/bookings/:id', async (req, res, next) => {
     const phoneIndex = findCol('Phone') !== -1 ? findCol('Phone') : 3
     const dateIndex = findCol('Date') !== -1 ? findCol('Date') : 4
     const timeIndex = findCol('Time') !== -1 ? findCol('Time') : 5
-    const makeIndex = findCol('Make','Marca','Vehicle_Make')
-    const modelIndex = findCol('Model','Vehicle_Model')
-    const typeIndex = findCol('Type','Vehicle_Type')
-    const bodyIndex = findCol('Body','Caroserie','Body_Type')
+    const makeIndex = findCol('Make','Marca','Vehicle_Make') !== -1 ? findCol('Make','Marca','Vehicle_Make') : 10
+    const modelIndex = findCol('Model','Vehicle_Model') !== -1 ? findCol('Model','Vehicle_Model') : 11
+    const typeIndex = findCol('Type','Vehicle_Type') !== -1 ? findCol('Type','Vehicle_Type') : 12
+    const bodyIndex = findCol('Body','Caroserie','Body_Type') !== -1 ? findCol('Body','Caroserie','Body_Type') : 13
     const servicesIndex = findCol('Services','Service','Diensten') !== -1 ? findCol('Services','Service','Diensten') : 6
     const totalIndex = findCol('Total','Amount') !== -1 ? findCol('Total','Amount') : 7
     const statusIndex = findCol('Status') !== -1 ? findCol('Status') : 8
@@ -603,6 +603,7 @@ router.patch('/bookings/:id', async (req, res, next) => {
     console.log(`🔍 DEBUG: Name original: ${originalName}, new: ${nameIn}`)
     console.log(`🔍 DEBUG: Email original: ${originalEmail}, new: ${emailIn}`)
     console.log(`🔍 DEBUG: Phone original: ${originalPhone}, new: ${phoneIn}`)
+    console.log(`🔍 DEBUG: Services original: ${originalServices}, indices - make:${makeIndex}, model:${modelIndex}, body:${bodyIndex}, type:${typeIndex}, services:${servicesIndex}`)
     
     // Verificăm dacă există modificări
     const hasChanges = 
@@ -739,6 +740,7 @@ router.patch('/bookings/:id', async (req, res, next) => {
     const timeVal = updatedData[actualUpdatedRowIndex][timeIndex] || ''
     // Use ORIGINAL services from when booking was first created to ensure consistent pricing
     const servicesString = originalServices || ''
+    console.log(`📧 DEBUG Using ORIGINAL services string: "${servicesString}" (not updated: "${updatedData[actualUpdatedRowIndex][servicesIndex] || 'N/A'}")`)
     
     // 🔍 VERIFICARE CRITICĂ: Comparăm valorile actualizate cu cele trimise
     console.log(`🔍 VERIFICARE FINALĂ: Comparam valorile din Google Sheets cu cele trimise:`)
@@ -779,8 +781,8 @@ router.patch('/bookings/:id', async (req, res, next) => {
     
     console.log(`✅ VERIFICARE FINALĂ: Toate modificările au fost salvate cu succes în Google Sheets!`)
     
-    // Define body variable before using it in services mapping
-    const body = bodyIndex !== -1 ? (updatedData[actualUpdatedRowIndex][bodyIndex] || '') : (bodyIn || '')
+    // Use ORIGINAL body type for consistent pricing (not updated body)
+    const body = originalBody || ''
 
     // Use EXACT same logic as admin panel for services
     let servicesArr = []
@@ -813,6 +815,7 @@ router.patch('/bookings/:id', async (req, res, next) => {
       console.log(`📧 DEBUG about to call formatServicesForEmail with body:`, body)
       
       // Use EXACT same logic as admin panel for services
+      console.log(`📧 DEBUG Using ORIGINAL body type for pricing: "${body}" (not updated: "${bodyIn}")`)
       servicesArr = await formatServicesForEmail(tokens, body)
       console.log(`📧 DEBUG servicesArr (admin panel logic):`, JSON.stringify(servicesArr, null, 2))
     }
@@ -837,6 +840,7 @@ router.patch('/bookings/:id', async (req, res, next) => {
     // Debug log for bookingData and services
     console.log(`📧 DEBUG bookingData:`, JSON.stringify(bookingData, null, 2))
     console.log(`📧 DEBUG servicesArr:`, JSON.stringify(servicesArr, null, 2))
+    console.log(`📧 DEBUG Original data used - Make:"${bookingData.make}", Model:"${bookingData.model}", Body:"${bookingData.body}", Type:"${bookingData.type}"`)
     
     // Verificare detaliată a fiecărui serviciu
     if (servicesArr && servicesArr.length > 0) {
