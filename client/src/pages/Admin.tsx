@@ -522,20 +522,19 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
       // Marchează operațiunea ca în desfășurare
       setBookingOperations(prev => ({ ...prev, deleting: [...prev.deleting, id] }))
       
-      // Optimizare: elimină imediat din UI pentru feedback instant
+      // Apel către server pentru ștergere
+      await adminAPI.deleteBooking(id)
+      
+      // După confirmarea ștergerii, elimină din UI
       setBookings(prev => prev.filter((booking: Booking) => booking.id !== id))
       toast.showSuccess(t('admin.bookingDeleted'))
-      
-      // Apoi șterge de pe server în background
-      await adminAPI.deleteBooking(id)
       
       // Notifică componenta părinte pentru refresh complet (backup)
       onDeleteBooking(id)
     } catch (error) {
       console.error('Error deleting booking:', error)
-      // Re-adaugă booking-ul înapoi dacă ștergerea eșuează
       toast.showError(t('admin.errorDeletingBooking'))
-      // Reîmprospătează lista completă
+      // Reîmprospătează lista completă în caz de eroare
       loadBookings()
     } finally {
       // Elimină din lista de operațiuni active

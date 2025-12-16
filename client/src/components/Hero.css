@@ -32,7 +32,7 @@
     rgba(11, 15, 20, 0.9) 100%
   );
   z-index: 1;
-  backdrop-filter: blur(0.3px);
+  /* backdrop-filter: blur(0.3px); */ /* Decomentat pentru performanță */
 }
 
 .hero-content {
@@ -125,7 +125,7 @@
   text-decoration: none;
   font-weight: 700;
   font-size: 1.2rem;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   border: none;
   cursor: pointer;
   position: relative;
@@ -168,7 +168,7 @@
 .button-icon {
   position: relative;
   z-index: 2;
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease;
 }
 
 .cta-button:hover .button-icon {
@@ -188,7 +188,7 @@
 .gradient-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
+  filter: blur(60px);
   opacity: 0.4;
   animation: float 6s ease-in-out infinite;
 }

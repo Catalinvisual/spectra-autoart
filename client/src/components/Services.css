@@ -33,7 +33,7 @@
   border-radius: 16px;
   padding: 1.5rem;
   text-align: center;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
   animation: fadeInUp 0.6s ease-out forwards;
@@ -58,7 +58,7 @@
   bottom: 0;
   background: var(--gradient);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
   z-index: 1;
 }
 
@@ -82,7 +82,7 @@
   justify-content: center;
   color: var(--bg);
   font-size: 1.5rem;
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease;
 }
 
 .service-card:hover .service-icon {
@@ -145,7 +145,7 @@
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   margin-top: 0.8rem;
   /* transform: translateY(-2px);
   box-shadow: 0 0 15px rgba(0, 229, 255, 0.3); */

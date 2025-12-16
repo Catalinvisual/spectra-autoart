@@ -40,7 +40,7 @@
     rgba(0, 229, 255, 0.1) 60%,
     rgba(11, 15, 20, 0.8) 100%
   );
-  backdrop-filter: blur(0.5px);
+  /* backdrop-filter: blur(0.5px); */ /* Decomentat pentru performanță */
 }
 
 .overlay-particles {
@@ -54,7 +54,7 @@
     radial-gradient(1px 1px at 80% 70%, rgba(0, 153, 204, 0.4), transparent),
     radial-gradient(1px 1px at 40% 90%, rgba(102, 217, 255, 0.2), transparent);
   background-size: 200px 200px, 150px 150px, 100px 100px;
-  animation: particleFloat 25s linear infinite;
+  animation: particleFloat 30s linear infinite;
 }
 
 @keyframes particleFloat {
@@ -86,7 +86,7 @@
     rgba(255, 255, 255, 0.1) 50%,
     transparent 100%
   );
-  animation: lightSweep 8s ease-in-out infinite;
+  animation: lightSweep 12s ease-in-out infinite;
 }
 
 .streak-1 {
@@ -129,7 +129,7 @@
     rgba(255, 255, 255, 0.03) 75%,
     transparent 100%
   );
-  animation: reflectionShift 12s ease-in-out infinite;
+  animation: reflectionShift 18s ease-in-out infinite;
 }
 
 @keyframes reflectionShift {
