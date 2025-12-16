@@ -164,17 +164,31 @@ const Admin: React.FC = () => {
   const confirmDeleteBooking = async () => {
     if (bookingToDelete) {
       try {
+        // Marchează operațiunea ca în desfășurare
+        setBookingOperations(prev => ({ ...prev, deleting: [...prev.deleting, bookingToDelete] }))
+        
+        // Apel către server pentru ștergere
         await adminAPI.deleteBooking(bookingToDelete)
+        
+        // După confirmarea ștergerii, elimină din UI
+        setBookings(prev => prev.filter((booking: Booking) => booking.id !== bookingToDelete))
         toast.showSuccess(t('admin.bookingDeleted'))
         
-        // Refresh bookings list after successful deletion
-        setBookingsRefreshKey(prev => prev + 1)
+        // Notifică componenta părinte pentru refresh complet (backup)
+        onDeleteBooking(bookingToDelete)
       } catch (error) {
         console.error('Error deleting booking:', error)
         toast.showError(t('admin.errorDeletingBooking'))
+        // Reîmprospătează lista completă în caz de eroare
+        loadBookings()
       } finally {
         setShowDeleteModal(false)
         setBookingToDelete(null)
+        // Elimină din lista de operațiuni active
+        setBookingOperations(prev => ({ 
+          ...prev, 
+          deleting: prev.deleting.filter(id => id !== bookingToDelete) 
+        }))
       }
     }
   }
@@ -873,7 +887,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
               
 
               <button 
-                onClick={() => handleDeleteBooking(booking.id)} 
+                onClick={() => deleteBooking(booking.id)} 
                 className="delete-btn"
                 title={t('admin.deleteBooking')}
                 disabled={bookingOperations.updating.includes(booking.id) || bookingOperations.deleting.includes(booking.id)}
