@@ -905,9 +905,19 @@ router.patch('/bookings/:id', async (req, res, next) => {
         console.log('🎯 DEBUG: emailService.emailTemplates.clientCancellation type:', typeof emailService.emailTemplates?.clientCancellation)
         const cancellationHtml = emailService.emailTemplates.clientCancellation(bookingData, servicesArr)
         console.log('🎯 DEBUG: clientCancellation template returned:', cancellationHtml?.substring(0, 100))
+          // Get the subject from the template based on locale
+          const lang = String(bookingData?.locale || 'nl').toLowerCase()
+          const subject = {
+            nl: 'Afspraak Geannuleerd - Spectra AutoArt',
+            en: 'Booking Cancelled - Spectra AutoArt',
+            es: 'Reserva Cancelada - Spectra AutoArt',
+            pl: 'Rezerwacja Anulowana - Spectra AutoArt',
+            ro: 'Programare Anulată - Spectra AutoArt'
+          }[lang] || 'Afspraak Geannuleerd - Spectra AutoArt'
+          
           bookingEmailResult = await emailService.sendEmail(
             bookingData.user.email,
-            'Programare Anulată - Spectra AutoArt',
+            subject,
             cancellationHtml
           )
           console.log('📧 Client cancellation email result:', bookingEmailResult)
@@ -926,7 +936,7 @@ router.patch('/bookings/:id', async (req, res, next) => {
           try {
             adminEmailResult = await emailService.sendEmail({
               to: process.env.ADMIN_EMAIL || 'admin@spectraautoart.ro',
-              subject: 'Programare Anulată - Spectra AutoArt',
+              subject: subject,
               html: emailService.emailTemplates.adminCancellation(bookingData, servicesArr)
             })
             console.log('📧 Admin cancellation email result:', adminEmailResult)
