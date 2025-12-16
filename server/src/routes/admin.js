@@ -554,6 +554,22 @@ router.patch('/bookings/:id', async (req, res, next) => {
     const servicesIndex = findCol('Services','Service','Diensten') !== -1 ? findCol('Services','Service','Diensten') : 6
     const totalIndex = findCol('Total','Amount') !== -1 ? findCol('Total','Amount') : 7
     const statusIndex = findCol('Status') !== -1 ? findCol('Status') : 8
+    
+    // Debug logging pentru a vedea ce coloane sunt găsite
+    console.log(`🔍 Column search results:`)
+    console.log(`   ID: ${findCol('ID')} -> using index: ${idIndex}`)
+    console.log(`   Name: ${findCol('Name','Customer_Name','Client_Name')} -> using index: ${nameIndex}`)
+    console.log(`   Email: ${findCol('Email')} -> using index: ${emailIndex}`)
+    console.log(`   Phone: ${findCol('Phone')} -> using index: ${phoneIndex}`)
+    console.log(`   Date: ${findCol('Date')} -> using index: ${dateIndex}`)
+    console.log(`   Time: ${findCol('Time')} -> using index: ${timeIndex}`)
+    console.log(`   Make: ${findCol('Make','Marca','Vehicle_Make')} -> using index: ${makeIndex}`)
+    console.log(`   Model: ${findCol('Model','Vehicle_Model')} -> using index: ${modelIndex}`)
+    console.log(`   Type: ${findCol('Type','Vehicle_Type')} -> using index: ${typeIndex}`)
+    console.log(`   Body: ${findCol('Body','Caroserie','Body_Type')} -> using index: ${bodyIndex}`)
+    console.log(`   Services: ${findCol('Services','Service','Diensten')} -> using index: ${servicesIndex}`)
+    console.log(`   Total: ${findCol('Total','Amount')} -> using index: ${totalIndex}`)
+    console.log(`   Status: ${findCol('Status')} -> using index: ${statusIndex}`)
     const targetId = String(id).trim()
     const rowIndex = data.slice(1).findIndex(row => String(row[idIndex] || '').trim() === targetId)
     if (rowIndex === -1) {
@@ -563,7 +579,8 @@ router.patch('/bookings/:id', async (req, res, next) => {
     console.log(`🔍 DEBUG: Row index in data array: ${actualRowIndex}, Total data rows: ${data.length}`)
     console.log(`🔍 Before update - Date: ${data[actualRowIndex][dateIndex]}, Time: ${data[actualRowIndex][timeIndex]}`)
     
-    // CRITICAL: Afișăm rândul complet înainte de modificare
+    // CRITICAL: Afișăm header-ul și rândul complet înainte de modificare
+    console.log(`📊 HEADER ROW:`, data[0]);
     console.log(`📊 ROW ${actualRowIndex} COMPLETE DATA:`, data[actualRowIndex]);
     console.log(`📊 Column indices: id:${idIndex}, name:${nameIndex}, email:${emailIndex}, phone:${phoneIndex}, date:${dateIndex}, time:${timeIndex}, make:${makeIndex}, model:${modelIndex}, type:${typeIndex}, body:${bodyIndex}, services:${servicesIndex}, total:${totalIndex}, status:${statusIndex}`);
     console.log(`📊 Column mapping:`, {
