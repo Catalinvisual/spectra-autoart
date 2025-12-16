@@ -167,7 +167,7 @@ const Admin: React.FC = () => {
         // Apel către server pentru ștergere
         await adminAPI.deleteBooking(bookingToDelete)
         
-        // Reîmprospătează lista completă pentru sincronizare completă
+        // Reîmprospătează lista pentru sincronizare completă (instantă)
         setBookingsRefreshKey(prev => prev + 1)
         
         toast.showSuccess(t('admin.bookingDeleted'))
@@ -609,10 +609,13 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
   }
 
   const handleDeleteBookingLocal = (bookingId: string) => {
-    // Actualizează lista locală imediat
+    // Marchează operațiunea de ștergere ca în desfășurare
+    setBookingOperations(prev => ({ ...prev, deleting: [...prev.deleting, bookingId] }))
+    
+    // Șterge instant din lista locală pentru feedback imediat
     setBookings(prevBookings => prevBookings.filter(booking => booking.id !== bookingId))
     
-    // Apel callback pentru ștergerea pe server
+    // Apel callback pentru ștergerea pe server (deschide modalul de confirmare)
     if (onDeleteBooking) {
       onDeleteBooking(bookingId)
     }
@@ -671,6 +674,11 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     setEditingBooking(null)
     setOriginalBooking(null)
     setShowEditModal(false)
+  }
+
+  // Funcție pentru curățarea operațiunilor blocate din BookingsManagement
+  const clearLocalBlockedOperations = () => {
+    setBookingOperations({ updating: [], deleting: [] })
   }
 
   // Calendar sync is handled by useCalendarSync hook - no need for local updates
@@ -796,6 +804,15 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
           <span className="stat-item">
             <strong>{bookings.filter(b => b.status === 'pending').length}</strong> {t('admin.pending')}
           </span>
+          {(bookingOperations.updating.length > 0 || bookingOperations.deleting.length > 0) && (
+            <button 
+              onClick={clearLocalBlockedOperations}
+              className="clear-operations-btn"
+              title={t('admin.clearBlockedOperations') || 'Curăță operațiunile blocate'}
+            >
+              🔄 {t('admin.clear') || 'Curăță'}
+            </button>
+          )}
           <span className="stat-item">
             <strong>{bookings.filter(b => b.status === 'confirmed').length}</strong> {t('admin.confirmed')}
           </span>

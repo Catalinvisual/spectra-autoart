@@ -291,7 +291,8 @@ h2:hover {
   /* Ensure modal stays centered on screen */
   margin: auto;
   max-height: 90vh;
-  max-width: 500px;
+  max-width: 400px;
+  width: 90vw;
   /* Prevent scrolling issues */
   position: relative;
   top: auto;
@@ -301,6 +302,47 @@ h2:hover {
 .delete-warning {
   text-align: center;
   padding: 20px 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  padding: 20px;
+  flex-wrap: wrap;
+}
+
+.modal-actions button {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  min-width: 120px;
+}
+
+.delete-confirm-btn {
+  background: linear-gradient(135deg, #ff4757 0%, #ff3838 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+}
+
+.delete-confirm-btn:hover {
+  background: linear-gradient(135deg, #ff3838 0%, #ff2f2f 100%);
+  box-shadow: 0 6px 20px rgba(255, 71, 87, 0.4);
+}
+
+.cancel-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ccc;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
 }
 
 .warning-icon {
@@ -381,8 +423,8 @@ h2:hover {
   background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding: clamp(8px, 2vh, 24px) 16px 16px;
+  align-items: center;
+  padding: clamp(8px, 2vh, 24px) 16px;
   z-index: 9999;
 }
 
@@ -427,9 +469,76 @@ h2:hover {
   max-height: calc(100vh - 112px);
 }
 
+@media (max-width: 768px) {
+  .delete-modal {
+    max-width: 350px;
+    width: 95vw;
+    margin: 0 auto;
+  }
+  
+  .modal-overlay {
+    padding: clamp(10px, 3vh, 20px) 16px;
+  }
+  
+  .delete-modal .modal-header {
+    padding: 15px 20px;
+  }
+  
+  .delete-modal .modal-header h2 {
+    font-size: 1.4rem;
+  }
+  
+  .delete-modal .modal-body {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .delete-modal {
+    max-width: 300px;
+    width: 92vw;
+    margin: 0 auto;
+  }
+  
+  .modal-overlay {
+    padding: clamp(15px, 5vh, 30px) 12px;
+  }
+  
+  .delete-warning {
+    padding: 15px 0;
+  }
+  
+  .warning-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+  }
+  
+  .delete-modal .modal-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .delete-modal .modal-body p {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  
+  .modal-actions {
+    padding: 15px;
+    gap: 10px;
+  }
+  
+  .modal-actions button {
+    padding: 10px 20px;
+    font-size: 13px;
+    min-width: 100px;
+    width: 100%;
+    max-width: 140px;
+  }
+}
+
 @media (max-width: 600px) {
   .modal-overlay {
-    padding: clamp(6px, 2vh, 16px) 12px 12px;
+    padding: clamp(6px, 2vh, 16px) 12px;
   }
   .modal-content {
     width: 100%;
@@ -726,11 +835,29 @@ h2:hover {
 .bookings-stats {
   display: flex;
   gap: 20px;
+  align-items: center;
 }
 
 .stat-item {
   color: rgba(255, 255, 255, 0.9);
   font-size: 14px;
+}
+
+.clear-operations-btn {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(255, 71, 87, 0.3);
+}
+
+.clear-operations-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
 }
 
 .stat-item strong {
