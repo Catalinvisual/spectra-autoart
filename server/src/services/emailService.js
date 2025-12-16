@@ -496,9 +496,12 @@ const emailTemplates = {
     })()
     const formatServices = (services) => {
       return services.map(service => `
-        <div style="margin-bottom: 15px; padding: 16px; background-color: #f8f9fa; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #dee2e6;">
-          <span style="font-weight: 600; color: #212529; font-size: 16px;">${service.name}</span>
-          <span style="color: #007bff; font-weight: 700; font-size: 18px;">€${service.price || 0}</span>
+        <div style="margin-bottom: 15px; padding: 16px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; color: #212529; font-size: 16px; margin-right: 20px; flex: 1;">${service.name}</span>
+            <span style="color: #007bff; font-weight: 700; font-size: 18px; margin-left: 20px; white-space: nowrap;">€${service.price || 0}</span>
+          </div>
+          ${service.description ? `<div style="margin-top: 8px; font-size: 14px; color: #6c757d;">${service.description}</div>` : ''}
         </div>
       `).join('')
     }
@@ -670,9 +673,12 @@ const emailTemplates = {
     })()
     const formatServices = (services) => {
       return services.map(service => `
-        <div style="margin-bottom: 15px; padding: 16px; background-color: #f8f9fa; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #dee2e6;">
-          <span style="font-weight: 600; color: #212529; font-size: 16px;">${service.name}</span>
-          <span style="color: #007bff; font-weight: 700; font-size: 18px;">€${service.price || 0}</span>
+        <div style="margin-bottom: 15px; padding: 16px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; color: #212529; font-size: 16px; margin-right: 20px; flex: 1;">${service.name}</span>
+            <span style="color: #007bff; font-weight: 700; font-size: 18px; margin-left: 20px; white-space: nowrap;">€${service.price || 0}</span>
+          </div>
+          ${service.description ? `<div style="margin-top: 8px; font-size: 14px; color: #6c757d;">${service.description}</div>` : ''}
         </div>
       `).join('')
     }
@@ -805,8 +811,11 @@ const emailTemplates = {
     const formatServices = (services) => {
       return services.map(service => `
         <div style="margin-bottom: 8px; padding: 8px; background-color: #fff3cd; border-radius: 4px; border-left: 3px solid #ffc107;">
-          <strong>${service.name}</strong> - €${service.price || 'N/A'}
-          ${service.description ? `<br><small>${service.description}</small>` : ''}
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong style="margin-right: 15px; flex: 1;">${service.name}</strong>
+            <span style="color: #dc3545; font-weight: 700; white-space: nowrap;">€${service.price || 'N/A'}</span>
+          </div>
+          ${service.description ? `<div style="margin-top: 4px; font-size: 12px; color: #6c757d;">${service.description}</div>` : ''}
         </div>
       `).join('')
     }
@@ -991,9 +1000,12 @@ const emailTemplates = {
     })()
     const formatServices = (services) => {
       return services.map(service => `
-        <div style="margin-bottom: 15px; padding: 16px; background-color: #f8f9fa; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #dee2e6;">
-          <span style="font-weight: 600; color: #212529; font-size: 16px;">${service.name}</span>
-          <span style="color: #dc3545; font-weight: 700; font-size: 18px;">€${service.price || 0}</span>
+        <div style="margin-bottom: 15px; padding: 16px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; color: #212529; font-size: 16px; margin-right: 20px; flex: 1;">${service.name}</span>
+            <span style="color: #dc3545; font-weight: 700; font-size: 18px; margin-left: 20px; white-space: nowrap;">€${service.price || 0}</span>
+          </div>
+          ${service.description ? `<div style="margin-top: 8px; font-size: 14px; color: #6c757d;">${service.description}</div>` : ''}
         </div>
       `).join('')
     }
