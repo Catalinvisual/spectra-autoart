@@ -95,6 +95,57 @@ async function ensureEnrichmentCache() {
   }
 }
 
+// Function to format services for email using exact same logic as admin panel
+async function formatServicesForEmail(services, bodyType) {
+  console.log(`🔧 formatServicesForEmail called with services:`, services, `bodyType:`, bodyType)
+  await ensureEnrichmentCache()
+  console.log(`🔧 Cache ensured, cache size:`, bookingsEnrichmentCache.idToName.size)
+  
+  const servicesArray = []
+  const bodyTypeKey = String(bodyType || '').toLowerCase()
+  console.log(`🔧 bodyTypeKey:`, bodyTypeKey)
+  
+  for (const serviceId of services) {
+    const sid = String(serviceId).trim()
+    console.log(`🔧 Processing serviceId:`, sid)
+    let sname = sid
+    let price = 0
+    
+    // Get service name from cache
+    if (bookingsEnrichmentCache.idToName.has(sid)) {
+      sname = bookingsEnrichmentCache.idToName.get(sid)
+      console.log(`🔧 Found name by ID:`, sname)
+    } else if (bookingsEnrichmentCache.nameToId.has(sid.toLowerCase())) {
+      const actualId = bookingsEnrichmentCache.nameToId.get(sid.toLowerCase())
+      sname = bookingsEnrichmentCache.idToName.get(actualId) || sid
+      console.log(`🔧 Found name by name lookup:`, sname)
+    }
+    
+    // Get body-specific price first
+    if (bodyTypeKey && sid) {
+      const bodySpecificKey = `${sid}:${bodyTypeKey}`
+      price = bookingsEnrichmentCache.serviceBodyPrices.get(bodySpecificKey) || 0
+      console.log(`🔧 Body-specific price for key ${bodySpecificKey}:`, price)
+    }
+    
+    // Fallback to minimum price if body-specific price not found
+    if (!price && sid) {
+      price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
+      console.log(`🔧 Minimum price fallback:`, price)
+    }
+    
+    console.log(`🔧 Final service: name=${sname}, price=${price}`)
+    servicesArray.push({
+      id: sid,
+      name: sname,
+      price: price
+    })
+  }
+  
+  console.log(`🔧 formatServicesForEmail result:`, servicesArray)
+  return servicesArray
+}
+
 // Admin login
 router.post('/auth/login', async (req, res) => {
   try {
@@ -728,6 +779,7 @@ router.patch('/bookings/:id', async (req, res, next) => {
     // Define body variable before using it in services mapping
     const body = bodyIndex !== -1 ? (updatedData[actualUpdatedRowIndex][bodyIndex] || '') : (bodyIn || '')
 
+    // Use EXACT same logic as admin panel for services
     let servicesArr = []
     console.log(`📧 DEBUG servicesString:`, servicesString)
     if (servicesString && typeof servicesString === 'string') {
@@ -755,134 +807,11 @@ router.patch('/bookings/:id', async (req, res, next) => {
         tokens = cleanServices.split(/[,|;]+/)
       }
       console.log(`📧 DEBUG tokens:`, tokens)
-      console.log(`📧 DEBUG vehicleServicesService available:`, !!vehicleServicesService)
-      console.log(`📧 DEBUG vehicleServicesService.services:`, vehicleServicesService?.services?.length || 0)
+      console.log(`📧 DEBUG about to call formatServicesForEmail with body:`, body)
       
-      // Load services if not already loaded
-      if (!vehicleServicesService.services || vehicleServicesService.services.length === 0) {
-        console.log(`📧 DEBUG Loading services from Google Sheets...`)
-        try {
-          await vehicleServicesService.loadFromGoogleSheets()
-          console.log(`📧 DEBUG Services loaded:`, vehicleServicesService.services.length)
-        } catch (error) {
-          console.error(`❌ Error loading services:`, error)
-          console.log(`📧 DEBUG Using demo data as fallback...`)
-          // Folosim demo data ca fallback
-          try {
-            const demoResult = await vehicleServicesService.initializeDemoData()
-            console.log(`📧 DEBUG Demo data loaded:`, demoResult)
-            console.log(`📧 DEBUG After demo data - services:`, vehicleServicesService?.services?.length || 0)
-            console.log(`📧 DEBUG After demo data - servicePrices:`, vehicleServicesService?.servicePrices?.length || 0)
-            console.log(`📧 DEBUG After demo data - bodyTypes:`, vehicleServicesService?.bodyTypes?.length || 0)
-          } catch (demoError) {
-            console.error(`❌ Error loading demo data:`, demoError)
-          }
-        }
-      }
-      
-      // Use the correct method to get services with prices for the specific body type
-      const bodyTypeKey = String(body || '').toLowerCase()
-      console.log(`📧 DEBUG bodyTypeKey: "${bodyTypeKey}"`)
-      console.log(`📧 DEBUG vehicleServicesService.services:`, vehicleServicesService?.services?.length || 0)
-      console.log(`📧 DEBUG vehicleServicesService.servicePrices:`, vehicleServicesService?.servicePrices?.length || 0)
-      console.log(`📧 DEBUG vehicleServicesService.bodyTypes:`, vehicleServicesService?.bodyTypes?.length || 0)
-      
-      let servicesWithPrices = []
-      if (vehicleServicesService && typeof vehicleServicesService.getServicesByBodyType === 'function') {
-        console.log(`📧 DEBUG Available body types:`, vehicleServicesService.bodyTypes?.map(bt => ({key: bt.key, name: bt.name})) || [])
-        console.log(`📧 DEBUG Calling getServicesByBodyType with: "${bodyTypeKey}"`)
-        servicesWithPrices = vehicleServicesService.getServicesByBodyType(bodyTypeKey)
-        console.log(`📧 DEBUG servicesWithPrices from getServicesByBodyType:`, servicesWithPrices.length)
-        if (servicesWithPrices.length === 0) {
-          // Try with mapped body type
-          if (vehicleServicesService.mapFrontendKeyToBodyType) {
-            const mappedBodyType = vehicleServicesService.mapFrontendKeyToBodyType(bodyTypeKey)
-            console.log(`📧 DEBUG Mapped body type:`, mappedBodyType)
-            if (mappedBodyType && mappedBodyType.key) {
-              servicesWithPrices = vehicleServicesService.getServicesByBodyType(mappedBodyType.key)
-              console.log(`📧 DEBUG servicesWithPrices with mapped key:`, servicesWithPrices.length)
-            }
-          }
-        }
-        if (servicesWithPrices.length > 0) {
-          console.log(`📧 DEBUG First service with prices:`, JSON.stringify(servicesWithPrices[0], null, 2))
-        }
-      } else {
-        console.log(`⚠️ DEBUG getServicesByBodyType method not available`)
-      }
-      
-      // Dacă nu avem servicii cu prețuri, folosim getServiceBySlug pentru fiecare serviciu
-      if (servicesWithPrices.length === 0 && vehicleServicesService && vehicleServicesService.services.length > 0) {
-        console.log(`📧 DEBUG Fallback: using getServiceBySlug for each service`)
-        servicesWithPrices = vehicleServicesService.services
-          .filter(service => service.is_active)
-          .map(service => vehicleServicesService.getServiceBySlug(service.slug))
-          .filter(service => service !== null)
-        console.log(`📧 DEBUG servicesWithPrices from fallback:`, servicesWithPrices.length)
-      }
-      
-      // Create a map for quick lookup by name
-      const servicesByName = new Map()
-      // Also create a map by ID for fallback
-      const servicesById = new Map()
-      console.log(`📧 DEBUG servicesWithPrices.length:`, servicesWithPrices.length)
-      if (servicesWithPrices && servicesWithPrices.length > 0) {
-        servicesWithPrices.forEach(service => {
-          // Map by name (lowercase)
-          servicesByName.set(service.name.toLowerCase(), service)
-          if (service.name_en) {
-            servicesByName.set(service.name_en.toLowerCase(), service)
-          }
-          // Map by ID for fallback
-          servicesById.set(String(service.id), service)
-        })
-      }
-      
-      // Log all available services for debugging
-      console.log(`📧 DEBUG Available services in map:`)
-      servicesWithPrices.forEach(service => {
-        console.log(`- name: "${service.name}", id: "${service.id}", hasPrices: ${!!service.prices}`)
-      })
-      
-      console.log(`📧 DEBUG servicesByName keys:`, Array.from(servicesByName.keys()))
-      console.log(`📧 DEBUG servicesById keys:`, Array.from(servicesById.keys()))
-      
-      servicesArr = tokens.map(token => {
-        const trimmed = token.trim()
-        console.log(`📧 DEBUG Processing token: "${trimmed}"`)
-        
-        // Try to find service by name first, then by ID as fallback
-        let service = servicesByName.get(trimmed.toLowerCase())
-        if (!service) {
-          // Try by ID (in case the token is a service ID)
-          service = servicesById.get(trimmed)
-          console.log(`📧 DEBUG Trying by ID: "${trimmed}" - found:`, !!service)
-        }
-        console.log(`📧 DEBUG Service found:`, !!service)
-        
-        if (service) {
-          console.log(`📧 DEBUG Service details: name="${service.name}", hasPrices="${!!service.prices}", pricesLength="${service.prices?.length || 0}"`)
-          
-          // Calculăm prețul bazat pe body type, similar cu public.js
-          const resolvedBodyKey = String(body || '').toLowerCase()
-          const priceEntry = service.prices && Array.isArray(service.prices)
-            ? service.prices.find(p => String(p.body_type_key).toLowerCase() === resolvedBodyKey && p.is_active)
-            : null
-          const price = priceEntry && priceEntry.price_min !== undefined ? Number(priceEntry.price_min) : 0
-          
-          console.log(`💰 DEBUG Service '${trimmed}' price for body '${resolvedBodyKey}':`, price)
-          return { 
-            name: service.name, 
-            price: price 
-          }
-        } else {
-          console.log(`⚠️ DEBUG Service not found for token: "${trimmed}"`)
-          return { 
-            name: trimmed, 
-            price: 0 
-          }
-        }
-      }).filter(service => service.name.length > 0)
+      // Use EXACT same logic as admin panel for services
+      servicesArr = await formatServicesForEmail(tokens, body)
+      console.log(`📧 DEBUG servicesArr (admin panel logic):`, JSON.stringify(servicesArr, null, 2))
     }
 
     const bookingData = {

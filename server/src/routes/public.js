@@ -10,6 +10,135 @@ import { translateMultipleWithDeepL, detectLanguageWithDeepL } from '../services
 import CloudinaryService from '../services/cloudinaryService.js'
 import { sendBookingConfirmation, sendAdminNotification } from '../services/emailService.js'
 
+// Cache for service mapping (same as admin panel)
+let bookingsEnrichmentCache = {
+  idToName: new Map(),
+  nameToId: new Map(),
+  serviceMinPrice: new Map(),
+  serviceBodyPrices: new Map(),
+  lastFetch: 0
+}
+
+// Refresh cache (same logic as admin panel)
+async function ensureEnrichmentCache() {
+  const ttl = 5 * 60 * 1000
+  if (Date.now() - bookingsEnrichmentCache.lastFetch < ttl && bookingsEnrichmentCache.idToName.size > 0) {
+    return
+  }
+  try {
+    const servicesData = await GoogleSheetsService.getData('Vehicle_Services')
+    const pricesData = await GoogleSheetsService.getData('Vehicle_Service_Prices')
+    const idToName = new Map()
+    const nameToId = new Map()
+    const serviceMinPrice = new Map()
+    const serviceBodyPrices = new Map()
+    
+    if (servicesData && servicesData.length > 1) {
+      const hs = servicesData[0]
+      const idIdx = hs.indexOf('ID')
+      const nameNlIdx = hs.indexOf('Name_NL')
+      const nameIdx = nameNlIdx !== -1 ? nameNlIdx : hs.indexOf('Name')
+      if (idIdx !== -1 && nameIdx !== -1) {
+        servicesData.slice(1).forEach(row => {
+          const sid = String(row[idIdx] || '').trim()
+          const sname = String(row[nameIdx] || sid).trim()
+          if (sid) {
+            idToName.set(sid, sname)
+            nameToId.set(sname.toLowerCase(), sid)
+          }
+        })
+      }
+    }
+    
+    if (pricesData && pricesData.length > 1) {
+      const hp = pricesData[0]
+      const sidIdx = hp.indexOf('Service_ID')
+      const pminIdx = hp.indexOf('Price_Min')
+      const activeIdx = hp.indexOf('Is_Active')
+      const bodyTypeKeyIdx = hp.indexOf('Body_Type_Key') || hp.indexOf('body_type_key') || -1
+      
+      if (sidIdx !== -1 && pminIdx !== -1) {
+        pricesData.slice(1).forEach(row => {
+          const sid = String(row[sidIdx] || '').trim()
+          const activeVal = activeIdx !== -1 ? row[activeIdx] : true
+          const isActive = activeIdx === -1 ? true : (activeVal === 'true' || activeVal === true || activeVal === 'TRUE' || activeVal === 'True' || activeVal === 1)
+          const pmin = parseFloat(row[pminIdx]) || 0
+          const bodyTypeKey = bodyTypeKeyIdx !== -1 ? String(row[bodyTypeKeyIdx] || '').trim().toLowerCase() : ''
+          
+          if (!sid) return
+          if (isActive) {
+            // Store minimum price for backward compatibility
+            if (!serviceMinPrice.has(sid)) {
+              serviceMinPrice.set(sid, pmin)
+            } else {
+              const cur = serviceMinPrice.get(sid) || 0
+              serviceMinPrice.set(sid, Math.min(cur, pmin))
+            }
+            
+            // Store price per service-body type combination
+            if (bodyTypeKey) {
+              const key = `${sid}:${bodyTypeKey}`
+              serviceBodyPrices.set(key, pmin)
+            }
+          }
+        })
+      }
+    }
+    
+    bookingsEnrichmentCache = {
+      idToName,
+      nameToId,
+      serviceMinPrice,
+      serviceBodyPrices,
+      lastFetch: Date.now()
+    }
+  } catch (err) {
+    console.warn('⚠️ Failed to refresh enrichment cache:', err?.message || err)
+    bookingsEnrichmentCache.lastFetch = Date.now()
+  }
+}
+
+// Format services exactly like admin panel
+async function formatServicesForEmail(services, bodyType) {
+  await ensureEnrichmentCache()
+  
+  const servicesArray = []
+  const bodyTypeKey = String(bodyType || '').toLowerCase()
+  
+  for (const serviceId of services) {
+    const sid = String(serviceId).trim()
+    let sname = sid
+    let price = 0
+    
+    // Get service name from cache
+    if (bookingsEnrichmentCache.idToName.has(sid)) {
+      sname = bookingsEnrichmentCache.idToName.get(sid)
+    } else if (bookingsEnrichmentCache.nameToId.has(sid.toLowerCase())) {
+      const actualId = bookingsEnrichmentCache.nameToId.get(sid.toLowerCase())
+      sname = bookingsEnrichmentCache.idToName.get(actualId) || sid
+    }
+    
+    // Get body-specific price first
+    if (bodyTypeKey && sid) {
+      const bodySpecificKey = `${sid}:${bodyTypeKey}`
+      price = bookingsEnrichmentCache.serviceBodyPrices.get(bodySpecificKey) || 0
+    }
+    
+    // Fallback to minimum price if body-specific price not found
+    if (!price && sid) {
+      price = bookingsEnrichmentCache.serviceMinPrice.get(sid) || 0
+    }
+    
+    servicesArray.push({
+      id: sid,
+      name: sname,
+      price: price
+    })
+  }
+  
+  return servicesArray
+}
+
 const router = Router()
 
 router.get('/vehicles', async (req, res) => {
@@ -589,11 +718,14 @@ router.post('/bookings', async (req, res) => {
     let servicesListIds = ''
     let total = 0
     let calculatedServices = [] // Array to store services with prices for email
+    
+    // Define selected and bodyKey outside try block for use in sendEmailsAsync
+    const selected = Array.isArray(services) ? services.map(s => String(s)) : []
+    const bodyKeyRaw = String(body || '').trim().toLowerCase()
+    const synonyms = { sedan: 'berlina', wagon: 'break', estate: 'break' }
+    const bodyKey = synonyms[bodyKeyRaw] || bodyKeyRaw
+    
     try {
-      const selected = Array.isArray(services) ? services.map(s => String(s)) : []
-      const bodyKeyRaw = String(body || '').trim().toLowerCase()
-      const synonyms = { sedan: 'berlina', wagon: 'break', estate: 'break' }
-      const bodyKey = synonyms[bodyKeyRaw] || bodyKeyRaw
       const bodyType = vehicleServicesService.mapFrontendKeyToBodyType ? vehicleServicesService.mapFrontendKeyToBodyType(bodyKey) : null
       const normalizedKey = bodyType?.key || bodyKey
       const servicesForBody = vehicleServicesService.getServicesByBodyType ? vehicleServicesService.getServicesByBodyType(normalizedKey) : []
@@ -690,7 +822,7 @@ router.post('/bookings', async (req, res) => {
     };
     
     // Send email notifications asynchronously (fire and forget)
-    const sendEmailsAsync = async () => {
+    const sendEmailsAsync = async (selectedServices, bodyType) => {
       try {
         console.log('📧 Sending email notifications for booking (async):', bookingId);
         
@@ -703,9 +835,9 @@ router.post('/bookings', async (req, res) => {
           return;
         }
         
-        // Use pre-calculated services with prices from the total calculation above
-        const emailServices = calculatedServices || []
-        console.log(`📧 Email services calculated:`, emailServices.map(s => `${s.name}: €${s.price}`).join(', '))
+        // Use EXACT same logic as admin panel for services
+        const emailServices = await formatServicesForEmail(selected, bodyKey)
+        console.log(`📧 Email services calculated (admin panel logic):`, emailServices.map(s => `${s.name}: €${s.price}`).join(', '))
         
         // Send confirmation email to client
         console.log(`📧 Sending client confirmation email to: ${req.body.user.email}`);
@@ -759,7 +891,7 @@ router.post('/bookings', async (req, res) => {
     // Start async operations but don't wait for them
     saveBookingAsync();
     processNewsletterAsync();
-    sendEmailsAsync();
+    sendEmailsAsync(selected, bodyKey);
     
     const totalTime = Date.now() - startTime;
     console.log(`✅ Booking request completed successfully in ${totalTime}ms`);

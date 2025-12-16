@@ -15,12 +15,12 @@ async function testEditBookingWithDemoService() {
   try {
     console.log('Editing booking with data:', JSON.stringify(bookingData, null, 2));
     
-    // Vom edita booking-ul cu ID-ul 176505237 pe care l-am testat mai devreme
-    const response = await fetch('http://localhost:8081/api/admin/bookings/176505237', {
+    // Vom edita booking-ul cu ID-ul 1765838478602 pe care l-am creat mai devreme
+    const response = await fetch('http://localhost:8081/api/admin/bookings/1765838478602', {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.ADMIN_TOKEN || 'admin-token'}`,
+        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQHNwZWN0cmEuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzY1ODQwNTk0LCJleHAiOjE3NjU5MjY5OTR9.Z7ix-iReIjOAegZFtZa_PZfRnlQbCLLfGHXIprp8VlA`,
         'X-Admin-Key': 'admin123'
       },
       body: JSON.stringify(bookingData)

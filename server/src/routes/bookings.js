@@ -1,6 +1,59 @@
 import { Router } from 'express'
 import auth from '../middleware/auth.js'
 import GoogleSheetsService from '../services/googleSheetsService.js'
+import emailService from '../services/emailService.js'
+
+// Cache for booking enrichment data (same as admin panel)
+let bookingsEnrichmentCache = {
+  services: [],
+  lastUpdated: 0
+}
+
+// Function to ensure cache is populated (same as admin panel)
+const ensureEnrichmentCache = async () => {
+  const now = Date.now()
+  if (now - bookingsEnrichmentCache.lastUpdated > 300000) { // 5 minutes
+    try {
+      console.log('🔄 Refreshing bookings enrichment cache...')
+      const servicesData = await GoogleSheetsService.getData('Services')
+      
+      if (servicesData && servicesData.length > 1) {
+        const headers = servicesData[0]
+        const nameIndex = headers.indexOf('Service Name')
+        const bodyTypeIndex = headers.indexOf('Body Type')
+        const priceIndex = headers.indexOf('Price')
+        
+        const servicesMap = new Map()
+        
+        servicesData.slice(1).forEach(row => {
+          const serviceName = row[nameIndex]
+          const bodyType = row[bodyTypeIndex]?.toLowerCase().replace(/\s+/g, '')
+          const price = parseFloat(row[priceIndex]) || 0
+          
+          if (!servicesMap.has(serviceName)) {
+            servicesMap.set(serviceName, {
+              name: serviceName,
+              prices: {},
+              minPrice: Infinity
+            })
+          }
+          
+          const service = servicesMap.get(serviceName)
+          if (bodyType) {
+            service.prices[bodyType] = price
+          }
+          service.minPrice = Math.min(service.minPrice, price)
+        })
+        
+        bookingsEnrichmentCache.services = Array.from(servicesMap.values())
+        bookingsEnrichmentCache.lastUpdated = now
+        console.log(`✅ Cache refreshed with ${bookingsEnrichmentCache.services.length} services`)
+      }
+    } catch (error) {
+      console.error('❌ Failed to refresh enrichment cache:', error)
+    }
+  }
+}
 
 const router = Router()
 
@@ -158,19 +211,176 @@ router.put('/:id/status', auth, async (req, res) => {
       })
     }
 
-    // Demo mode - simulate status update
-    console.log('📋 Demo booking status update:', id, '->', status);
+    console.log('📋 Booking status update:', id, '->', status);
+
+    // Ensure enrichment cache is populated
+    await ensureEnrichmentCache();
+
+    // Get current booking data from Google Sheets
+    const data = await GoogleSheetsService.getData('Bookings')
+    if (!data || data.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'No bookings found' 
+      })
+    }
+
+    const headers = data[0]
+    const idIndex = headers.indexOf('ID')
+    const nameIndex = headers.indexOf('Customer Name')
+    const emailIndex = headers.indexOf('Email')
+    const phoneIndex = headers.indexOf('Phone')
+    const dateIndex = headers.indexOf('Date')
+    const timeIndex = headers.indexOf('Time')
+    const makeIndex = headers.indexOf('Make')
+    const modelIndex = headers.indexOf('Model')
+    const bodyIndex = headers.indexOf('Body')
+    const servicesIndex = headers.indexOf('Services')
+    const totalIndex = headers.indexOf('Total')
+    const statusIndex = headers.indexOf('Status')
+    const localeIndex = headers.indexOf('Locale')
+
+    // Find the booking row
+    const rowIndex = data.slice(1).findIndex(row => row[idIndex] === id)
+    if (rowIndex === -1) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Booking not found' 
+      })
+    }
+
+    const actualRowIndex = rowIndex + 1
+    const currentRow = data[actualRowIndex]
+
+    // Parse services from the stored JSON string
+    let services = []
+    try {
+      services = JSON.parse(currentRow[servicesIndex] || '[]')
+    } catch (e) {
+      console.warn('Failed to parse services JSON, using raw services string')
+      services = currentRow[servicesIndex] ? currentRow[servicesIndex].split(',').map(s => ({ name: s.trim(), price: 0 })) : []
+    }
+
+    // Create booking data object for emails
+    const bookingData = {
+      id: currentRow[idIndex],
+      customer_name: currentRow[nameIndex],
+      user: {
+        email: currentRow[emailIndex],
+        phone: currentRow[phoneIndex]
+      },
+      date: currentRow[dateIndex],
+      time: currentRow[timeIndex],
+      make: currentRow[makeIndex],
+      model: currentRow[modelIndex],
+      body: currentRow[bodyIndex],
+      services: services,
+      total: currentRow[totalIndex],
+      status: status,
+      locale: currentRow[localeIndex] || 'nl'
+    }
+
+    // Update status in Google Sheets
+    data[actualRowIndex][statusIndex] = status
+    await GoogleSheetsService.updateData('Bookings', actualRowIndex, data[actualRowIndex])
+
+    // Force cache refresh
+    console.log(`🔄 Force refreshing cache after booking status update`)
+    GoogleSheetsService.clearCache('Bookings')
+    await GoogleSheetsService.getData('Bookings')
+
+    // Send emails based on status change
+    if (status === 'cancelled') {
+      console.log('📧 Sending cancellation emails...')
+      
+      // Parse services - could be a string (ID) or array
+      let servicesList = []
+      if (typeof services === 'string') {
+        // Single service ID, find it in cache
+        const serviceId = services
+        const cacheService = bookingsEnrichmentCache.services.find(s => s.id == serviceId)
+        if (cacheService) {
+          // Use body-specific price if available, otherwise minimum price
+          const bodyKey = bookingData.body?.toLowerCase().replace(/\s+/g, '')
+          const bodyPrice = cacheService.prices[bodyKey]
+          const price = bodyPrice || cacheService.minPrice || 0
+          
+          servicesList = [{
+            name: cacheService.name,
+            price: price
+          }]
+        } else {
+          servicesList = [{
+            name: 'Service',
+            price: 0
+          }]
+        }
+      } else if (Array.isArray(services)) {
+        // Array of services - use the original logic
+        servicesList = services.map(service => {
+          // Try to find service in cache with exact name match first
+          const cacheService = bookingsEnrichmentCache.services.find(s => 
+            s.name.toLowerCase() === service.name.toLowerCase()
+          )
+          
+          if (cacheService) {
+            // Use body-specific price if available, otherwise minimum price
+            const bodyKey = bookingData.body?.toLowerCase().replace(/\s+/g, '')
+            const bodyPrice = cacheService.prices[bodyKey]
+            const price = bodyPrice || cacheService.minPrice || 0
+            
+            return {
+              name: cacheService.name,
+              price: price
+            }
+          }
+          
+          return {
+            name: service.name,
+            price: service.price || 0
+          }
+        })
+      }
+      
+      console.log('📋 Calculated services for email:', servicesList)
+
+      // Send client cancellation email
+      try {
+        const clientHtml = emailService.emailTemplates.clientCancellation(bookingData, servicesList)
+        await emailService.sendEmail(
+          bookingData.user.email,
+          `Programare Anulată - Spectra AutoArt`,
+          clientHtml
+        )
+        console.log('✅ Client cancellation email sent successfully')
+      } catch (emailError) {
+        console.error('❌ Failed to send client cancellation email:', emailError)
+      }
+
+      // Send admin cancellation notification
+      try {
+        const adminHtml = emailService.emailTemplates.adminCancellation(bookingData, servicesList)
+        await emailService.sendEmail(
+          'contact@spectraautoart.nl',
+          `Programare Anulată - ${bookingData.customer_name}`,
+          adminHtml
+        )
+        console.log('✅ Admin cancellation notification sent successfully')
+      } catch (emailError) {
+        console.error('❌ Failed to send admin cancellation notification:', emailError)
+      }
+    }
 
     res.json({ 
       success: true, 
-      message: 'Booking status updated successfully (demo mode)' 
+      message: 'Booking status updated successfully',
+      data: { id, status, bookingData }
     })
   } catch (error) {
     console.error('Error updating booking status:', error)
     res.status(500).json({ 
       success: false, 
-      error: 'Failed to update booking status',
-      demo: true 
+      error: 'Failed to update booking status'
     })
   }
 })

@@ -682,6 +682,268 @@ const emailTemplates = {
       </body>
       </html>
     `
+  },
+
+  // Client cancellation email template
+  clientCancellation: (bookingData, services) => {
+    const lang = String(bookingData?.locale || 'nl').toLowerCase()
+    const t = (function(){
+      const M = {
+        nl: {
+          titleCancel: 'Afspraak Geannuleerd',
+          cancelHeader: 'Afspraak geannuleerd',
+          cancelNotice: 'Uw afspraak is geannuleerd. De details staan hieronder.',
+          bookingDetails: 'Afspraak Details',
+          services: 'Diensten',
+          date: 'Datum', time: 'Tijd', vehicle: 'Voertuig', body: 'Carrosserie', name: 'Naam', email: 'Email', phone: 'Telefoon', make: 'Merk',
+          autoNote: 'Dit e-mailbericht is automatisch gegenereerd.'
+        },
+        en: {
+          titleCancel: 'Booking Cancelled',
+          cancelHeader: 'Booking cancelled',
+          cancelNotice: 'Your booking has been cancelled. The details are below.',
+          bookingDetails: 'Booking Details',
+          services: 'Services',
+          date: 'Date', time: 'Time', vehicle: 'Vehicle', body: 'Body Type', name: 'Name', email: 'Email', phone: 'Phone', make: 'Make',
+          autoNote: 'This email was generated automatically.'
+        },
+        es: {
+          titleCancel: 'Reserva Cancelada',
+          cancelHeader: 'Reserva cancelada',
+          cancelNotice: 'Su reserva ha sido cancelada. Los detalles están a continuación.',
+          bookingDetails: 'Detalles de la Reserva',
+          services: 'Servicios',
+          date: 'Fecha', time: 'Hora', vehicle: 'Vehículo', body: 'Tipo de Carrocería', name: 'Nombre', email: 'Correo', phone: 'Teléfono', make: 'Marca',
+          autoNote: 'Este correo fue generado automáticamente.'
+        },
+        pl: {
+          titleCancel: 'Rezerwacja Anulowana',
+          cancelHeader: 'Rezerwacja anulowana',
+          cancelNotice: 'Twoja rezerwacja została anulowana. Szczegóły są poniżej.',
+          bookingDetails: 'Szczegóły Rezerwacji',
+          services: 'Usługi',
+          date: 'Data', time: 'Godzina', vehicle: 'Pojazd', body: 'Typ Nadwozia', name: 'Imię', email: 'Email', phone: 'Telefon', make: 'Marka',
+          autoNote: 'Ten email został wygenerowany automatycznie.'
+        },
+        ro: {
+          titleCancel: 'Programare Anulată',
+          cancelHeader: 'Programare anulată',
+          cancelNotice: 'Programarea dumneavoastră a fost anulată. Detaliile sunt mai jos.',
+          bookingDetails: 'Detalii Programare',
+          services: 'Servicii',
+          date: 'Data', time: 'Ora', vehicle: 'Vehicul', body: 'Tip Caroserie', name: 'Nume', email: 'Email', phone: 'Telefon', make: 'Marcă',
+          autoNote: 'Acest email a fost generat automat.'
+        }
+      }
+      return M[lang] || M.nl
+    })()
+    const formatServices = (services) => {
+      return services.map(service => `
+        <div style="margin-bottom: 10px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+          <span style="font-weight: 600; color: #212529;">${service.name}</span>
+          <span style="color: #dc3545; font-weight: 700; margin-left: 12px;">€${service.price || 0}</span>
+        </div>
+      `).join('')
+    }
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${t.titleCancel} - Spectra AutoArt</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
+          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+          .header { background-color: #dc3545; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; padding: 18px 24px; text-align: center; }
+          .header h1 { margin: 0; font-size: 24px; font-weight: 500; }
+          .content { padding: 30px; }
+          .booking-details { background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
+          .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid #e9ecef; }
+          .detail-row:last-child { border-bottom: none; }
+          .label { font-weight: 600; color: #495057; }
+          .value { color: #212529; text-align: right; }
+          .services-section { margin: 20px 0; }
+          .services-title { font-size: 18px; font-weight: 600; color: #495057; margin-bottom: 15px; }
+          .footer { background-color: #343a40; color: white; padding: 20px; text-align: center; }
+          .contact-info { margin-top: 15px; font-size: 14px; }
+          .highlight { background-color: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545; margin: 20px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Spectra AutoArt</h1>
+            <p>${t.cancelHeader}</p>
+          </div>
+          
+          <div class="content">
+            <div class="highlight">
+              <h3>ℹ️ ${t.cancelHeader}</h3>
+              <p>${t.cancelNotice}</p>
+            </div>
+
+            <div class="booking-details">
+              <h3>📋 ${t.bookingDetails}</h3>
+              <div class="detail-row">
+                <span class="label">${t.date}:</span>
+                <span class="value">${new Date(bookingData.date).toLocaleDateString(({nl:'nl-NL',en:'en-GB',es:'es-ES',pl:'pl-PL',ro:'ro-RO'})[lang] || 'nl-NL')}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">${t.time}:</span>
+                <span class="value">${bookingData.time}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">${t.make}:</span>
+                <span class="value">${bookingData.make || ''}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">${t.vehicle}:</span>
+                <span class="value">${bookingData.model || ''}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">${t.body}:</span>
+                <span class="value">${bookingData.body || ''}</span>
+              </div>
+            </div>
+
+            <div class="services-section">
+              <h3 class="services-title">🔧 ${t.services}</h3>
+              ${formatServices(services)}
+            </div>
+          </div>
+
+          <div class="footer">
+            <p><strong>Spectra AutoArt - Detailing Auto Premium</strong></p>
+            <div class="contact-info">
+              <p>📧 Email: contact@spectraautoart.nl</p>
+              <p>🌐 Website: www.spectraautoart.nl</p>
+            </div>
+            <p style="margin-top: 15px; font-size: 12px; opacity: 0.8;">${t.autoNote}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  },
+
+  // Admin cancellation notification email template
+  adminCancellation: (bookingData, services) => {
+    const lang = String(bookingData?.locale || 'nl').toLowerCase()
+    const t = (function(){
+      const M = {
+        nl: { titleCancel: 'Afspraak Geannuleerd', adminSystem: 'Spectra AutoArt - Notificatiesysteem', clientInfo: 'Klantinformatie', vehicleDetails: 'Voertuig Details', bookingTitle: 'Afspraak', date: 'Datum', time: 'Tijd', vehicle: 'Voertuig', body: 'Carrosserie', services: 'Diensten', name: 'Naam', email: 'Email', phone: 'Telefoon', model: 'Model', make: 'Merk', alertTitle: 'Let op!', alertBody: 'Een afspraak is geannuleerd via het online boekingssysteem.', quickActionsTitle: 'Snelle Acties', quickActionsBody: 'Neem contact op met de klant voor meer informatie:', btnEmail: '📧 E-mail Klant', btnCall: '📞 Bel Klant', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Afspraak geannuleerd op:', footerTitle: 'Spectra AutoArt - Afsprakenbeheersysteem', footerNote: 'Deze e-mail wordt automatisch verzonden wanneer een afspraak is geannuleerd.', newsletter: 'Nieuwsbrief', subscribed: 'Geabonneerd', unsubscribed: 'Niet abonat' },
+        en: { titleCancel: 'Booking Cancelled', adminSystem: 'Spectra AutoArt - Notification System', clientInfo: 'Client Information', vehicleDetails: 'Vehicle Details', bookingTitle: 'Booking', date: 'Date', time: 'Time', vehicle: 'Vehicle', body: 'Body Type', services: 'Services', name: 'Name', email: 'Email', phone: 'Phone', model: 'Model', make: 'Make', alertTitle: 'Attention!', alertBody: 'A booking has been cancelled through the online booking system.', quickActionsTitle: 'Quick Actions', quickActionsBody: 'Contact the client for more information:', btnEmail: '📧 Email Client', btnCall: '📞 Call Client', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Booking cancelled at:', footerTitle: 'Spectra AutoArt - Booking Management System', footerNote: 'This email is sent automatically when a booking is cancelled.', newsletter: 'Newsletter', subscribed: 'Subscribed', unsubscribed: 'Unsubscribed' },
+        es: { titleCancel: 'Reserva Cancelada', adminSystem: 'Spectra AutoArt - Sistema de Notificaciones', clientInfo: 'Información del Cliente', vehicleDetails: 'Detalles del Vehículo', bookingTitle: 'Reserva', date: 'Fecha', time: 'Hora', vehicle: 'Vehículo', body: 'Tipo de Carrocería', services: 'Servicios', name: 'Nombre', email: 'Correo', phone: 'Teléfono', model: 'Modelo', make: 'Marca', alertTitle: '¡Atención!', alertBody: 'Se ha cancelado una reserva a través del sistema de reservas en línea.', quickActionsTitle: 'Acciones Rápidas', quickActionsBody: 'Contacte al cliente para más información:', btnEmail: '📧 Email Cliente', btnCall: '📞 Llamar al Cliente', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Reserva cancelada en:', footerTitle: 'Spectra AutoArt - Sistema de Gestión de Reservas', footerNote: 'Este correo se envía automáticamente cuando se cancela una reserva.', newsletter: 'Boletín', subscribed: 'Suscrito', unsubscribed: 'No suscrito' },
+        pl: { titleCancel: 'Rezerwacja Anulowana', adminSystem: 'Spectra AutoArt - System Powiadomień', clientInfo: 'Informacje o Kliencie', vehicleDetails: 'Szczegóły Pojazdu', bookingTitle: 'Rezerwacja', date: 'Data', time: 'Godzina', vehicle: 'Pojazd', body: 'Typ Nadwozia', services: 'Usługi', name: 'Imię', email: 'Email', phone: 'Telefon', model: 'Model', make: 'Marka', alertTitle: 'Uwaga!', alertBody: 'Rezerwacja została anulowana za pośrednictwem systemu rezerwacji online.', quickActionsTitle: 'Szybkie Akcje', quickActionsBody: 'Skontaktuj się z klientem w celu uzyskania więcej informacji:', btnEmail: '📧 Email do Klienta', btnCall: '📞 Zadzwoń do Klienta', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Rezerwacja anulowana o:', footerTitle: 'Spectra AutoArt - System Zarządzania Rezerwacjami', footerNote: 'Ten email jest wysyłany automatycznie po anulowaniu rezerwacji.', newsletter: 'Newsletter', subscribed: 'Zapisany', unsubscribed: 'Niezapisany' },
+        ro: { titleCancel: 'Programare Anulată', adminSystem: 'Spectra AutoArt - Sistem de Notificare', clientInfo: 'Informații Client', vehicleDetails: 'Detalii Vehicul', bookingTitle: 'Programare', date: 'Data', time: 'Ora', vehicle: 'Vehicul', body: 'Tip Caroserie', services: 'Servicii', name: 'Nume', email: 'Email', phone: 'Telefon', model: 'Model', alertTitle: 'ATENȚIE!', alertBody: 'O programare a fost anulată prin sistemul de rezervări online.', quickActionsTitle: 'Acțiuni Rapide', quickActionsBody: 'Contactează clientul pentru mai multe informații:', btnEmail: '📧 Email Client', btnCall: '📞 Apelează Client', btnWhatsApp: '💬 WhatsApp', timestampLabel: 'Programare anulată la:', footerTitle: 'Spectra AutoArt - Sistem de Management al Programărilor', footerNote: 'Acest email este trimis automat când o programare este anulată.', newsletter: 'Newsletter', subscribed: 'Abonat', unsubscribed: 'Neabonat' }
+      }
+      return M[lang] || M.nl
+    })()
+    const formatServices = (services) => {
+      return services.map(service => `
+        <div style="margin-bottom: 8px; padding: 8px; background-color: #fff3cd; border-radius: 4px; border-left: 3px solid #ffc107;">
+          <strong>${service.name}</strong> - €${service.price || 'N/A'}
+          ${service.description ? `<br><small>${service.description}</small>` : ''}
+        </div>
+      `).join('')
+    }
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${t.titleCancel} - Spectra AutoArt</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8f9fa; }
+          .container { max-width: 650px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .header { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; padding: 20px; text-align: center; }
+          .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+          .content { padding: 25px; }
+          .alert { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+          .booking-info { background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin: 15px 0; }
+          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+          .info-item { margin-bottom: 10px; }
+          .info-label { font-weight: 600; color: #495057; display: block; font-size: 14px; text-transform: uppercase; }
+          .info-value { color: #212529; font-size: 16px; }
+          .services-section { margin: 20px 0; }
+          .services-title { font-size: 16px; font-weight: 600; color: #495057; margin-bottom: 10px; }
+          .action-buttons { margin-top: 25px; padding: 20px; background-color: #e9ecef; border-radius: 8px; text-align: center; }
+          .btn { display: inline-block; padding: 10px 20px; margin: 5px; text-decoration: none; border-radius: 5px; font-weight: 600; }
+          .btn-primary { background-color: #007bff; color: white; }
+          .btn-success { background-color: #28a745; color: white; }
+          .btn-danger { background-color: #dc3545; color: white; }
+          .footer { background-color: #343a40; color: white; padding: 15px; text-align: center; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Spectra AutoArt</h1>
+            <p>${t.adminSystem}</p>
+          </div>
+          
+          <div class="content">
+            <div class="alert">
+              <h3>⚠️ ${t.alertTitle}</h3>
+              <p>${t.alertBody}</p>
+            </div>
+
+            <div class="booking-info">
+              <h3>📋 ${t.bookingTitle}</h3>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">${t.date}</span>
+                  <span class="info-value">${new Date(bookingData.date).toLocaleDateString(({nl:'nl-NL',en:'en-GB',es:'es-ES',pl:'pl-PL',ro:'ro-RO'})[lang] || 'nl-NL')}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">${t.time}</span>
+                  <span class="info-value">${bookingData.time}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">${t.make}</span>
+                  <span class="info-value">${bookingData.make || ''}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">${t.vehicle}</span>
+                  <span class="info-value">${bookingData.model || ''}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">${t.body}</span>
+                  <span class="info-value">${bookingData.body || ''}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="services-section">
+              <h3>🔧 ${t.services}</h3>
+              ${formatServices(services)}
+            </div>
+
+            <div class="action-buttons">
+              <h4>${t.quickActionsTitle}</h4>
+              <p>${t.quickActionsBody}</p>
+              <a href="mailto:${bookingData.user.email}" class="btn btn-primary">${t.btnEmail}</a>
+              <a href="tel:${bookingData.user.phone}" class="btn btn-success">${t.btnCall}</a>
+              <a href="https://wa.me/${bookingData.user.phone.replace(/\D/g, '')}" class="btn btn-danger">${t.btnWhatsApp}</a>
+            </div>
+
+            <div class="timestamp">
+              <p>⏰ ${t.timestampLabel} ${new Date().toLocaleString(({nl:'nl-NL',en:'en-GB',es:'es-ES',pl:'pl-PL',ro:'ro-RO'})[lang] || 'nl-NL')}</p>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p><strong>${t.footerTitle}</strong></p>
+            <p>${t.footerNote}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
   }
 }
 
@@ -936,6 +1198,7 @@ export const testEmailService = async () => {
 
 export default {
   sendEmail,
+  emailTemplates,
   sendBookingConfirmation,
   sendAdminNotification,
   sendBookingUpdate,
