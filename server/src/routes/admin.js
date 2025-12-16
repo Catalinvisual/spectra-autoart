@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url'
 import GoogleSheetsService from '../services/googleSheetsService.js'
 import { vehicleServicesService } from '../services/vehicleServicesService.js'
 import requireAuth from '../middleware/auth.js'
-import { sendBookingConfirmation, sendAdminNotification, sendBookingUpdate, sendAdminUpdate, testEmailService } from '../services/emailService.js'
+import emailService, { sendBookingConfirmation, sendAdminNotification, sendBookingUpdate, sendAdminUpdate, testEmailService } from '../services/emailService.js'
 
 const router = express.Router()
 
@@ -882,27 +882,82 @@ router.patch('/bookings/:id', async (req, res, next) => {
     let bookingEmailResult = null
     let adminEmailResult = null
     
+    console.log(`📧 DEBUG: Before hasChanges check - status: "${status}", originalStatus: "${originalStatus}"`)
+    console.log(`🎯 DEBUG: ENTERED hasChanges BLOCK - THIS SHOULD ALWAYS APPEAR IF hasChanges IS TRUE`)
+    
     if (hasChanges) {
-      console.log('📧 FINAL DEBUG before sending email:')
-      console.log('📧 bookingData.make:', bookingData.make)
-      console.log('📧 bookingData.model:', bookingData.model) 
-      console.log('📧 bookingData.body:', bookingData.body)
-      console.log('📧 bookingData.type:', bookingData.type)
-      console.log('📧 bookingData.total:', bookingData.total)
-      console.log('📧 servicesArr length:', servicesArr.length)
-      console.log('📧 Sending booking update email...')
-      bookingEmailResult = await sendBookingUpdate(bookingData, servicesArr)
-      console.log('📧 Booking update email result:', bookingEmailResult)
+      // Check if status was changed to canceled
+      console.log(`📧 DEBUG: Checking cancellation - status: "${status}", originalStatus: "${originalStatus}"`)
+      const isStatusCanceled = status && status !== originalStatus && 
+        (status.toLowerCase() === 'canceled' || status.toLowerCase() === 'cancelled' || status.toLowerCase() === 'anulat')
       
-      // Skip admin email in development mode to prevent hangs
-      if (process.env.NODE_ENV === 'development') {
-        console.log('⚠️ Development mode: Skipping admin email to prevent potential hangs')
-        adminEmailResult = { success: true, message: 'Skipped in development mode' }
-        console.log('📧 Admin update email result:', adminEmailResult)
+      console.log(`📧 DEBUG: isStatusCanceled = ${isStatusCanceled}`)
+      
+      if (isStatusCanceled) {
+        console.log('📧 Status changed to canceled - sending cancellation emails...')
+        
+        // Send client cancellation email
+        console.log('📧 Sending client cancellation email...')
+        try {
+          console.log('🎯 DEBUG: About to call emailService.emailTemplates.clientCancellation')
+        console.log('🎯 DEBUG: emailService.emailTemplates exists:', !!emailService.emailTemplates)
+        console.log('🎯 DEBUG: emailService.emailTemplates.clientCancellation exists:', !!emailService.emailTemplates?.clientCancellation)
+        console.log('🎯 DEBUG: emailService.emailTemplates.clientCancellation type:', typeof emailService.emailTemplates?.clientCancellation)
+        const cancellationHtml = emailService.emailTemplates.clientCancellation(bookingData, servicesArr)
+        console.log('🎯 DEBUG: clientCancellation template returned:', cancellationHtml?.substring(0, 100))
+          bookingEmailResult = await emailService.sendEmail(
+            bookingData.user.email,
+            'Programare Anulată - Spectra AutoArt',
+            cancellationHtml
+          )
+          console.log('📧 Client cancellation email result:', bookingEmailResult)
+        } catch (error) {
+          console.error('❌ Error sending client cancellation email:', error)
+          bookingEmailResult = { success: false, error: error.message }
+        }
+        
+        // Send admin cancellation email
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⚠️ Development mode: Skipping admin cancellation email to prevent potential hangs')
+          adminEmailResult = { success: true, message: 'Skipped in development mode' }
+          console.log('📧 Admin cancellation email result:', adminEmailResult)
+        } else {
+          console.log('📧 Sending admin cancellation email...')
+          try {
+            adminEmailResult = await emailService.sendEmail({
+              to: process.env.ADMIN_EMAIL || 'admin@spectraautoart.ro',
+              subject: 'Programare Anulată - Spectra AutoArt',
+              html: emailService.emailTemplates.adminCancellation(bookingData, servicesArr)
+            })
+            console.log('📧 Admin cancellation email result:', adminEmailResult)
+          } catch (error) {
+            console.error('❌ Error sending admin cancellation email:', error)
+            adminEmailResult = { success: false, error: error.message }
+          }
+        }
       } else {
-        console.log('📧 Sending admin update email...')
-        adminEmailResult = await sendAdminUpdate(bookingData, servicesArr)
-        console.log('📧 Admin update email result:', adminEmailResult)
+        // Send regular update emails (existing logic)
+        console.log('📧 FINAL DEBUG before sending email:')
+        console.log('📧 bookingData.make:', bookingData.make)
+        console.log('📧 bookingData.model:', bookingData.model) 
+        console.log('📧 bookingData.body:', bookingData.body)
+        console.log('📧 bookingData.type:', bookingData.type)
+        console.log('📧 bookingData.total:', bookingData.total)
+        console.log('📧 servicesArr length:', servicesArr.length)
+        console.log('📧 Sending booking update email...')
+        bookingEmailResult = await sendBookingUpdate(bookingData, servicesArr)
+        console.log('📧 Booking update email result:', bookingEmailResult)
+        
+        // Skip admin email in development mode to prevent hangs
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⚠️ Development mode: Skipping admin email to prevent potential hangs')
+          adminEmailResult = { success: true, message: 'Skipped in development mode' }
+          console.log('📧 Admin update email result:', adminEmailResult)
+        } else {
+          console.log('📧 Sending admin update email...')
+          adminEmailResult = await sendAdminUpdate(bookingData, servicesArr)
+          console.log('📧 Admin update email result:', adminEmailResult)
+        }
       }
     } else {
       console.log('ℹ️ No changes detected, skipping email notifications')

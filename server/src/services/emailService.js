@@ -566,7 +566,7 @@ const emailTemplates = {
               <div class="spacer"></div>
               <div class="detail-row">
                 <span class="label"><strong>${t.date}:</strong></span>
-                <span class="value">${new Date(bookingData.date).toLocaleDateString(({nl:'nl-NL',en:'en-GB',es:'es-ES',pl:'pl-PL',ro:'ro-RO'})[lang] || 'nl-NL')}</span>
+                <span class="value">${new Date(bookingData.date).toLocaleDateString()}</span>
               </div>
               <div class="spacer"></div>
               <div class="detail-row">
@@ -947,6 +947,7 @@ const emailTemplates = {
 
   // Client cancellation email template
   clientCancellation: (bookingData, services) => {
+    console.log('🎯 DEBUG: clientCancellation template called with:', JSON.stringify({bookingData, services}, null, 2))
     const lang = String(bookingData?.locale || 'nl').toLowerCase()
     const t = (function(){
       const M = {
@@ -1221,6 +1222,7 @@ const emailTemplates = {
 
 // Send email function with intelligent fallback
 export const sendEmail = async (to, subject, html, text = '') => {
+  console.log('🎯 DEBUG: sendEmail called with:', JSON.stringify({to, subject, html: html?.substring(0, 100), text}, null, 2))
   const allTransporters = [transporter, ...fallbackTransporters].filter(Boolean)
   
   if (allTransporters.length === 0 && !process.env.RESEND_API_KEY) {
