@@ -547,11 +547,11 @@ router.patch('/bookings/:id', async (req, res, next) => {
     const phoneIndex = findCol('Phone') !== -1 ? findCol('Phone') : 3
     const dateIndex = findCol('Date') !== -1 ? findCol('Date') : 4
     const timeIndex = findCol('Time') !== -1 ? findCol('Time') : 5
-    // Vehicle columns don't exist in Google Sheets - set to -1
-    const makeIndex = -1
-    const modelIndex = -1  
-    const typeIndex = -1
-    const bodyIndex = -1
+    // Vehicle columns - search for them like in update function
+    const makeIndex = findCol('Make', 'Brand', 'Merk') !== -1 ? findCol('Make', 'Brand', 'Merk') : -1
+    const modelIndex = findCol('Model') !== -1 ? findCol('Model') : -1  
+    const typeIndex = findCol('Type', 'Vehicle_Type') !== -1 ? findCol('Type', 'Vehicle_Type') : -1
+    const bodyIndex = findCol('Body', 'Body_Type') !== -1 ? findCol('Body', 'Body_Type') : -1
     const servicesIndex = findCol('Services','Service','Diensten') !== -1 ? findCol('Services','Service','Diensten') : 6
     const totalIndex = findCol('Total','Amount') !== -1 ? findCol('Total','Amount') : 7
     const statusIndex = findCol('Status') !== -1 ? findCol('Status') : 8
@@ -613,6 +613,11 @@ router.patch('/bookings/:id', async (req, res, next) => {
     const originalPhone = phoneIndex !== -1 ? data[actualRowIndex][phoneIndex] : ''
     const originalServices = servicesIndex !== -1 ? data[actualRowIndex][servicesIndex] : ''
     const originalTotal = totalIndex !== -1 ? data[actualRowIndex][totalIndex] : ''
+    
+    // DEBUG: Afișează conținutul complet al rândului și toate coloanele
+    console.log(`🔍 DEBUG COMPLETE ROW ${actualRowIndex}:`, data[actualRowIndex])
+    console.log(`🔍 DEBUG COLUMN INDICES - make:${makeIndex}, model:${modelIndex}, body:${bodyIndex}, type:${typeIndex}`)
+    console.log(`🔍 DEBUG COLUMN VALUES - make:"${originalMake}", model:"${originalModel}", body:"${originalBody}", type:"${originalType}"`)
     
     // Extragem doar partea de dată (YYYY-MM-DD) din stringul ISO complet
     const originalDate = originalDateRaw ? originalDateRaw.split('T')[0] : ''
