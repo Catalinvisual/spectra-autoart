@@ -167,12 +167,16 @@ const Admin: React.FC = () => {
         // Apel către server pentru ștergere
         await adminAPI.deleteBooking(bookingToDelete)
         
-        // Incrementează cheia de refresh pentru a reîmprospăta lista de bookings
+        // Reîmprospătează lista completă pentru sincronizare completă
         setBookingsRefreshKey(prev => prev + 1)
+        
         toast.showSuccess(t('admin.bookingDeleted'))
       } catch (error) {
         console.error('Error deleting booking:', error)
         toast.showError(t('admin.errorDeletingBooking'))
+        
+        // În caz de eroare, reîmprospătează lista pentru a restaura starea
+        setBookingsRefreshKey(prev => prev + 1)
       } finally {
         setShowDeleteModal(false)
         setBookingToDelete(null)
@@ -441,6 +445,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isAuthenticated }) => {
 // Bookings Management Component
 interface BookingsManagementProps {
   onDeleteBooking: (id: string) => void
+  onBookingDeleted?: (id: string) => void
   refreshKey?: number
   isAuthenticated: boolean
 }
@@ -601,6 +606,16 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
   const closeDetailsModal = () => {
     setSelectedBooking(null)
     setShowDetailsModal(false)
+  }
+
+  const handleDeleteBookingLocal = (bookingId: string) => {
+    // Actualizează lista locală imediat
+    setBookings(prevBookings => prevBookings.filter(booking => booking.id !== bookingId))
+    
+    // Apel callback pentru ștergerea pe server
+    if (onDeleteBooking) {
+      onDeleteBooking(bookingId)
+    }
   }
 
   const openEditModal = (booking: Booking) => {
@@ -846,7 +861,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
               
 
               <button 
-                onClick={() => onDeleteBooking(booking.id)} 
+                onClick={() => handleDeleteBookingLocal(booking.id)} 
                 className="delete-btn"
                 title={t('admin.deleteBooking')}
                 disabled={bookingOperations.updating.includes(booking.id) || bookingOperations.deleting.includes(booking.id)}
