@@ -515,7 +515,7 @@ const emailTemplates = {
           .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
           .header { background-color: #2196f3; background: linear-gradient(135deg, #00bcd4 0%, #2196f3 100%); color: white; padding: 18px 24px; text-align: center; }
           .header h1 { margin: 0; font-size: 24px; font-weight: 500; }
-          .content { padding: 30px; }
+          .content { padding: 20px; }
           .booking-details { background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
           .detail-row { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 12px 0; border-bottom: 1px solid #e9ecef; }
           .detail-row:last-child { border-bottom: none; }
@@ -527,7 +527,7 @@ const emailTemplates = {
           .services-title { font-size: 18px; font-weight: 600; color: #495057; margin-bottom: 15px; }
           .footer { background-color: #343a40; color: white; padding: 20px; text-align: center; }
           .contact-info { margin-top: 15px; font-size: 14px; }
-          .highlight { background-color: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #2196f3; margin: 20px 0; }
+          .highlight { background-color: #e3f2fd; padding: 12px; border-radius: 8px; border-left: 4px solid #2196f3; margin: 15px 0; }
         </style>
       </head>
       <body>
@@ -688,8 +688,8 @@ const emailTemplates = {
           .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
           .header { background-color: #2196f3; background: linear-gradient(135deg, #00bcd4 0%, #2196f3 100%); color: white; padding: 18px 24px; text-align: center; }
           .header h1 { margin: 0; font-size: 24px; font-weight: 500; }
-          .content { padding: 30px; }
-          .booking-details { background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
+          .content { padding: 20px; }
+          .booking-details { background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin: 15px 0; }
           .detail-row { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 12px 0; border-bottom: 1px solid #e9ecef; }
           .detail-row:last-child { border-bottom: none; }
           .label { font-weight: 600; color: #495057; margin-right: 15px; }
@@ -700,7 +700,7 @@ const emailTemplates = {
           .services-title { font-size: 18px; font-weight: 600; color: #495057; margin-bottom: 15px; }
           .footer { background-color: #343a40; color: white; padding: 20px; text-align: center; }
           .contact-info { margin-top: 15px; font-size: 14px; }
-          .highlight { background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin: 20px 0; }
+          .highlight { background-color: #fff3cd; padding: 12px; border-radius: 8px; border-left: 4px solid #ffc107; margin: 15px 0; }
         </style>
       </head>
       <body>
@@ -801,8 +801,8 @@ const emailTemplates = {
           .container { max-width: 650px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
           .header { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 20px; text-align: center; }
           .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
-          .content { padding: 25px; }
-          .alert { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+          .content { padding: 20px; }
+          .alert { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px; border-radius: 5px; margin-bottom: 15px; }
           .booking-info { background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin: 15px 0; }
           .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
           .info-item { margin-bottom: 10px; }
