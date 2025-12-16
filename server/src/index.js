@@ -4,6 +4,7 @@ import cors from 'cors'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
+import http from 'http'
 import { applyDeploymentFix } from './deployment_fix.js'
 
 // APLICĂ FIX DE DEPLOYMENT IMEDIAT
@@ -420,7 +421,6 @@ const startServer = async () => {
         
         // Actually test the health endpoint
         try {
-          const http = require('http')
           const options = {
             hostname: 'localhost',
             port: port,

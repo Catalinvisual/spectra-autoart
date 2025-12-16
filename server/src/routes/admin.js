@@ -614,12 +614,6 @@ router.patch('/bookings/:id', async (req, res, next) => {
     const originalServices = servicesIndex !== -1 ? data[actualRowIndex][servicesIndex] : ''
     const originalTotal = totalIndex !== -1 ? data[actualRowIndex][totalIndex] : ''
     
-    // Vehicle details don't exist in Google Sheets - set to empty
-    const originalMake = ''
-    const originalModel = ''
-    const originalType = ''
-    const originalBody = ''
-    
     // Extragem doar partea de dată (YYYY-MM-DD) din stringul ISO complet
     const originalDate = originalDateRaw ? originalDateRaw.split('T')[0] : ''
     
