@@ -679,7 +679,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
             <h3>{t('selectService')}</h3>
             {!bookingData.body && (
               <div className="info-message">
-                <p>Selectează mai întâi tipul de caroserie pentru a vedea prețurile</p>
+                <p>{t('selectBodyTypeFirst')}</p>
               </div>
             )}
             <div className="service-grid">
@@ -896,7 +896,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                           const serviceName = service ? getServiceDisplayName(service) : ''
                           return serviceName
                         }).join(', ')
-                      : 'Niciun serviciu selectat'
+                      : t('noServiceSelected')
                   }
                 ]}
                 totalLabel={`${t('total')}:`}

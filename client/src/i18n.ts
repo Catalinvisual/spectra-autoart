@@ -141,6 +141,7 @@ const resources = {
         bookingsResponse: 'U kunt een afspraak maken via de Booking Wizard. Kies een beschikbare datum en tijd en bevestig met uw gegevens.',
         servicesResponse: 'Wij bieden interieur/exterieur detailing, ambient lighting, starlight ceiling, chrome delete, trim wrapping, polish en ceramic protection.',
         hoursResponse: 'Openingstijden: Ma–Vr 9:00–20:00, Za 10:00–17:00. Voor afspraken buiten deze tijden, neem contact met ons op.',
+        development: 'Chatbot is in ontwikkeling!',
         fallback: 'Bedankt voor uw vraag! Voor een precies antwoord, gebruikt u de Booking Wizard of beschrijf uw verzoek gedetailleerder.'
       },
       adminPanel: 'Admin Paneel',
@@ -170,6 +171,8 @@ const resources = {
       serviceRequired: 'Service is verplicht',
       dateRequired: 'Datum is verplicht',
       timeRequired: 'Tijd is verplicht',
+        selectBodyTypeFirst: 'Selecteer eerst het carrosserietype om prijzen te zien',
+        noServiceSelected: 'Geen dienst geselecteerd',
       invalidEmail: 'Voer een geldig emailadres in',
       sendToSubscribers: 'Verstuur naar abonnees',
       subscribers: 'Abonnees',
@@ -1201,6 +1204,8 @@ const resources = {
       serviceRequired: 'Service is required',
       dateRequired: 'Date is required',
       timeRequired: 'Time is required',
+        selectBodyTypeFirst: 'Please select the body type first to see prices',
+        noServiceSelected: 'No service selected',
       invalidEmail: 'Please enter a valid email address',
       sendToSubscribers: 'Send to subscribers',
       subscribers: 'Subscribers',
@@ -1310,7 +1315,8 @@ const resources = {
         pricesResponse: 'For pricing information, it\'s best to schedule an appointment for a free consultation.',
         bookingsResponse: 'You can easily book online through our website!',
         servicesResponse: 'We offer various detailing and styling services. Check our website for more details.',
-        hoursResponse: 'We are open Monday to Friday from 9:00 AM to 8:00 PM and Saturday from 10:00 AM to 5:00 PM.'
+        hoursResponse: 'We are open Monday to Friday from 9:00 AM to 8:00 PM and Saturday from 10:00 AM to 5:00 PM.',
+        fallback: 'Thank you for your interest! We will contact you soon.'
       },
       
       // Footer translations
@@ -2211,6 +2217,8 @@ const resources = {
       serviceRequired: 'El servicio es obligatorio',
       dateRequired: 'La fecha es obligatoria',
       timeRequired: 'La hora es obligatoria',
+        selectBodyTypeFirst: 'Por favor selecciona primero el tipo de carrocería para ver precios',
+        noServiceSelected: 'Ningún servicio seleccionado',
       invalidEmail: 'Por favor ingrese un email válido',
       sendToSubscribers: 'Enviar a suscriptores',
       subscribers: 'Suscriptores',
@@ -2320,7 +2328,9 @@ const resources = {
         pricesResponse: 'Para información de precios, es mejor programar una cita para una consulta gratuita.',
         bookingsResponse: '¡Puedes reservar fácilmente en línea a través de nuestro sitio web!',
         servicesResponse: 'Ofrecemos varios servicios de detailing y estilizado. Revisa nuestro sitio web para más detalles.',
-        hoursResponse: 'Estamos abiertos de lunes a viernes de 9:00 AM a 8:00 PM y los sábados de 10:00 AM a 5:00 PM.'
+        hoursResponse: 'Estamos abiertos de lunes a viernes de 9:00 AM a 8:00 PM y los sábados de 10:00 AM a 5:00 PM.',
+        development: '¡El chatbot está en desarrollo!',
+        fallback: '¡Gracias por su interés! Nos pondremos en contacto con usted pronto.'
       },
       
       // Footer translations
@@ -3071,6 +3081,8 @@ const resources = {
       serviceRequired: 'Usługa jest wymagana',
       dateRequired: 'Data jest wymagana',
       timeRequired: 'Godzina jest wymagana',
+        selectBodyTypeFirst: 'Proszę najpierw wybrać typ nadwozia, aby zobaczyć ceny',
+        noServiceSelected: 'Nie wybrano usługi',
       invalidEmail: 'Proszę podać prawidłowy adres email',
       sendToSubscribers: 'Wyślij do subskrybentów',
       subscribers: 'Subskrybenci',
@@ -3180,7 +3192,9 @@ const resources = {
         pricesResponse: 'Aby uzyskać informacje o cenach, najlepiej umówić się na bezpłatną konsultację.',
         bookingsResponse: 'Możesz łatwo zarezerwować online przez naszą stronę internetową!',
         servicesResponse: 'Oferujemy różne usługi detailingu i stylizacji. Sprawdź naszą stronę internetową, aby uzyskać więcej informacji.',
-        hoursResponse: 'Jesteśmy otwarci od poniedziałku do piątku od 9:00 do 20:00 i w soboty od 10:00 do 17:00.'
+        hoursResponse: 'Jesteśmy otwarci od poniedziałku do piątku od 9:00 do 20:00 i w soboty od 10:00 do 17:00.',
+        development: 'Chatbot jest w fazie rozwoju!',
+        fallback: 'Dziękujemy za zainteresowanie! Skontaktujemy się z Tobą wkrótce.'
       },
       
       // Footer translations
@@ -3936,6 +3950,8 @@ const resources = {
       serviceRequired: 'Serviciul este obligatoriu',
       dateRequired: 'Data este obligatorie',
       timeRequired: 'Ora este obligatorie',
+      selectBodyTypeFirst: 'Selectați mai întâi tipul de caroserie pentru a vedea prețurile',
+      noServiceSelected: 'Niciun serviciu selectat',
       invalidEmail: 'Vă rugăm să introduceți o adresă de email validă',
       sendToSubscribers: 'Trimite la abonați',
       subscribers: 'Abonați',
@@ -4137,7 +4153,9 @@ const resources = {
         pricesResponse: 'Pentru informații despre prețuri, cel mai bine este să programați o întâlnire pentru o consultație gratuită.',
         bookingsResponse: 'Vă puteți programa cu ușurință online prin intermediul site-ului nostru web!',
         servicesResponse: 'Oferim diverse servicii de detailing și styling. Verificați site-ul nostru web pentru mai multe detalii.',
-        hoursResponse: 'Suntem deschiși de luni până vineri de la 9:00 la 20:00 și sâmbăta de la 10:00 la 17:00.'
+        hoursResponse: 'Suntem deschiși de luni până vineri de la 9:00 la 20:00 și sâmbăta de la 10:00 la 17:00.',
+        fallback: 'Vă mulțumim pentru interes! Vă vom contacta în curând.',
+        development: 'Chatbot-ul este în curs de dezvoltare!'
       },
       
 

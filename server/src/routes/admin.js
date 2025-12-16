@@ -2262,6 +2262,7 @@ router.delete('/bookings/:id', requireAuth, async (req, res) => {
     let bookingIndex = -1;
     const targetId = String(id).trim();
     
+    // Întâi căutăm după ID
     for (let i = 1; i < data.length; i++) {
       const rowId = String(data[i][0] || '').trim();
       console.log(`🔍 Comparing target:"${targetId}" with row:"${rowId}"`);
@@ -2272,9 +2273,56 @@ router.delete('/bookings/:id', requireAuth, async (req, res) => {
         break;
       }
     }
+    
+    // Dacă nu găsim după ID, căutăm după alte criterii (email, nume, dată)
+    if (bookingIndex === -1) {
+      console.log('🔍 Booking not found by ID, trying alternative search...');
+      
+      // Identificăm coloanele
+      const headers = data[0];
+      const idIndex = headers.findIndex(h => String(h).toLowerCase() === 'id');
+      const emailIndex = headers.findIndex(h => String(h).toLowerCase() === 'email');
+      const nameIndex = headers.findIndex(h => String(h).toLowerCase() === 'name');
+      const dateIndex = headers.findIndex(h => String(h).toLowerCase() === 'date');
+      
+      for (let i = 1; i < data.length; i++) {
+        const row = data[i];
+        
+        // Căutare după email sau nume dacă există
+        if (emailIndex !== -1 && row[emailIndex]) {
+          const rowEmail = String(row[emailIndex]).trim();
+          if (rowEmail && targetId.includes(rowEmail)) {
+            bookingIndex = i;
+            console.log('✅ Found matching booking by email at index:', i);
+            break;
+          }
+        }
+        
+        if (nameIndex !== -1 && row[nameIndex]) {
+          const rowName = String(row[nameIndex]).trim();
+          if (rowName && targetId.includes(rowName)) {
+            bookingIndex = i;
+            console.log('✅ Found matching booking by name at index:', i);
+            break;
+          }
+        }
+        
+        // Dacă ID-ul este gol, folosim indexul rândului ca fallback
+        if (!row[idIndex] || String(row[idIndex]).trim() === '') {
+          const fallbackId = `booking_${i}`;
+          if (targetId === fallbackId) {
+            bookingIndex = i;
+            console.log('✅ Found matching booking by fallback ID at index:', i);
+            break;
+          }
+        }
+      }
+    }
 
     if (bookingIndex === -1) {
       console.log('❌ Booking not found after searching all rows');
+      console.log('📊 Total rows searched:', data.length - 1);
+      console.log('🔍 Target ID:', targetId);
       return res.status(404).json({ 
         success: false, 
         error: 'Booking not found' 

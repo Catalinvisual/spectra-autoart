@@ -612,9 +612,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     // Marchează operațiunea de ștergere ca în desfășurare
     setBookingOperations(prev => ({ ...prev, deleting: [...prev.deleting, bookingId] }))
     
-    // Șterge instant din lista locală pentru feedback imediat
-    setBookings(prevBookings => prevBookings.filter(booking => booking.id !== bookingId))
-    
+    // NU șterge local încă - așteaptă confirmarea
     // Apel callback pentru ștergerea pe server (deschide modalul de confirmare)
     if (onDeleteBooking) {
       onDeleteBooking(bookingId)

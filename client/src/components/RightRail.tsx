@@ -189,7 +189,7 @@ const RightRail = () => {
           </button>
         </div>
         <div className="chatbot-footer">
-          <p>Chatbot-ul este în curs de dezvoltare!</p>
+          <p>{t('chatbot.development')}</p>
         </div>
       </div>,
       portalRoot
