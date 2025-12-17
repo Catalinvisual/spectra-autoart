@@ -884,7 +884,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                     <div className="service-price">
                       {servicePrice ? (
                         <>
-                          {t('from') || 'De la'} €{servicePrice.price_min}
+                          {getRoTranslation('from', 'De la')} €{servicePrice.price_min}
                           {servicePrice.price_max && servicePrice.price_max > servicePrice.price_min && (
                             <span> - €{servicePrice.price_max}</span>
                           )}
