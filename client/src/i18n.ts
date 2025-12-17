@@ -3221,7 +3221,8 @@ const resources = {
         interiorCleaning: 'Czyszczenie wnętrza',
         newsletter: 'Newsletter',
         enterEmail: 'Wprowadź swój adres e-mail',
-        send: 'Wyślij'
+        send: 'Wyślij',
+        copyright: '© 2025 Spectra AutoArt. Wszelkie prawa zastrzeżone.'
       },
       
       // Terms and Conditions page translations
