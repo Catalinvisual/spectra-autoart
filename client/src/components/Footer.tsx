@@ -97,7 +97,7 @@ const Footer = () => {
   useEffect(() => {
     console.log(`🌍 Footer current language: ${i18n.language}`)
     console.log(`🌍 Footer newsletter translation: ${tf('footer.newsletter', 'Newsletter')}`)
-        console.log(`🌍 Footer subscribeNewsletter translation: ${t('subscribeNewsletter')}`)
+        console.log(`🌍 Footer subscribeNewsletter translation: ${tf('subscribeNewsletter', 'Subscribe me to the newsletter')}`)
         console.log(`🌍 Footer enterEmail translation: ${tf('footer.enterEmail', 'Enter your email')}`)
         console.log(`🌍 Footer send translation: ${tf('footer.send', 'Send')}`)
   }, [language, i18n])
@@ -113,7 +113,7 @@ const Footer = () => {
     try {
       setLoading(true)
       const response = await publicAPI.subscribeNewsletter({ email, locale: i18n.language })
-      setMessage(response.data.message || t('newsletterSubscribeSuccess') || 'Thank you for subscribing!')
+      setMessage(response.data.message || tf('newsletterSubscribeSuccess', 'Thank you for subscribing!') || 'Thank you for subscribing!')
       setEmail('')
     } catch (error: unknown) {
       let errMsg = 'Failed to subscribe'
@@ -157,19 +157,19 @@ const Footer = () => {
         <div className="footer-section">
           <h3>{tf('footer.quickLinks', 'Link-uri Rapide')}</h3>
           <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection('services') }}>
-            {t('ourServices')}
+            {tf('ourServices', 'Serviciile Noastre')}
           </a>
           <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection('about') }}>
-            {t('aboutUs')}
+            {tf('aboutUs', 'Despre Noi')}
           </a>
           <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection('gallery') }}>
-            {t('gallery')}
+            {tf('gallery', 'Galerie')}
           </a>
           <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection('testimonials') }}>
-            {t('testimonials')}
+            {tf('testimonials', 'Mărturii')}
           </a>
           <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection('contact') }}>
-            {t('contact')}
+            {tf('contact', 'Contact')}
           </a>
         </div>
         
@@ -184,7 +184,7 @@ const Footer = () => {
         
         <div className="footer-section">
           <h3>{tf('footer.newsletter', 'Newsletter')}</h3>
-          <p>{t('subscribeNewsletter')}</p>
+          <p>{tf('subscribeNewsletter', 'Subscribe me to the newsletter')}</p>
           <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
             <input
               type="email"
