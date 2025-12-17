@@ -4733,7 +4733,7 @@ const resources = {
         social: 'Social',
         followUs: 'Urmărește-ne pe rețelele sociale',
         newsletter: 'Newsletter',
-        enterEmail: 'Introduceți adresa dvs. de email',
+        enterEmail: 'Introduceți adresa de email',
         send: 'Trimite',
         copyright: '© 2025 Spectra AutoArt. Toate drepturile rezervate.'
       },
