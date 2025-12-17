@@ -98,8 +98,8 @@ const Footer = () => {
     console.log(`🌍 Footer current language: ${i18n.language}`)
     console.log(`🌍 Footer newsletter translation: ${tf('footer.newsletter', 'Newsletter')}`)
         console.log(`🌍 Footer subscribeNewsletter translation: ${tf('subscribeNewsletter', 'Subscribe me to the newsletter')}`)
-        console.log(`🌍 Footer enterEmail translation: ${tf('footer.enterEmail', 'Enter your email')}`)
-        console.log(`🌍 Footer send translation: ${tf('footer.send', 'Send')}`)
+        console.log(`🌍 Footer enterEmail translation: ${tf('enterEmail', 'Enter your email')}`)
+        console.log(`🌍 Footer send translation: ${tf('send', 'Send')}`)
   }, [language, i18n])
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
@@ -188,14 +188,14 @@ const Footer = () => {
           <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
             <input
               type="email"
-              placeholder={tf('footer.enterEmail', 'Introduceți adresa dvs. de email')}
+              placeholder={tf('enterEmail', 'Introduceți adresa dvs. de email')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
             />
             <button type="submit" disabled={loading}>
-              {loading ? '...' : tf('footer.send', 'Trimite')}
+              {loading ? '...' : tf('send', 'Trimite')}
             </button>
           </form>
           {message && <div className="newsletter-message">{message}</div>}
