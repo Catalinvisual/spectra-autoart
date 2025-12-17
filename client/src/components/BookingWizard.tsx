@@ -104,24 +104,12 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
   // Helper function to get Romanian translation with fallback
   const getRoTranslation = (key: string, fallback: string): string => {
     const translation = t(key)
-    // If language is Romanian but translation is English, use fallback
-    if (i18n.language === 'ro' && translation && 
-        (translation === key || // Key returned as-is (missing)
-         translation === 'Select Service' || 
-         translation === 'Newsletter Subscription' ||
-         translation === 'Next' ||
-         translation === 'Confirm' ||
-         translation === 'Personal Details' ||
-         translation === 'Name' ||
-         translation === 'Email' ||
-         translation === 'Phone' ||
-         translation === 'Select Date' ||
-         translation === 'Select Time' ||
-         translation === 'Summary' ||
-         translation === 'Service' ||
-         translation === 'brand' ||
-         translation === 'model' ||
-         translation === 'body')) {
+    // Debug logging for key translation issues
+    if (i18n.language === 'ro') {
+      console.log(`🔍 getRoTranslation - Key: ${key}, Translation: ${translation}, Fallback: ${fallback}, Should use fallback: ${translation === key || !translation || translation === ''}`)
+    }
+    // If language is Romanian but translation is missing (returns key) or is English, use fallback
+    if (i18n.language === 'ro' && (translation === key || !translation || translation === '')) {
       return fallback
     }
     return translation || fallback
@@ -270,6 +258,17 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
     // Force Romanian translations if language is Romanian
     if (i18n.language === 'ro') {
       console.log('🔍 Forcing Romanian translations...')
+      console.log('🔍 Testing specific problematic keys:')
+      
+      // Test the three specific keys mentioned by user
+      const vehicleBodyTranslation = t('vehicleBody')
+      const newsletterDescTranslation = t('newsletterDescription') 
+      const fromTranslation = t('from')
+      
+      console.log(`🔍 vehicleBody: ${vehicleBodyTranslation} (${vehicleBodyTranslation === 'vehicleBody' ? 'MISSING - using fallback' : 'FOUND'})`)
+      console.log(`🔍 newsletterDescription: ${newsletterDescTranslation} (${newsletterDescTranslation === 'newsletterDescription' ? 'MISSING - using fallback' : 'FOUND'})`)
+      console.log(`🔍 from: ${fromTranslation} (${fromTranslation === 'from' ? 'MISSING - using fallback' : 'FOUND'})`)
+      
       const testKeys = ['selectService', 'newsletterSubscription', 'next', 'confirm', 'personalDetails', 'name', 'email', 'phone', 'selectDate', 'selectTime', 'summary', 'brand', 'model', 'body', 'service']
       testKeys.forEach(key => {
         const translation = t(key)
@@ -1157,23 +1156,7 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
   // Define getRoTranslation function for CalendarComponent
   const getRoTranslation = (key: string, fallback: string): string => {
     const translation = t(key)
-    if (i18n.language === 'ro' && translation && 
-        (translation === key || 
-         translation === 'Select Service' || 
-         translation === 'Newsletter Subscription' ||
-         translation === 'Next' ||
-         translation === 'Confirm' ||
-         translation === 'Personal Details' ||
-         translation === 'Name' ||
-         translation === 'Email' ||
-         translation === 'Phone' ||
-         translation === 'Select Date' ||
-         translation === 'Select Time' ||
-         translation === 'Summary' ||
-         translation === 'Service' ||
-         translation === 'brand' ||
-         translation === 'model' ||
-         translation === 'body')) {
+    if (i18n.language === 'ro' && (translation === key || !translation || translation === '')) {
       return fallback
     }
     return translation || fallback
