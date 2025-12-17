@@ -109,7 +109,6 @@ const Admin: React.FC = () => {
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [showResetForm, setShowResetForm] = useState(false)
-  const [resetEmail, setResetEmail] = useState('')
   
 
 
@@ -239,7 +238,6 @@ const Admin: React.FC = () => {
       await adminAPI.forgotPassword()
       toast.showSuccess(t('passwordResetSent', { email: 'contact@spectraautoart.nl' }))
       setShowResetForm(false)
-      setResetEmail('')
     } catch (error) {
       console.error('Password reset error:', error)
       toast.showError(t('passwordResetError'))
@@ -250,7 +248,6 @@ const Admin: React.FC = () => {
 
   const handleBackToLogin = () => {
     setShowResetForm(false)
-    setResetEmail('')
   }
 
   if (!isAuthenticated) {
