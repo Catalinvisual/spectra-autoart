@@ -98,21 +98,56 @@ interface BookingWizardProps {
 }
 
 const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
-  const { t, i18n } = useTranslation()
+  const { i18n } = useTranslation()
   const { showSuccess, showError } = useToast()
 
-  // Helper function to get Romanian translation with fallback
+  // Funcție directă de traducere în română - returnează întotdeauna textul românesc
   const getRoTranslation = (key: string, fallback: string): string => {
-    const translation = t(key)
-    // Debug logging for key translation issues
-    if (i18n.language === 'ro') {
-      console.log(`🔍 getRoTranslation - Key: ${key}, Translation: ${translation}, Fallback: ${fallback}, Should use fallback: ${translation === key || !translation || translation === ''}`)
+    // Dicționar direct de traduceri românești
+    const romanianTranslations: { [key: string]: string } = {
+      'selectService': 'Selectează Serviciul',
+      'newsletterSubscription': 'Abonare Newsletter',
+      'next': 'Următorul',
+      'confirm': 'Confirmă',
+      'personalDetails': 'Detalii Personale',
+      'name': 'Nume',
+      'email': 'Email',
+      'phone': 'Telefon',
+      'selectDate': 'Selectează Data',
+      'selectTime': 'Selectează Ora',
+      'summary': 'Rezumat',
+      'brand': 'Marcă',
+      'model': 'Model',
+      'body': 'Caroserie',
+      'vehicleBody': 'Caroserie',
+      'service': 'Serviciu',
+      'from': 'De la',
+      'newsletterDescription': 'Rămâi la curent cu cele mai recente servicii și oferte!',
+      'noServiceSelected': 'Niciun serviciu selectat',
+      'submit': 'Trimite',
+      'january': 'Ianuarie',
+      'february': 'Februarie',
+      'march': 'Martie',
+      'april': 'Aprilie',
+      'may': 'Mai',
+      'june': 'Iunie',
+      'july': 'Iulie',
+      'august': 'August',
+      'september': 'Septembrie',
+      'october': 'Octombrie',
+      'november': 'Noiembrie',
+      'december': 'Decembrie',
+      'monday': 'Luni',
+      'tuesday': 'Marți',
+      'wednesday': 'Miercuri',
+      'thursday': 'Joi',
+      'friday': 'Vineri',
+      'saturday': 'Sâmbătă',
+      'sunday': 'Duminică'
     }
-    // If language is Romanian but translation is missing (returns key) or is English, use fallback
-    if (i18n.language === 'ro' && (translation === key || !translation || translation === '')) {
-      return fallback
-    }
-    return translation || fallback
+    
+    // Returnează întotdeauna traducerea românească dacă există, altfel fallback
+    return romanianTranslations[key] || fallback
   }
 
 
@@ -139,23 +174,13 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
 
   // Debug: Log current language and available translations
   useEffect(() => {
-    console.log('🔍 BookingWizard - Current i18n language:', i18n.language)
-    console.log('🔍 BookingWizard - Available languages:', Object.keys(i18n.services.resourceStore.data))
-    console.log('🔍 BookingWizard - Romanian translations:', i18n.hasResourceBundle('ro', 'translation'))
-    
     // Force load Romanian resources if needed
     forceRomanianResources()
     
-    console.log('🔍 BookingWizard - Testing selectService translation:', t('selectService'))
-    console.log('🔍 BookingWizard - Testing newsletterSubscription translation:', t('newsletterSubscription'))
-    
     // Force complete reinitialization if Romanian
     if (i18n.language === 'ro') {
-      console.log('🔍 BookingWizard - Language is Romanian, forcing complete reinitialization')
-      
       // Force i18n to completely reinitialize for Romanian
       i18n.changeLanguage('ro').then(() => {
-        console.log('🔍 BookingWizard - Forced Romanian language change completed')
         // Force re-render after language change
         setCurrentStep(prev => prev + 1)
         setTimeout(() => setCurrentStep(prev => prev - 1), 100)
@@ -177,9 +202,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
     }
     
     if (savedLanguage && savedLanguage !== i18n.language) {
-      console.log('🔍 BookingWizard - Syncing language from localStorage:', savedLanguage)
       i18n.changeLanguage(savedLanguage).then(() => {
-        console.log('🔍 BookingWizard - Language sync completed')
         // Force re-render after language change
         setCurrentStep(prev => prev + 1)
         setTimeout(() => setCurrentStep(prev => prev - 1), 100)
@@ -190,8 +213,6 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
   // Monitor language changes and force re-render
   useEffect(() => {
     const handleLanguageChange = (lng: string) => {
-      console.log('🔍 BookingWizard - Language changed to:', lng)
-      
       // Force Romanian resources if needed
       if (lng === 'ro') {
         forceRomanianResources()
@@ -239,43 +260,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
   // Test manual translations and force Romanian translations
   useEffect(() => {
     console.log('🔍 Manual translation test:')
-    console.log('🔍 selectService:', t('selectService'))
-    console.log('🔍 newsletterSubscription:', t('newsletterSubscription'))
-    console.log('🔍 next:', t('next'))
-    console.log('🔍 confirm:', t('confirm'))
-    console.log('🔍 personalDetails:', t('personalDetails'))
-    console.log('🔍 name:', t('name'))
-    console.log('🔍 email:', t('email'))
-    console.log('🔍 phone:', t('phone'))
-    console.log('🔍 selectDate:', t('selectDate'))
-    console.log('🔍 selectTime:', t('selectTime'))
-    console.log('🔍 summary:', t('summary'))
-    console.log('🔍 brand:', t('brand'))
-    console.log('🔍 model:', t('model'))
-    console.log('🔍 body:', t('body'))
-    console.log('🔍 service:', t('service'))
-    
-    // Force Romanian translations if language is Romanian
-    if (i18n.language === 'ro') {
-      console.log('🔍 Forcing Romanian translations...')
-      console.log('🔍 Testing specific problematic keys:')
-      
-      // Test the three specific keys mentioned by user
-      const vehicleBodyTranslation = t('vehicleBody')
-      const newsletterDescTranslation = t('newsletterDescription') 
-      const fromTranslation = t('from')
-      
-      console.log(`🔍 vehicleBody: ${vehicleBodyTranslation} (${vehicleBodyTranslation === 'vehicleBody' ? 'MISSING - using fallback' : 'FOUND'})`)
-      console.log(`🔍 newsletterDescription: ${newsletterDescTranslation} (${newsletterDescTranslation === 'newsletterDescription' ? 'MISSING - using fallback' : 'FOUND'})`)
-      console.log(`🔍 from: ${fromTranslation} (${fromTranslation === 'from' ? 'MISSING - using fallback' : 'FOUND'})`)
-      
-      const testKeys = ['selectService', 'newsletterSubscription', 'next', 'confirm', 'personalDetails', 'name', 'email', 'phone', 'selectDate', 'selectTime', 'summary', 'brand', 'model', 'body', 'service']
-      testKeys.forEach(key => {
-        const translation = t(key)
-        console.log(`🔍 ${key}: ${translation} (${translation === key ? 'MISSING' : 'OK'})`)
-      })
-    }
-  }, [i18n.language, t])
+  }, [])
   const [currentStep, setCurrentStep] = useState(1)
   // Date default pentru afișare instantă
   const [services, setServices] = useState<ServiceWithPrices[]>([])
@@ -1149,17 +1134,36 @@ interface CalendarComponentProps {
 }
 
 export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onDateSelect, bookedDates, loading }) => {
-  const { t, i18n } = useTranslation()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [availabilityMap, setAvailabilityMap] = useState<Record<string, boolean>>({})
 
   // Define getRoTranslation function for CalendarComponent
   const getRoTranslation = (key: string, fallback: string): string => {
-    const translation = t(key)
-    if (i18n.language === 'ro' && (translation === key || !translation || translation === '')) {
-      return fallback
+    // Dicționar direct de traduceri românești
+    const romanianTranslations: { [key: string]: string } = {
+      'january': 'Ianuarie',
+      'february': 'Februarie',
+      'march': 'Martie',
+      'april': 'Aprilie',
+      'may': 'Mai',
+      'june': 'Iunie',
+      'july': 'Iulie',
+      'august': 'August',
+      'september': 'Septembrie',
+      'october': 'Octombrie',
+      'november': 'Noiembrie',
+      'december': 'Decembrie',
+      'monday': 'Luni',
+      'tuesday': 'Marți',
+      'wednesday': 'Miercuri',
+      'thursday': 'Joi',
+      'friday': 'Vineri',
+      'saturday': 'Sâmbătă',
+      'sunday': 'Duminică'
     }
-    return translation || fallback
+    
+    // Returnează întotdeauna traducerea românească dacă există, altfel fallback
+    return romanianTranslations[key] || fallback
   }
 
   // Define month names and week days for CalendarComponent
