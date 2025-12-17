@@ -103,12 +103,21 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
 
   // Force load Romanian resources if needed
   const forceRomanianResources = () => {
-    if (i18n.language === 'ro' && !i18n.hasResourceBundle('ro', 'translation')) {
+    if (i18n.language === 'ro') {
       console.log('🔍 Force loading Romanian resources...')
       const roResources = (resources as any)?.ro?.translation || {}
       console.log('🔍 Romanian resources available:', Object.keys(roResources).length, 'keys')
+      
+      // Clear existing bundle and reload
+      i18n.removeResourceBundle('ro', 'translation')
       i18n.addResourceBundle('ro', 'translation', roResources, true, true)
+      
       console.log('🔍 Romanian resources loaded:', i18n.hasResourceBundle('ro', 'translation'))
+      
+      // Force i18n to reload translations
+      i18n.reloadResources(['ro'], ['translation']).then(() => {
+        console.log('🔍 Romanian resources reloaded')
+      })
     }
   }
 
@@ -124,11 +133,17 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
     console.log('🔍 BookingWizard - Testing selectService translation:', t('selectService'))
     console.log('🔍 BookingWizard - Testing newsletterSubscription translation:', t('newsletterSubscription'))
     
-    // Force reload translations when language changes
+    // Force complete reinitialization if Romanian
     if (i18n.language === 'ro') {
-      console.log('🔍 BookingWizard - Language is Romanian, forcing translation check')
-      // Force re-render by updating a dummy state
-      setCurrentStep(prev => prev)
+      console.log('🔍 BookingWizard - Language is Romanian, forcing complete reinitialization')
+      
+      // Force i18n to completely reinitialize for Romanian
+      i18n.changeLanguage('ro').then(() => {
+        console.log('🔍 BookingWizard - Forced Romanian language change completed')
+        // Force re-render after language change
+        setCurrentStep(prev => prev + 1)
+        setTimeout(() => setCurrentStep(prev => prev - 1), 100)
+      })
     }
   }, [i18n.language])
 
@@ -139,12 +154,19 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
     console.log('🔍 BookingWizard - i18n current language:', i18n.language)
     console.log('🔍 BookingWizard - Need sync?', savedLanguage && savedLanguage !== i18n.language)
     
+    // Always force Romanian resources if Romanian is selected
+    if (savedLanguage === 'ro' || i18n.language === 'ro') {
+      console.log('🔍 BookingWizard - Romanian detected, forcing resource loading')
+      forceRomanianResources()
+    }
+    
     if (savedLanguage && savedLanguage !== i18n.language) {
       console.log('🔍 BookingWizard - Syncing language from localStorage:', savedLanguage)
       i18n.changeLanguage(savedLanguage).then(() => {
         console.log('🔍 BookingWizard - Language sync completed')
         // Force re-render after language change
-        setCurrentStep(prev => prev)
+        setCurrentStep(prev => prev + 1)
+        setTimeout(() => setCurrentStep(prev => prev - 1), 100)
       })
     }
   }, [])
@@ -153,9 +175,17 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
   useEffect(() => {
     const handleLanguageChange = (lng: string) => {
       console.log('🔍 BookingWizard - Language changed to:', lng)
-      // Force re-render by updating a dummy state
-      setCurrentStep(prev => prev + 1)
-      setTimeout(() => setCurrentStep(prev => prev - 1), 0)
+      
+      // Force Romanian resources if needed
+      if (lng === 'ro') {
+        forceRomanianResources()
+      }
+      
+      // Force complete component re-render
+      setTimeout(() => {
+        setCurrentStep(prev => prev + 1)
+        setTimeout(() => setCurrentStep(prev => prev - 1), 100)
+      }, 100)
     }
     
     i18n.on('languageChanged', handleLanguageChange)
@@ -163,6 +193,32 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       i18n.off('languageChanged', handleLanguageChange)
     }
   }, [i18n])
+
+  // Force Romanian translation loading on initial mount
+  useEffect(() => {
+    console.log('🔍 BookingWizard - Initial mount, checking language...')
+    const savedLanguage = localStorage.getItem('selectedLanguage')
+    
+    if (savedLanguage === 'ro' || i18n.language === 'ro') {
+      console.log('🔍 BookingWizard - Romanian detected on mount, forcing resources...')
+      
+      // Force Romanian resources loading
+      forceRomanianResources()
+      
+      // Force language change to Romanian if needed
+      if (i18n.language !== 'ro') {
+        i18n.changeLanguage('ro').then(() => {
+          console.log('🔍 BookingWizard - Forced Romanian language change on mount completed')
+        })
+      }
+      
+      // Force complete re-render after a delay
+      setTimeout(() => {
+        setCurrentStep(prev => prev + 1)
+        setTimeout(() => setCurrentStep(prev => prev - 1), 200)
+      }, 500)
+    }
+  }, []) // Only run on initial mount
 
   // Test manual translations and force Romanian translations
   useEffect(() => {
@@ -185,9 +241,8 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
     
     // Force Romanian translations if language is Romanian
     if (i18n.language === 'ro') {
-      console.log('🔍 Force checking Romanian translations...')
-      // Check if translations are actually available
-      const testKeys = ['selectService', 'newsletterSubscription', 'next', 'confirm', 'personalDetails']
+      console.log('🔍 Forcing Romanian translations...')
+      const testKeys = ['selectService', 'newsletterSubscription', 'next', 'confirm', 'personalDetails', 'name', 'email', 'phone', 'selectDate', 'selectTime', 'summary', 'brand', 'model', 'body', 'service']
       testKeys.forEach(key => {
         const translation = t(key)
         console.log(`🔍 ${key}: ${translation} (${translation === key ? 'MISSING' : 'OK'})`)
@@ -687,7 +742,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 1:
         return (
           <div className="wizard-step">
-            <h3>{t('vehicleBrand')}</h3>
+            <h3>{t('vehicleBrand') || 'Marcă'}</h3>
             <div className="form-group">
               <select
                 className="form-select"
@@ -705,7 +760,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                   }
                 }}
               >
-                <option value="">{t('vehicleBrand')}</option>
+                <option value="">{t('vehicleBrand') || 'Marcă'}</option>
                 {getUniqueMakes().map(make => (
                   <option key={make} value={make}>{make}</option>
                 ))}
@@ -718,7 +773,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 2:
         return (
           <div className="wizard-step">
-            <h3>{t('vehicleModel')}</h3>
+            <h3>{t('vehicleModel') || 'Model'}</h3>
             <div className="form-group">
               <select
                 className="form-select"
@@ -736,7 +791,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 }}
                 disabled={!bookingData.make}
               >
-                <option value="">{t('vehicleModel')}</option>
+                <option value="">{t('vehicleModel') || 'Model'}</option>
                 {getModelsForMake().map(model => (
                   <option key={model} value={model}>{model}</option>
                 ))}
@@ -748,7 +803,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 3:
         return (
           <div className="wizard-step">
-            <h3>{t('vehicleBody')}</h3>
+            <h3>{t('vehicleBody') || 'Caroserie'}</h3>
             <div className="form-group">
               <select
                 className="form-select"
@@ -763,7 +818,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 }}
                 disabled={!bookingData.model}
               >
-                <option value="">{t('vehicleBody')}</option>
+                <option value="">{t('vehicleBody') || 'Caroserie'}</option>
                 {getBodiesForType().map(body => (
                   <option key={body.key} value={body.key}>{body.name}</option>
                 ))}
@@ -775,10 +830,10 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 4:
         return (
           <div className="wizard-step">
-            <h3>{t('selectService')}</h3>
+            <h3>{t('selectService') || 'Selectează Serviciul'}</h3>
             {!bookingData.body && (
               <div className="info-message">
-                <p>{t('selectBodyTypeFirst')}</p>
+                <p>{t('selectBodyTypeFirst') || 'Selectează mai întâi tipul de caroserie'}</p>
               </div>
             )}
             <div className="service-grid">
@@ -803,7 +858,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                     <div className="service-price">
                       {servicePrice ? (
                         <>
-                          {t('from')} €{servicePrice.price_min}
+                          {t('from') || 'De la'} €{servicePrice.price_min}
                           {servicePrice.price_max && servicePrice.price_max > servicePrice.price_min && (
                             <span> - €{servicePrice.price_max}</span>
                           )}
@@ -846,10 +901,10 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 5:
         return (
           <div className="wizard-step step-5-container">
-            <h3>{t('personalDetails')}</h3>
+            <h3>{t('personalDetails') || 'Detalii Personale'}</h3>
             <div className="step-5-scroll-content">
               <div className="form-group">
-                <label className="form-label">{t('name')}</label>
+                <label className="form-label">{t('name') || 'Nume'}</label>
                 <input
                   type="text"
                   className={`form-input ${validationErrors.name ? 'error' : ''}`}
@@ -866,7 +921,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">{t('email')}</label>
+                <label className="form-label">{t('email') || 'Email'}</label>
                 <input
                   type="email"
                   className={`form-input ${validationErrors.email ? 'error' : ''}`}
@@ -883,7 +938,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">{t('phone')}</label>
+                <label className="form-label">{t('phone') || 'Telefon'}</label>
                 <div className={`phone-input-group ${validationErrors.phone ? 'error' : ''}`}>
                   <div className="phone-prefix-dropdown">
                     <button
@@ -948,7 +1003,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">{t('selectDate')}</label>
+                <label className="form-label">{t('selectDate') || 'Selectează Data'}</label>
                 <div className={`calendar-wrapper ${validationErrors.date ? 'error' : ''}`}>
                   <CalendarComponent
                     selectedDate={bookingData.date}
@@ -982,13 +1037,13 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               
               {/* Booking Summary Card */}
               <SummaryCard
-                title={t('summary')}
+                title={t('summary') || 'Rezumat'}
                 items={[
-                  { label: `${t('vehicleBrand')}:`, value: bookingData.make },
-                  { label: `${t('vehicleModel')}:`, value: bookingData.model },
-                  { label: `${t('vehicleBody')}:`, value: bookingData.body },
+                  { label: `${t('vehicleBrand') || 'Marcă'}:`, value: bookingData.make },
+                  { label: `${t('vehicleModel') || 'Model'}:`, value: bookingData.model },
+                  { label: `${t('vehicleBody') || 'Caroserie'}:`, value: bookingData.body },
                   { 
-                    label: `${t('service')}:`, 
+                    label: `${t('service') || 'Serviciu'}:`, 
                     value: Array.isArray(bookingData.services) && bookingData.services.length > 0 
                       ? bookingData.services.map(serviceId => {
                           const service = services.find(s => s.id === serviceId)
@@ -1031,7 +1086,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
         <div className="wizard-actions">
           {currentStep > 1 && (
             <button className="btn wizard-back-btn" onClick={handleBack}>
-              {t('back')}
+              {t('back') || 'Înapoi'}
             </button>
           )}
           
@@ -1041,7 +1096,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               onClick={handleNext}
               disabled={!canProceedToNext()}
             >
-              {t('next')}
+              {t('next') || 'Următorul'}
             </button>
           ) : (
             <button 
@@ -1049,7 +1104,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               onClick={handleSubmit}
               disabled={!isFormValid()}
             >
-              {t('confirm')}
+              {t('confirm') || 'Confirmă'}
             </button>
           )}
         </div>
