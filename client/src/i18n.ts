@@ -3922,6 +3922,10 @@ const resources = {
       friday: 'Vin',
       saturday: 'Sâm',
       bookingConfirmed: 'Programare Confirmată!',
+      // Additional keys for BookingWizard
+      brand: 'Marcă',
+      model: 'Model',
+      body: 'Caroserie',
       send: 'Trimite',
       whatsapp: 'WhatsApp',
       instagram: 'Instagram',

@@ -101,6 +101,32 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
   const { t, i18n } = useTranslation()
   const { showSuccess, showError } = useToast()
 
+  // Helper function to get Romanian translation with fallback
+  const getRoTranslation = (key: string, fallback: string): string => {
+    const translation = t(key)
+    // If language is Romanian but translation is English, use fallback
+    if (i18n.language === 'ro' && translation && 
+        (translation === key || // Key returned as-is (missing)
+         translation === 'Select Service' || 
+         translation === 'Newsletter Subscription' ||
+         translation === 'Next' ||
+         translation === 'Confirm' ||
+         translation === 'Personal Details' ||
+         translation === 'Name' ||
+         translation === 'Email' ||
+         translation === 'Phone' ||
+         translation === 'Select Date' ||
+         translation === 'Select Time' ||
+         translation === 'Summary' ||
+         translation === 'Service' ||
+         translation === 'brand' ||
+         translation === 'model' ||
+         translation === 'body')) {
+      return fallback
+    }
+    return translation || fallback
+  }
+
   // Force load Romanian resources if needed
   const forceRomanianResources = () => {
     if (i18n.language === 'ro') {
@@ -742,7 +768,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 1:
         return (
           <div className="wizard-step">
-            <h3>{t('vehicleBrand') || 'Marcă'}</h3>
+            <h3>{getRoTranslation('vehicleBrand', 'Marcă')}</h3>
             <div className="form-group">
               <select
                 className="form-select"
@@ -760,7 +786,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                   }
                 }}
               >
-                <option value="">{t('vehicleBrand') || 'Marcă'}</option>
+                <option value="">{getRoTranslation('vehicleBrand', 'Marcă')}</option>
                 {getUniqueMakes().map(make => (
                   <option key={make} value={make}>{make}</option>
                 ))}
@@ -773,7 +799,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 2:
         return (
           <div className="wizard-step">
-            <h3>{t('vehicleModel') || 'Model'}</h3>
+            <h3>{getRoTranslation('vehicleModel', 'Model')}</h3>
             <div className="form-group">
               <select
                 className="form-select"
@@ -791,7 +817,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 }}
                 disabled={!bookingData.make}
               >
-                <option value="">{t('vehicleModel') || 'Model'}</option>
+                <option value="">{getRoTranslation('vehicleModel', 'Model')}</option>
                 {getModelsForMake().map(model => (
                   <option key={model} value={model}>{model}</option>
                 ))}
@@ -803,7 +829,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 3:
         return (
           <div className="wizard-step">
-            <h3>{t('vehicleBody') || 'Caroserie'}</h3>
+            <h3>{getRoTranslation('vehicleBody', 'Caroserie')}</h3>
             <div className="form-group">
               <select
                 className="form-select"
@@ -818,7 +844,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 }}
                 disabled={!bookingData.model}
               >
-                <option value="">{t('vehicleBody') || 'Caroserie'}</option>
+                <option value="">{getRoTranslation('vehicleBody', 'Caroserie')}</option>
                 {getBodiesForType().map(body => (
                   <option key={body.key} value={body.key}>{body.name}</option>
                 ))}
@@ -830,7 +856,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 4:
         return (
           <div className="wizard-step">
-            <h3>{t('selectService') || 'Selectează Serviciul'}</h3>
+            <h3>{getRoTranslation('selectService', 'Selectează Serviciul')}</h3>
             {!bookingData.body && (
               <div className="info-message">
                 <p>{t('selectBodyTypeFirst') || 'Selectează mai întâi tipul de caroserie'}</p>
@@ -876,10 +902,10 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
             <div className="newsletter-card">
               <div className="newsletter-header">
                 <i className="newsletter-icon">📧</i>
-                <h4 className="newsletter-title">{t('newsletterSubscription') || 'Abonament Newsletter'}</h4>
+                <h4 className="newsletter-title">{getRoTranslation('newsletterSubscription', 'Abonament Newsletter')}</h4>
               </div>
               <p className="newsletter-description">
-                {t('newsletterDescription') || 'Rămâi la curent cu cele mai recente servicii și oferte!'}
+                {getRoTranslation('newsletterDescription', 'Rămâi la curent cu cele mai recente servicii și oferte!')}
               </p>
               <div className="newsletter-checkbox-wrapper">
                 <label className="newsletter-label">
@@ -901,10 +927,10 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 5:
         return (
           <div className="wizard-step step-5-container">
-            <h3>{t('personalDetails') || 'Detalii Personale'}</h3>
+            <h3>{getRoTranslation('personalDetails', 'Detalii Personale')}</h3>
             <div className="step-5-scroll-content">
               <div className="form-group">
-                <label className="form-label">{t('name') || 'Nume'}</label>
+                <label className="form-label">{getRoTranslation('name', 'Nume')}</label>
                 <input
                   type="text"
                   className={`form-input ${validationErrors.name ? 'error' : ''}`}
@@ -921,7 +947,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">{t('email') || 'Email'}</label>
+                <label className="form-label">{getRoTranslation('email', 'Email')}</label>
                 <input
                   type="email"
                   className={`form-input ${validationErrors.email ? 'error' : ''}`}
@@ -938,7 +964,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">{t('phone') || 'Telefon'}</label>
+                <label className="form-label">{getRoTranslation('phone', 'Telefon')}</label>
                 <div className={`phone-input-group ${validationErrors.phone ? 'error' : ''}`}>
                   <div className="phone-prefix-dropdown">
                     <button
@@ -1003,7 +1029,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">{t('selectDate') || 'Selectează Data'}</label>
+                <label className="form-label">{getRoTranslation('selectDate', 'Selectează Data')}</label>
                 <div className={`calendar-wrapper ${validationErrors.date ? 'error' : ''}`}>
                   <CalendarComponent
                     selectedDate={bookingData.date}
@@ -1016,7 +1042,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">{t('selectTime') || 'Selectează Ora'}</label>
+                <label className="form-label">{getRoTranslation('selectTime', 'Selectează Ora')}</label>
                 <input
                   type="time"
                   className={`form-input time-input-instant ${validationErrors.time ? 'error' : ''}`}
@@ -1037,13 +1063,13 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               
               {/* Booking Summary Card */}
               <SummaryCard
-                title={t('summary') || 'Rezumat'}
+                title={getRoTranslation('summary', 'Rezumat')}
                 items={[
-                  { label: `${t('vehicleBrand') || 'Marcă'}:`, value: bookingData.make },
-                  { label: `${t('vehicleModel') || 'Model'}:`, value: bookingData.model },
-                  { label: `${t('vehicleBody') || 'Caroserie'}:`, value: bookingData.body },
+                  { label: `${getRoTranslation('vehicleBrand', 'Marcă')}:`, value: bookingData.make },
+                  { label: `${getRoTranslation('vehicleModel', 'Model')}:`, value: bookingData.model },
+                  { label: `${getRoTranslation('vehicleBody', 'Caroserie')}:`, value: bookingData.body },
                   { 
-                    label: `${t('service') || 'Serviciu'}:`, 
+                    label: `${getRoTranslation('service', 'Serviciu')}:`, 
                     value: Array.isArray(bookingData.services) && bookingData.services.length > 0 
                       ? bookingData.services.map(serviceId => {
                           const service = services.find(s => s.id === serviceId)
@@ -1096,7 +1122,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               onClick={handleNext}
               disabled={!canProceedToNext()}
             >
-              {t('next') || 'Următorul'}
+              {getRoTranslation('next', 'Următorul')}
             </button>
           ) : (
             <button 
@@ -1104,7 +1130,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               onClick={handleSubmit}
               disabled={!isFormValid()}
             >
-              {t('confirm') || 'Confirmă'}
+              {getRoTranslation('confirm', 'Confirmă')}
             </button>
           )}
         </div>
