@@ -685,25 +685,25 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
     } = {}
 
     if (!bookingData.user.name.trim()) {
-      errors.name = t('nameRequired') || 'Numele este obligatoriu'
+      errors.name = getRoTranslation('nameRequired', 'Numele este obligatoriu')
     }
 
     if (!bookingData.user.email.trim()) {
-      errors.email = t('emailRequired') || 'Emailul este obligatoriu'
+      errors.email = getRoTranslation('emailRequired', 'Emailul este obligatoriu')
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.user.email)) {
-      errors.email = t('invalidEmail') || 'Vă rugăm să introduceți o adresă de email validă'
+      errors.email = getRoTranslation('invalidEmail', 'Vă rugăm să introduceți o adresă de email validă')
     }
 
     if (!bookingData.user.phone.trim()) {
-      errors.phone = t('phoneRequired') || 'Telefonul este obligatoriu'
+      errors.phone = getRoTranslation('phoneRequired', 'Telefonul este obligatoriu')
     }
 
     if (!bookingData.date) {
-      errors.date = t('dateRequired') || 'Data este obligatorie'
+      errors.date = getRoTranslation('dateRequired', 'Data este obligatorie')
     }
 
     if (!bookingData.time) {
-      errors.time = t('timeRequired') || 'Ora este obligatorie'
+      errors.time = getRoTranslation('timeRequired', 'Ora este obligatorie')
     }
 
     setValidationErrors(errors)
@@ -730,8 +730,8 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
         calendarSyncManager.notifyRefresh()
         
         // Show success notification immediately
-        console.log('Calling showSuccess with message:', t('bookingConfirmed') || 'Programarea a fost confirmată!')
-        showSuccess(t('bookingConfirmed') || 'Programare Confirmată!')
+        console.log('Calling showSuccess with message:', getRoTranslation('bookingConfirmed', 'Programarea a fost confirmată!'))
+        showSuccess(getRoTranslation('bookingConfirmed', 'Programare Confirmată!'))
         // Close modal immediately after notification
         if (onCancel) {
           onCancel()
@@ -859,7 +859,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
             <h3>{getRoTranslation('selectService', 'Selectează Serviciul')}</h3>
             {!bookingData.body && (
               <div className="info-message">
-                <p>{t('selectBodyTypeFirst') || 'Selectează mai întâi tipul de caroserie'}</p>
+                <p>{getRoTranslation('selectBodyTypeFirst', 'Selectează mai întâi tipul de caroserie')}</p>
               </div>
             )}
             <div className="service-grid">
@@ -890,7 +890,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                           )}
                         </>
                       ) : (
-                        <span className="unavailable">{t('unavailable') || 'Indisponibil'}</span>
+                        <span className="unavailable">{getRoTranslation('unavailable', 'Indisponibil')}</span>
                       )}
                     </div>
                   </div>
@@ -916,7 +916,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                     onChange={(e) => handleInputChange('newsletter', e.target.checked)}
                   />
                   <span className="newsletter-text">
-                    {t('subscribeNewsletter') || 'Abonează-mă la newsletter'}
+                    {getRoTranslation('subscribeNewsletter', 'Abonează-mă la newsletter')}
                   </span>
                 </label>
               </div>
@@ -1112,7 +1112,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
         <div className="wizard-actions">
           {currentStep > 1 && (
             <button className="btn wizard-back-btn" onClick={handleBack}>
-              {t('back') || 'Înapoi'}
+              {getRoTranslation('back', 'Înapoi')}
             </button>
           )}
           
@@ -1253,28 +1253,28 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
   }
 
   const monthNames = [
-    t('january') || 'Ianuarie',
-    t('february') || 'Februarie',
-    t('march') || 'Martie',
-    t('april') || 'Aprilie',
-    t('may') || 'Mai',
-    t('june') || 'Iunie',
-    t('july') || 'Iulie',
-    t('august') || 'August',
-    t('september') || 'Septembrie',
-    t('october') || 'Octombrie',
-    t('november') || 'Noiembrie',
-    t('december') || 'Decembrie'
+    getRoTranslation('january', 'Ianuarie'),
+    getRoTranslation('february', 'Februarie'),
+    getRoTranslation('march', 'Martie'),
+    getRoTranslation('april', 'Aprilie'),
+    getRoTranslation('may', 'Mai'),
+    getRoTranslation('june', 'Iunie'),
+    getRoTranslation('july', 'Iulie'),
+    getRoTranslation('august', 'August'),
+    getRoTranslation('september', 'Septembrie'),
+    getRoTranslation('october', 'Octombrie'),
+    getRoTranslation('november', 'Noiembrie'),
+    getRoTranslation('december', 'Decembrie')
   ]
 
   const weekDays = [
-    t('sunday') || 'Dum',
-    t('monday') || 'Lun',
-    t('tuesday') || 'Mar',
-    t('wednesday') || 'Mie',
-    t('thursday') || 'Joi',
-    t('friday') || 'Vin',
-    t('saturday') || 'Sâm'
+    getRoTranslation('sunday', 'Dum'),
+    getRoTranslation('monday', 'Lun'),
+    getRoTranslation('tuesday', 'Mar'),
+    getRoTranslation('wednesday', 'Mie'),
+    getRoTranslation('thursday', 'Joi'),
+    getRoTranslation('friday', 'Vin'),
+    getRoTranslation('saturday', 'Sâm')
   ]
 
   const days = getDaysInMonth()
@@ -1286,7 +1286,7 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
     }}>
       {loading && (
         <div className="calendar-loading">
-          {t('checkingAvailability') || 'Se verifică disponibilitatea...'}
+          {getRoTranslation('checkingAvailability', 'Se verifică disponibilitatea...')}
         </div>
       )}
       
@@ -1371,15 +1371,15 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
       <div className="calendar-legend">
         <div className="legend-item">
           <span className="legend-color available"></span>
-          <span>{t('available') || 'Disponibil'}</span>
+          <span>{getRoTranslation('available', 'Disponibil')}</span>
         </div>
         <div className="legend-item">
           <span className="legend-color unavailable"></span>
-          <span>{t('occupied') || 'Ocupat'}</span>
+          <span>{getRoTranslation('occupied', 'Ocupat')}</span>
         </div>
         <div className="legend-item">
           <span className="legend-color sunday"></span>
-          <span>{t('closed') || 'Închis'}</span>
+          <span>{getRoTranslation('closed', 'Închis')}</span>
         </div>
       </div>
     </div>
