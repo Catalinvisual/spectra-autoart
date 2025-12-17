@@ -261,35 +261,35 @@ router.post('/auth/forgot-password', async (req, res) => {
     // Send reset email
     const resetHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #00e5ff;">Resetare Parolă - Spectra AutoArt Admin</h2>
-        <p>A fost solicitată resetarea parolei pentru contul admin.</p>
+        <h2 style="color: #00e5ff;">Wachtwoord Resetten - Spectra AutoArt Beheer</h2>
+        <p>Er is een verzoek ingediend om het wachtwoord voor het beheerdersaccount te resetten.</p>
         <p><strong>Email:</strong> ${resetEmail}</p>
-        <p><strong>Data:</strong> ${new Date().toLocaleString('ro-RO')}</p>
+        <p><strong>Datum:</strong> ${new Date().toLocaleString('nl-NL')}</p>
         <div style="margin: 30px 0; text-align: center;">
           <a href="${resetLink}" 
              style="background: linear-gradient(45deg, #00e5ff, #0099cc); 
                     color: white; padding: 15px 30px; 
                     text-decoration: none; border-radius: 8px; 
                     font-weight: bold; display: inline-block;">
-            Resetare Parolă
+            Wachtwoord Resetten
           </a>
         </div>
         <p style="color: #666; font-size: 12px;">
-          Link-ul expiră în 1 oră. Dacă nu ați solicitat această resetare, 
-          vă rugăm să ignorați acest email.
+          De link verloopt over 1 uur. Als u deze reset niet heeft aangevraagd, 
+          kunt u deze email negeren.
         </p>
         <hr style="border: 1px solid #eee; margin: 30px 0;">
         <p style="color: #999; font-size: 12px; text-align: center;">
-          Spectra AutoArt - Sistem de Administrare
+          Spectra AutoArt - Beheersysteem
         </p>
       </div>
     `
     
-    await emailService.sendEmail({
-      to: resetEmail,
-      subject: 'Resetare Parolă Admin - Spectra AutoArt',
-      html: resetHtml
-    })
+    await emailService.sendEmail(
+      resetEmail,
+      'Beheerderswachtwoord Resetten - Spectra AutoArt',
+      resetHtml
+    )
     
     res.json({
       success: true,

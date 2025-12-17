@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { adminAPI, publicAPI } from '../services/api'
 import api from '../services/api'
 import { useToast } from '../contexts/ToastContext'
@@ -100,6 +100,7 @@ const Admin: React.FC = () => {
   const { t, i18n } = useTranslation()
   const { currentLanguage, setLanguage } = useLanguage()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const toast = useToast()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -109,6 +110,10 @@ const Admin: React.FC = () => {
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [showResetForm, setShowResetForm] = useState(false)
+  const [resetToken, setResetToken] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showResetPasswordForm, setShowResetPasswordForm] = useState(false)
   
 
 
@@ -127,6 +132,15 @@ const Admin: React.FC = () => {
       setIsAuthenticated(true)
     }
   }, [])
+
+  // Check for password reset token in URL
+  useEffect(() => {
+    const token = searchParams.get('token')
+    if (token) {
+      setResetToken(token)
+      setShowResetPasswordForm(true)
+    }
+  }, [searchParams])
 
   // Session expiration check
   useEffect(() => {
@@ -248,6 +262,41 @@ const Admin: React.FC = () => {
 
   const handleBackToLogin = () => {
     setShowResetForm(false)
+    setShowResetPasswordForm(false)
+    setResetToken('')
+    setNewPassword('')
+    setConfirmPassword('')
+    navigate('/admin')
+  }
+
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (newPassword !== confirmPassword) {
+      toast.showError('Wachtwoorden komen niet overeen')
+      return
+    }
+    
+    if (newPassword.length < 6) {
+      toast.showError('Wachtwoord moet minimaal 6 tekens bevatten')
+      return
+    }
+
+    setLoading(true)
+    try {
+      await adminAPI.resetPassword(resetToken, newPassword)
+      toast.showSuccess('Wachtwoord succesvol gereset! U kunt nu inloggen.')
+      setShowResetPasswordForm(false)
+      setResetToken('')
+      setNewPassword('')
+      setConfirmPassword('')
+      navigate('/admin')
+    } catch (error) {
+      console.error('Reset password error:', error)
+      toast.showError('Wachtwoord reset mislukt. Probeer het opnieuw.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (!isAuthenticated) {
@@ -261,7 +310,41 @@ const Admin: React.FC = () => {
             </button>
           </div>
           
-          {!showResetForm ? (
+          {showResetPasswordForm ? (
+            <div className="reset-password-form">
+              <h3>Wachtwoord Resetten</h3>
+              <form onSubmit={handleResetPasswordSubmit}>
+                <div className="form-group">
+                  <label>Nieuw Wachtwoord</label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Bevestig Wachtwoord</label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <button type="submit" disabled={loading} className="btn-primary">
+                  {loading ? 'Bezig...' : 'Wachtwoord Resetten'}
+                </button>
+              </form>
+              <div className="login-footer">
+                <button onClick={handleBackToLogin} className="back-to-login-btn">
+                  ← {t('back')}
+                </button>
+              </div>
+            </div>
+          ) : !showResetForm ? (
             <>
               <form onSubmit={handleLogin}>
                 <div className="form-group">
