@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { publicAPI } from '../services/api'
@@ -9,6 +9,23 @@ const Footer = () => {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [language, setLanguage] = useState(i18n.language)
+
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = (lng: string) => {
+      setLanguage(lng)
+      // Reset message when language changes to show translated text
+      if (message) {
+        setMessage('')
+      }
+    }
+    
+    i18n.on('languageChanged', handleLanguageChange)
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange)
+    }
+  }, [i18n, message, language]) // Include language in dependencies to use it
 
   const tf = (key: string, fallback: string) => {
     const v = t(key)
