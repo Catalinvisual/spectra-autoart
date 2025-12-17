@@ -548,47 +548,63 @@ h2:hover {
   
   /* Avatar și mai mic pentru ecrane foarte mici */
   .customer-avatar {
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
-    min-height: 30px;
-    font-size: 12px;
+    width: 25px;
+    height: 25px;
+    min-width: 25px;
+    min-height: 25px;
+    font-size: 10px;
     border-radius: 50%;
     flex-shrink: 0;
   }
   
-  /* Reduce gap pentru booking stats pe ecrane foarte mici */
+  /* Responsive booking stats pentru ecrane foarte mici */
   .bookings-stats {
-    gap: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: space-between;
   }
   
-  /* Uniformizează înălțimea tuturor elementelor din stats */
-  .bookings-stats > * {
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  /* Asigură că stat-item și butonul au aceeași înălțime */
+  /* Uniformizează și optimizează stat-items */
   .stat-item {
-    padding: 8px 12px;
+    padding: 6px 8px;
     border-radius: 6px;
     background: rgba(255, 255, 255, 0.05);
-    min-height: 40px;
+    min-height: 35px;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 1;
+    flex: 1 1 calc(33.333% - 6px);
+    max-width: calc(33.333% - 6px);
+    font-size: 12px;
+    text-align: center;
+    line-height: 1.2;
   }
   
+  /* Buton responsive */
   .clear-operations-btn {
-    min-height: 40px;
-    padding: 8px 16px;
+    min-height: 35px;
+    padding: 6px 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     white-space: nowrap;
+    font-size: 11px;
+    flex: 1 1 100%;
+    max-width: 100%;
+    margin-top: 5px;
+  }
+  
+  /* Layout special pentru ecrane foarte mici */
+  @media (max-width: 360px) {
+    .stat-item {
+      flex: 1 1 calc(50% - 4px);
+      max-width: calc(50% - 4px);
+      font-size: 11px;
+    }
+    .stat-item:nth-child(3) {
+      flex: 1 1 100%;
+      max-width: 100%;
+    }
   }
 }
 
@@ -1421,6 +1437,14 @@ h2:hover {
   
   .bookings-stats {
     justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .stat-item {
+    flex: 1 1 auto;
+    min-width: 120px;
+    text-align: center;
   }
   
   .bookings-grid {
