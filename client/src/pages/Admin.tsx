@@ -284,7 +284,7 @@ const Admin: React.FC = () => {
 
     setLoading(true)
     try {
-      await adminAPI.resetPassword(resetToken, newPassword)
+      await adminAPI.resetPassword({ token: resetToken, newPassword })
       toast.showSuccess('Wachtwoord succesvol gereset! U kunt nu inloggen.')
       setShowResetPasswordForm(false)
       setResetToken('')
