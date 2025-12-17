@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { resources } from '../i18n'
 import { publicAPI } from '../services/api'
 import './Footer.css'
 
@@ -12,6 +13,20 @@ const Footer = () => {
   const [language, setLanguage] = useState(i18n.language)
   const [renderKey, setRenderKey] = useState(0) // Force re-render key
 
+  // Force load Romanian resources on mount and language change
+  useEffect(() => {
+    if (i18n.language === 'ro') {
+      console.log('🔍 Footer - Ensuring Romanian resources are loaded...')
+      if (!i18n.hasResourceBundle('ro', 'translation')) {
+        const roResources = (resources as any)?.ro?.translation || {}
+        console.log('🔍 Footer - Loading Romanian resources:', Object.keys(roResources).length, 'keys')
+        i18n.addResourceBundle('ro', 'translation', roResources, true, true)
+      }
+      // Force re-render after loading resources
+      setRenderKey(prev => prev + 1)
+    }
+  }, [i18n.language])
+
   // Force re-render when language changes
   useEffect(() => {
     const handleLanguageChange = (lng: string) => {
@@ -20,6 +35,15 @@ const Footer = () => {
       // Reset message when language changes to show translated text
       if (message) {
         setMessage('')
+      }
+      
+      // Load Romanian resources if needed
+      if (lng === 'ro') {
+        console.log('🔍 Footer - Language changed to Romanian, loading resources...')
+        if (!i18n.hasResourceBundle('ro', 'translation')) {
+          const roResources = (resources as any)?.ro?.translation || {}
+          i18n.addResourceBundle('ro', 'translation', roResources, true, true)
+        }
       }
     }
     
@@ -30,8 +54,26 @@ const Footer = () => {
   }, [i18n, message, language]) // Include language in dependencies to use it
 
   const tf = (key: string, fallback: string) => {
+    // Force load Romanian resources if needed
+    if (i18n.language === 'ro' && !i18n.hasResourceBundle('ro', 'translation')) {
+      console.log('🔍 Footer - Loading Romanian resources...')
+      const roResources = (resources as any)?.ro?.translation || {}
+      i18n.addResourceBundle('ro', 'translation', roResources, true, true)
+    }
+    
     const v = t(key)
     console.log(`🔍 Footer tf() - key: ${key}, translation: ${v}, fallback: ${fallback}, currentLang: ${i18n.language}`)
+    console.log(`🔍 Footer tf() - Has RO bundle: ${i18n.hasResourceBundle('ro', 'translation')}`)
+    
+    // Check if translation exists by looking directly in resources
+    const currentLang = i18n.language
+    const translationExists = currentLang === 'ro' && (resources as any)?.ro?.translation?.[key]
+    
+    if (translationExists) {
+      return translationExists
+    }
+    
+    // Fallback to i18n translation or provided fallback
     return v === key ? fallback : v
   }
 
