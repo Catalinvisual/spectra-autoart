@@ -146,24 +146,76 @@ async function formatServicesForEmail(services, bodyType) {
   return servicesArray
 }
 
+// Login attempt tracking (in production, use Redis or database)
+const loginAttempts = new Map()
+
+// Clean up old login attempts (older than 15 minutes)
+function cleanupLoginAttempts() {
+  const now = Date.now()
+  const fifteenMinutes = 15 * 60 * 1000
+  
+  for (const [email, attempts] of loginAttempts.entries()) {
+    const recentAttempts = attempts.filter(attempt => now - attempt < fifteenMinutes)
+    if (recentAttempts.length === 0) {
+      loginAttempts.delete(email)
+    } else {
+      loginAttempts.set(email, recentAttempts)
+    }
+  }
+}
+
+// Run cleanup every 5 minutes
+setInterval(cleanupLoginAttempts, 5 * 60 * 1000)
+
 // Admin login
 router.post('/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body
-
-    // Validate credentials against environment variables
-    if (email !== process.env.ADMIN_DEFAULT_EMAIL || password !== process.env.ADMIN_DEFAULT_PASSWORD) {
-      return res.status(401).json({ 
+    
+    // Check for login attempts
+    const now = Date.now()
+    const fifteenMinutes = 15 * 60 * 1000
+    
+    // Get or create attempts array for this email
+    if (!loginAttempts.has(email)) {
+      loginAttempts.set(email, [])
+    }
+    
+    const attempts = loginAttempts.get(email)
+    const recentAttempts = attempts.filter(attempt => now - attempt < fifteenMinutes)
+    
+    // Check if too many attempts
+    if (recentAttempts.length >= 3) {
+      const oldestAttempt = Math.min(...recentAttempts)
+      const waitTime = Math.ceil((fifteenMinutes - (now - oldestAttempt)) / 1000)
+      
+      return res.status(429).json({ 
         success: false, 
-        error: 'Invalid credentials' 
+        error: `Too many login attempts. Please try again in ${waitTime} seconds.`
       })
     }
 
-    // Generate JWT token
+    // Validate credentials against environment variables
+    if (email !== process.env.ADMIN_DEFAULT_EMAIL || password !== process.env.ADMIN_DEFAULT_PASSWORD) {
+      // Record failed attempt
+      recentAttempts.push(now)
+      loginAttempts.set(email, recentAttempts)
+      
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Invalid credentials',
+        attemptsRemaining: 3 - recentAttempts.length
+      })
+    }
+
+    // Clear successful login attempts
+    loginAttempts.delete(email)
+
+    // Generate JWT token with 1 hour expiration
     const token = jwt.sign(
-      { email, role: 'admin' },
+      { email, role: 'admin', iat: Math.floor(Date.now() / 1000) },
       process.env.JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: '1h' }
     )
 
     res.json({
@@ -176,6 +228,145 @@ router.post('/auth/login', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       error: 'Login failed' 
+    })
+  }
+})
+
+// Password reset tokens storage (in production, use Redis or database)
+const passwordResetTokens = new Map()
+
+// Forgot password - sends reset link to contact@spectraautoart.nl
+router.post('/auth/forgot-password', async (req, res) => {
+  try {
+    // Always send to the fixed admin notification email
+    const resetEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'contact@spectraautoart.nl'
+    
+    // Generate reset token
+    const resetToken = jwt.sign(
+      { type: 'password_reset', email: resetEmail },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    )
+    
+    // Store token with expiration
+    passwordResetTokens.set(resetToken, {
+      email: resetEmail,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 60 * 60 * 1000 // 1 hour
+    })
+    
+    // Create reset link
+    const resetLink = `${process.env.CLIENT_ORIGIN || 'http://localhost:5173'}/admin/reset-password?token=${resetToken}`
+    
+    // Send reset email
+    const resetHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #00e5ff;">Resetare Parolă - Spectra AutoArt Admin</h2>
+        <p>A fost solicitată resetarea parolei pentru contul admin.</p>
+        <p><strong>Email:</strong> ${resetEmail}</p>
+        <p><strong>Data:</strong> ${new Date().toLocaleString('ro-RO')}</p>
+        <div style="margin: 30px 0; text-align: center;">
+          <a href="${resetLink}" 
+             style="background: linear-gradient(45deg, #00e5ff, #0099cc); 
+                    color: white; padding: 15px 30px; 
+                    text-decoration: none; border-radius: 8px; 
+                    font-weight: bold; display: inline-block;">
+            Resetare Parolă
+          </a>
+        </div>
+        <p style="color: #666; font-size: 12px;">
+          Link-ul expiră în 1 oră. Dacă nu ați solicitat această resetare, 
+          vă rugăm să ignorați acest email.
+        </p>
+        <hr style="border: 1px solid #eee; margin: 30px 0;">
+        <p style="color: #999; font-size: 12px; text-align: center;">
+          Spectra AutoArt - Sistem de Administrare
+        </p>
+      </div>
+    `
+    
+    await emailService.sendEmail({
+      to: resetEmail,
+      subject: 'Resetare Parolă Admin - Spectra AutoArt',
+      html: resetHtml
+    })
+    
+    res.json({
+      success: true,
+      message: 'Reset link sent to admin email'
+    })
+  } catch (error) {
+    console.error('Password reset error:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to send reset email'
+    })
+  }
+})
+
+// Reset password with token
+router.post('/auth/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body
+    
+    if (!token || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        error: 'Token and new password are required'
+      })
+    }
+    
+    // Verify token exists and is not expired
+    const tokenData = passwordResetTokens.get(token)
+    if (!tokenData) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid or expired reset token'
+      })
+    }
+    
+    if (Date.now() > tokenData.expiresAt) {
+      passwordResetTokens.delete(token)
+      return res.status(400).json({
+        success: false,
+        error: 'Reset token has expired'
+      })
+    }
+    
+    // Update admin password in environment (in production, use database)
+    // For now, we'll update the environment variable
+    process.env.ADMIN_DEFAULT_PASSWORD = newPassword
+    
+    // Remove used token
+    passwordResetTokens.delete(token)
+    
+    res.json({
+      success: true,
+      message: 'Password reset successfully'
+    })
+  } catch (error) {
+    console.error('Reset password error:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to reset password'
+    })
+  }
+})
+
+// Check session validity
+router.get('/auth/check-session', requireAuth, (req, res) => {
+  try {
+    // If we reach here, the token is valid
+    res.json({
+      success: true,
+      valid: true,
+      user: req.user
+    })
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      valid: false,
+      error: 'Session expired'
     })
   }
 })

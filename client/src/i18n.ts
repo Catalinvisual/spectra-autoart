@@ -204,6 +204,10 @@ const resources = {
       defaultAdminCredentials: 'Standaard admin inloggegevens:\nEmail: admin@spectra.com\nWachtwoord: admin123\n\nGebruik deze gegevens om in te loggen.',
       passwordResetInstructions: 'Als je je wachtwoord bent vergeten, neem dan contact op met de systeembeheerder.',
       passwordResetFailed: 'Wachtwoord reset mislukt.',
+      passwordResetWillBeSent: 'De wachtwoord reset link wordt verzonden naar het e-mailadres:',
+      passwordResetSent: 'De wachtwoord reset link is verzonden naar het e-mailadres: {{email}}',
+      passwordResetError: 'Fout bij verzenden van de reset link. Probeer het opnieuw.',
+      sendResetLink: 'Verstuur Reset Link',
 
       failedToUpdateImageStatus: 'Status afbeelding bijwerken mislukt',
       imageStatusUpdated: 'Afbeeldingsstatus bijgewerkt!',
@@ -1237,6 +1241,10 @@ const resources = {
       defaultAdminCredentials: 'Default admin credentials:\nEmail: admin@spectra.com\nPassword: admin123\n\nPlease use these credentials to login.',
       passwordResetInstructions: 'If you forgot your password, please contact the system administrator.',
       passwordResetFailed: 'Password reset failed.',
+      passwordResetWillBeSent: 'The password reset link will be sent to the email address:',
+      passwordResetSent: 'The password reset link has been sent to the email address: {{email}}',
+      passwordResetError: 'Error sending reset link. Please try again.',
+      sendResetLink: 'Send Reset Link',
 
       failedToUpdateImageStatus: 'Failed to update image status',
       imageStatusUpdated: 'Image status updated!',
@@ -4107,6 +4115,10 @@ const resources = {
       defaultAdminCredentials: 'Date de autentificare admin implicite:\nEmail: admin@spectra.com\nParolă: admin123\n\nVă rugăm folosiți aceste date pentru autentificare.',
       passwordResetInstructions: 'Dacă ai uitat parola, contactează administratorul sistemului.',
       passwordResetFailed: 'Resetarea parolei a eșuat.',
+      passwordResetWillBeSent: 'Link-ul de resetare a parolei va fi trimis la adresa de email:',
+      passwordResetSent: 'Link-ul de resetare a parolei a fost trimis la adresa de email: {{email}}',
+      passwordResetError: 'Eroare la trimiterea link-ului de resetare. Vă rugăm să încercați din nou.',
+      sendResetLink: 'Trimite Link de Resetare',
       
       // Contact page translations
       contactPage: {

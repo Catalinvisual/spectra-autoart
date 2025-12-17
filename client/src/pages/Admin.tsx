@@ -129,6 +129,43 @@ const Admin: React.FC = () => {
     }
   }, [])
 
+  // Session expiration check
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    const checkSession = async () => {
+      try {
+        const response = await adminAPI.checkSession()
+        if (!response.data.valid) {
+          // Session expired, logout
+          handleLogout()
+          toast.showError('Sesiunea a expirat. Vă rugăm să vă autentificați din nou.')
+        }
+      } catch (error) {
+        // Token invalid or expired
+        handleLogout()
+        toast.showError('Sesiunea a expirat. Vă rugăm să vă autentificați din nou.')
+      }
+    }
+
+    // Check session every 5 minutes
+    const interval = setInterval(checkSession, 5 * 60 * 1000)
+    
+    // Also check on window focus (when user returns to the tab)
+    const handleFocus = () => {
+      if (isAuthenticated) {
+        checkSession()
+      }
+    }
+    
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [isAuthenticated])
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -198,14 +235,14 @@ const Admin: React.FC = () => {
     setLoading(true)
 
     try {
-      // În producție, acesta ar trebui să trimită un email de resetare
-      // Pentru moment, afișăm instrucțiuni de recuperare
-      toast.showInfo(t('passwordResetInstructions') || t('admin.passwordResetInstructions') || 'Dacă ai uitat parola, contactează administratorul sistemului.')
+      // Call the forgot password API
+      await adminAPI.forgotPassword()
+      toast.showSuccess(t('passwordResetSent', { email: 'contact@spectraautoart.nl' }))
       setShowResetForm(false)
       setResetEmail('')
     } catch (error) {
       console.error('Password reset error:', error)
-      toast.showError(t('passwordResetFailed') || t('admin.passwordResetFailed') || 'Resetarea parolei a eșuat.')
+      toast.showError(t('passwordResetError'))
     } finally {
       setLoading(false)
     }
@@ -260,19 +297,17 @@ const Admin: React.FC = () => {
             </>
           ) : (
             <>
-              <form onSubmit={handleResetPassword}>
-                <div className="form-group">
-                  <label>{t('email')}</label>
-                  <input
-                    type="email"
-                    value={resetEmail}
-                    onChange={(e) => setResetEmail(e.target.value)}
-                    placeholder={t('pleaseEnter') + ' ' + t('email')}
-                    required
-                  />
+              <div className="forgot-password-info">
+                <p className="reset-password-message">
+                  {t('passwordResetWillBeSent')}
+                </p>
+                <div className="default-email-display">
+                  <strong>contact@spectraautoart.nl</strong>
                 </div>
+              </div>
+              <form onSubmit={handleResetPassword}>
                 <button type="submit" disabled={loading} className="btn-primary">
-                  {loading ? t('sendingDots') : t('send')}
+                  {loading ? t('sendingDots') : t('sendResetLink')}
                 </button>
               </form>
               <div className="login-footer">

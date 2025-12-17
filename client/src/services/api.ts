@@ -176,6 +176,9 @@ api.interceptors.response.use(
 // Admin API endpoints
 export const adminAPI = {
   login: (credentials: { email: string; password: string }) => api.post('/admin/auth/login', credentials),
+  checkSession: () => api.get('/admin/auth/check-session'),
+  forgotPassword: () => api.post('/admin/auth/forgot-password'),
+  resetPassword: (data: { token: string; newPassword: string }) => api.post('/admin/auth/reset-password', data),
   getBookings: () => api.get('/admin/bookings'),
   updateBooking: (id: string, data: any) => api.patch(`/admin/bookings/${id}`, data),
   deleteBooking: (id: string) => api.delete(`/admin/bookings/${id}`),

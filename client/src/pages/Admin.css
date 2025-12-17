@@ -548,8 +548,8 @@ h2:hover {
   
   /* Avatar și mai mic pentru ecrane foarte mici */
   .customer-avatar {
-    width: 25px;
-    height: 25px;
+    width: 25px!important;
+    height: 25px!important;
     min-width: 25px;
     min-height: 25px;
     font-size: 10px;
@@ -579,6 +579,7 @@ h2:hover {
     font-size: 12px;
     text-align: center;
     line-height: 1.2;
+    min-width: none!important;
   }
   
   .stat-item strong {
@@ -2126,6 +2127,38 @@ h2:hover {
   border-color: rgba(0, 229, 255, 0.5);
   color: #00e5ff;
   box-shadow: 0 2px 8px rgba(0, 229, 255, 0.2);
+}
+
+/* Forgot password info section */
+.forgot-password-info {
+  text-align: center;
+  margin-bottom: 25px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+}
+
+.reset-password-message {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+
+.default-email-display {
+  background: rgba(0, 229, 255, 0.1);
+  padding: 12px 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.default-email-display strong {
+  color: #00e5ff;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .btn-secondary {
