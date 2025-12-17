@@ -505,25 +505,25 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
     } = {}
 
     if (!bookingData.user.name.trim()) {
-      errors.name = t('nameRequired') || 'Name is required'
+      errors.name = t('nameRequired') || 'Numele este obligatoriu'
     }
 
     if (!bookingData.user.email.trim()) {
-      errors.email = t('emailRequired') || 'Email is required'
+      errors.email = t('emailRequired') || 'Emailul este obligatoriu'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.user.email)) {
-      errors.email = t('invalidEmail') || 'Please enter a valid email address'
+      errors.email = t('invalidEmail') || 'Vă rugăm să introduceți o adresă de email validă'
     }
 
     if (!bookingData.user.phone.trim()) {
-      errors.phone = t('phoneRequired') || 'Phone is required'
+      errors.phone = t('phoneRequired') || 'Telefonul este obligatoriu'
     }
 
     if (!bookingData.date) {
-      errors.date = t('dateRequired') || 'Date is required'
+      errors.date = t('dateRequired') || 'Data este obligatorie'
     }
 
     if (!bookingData.time) {
-      errors.time = t('timeRequired') || 'Time is required'
+      errors.time = t('timeRequired') || 'Ora este obligatorie'
     }
 
     setValidationErrors(errors)
@@ -551,7 +551,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
         
         // Show success notification immediately
         console.log('Calling showSuccess with message:', t('bookingConfirmed') || 'Programarea a fost confirmată!')
-        showSuccess(t('bookingConfirmed') || 'Programarea a fost confirmată!')
+        showSuccess(t('bookingConfirmed') || 'Programare Confirmată!')
         // Close modal immediately after notification
         if (onCancel) {
           onCancel()
@@ -577,8 +577,8 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
         setError(error.response.data.error)
         showError(error.response.data.error)
       } else {
-        setError('Failed to create booking')
-        showError('Failed to create booking')
+        setError('Nu s-a putut crea programarea')
+        showError('Nu s-a putut crea programarea')
       }
     }
   }
@@ -722,10 +722,10 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
             <div className="newsletter-card">
               <div className="newsletter-header">
                 <i className="newsletter-icon">📧</i>
-                <h4 className="newsletter-title">{t('newsletterSubscription') || 'Nieuwsbrief Abonnement'}</h4>
+                <h4 className="newsletter-title">{t('newsletterSubscription') || 'Abonament Newsletter'}</h4>
               </div>
               <p className="newsletter-description">
-                {t('newsletterDescription') || 'Blijf op de hoogte van onze nieuwste diensten en aanbiedingen!'}
+                {t('newsletterDescription') || 'Rămâi la curent cu cele mai recente servicii și oferte!'}
               </p>
               <div className="newsletter-checkbox-wrapper">
                 <label className="newsletter-label">
@@ -736,7 +736,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                     onChange={(e) => handleInputChange('newsletter', e.target.checked)}
                   />
                   <span className="newsletter-text">
-                    {t('subscribeNewsletter') || 'Schrijf me in voor de nieuwsbrief'}
+                    {t('subscribeNewsletter') || 'Abonează-mă la newsletter'}
                   </span>
                 </label>
               </div>
@@ -862,7 +862,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">{t('selectTime') || 'Ora programării'}</label>
+                <label className="form-label">{t('selectTime') || 'Selectează Ora'}</label>
                 <input
                   type="time"
                   className={`form-input time-input-instant ${validationErrors.time ? 'error' : ''}`}
