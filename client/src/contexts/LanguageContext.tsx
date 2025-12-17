@@ -26,27 +26,43 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     // Set the initial language on mount
     const initialLang = getInitialLanguage();
+    console.log('🌍 LanguageContext - Initial language from localStorage:', initialLang);
+    console.log('🌍 LanguageContext - i18n current language:', i18n.language);
+    console.log('🌍 LanguageContext - Available resource bundles:', Object.keys(i18n.services.resourceStore.data));
+    console.log('🌍 LanguageContext - Has Romanian bundle:', i18n.hasResourceBundle('ro', 'translation'));
+    
     if (!i18n.hasResourceBundle(initialLang, 'translation')) {
       const bundle = (resources as any)[initialLang]?.translation || {};
+      console.log('🌍 LanguageContext - Adding resource bundle for:', initialLang, 'Keys:', Object.keys(bundle));
       // merge without overwriting existing keys
       i18n.addResourceBundle(initialLang, 'translation', bundle, true, false);
     }
     if (initialLang !== i18n.language) {
+      console.log('🌍 LanguageContext - Changing language from', i18n.language, 'to', initialLang);
       i18n.changeLanguage(initialLang).then(() => {
         setCurrentLanguage(initialLang);
+        console.log('🌍 LanguageContext - Language changed successfully to:', initialLang);
       });
     } else {
       setCurrentLanguage(initialLang);
+      console.log('🌍 LanguageContext - Language already set to:', initialLang);
     }
   }, []); // Only run once on mount
 
   const setLanguage = async (lang: string) => {
     try {
+      console.log(`🌍 LanguageContext - Changing language to: ${lang}`);
+      console.log(`🌍 LanguageContext - Current language before change: ${i18n.language}`);
+      console.log(`🌍 LanguageContext - Has ${lang} resource bundle:`, i18n.hasResourceBundle(lang, 'translation'));
+      console.log(`🌍 LanguageContext - localStorage before set:`, localStorage.getItem('selectedLanguage'));
+      
       // Store in localStorage for persistence first
       localStorage.setItem('selectedLanguage', lang);
+      console.log(`🌍 LanguageContext - localStorage after set:`, localStorage.getItem('selectedLanguage'));
       
       if (!i18n.hasResourceBundle(lang, 'translation')) {
         const bundle = (resources as any)[lang]?.translation || {};
+        console.log(`🌍 LanguageContext - Adding resource bundle for ${lang}:`, Object.keys(bundle));
         // merge without overwriting existing keys
         i18n.addResourceBundle(lang, 'translation', bundle, true, false);
       }
@@ -58,6 +74,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setCurrentLanguage(lang);
       
       console.log(`🌍 Language changed to: ${lang}`);
+      console.log(`🌍 LanguageContext - New i18n language:`, i18n.language);
+      console.log(`🌍 LanguageContext - Has resource bundle after change:`, i18n.hasResourceBundle(lang, 'translation'));
     } catch (error) {
       console.error('Error changing language:', error);
     }

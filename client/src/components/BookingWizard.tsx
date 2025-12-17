@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { resources } from '../i18n'
 import { useState, useEffect } from 'react'
 import { publicAPI } from '../services/api'
 import { useToast } from '../contexts/ToastContext'
@@ -99,6 +100,100 @@ interface BookingWizardProps {
 const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
   const { t, i18n } = useTranslation()
   const { showSuccess, showError } = useToast()
+
+  // Force load Romanian resources if needed
+  const forceRomanianResources = () => {
+    if (i18n.language === 'ro' && !i18n.hasResourceBundle('ro', 'translation')) {
+      console.log('🔍 Force loading Romanian resources...')
+      const roResources = (resources as any)?.ro?.translation || {}
+      console.log('🔍 Romanian resources available:', Object.keys(roResources).length, 'keys')
+      i18n.addResourceBundle('ro', 'translation', roResources, true, true)
+      console.log('🔍 Romanian resources loaded:', i18n.hasResourceBundle('ro', 'translation'))
+    }
+  }
+
+  // Debug: Log current language and available translations
+  useEffect(() => {
+    console.log('🔍 BookingWizard - Current i18n language:', i18n.language)
+    console.log('🔍 BookingWizard - Available languages:', Object.keys(i18n.services.resourceStore.data))
+    console.log('🔍 BookingWizard - Romanian translations:', i18n.hasResourceBundle('ro', 'translation'))
+    
+    // Force load Romanian resources if needed
+    forceRomanianResources()
+    
+    console.log('🔍 BookingWizard - Testing selectService translation:', t('selectService'))
+    console.log('🔍 BookingWizard - Testing newsletterSubscription translation:', t('newsletterSubscription'))
+    
+    // Force reload translations when language changes
+    if (i18n.language === 'ro') {
+      console.log('🔍 BookingWizard - Language is Romanian, forcing translation check')
+      // Force re-render by updating a dummy state
+      setCurrentStep(prev => prev)
+    }
+  }, [i18n.language])
+
+  // Force language synchronization on component mount and language changes
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('selectedLanguage')
+    console.log('🔍 BookingWizard - localStorage language:', savedLanguage)
+    console.log('🔍 BookingWizard - i18n current language:', i18n.language)
+    console.log('🔍 BookingWizard - Need sync?', savedLanguage && savedLanguage !== i18n.language)
+    
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      console.log('🔍 BookingWizard - Syncing language from localStorage:', savedLanguage)
+      i18n.changeLanguage(savedLanguage).then(() => {
+        console.log('🔍 BookingWizard - Language sync completed')
+        // Force re-render after language change
+        setCurrentStep(prev => prev)
+      })
+    }
+  }, [])
+
+  // Monitor language changes and force re-render
+  useEffect(() => {
+    const handleLanguageChange = (lng: string) => {
+      console.log('🔍 BookingWizard - Language changed to:', lng)
+      // Force re-render by updating a dummy state
+      setCurrentStep(prev => prev + 1)
+      setTimeout(() => setCurrentStep(prev => prev - 1), 0)
+    }
+    
+    i18n.on('languageChanged', handleLanguageChange)
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange)
+    }
+  }, [i18n])
+
+  // Test manual translations and force Romanian translations
+  useEffect(() => {
+    console.log('🔍 Manual translation test:')
+    console.log('🔍 selectService:', t('selectService'))
+    console.log('🔍 newsletterSubscription:', t('newsletterSubscription'))
+    console.log('🔍 next:', t('next'))
+    console.log('🔍 confirm:', t('confirm'))
+    console.log('🔍 personalDetails:', t('personalDetails'))
+    console.log('🔍 name:', t('name'))
+    console.log('🔍 email:', t('email'))
+    console.log('🔍 phone:', t('phone'))
+    console.log('🔍 selectDate:', t('selectDate'))
+    console.log('🔍 selectTime:', t('selectTime'))
+    console.log('🔍 summary:', t('summary'))
+    console.log('🔍 brand:', t('brand'))
+    console.log('🔍 model:', t('model'))
+    console.log('🔍 body:', t('body'))
+    console.log('🔍 service:', t('service'))
+    
+    // Force Romanian translations if language is Romanian
+    if (i18n.language === 'ro') {
+      console.log('🔍 Force checking Romanian translations...')
+      // Check if translations are actually available
+      const testKeys = ['selectService', 'newsletterSubscription', 'next', 'confirm', 'personalDetails']
+      testKeys.forEach(key => {
+        const translation = t(key)
+        console.log(`🔍 ${key}: ${translation} (${translation === key ? 'MISSING' : 'OK'})`)
+      })
+    }
+  }, [i18n.language, t])
   const [currentStep, setCurrentStep] = useState(1)
   // Date default pentru afișare instantă
   const [services, setServices] = useState<ServiceWithPrices[]>([])
@@ -277,6 +372,9 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       
       console.log('🚗 Makes response:', makesRes)
       console.log('🔧 Services response:', servicesRes)
+      console.log('🔧 Services data sample:', servicesRes.data?.slice(0, 2)) // Log first 2 services
+      console.log('🔧 Current language:', i18n.language)
+      console.log('🔧 Testing service translation for current language:', i18n.language === 'ro' ? 'Romanian' : 'Other')
       console.log('🚙 Body types response:', bodyTypesRes)
       
       // Validate services data structure
@@ -357,6 +455,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
 
   const getServiceDisplayName = (service: ServiceWithPrices) => {
     const lang = (i18n.language || 'nl').toLowerCase()
+    console.log(`🔍 getServiceDisplayName - Language: ${lang}, Service: ${service.name}, Has RO: ${!!service.name_ro}`)
     if (lang === 'nl' && service.name_nl) return service.name_nl
     if (lang === 'en' && service.name_en) return service.name_en
     if (lang === 'es' && service.name_es) return service.name_es
