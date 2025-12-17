@@ -65,12 +65,28 @@ const Footer = () => {
     console.log(`🔍 Footer tf() - key: ${key}, translation: ${v}, fallback: ${fallback}, currentLang: ${i18n.language}`)
     console.log(`🔍 Footer tf() - Has RO bundle: ${i18n.hasResourceBundle('ro', 'translation')}`)
     
-    // Check if translation exists by looking directly in resources
+    // Check if translation exists by looking directly in resources with nested structure support
     const currentLang = i18n.language
-    const translationExists = currentLang === 'ro' && (resources as any)?.ro?.translation?.[key]
-    
-    if (translationExists) {
-      return translationExists
+    if (currentLang === 'ro') {
+      const roResources = (resources as any)?.ro?.translation || {}
+      
+      // Parse nested keys like "footer.newsletter"
+      const keyParts = key.split('.')
+      let current = roResources
+      
+      for (const part of keyParts) {
+        if (current && typeof current === 'object' && current[part]) {
+          current = current[part]
+        } else {
+          current = null
+          break
+        }
+      }
+      
+      if (current && typeof current === 'string') {
+        console.log(`🔍 Footer tf() - Found direct translation: ${current}`)
+        return current
+      }
     }
     
     // Fallback to i18n translation or provided fallback
@@ -80,10 +96,10 @@ const Footer = () => {
   // Debug log for current language and translations
   useEffect(() => {
     console.log(`🌍 Footer current language: ${i18n.language}`)
-    console.log(`🌍 Footer newsletter translation: ${t('footer.newsletter')}`)
-    console.log(`🌍 Footer subscribeNewsletter translation: ${t('subscribeNewsletter')}`)
-    console.log(`🌍 Footer enterEmail translation: ${t('footer.enterEmail')}`)
-    console.log(`🌍 Footer send translation: ${t('footer.send')}`)
+    console.log(`🌍 Footer newsletter translation: ${tf('footer.newsletter', 'Newsletter')}`)
+        console.log(`🌍 Footer subscribeNewsletter translation: ${t('subscribeNewsletter')}`)
+        console.log(`🌍 Footer enterEmail translation: ${tf('footer.enterEmail', 'Enter your email')}`)
+        console.log(`🌍 Footer send translation: ${tf('footer.send', 'Send')}`)
   }, [language, i18n])
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
