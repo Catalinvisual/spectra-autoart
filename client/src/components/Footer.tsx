@@ -10,11 +10,13 @@ const Footer = () => {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [language, setLanguage] = useState(i18n.language)
+  const [renderKey, setRenderKey] = useState(0) // Force re-render key
 
   // Force re-render when language changes
   useEffect(() => {
     const handleLanguageChange = (lng: string) => {
       setLanguage(lng)
+      setRenderKey(prev => prev + 1) // Force React re-render
       // Reset message when language changes to show translated text
       if (message) {
         setMessage('')
@@ -29,8 +31,18 @@ const Footer = () => {
 
   const tf = (key: string, fallback: string) => {
     const v = t(key)
+    console.log(`🔍 Footer tf() - key: ${key}, translation: ${v}, fallback: ${fallback}, currentLang: ${i18n.language}`)
     return v === key ? fallback : v
   }
+
+  // Debug log for current language and translations
+  useEffect(() => {
+    console.log(`🌍 Footer current language: ${i18n.language}`)
+    console.log(`🌍 Footer newsletter translation: ${t('footer.newsletter')}`)
+    console.log(`🌍 Footer subscribeNewsletter translation: ${t('subscribeNewsletter')}`)
+    console.log(`🌍 Footer enterEmail translation: ${t('footer.enterEmail')}`)
+    console.log(`🌍 Footer send translation: ${t('footer.send')}`)
+  }, [language, i18n])
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -65,7 +77,7 @@ const Footer = () => {
   }
 
   return (
-    <footer className="footer">
+    <footer className="footer" key={renderKey}>
       <div className="footer-content">
         <div className="footer-section">
           <h3>Spectra AutoArt</h3>
