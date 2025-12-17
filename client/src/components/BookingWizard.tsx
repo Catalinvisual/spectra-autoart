@@ -1078,10 +1078,10 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                           const serviceName = service ? getServiceDisplayName(service) : ''
                           return serviceName
                         }).join(', ')
-                      : t('noServiceSelected')
+                      : getRoTranslation('noServiceSelected', 'Niciun serviciu selectat')
                   }
                 ]}
-                totalLabel={`${t('total')}:`}
+                totalLabel={`${getRoTranslation('total', 'Total')}:`}
                 totalValue={`€${bookingData.services.reduce((total, serviceId) => {
                   const service = services.find(s => s.id === serviceId)
                   const servicePrice = service && bookingData.body ? getServicePriceForBodyType(service, bookingData.body) : null
