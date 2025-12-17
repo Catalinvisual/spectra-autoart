@@ -212,7 +212,7 @@ const Footer = () => {
       </div>
       
       <div className="footer-bottom">
-        <p>&copy; 2024 Spectra AutoArt. All rights reserved.</p>
+        <p>{tf('footer.copyright', '© 2025 Spectra AutoArt. All rights reserved.')}</p>
       </div>
     </footer>
   )
