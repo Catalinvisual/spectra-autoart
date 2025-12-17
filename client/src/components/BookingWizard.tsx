@@ -127,6 +127,8 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
     return translation || fallback
   }
 
+
+
   // Force load Romanian resources if needed
   const forceRomanianResources = () => {
     if (i18n.language === 'ro') {
@@ -1148,9 +1150,60 @@ interface CalendarComponentProps {
 }
 
 export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onDateSelect, bookedDates, loading }) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [availabilityMap, setAvailabilityMap] = useState<Record<string, boolean>>({})
+
+  // Define getRoTranslation function for CalendarComponent
+  const getRoTranslation = (key: string, fallback: string): string => {
+    const translation = t(key)
+    if (i18n.language === 'ro' && translation && 
+        (translation === key || 
+         translation === 'Select Service' || 
+         translation === 'Newsletter Subscription' ||
+         translation === 'Next' ||
+         translation === 'Confirm' ||
+         translation === 'Personal Details' ||
+         translation === 'Name' ||
+         translation === 'Email' ||
+         translation === 'Phone' ||
+         translation === 'Select Date' ||
+         translation === 'Select Time' ||
+         translation === 'Summary' ||
+         translation === 'Service' ||
+         translation === 'brand' ||
+         translation === 'model' ||
+         translation === 'body')) {
+      return fallback
+    }
+    return translation || fallback
+  }
+
+  // Define month names and week days for CalendarComponent
+  const monthNames = [
+    getRoTranslation('january', 'Ianuarie'),
+    getRoTranslation('february', 'Februarie'),
+    getRoTranslation('march', 'Martie'),
+    getRoTranslation('april', 'Aprilie'),
+    getRoTranslation('may', 'Mai'),
+    getRoTranslation('june', 'Iunie'),
+    getRoTranslation('july', 'Iulie'),
+    getRoTranslation('august', 'August'),
+    getRoTranslation('september', 'Septembrie'),
+    getRoTranslation('october', 'Octombrie'),
+    getRoTranslation('november', 'Noiembrie'),
+    getRoTranslation('december', 'Decembrie')
+  ]
+
+  const weekDays = [
+    getRoTranslation('sunday', 'Dum'),
+    getRoTranslation('monday', 'Lun'),
+    getRoTranslation('tuesday', 'Mar'),
+    getRoTranslation('wednesday', 'Mie'),
+    getRoTranslation('thursday', 'Joi'),
+    getRoTranslation('friday', 'Vin'),
+    getRoTranslation('saturday', 'Sâm')
+  ]
 
   const TIME_ZONE = 'Europe/Amsterdam'
   const formatDateEU = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: TIME_ZONE }).format(d)
@@ -1251,31 +1304,6 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
     }
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1))
   }
-
-  const monthNames = [
-    getRoTranslation('january', 'Ianuarie'),
-    getRoTranslation('february', 'Februarie'),
-    getRoTranslation('march', 'Martie'),
-    getRoTranslation('april', 'Aprilie'),
-    getRoTranslation('may', 'Mai'),
-    getRoTranslation('june', 'Iunie'),
-    getRoTranslation('july', 'Iulie'),
-    getRoTranslation('august', 'August'),
-    getRoTranslation('september', 'Septembrie'),
-    getRoTranslation('october', 'Octombrie'),
-    getRoTranslation('november', 'Noiembrie'),
-    getRoTranslation('december', 'Decembrie')
-  ]
-
-  const weekDays = [
-    getRoTranslation('sunday', 'Dum'),
-    getRoTranslation('monday', 'Lun'),
-    getRoTranslation('tuesday', 'Mar'),
-    getRoTranslation('wednesday', 'Mie'),
-    getRoTranslation('thursday', 'Joi'),
-    getRoTranslation('friday', 'Vin'),
-    getRoTranslation('saturday', 'Sâm')
-  ]
 
   const days = getDaysInMonth()
 
