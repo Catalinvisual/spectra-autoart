@@ -4952,10 +4952,10 @@ const resources = {
   }
 }
 
-// Get language from localStorage or default to Dutch
+// Get language from localStorage or default to Romanian
 const getInitialLanguage = () => {
   const savedLanguage = localStorage.getItem('selectedLanguage');
-  return savedLanguage || 'nl';
+  return savedLanguage || 'ro';
 };
 
 // Export resources for external use
