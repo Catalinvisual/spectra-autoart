@@ -19,8 +19,8 @@ RUN npm ci --only=production
 # Install server dependencies
 RUN cd server && npm ci --only=production
 
-# Install client dependencies and build
-RUN cd client && npm ci && npm run build
+# Install client dependencies (include dev dependencies for build) and build
+RUN cd client && npm ci --include=dev && npm run build
 
 # Make railway-start.js executable
 RUN chmod +x railway-start.js

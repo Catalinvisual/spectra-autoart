@@ -1359,14 +1359,14 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
         }))
 
       // Curăță formData de câmpurile goale pentru a evita erorile
-      const cleanFormData = Object.keys(formData).reduce((acc, key) => {
+      const cleanFormData = Object.keys(formData).reduce((acc: any, key) => {
         const value = formData[key as keyof typeof formData]
         // Elimină câmpurile goale sau undefined
         if (value !== undefined && value !== null && value !== '') {
-          acc[key as keyof typeof formData] = value
+          acc[key] = value
         }
         return acc
-      }, {} as Partial<typeof formData>)
+      }, {} as any)
 
       const serviceData = {
         ...cleanFormData,
