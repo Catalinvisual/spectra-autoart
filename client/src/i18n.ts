@@ -477,7 +477,8 @@ const resources = {
         interiorCleaning: 'Interieur Reiniging',
         newsletter: 'Nieuwsbrief',
         enterEmail: 'Voer uw e-mailadres in',
-        send: 'Verzenden'
+        send: 'Verzenden',
+        copyright: '© {{year}} Spectra AutoArt. Alle rechten voorbehouden.'
       },
       
       // Terms popup translations
@@ -1051,7 +1052,10 @@ const resources = {
           cookiePolicy: 'Cookiebeleid',
           social: 'Social',
           followUs: 'Volg ons op sociale media',
-          copyright: '© 2025 Spectra AutoArt. Alle rechten voorbehouden.'
+          copyright: '© 2025 Spectra AutoArt. Alle rechten voorbehouden.',
+          newsletter: 'Nieuwsbrief',
+          enterEmail: 'Voer uw e-mailadres in',
+          send: 'Versturen'
         }
       }
     }
@@ -1343,7 +1347,8 @@ const resources = {
         interiorCleaning: 'Interior Cleaning',
         newsletter: 'Newsletter',
         enterEmail: 'Enter your email',
-        send: 'Send'
+        send: 'Send',
+        copyright: '© {{year}} Spectra AutoArt. All rights reserved.'
       },
       
       // Terms popup translations
@@ -2357,7 +2362,8 @@ const resources = {
         interiorCleaning: 'Limpieza Interior',
         newsletter: 'Boletín',
         enterEmail: 'Ingrese su correo electrónico',
-        send: 'Enviar'
+        send: 'Enviar',
+        copyright: '© {{year}} Spectra AutoArt. Todos los derechos reservados.'
       },
       
       // Terms and Conditions page translations
@@ -3222,7 +3228,7 @@ const resources = {
         newsletter: 'Newsletter',
         enterEmail: 'Wprowadź swój adres e-mail',
         send: 'Wyślij',
-        copyright: '© 2025 Spectra AutoArt. Wszelkie prawa zastrzeżone.'
+        copyright: '© {{year}} Spectra AutoArt. Wszystkie prawa zastrzeżone.'
       },
       
       // Terms and Conditions page translations
@@ -4734,9 +4740,9 @@ const resources = {
         social: 'Social',
         followUs: 'Urmărește-ne pe rețelele sociale',
         newsletter: 'Newsletter',
-        enterEmail: 'Introduceți adresa de email',
+        enterEmail: 'Introduceți adresa dvs. de email',
         send: 'Trimite',
-        copyright: '© 2025 Spectra AutoArt. Toate drepturile rezervate.'
+        copyright: '© {{year}} Spectra AutoArt. Toate drepturile rezervate.'
       },
       
 
@@ -4958,6 +4964,10 @@ i18n
         cookies: 'Politica Cookies',
         contact: 'Contact și Juridic',
         description: 'Servicii premium de detailing și styling auto.',
+        newsletter: 'Newsletter',
+        enterEmail: 'Introduceți adresa dvs. de email',
+        send: 'Trimite',
+        copyright: '© {{year}} Spectra AutoArt. Toate drepturile rezervate.'
       },
       services: 'Servicii',
       admin: {

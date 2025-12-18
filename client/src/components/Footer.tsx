@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { resources } from '../i18n'
 import { publicAPI } from '../services/api'
 import './Footer.css'
 
@@ -11,39 +10,14 @@ const Footer = () => {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [language, setLanguage] = useState(i18n.language)
-  const [renderKey, setRenderKey] = useState(0) // Force re-render key
-
-  // Force load Romanian resources on mount and language change
-  useEffect(() => {
-    if (i18n.language === 'ro') {
-      console.log('🔍 Footer - Ensuring Romanian resources are loaded...')
-      if (!i18n.hasResourceBundle('ro', 'translation')) {
-        const roResources = (resources as any)?.ro?.translation || {}
-        console.log('🔍 Footer - Loading Romanian resources:', Object.keys(roResources).length, 'keys')
-        i18n.addResourceBundle('ro', 'translation', roResources, true, true)
-      }
-      // Force re-render after loading resources
-      setRenderKey(prev => prev + 1)
-    }
-  }, [i18n.language])
 
   // Force re-render when language changes
   useEffect(() => {
     const handleLanguageChange = (lng: string) => {
       setLanguage(lng)
-      setRenderKey(prev => prev + 1) // Force React re-render
       // Reset message when language changes to show translated text
       if (message) {
         setMessage('')
-      }
-      
-      // Load Romanian resources if needed
-      if (lng === 'ro') {
-        console.log('🔍 Footer - Language changed to Romanian, loading resources...')
-        if (!i18n.hasResourceBundle('ro', 'translation')) {
-          const roResources = (resources as any)?.ro?.translation || {}
-          i18n.addResourceBundle('ro', 'translation', roResources, true, true)
-        }
       }
     }
     
@@ -54,53 +28,9 @@ const Footer = () => {
   }, [i18n, message, language]) // Include language in dependencies to use it
 
   const tf = (key: string, fallback: string) => {
-    // Force load Romanian resources if needed
-    if (i18n.language === 'ro' && !i18n.hasResourceBundle('ro', 'translation')) {
-      console.log('🔍 Footer - Loading Romanian resources...')
-      const roResources = (resources as any)?.ro?.translation || {}
-      i18n.addResourceBundle('ro', 'translation', roResources, true, true)
-    }
-    
     const v = t(key)
-    console.log(`🔍 Footer tf() - key: ${key}, translation: ${v}, fallback: ${fallback}, currentLang: ${i18n.language}`)
-    console.log(`🔍 Footer tf() - Has RO bundle: ${i18n.hasResourceBundle('ro', 'translation')}`)
-    
-    // Check if translation exists by looking directly in resources with nested structure support
-    const currentLang = i18n.language
-    if (currentLang === 'ro') {
-      const roResources = (resources as any)?.ro?.translation || {}
-      
-      // Parse nested keys like "footer.newsletter"
-      const keyParts = key.split('.')
-      let current = roResources
-      
-      for (const part of keyParts) {
-        if (current && typeof current === 'object' && current[part]) {
-          current = current[part]
-        } else {
-          current = null
-          break
-        }
-      }
-      
-      if (current && typeof current === 'string') {
-        console.log(`🔍 Footer tf() - Found direct translation: ${current}`)
-        return current
-      }
-    }
-    
-    // Fallback to i18n translation or provided fallback
     return v === key ? fallback : v
   }
-
-  // Debug log for current language and translations
-  useEffect(() => {
-    console.log(`🌍 Footer current language: ${i18n.language}`)
-    console.log(`🌍 Footer newsletter translation: ${tf('footer.newsletter', 'Newsletter')}`)
-        console.log(`🌍 Footer subscribeNewsletter translation: ${tf('subscribeNewsletter', 'Subscribe me to the newsletter')}`)
-        console.log(`🌍 Footer enterEmail translation: ${tf('enterEmail', 'Enter your email')}`)
-        console.log(`🌍 Footer send translation: ${tf('send', 'Send')}`)
-  }, [language, i18n])
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -113,7 +43,7 @@ const Footer = () => {
     try {
       setLoading(true)
       const response = await publicAPI.subscribeNewsletter({ email, locale: i18n.language })
-      setMessage(response.data.message || tf('newsletterSubscribeSuccess', 'Thank you for subscribing!') || 'Thank you for subscribing!')
+      setMessage(response.data.message || t('newsletterSubscribeSuccess') || 'Thank you for subscribing!')
       setEmail('')
     } catch (error: unknown) {
       let errMsg = 'Failed to subscribe'
@@ -135,7 +65,7 @@ const Footer = () => {
   }
 
   return (
-    <footer className="footer" key={renderKey}>
+    <footer className="footer">
       <div className="footer-content">
         <div className="footer-section">
           <h3>Spectra AutoArt</h3>
@@ -157,19 +87,19 @@ const Footer = () => {
         <div className="footer-section">
           <h3>{tf('footer.quickLinks', 'Link-uri Rapide')}</h3>
           <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection('services') }}>
-            {tf('ourServices', 'Serviciile Noastre')}
+            {t('ourServices')}
           </a>
           <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection('about') }}>
-            {tf('aboutUs', 'Despre Noi')}
+            {t('aboutUs')}
           </a>
           <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection('gallery') }}>
-            {tf('gallery', 'Galerie')}
+            {t('gallery')}
           </a>
           <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection('testimonials') }}>
-            {tf('testimonials', 'Mărturii')}
+            {t('testimonials')}
           </a>
           <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection('contact') }}>
-            {tf('contact', 'Contact')}
+            {t('contact')}
           </a>
         </div>
         
@@ -184,18 +114,18 @@ const Footer = () => {
         
         <div className="footer-section">
           <h3>{tf('footer.newsletter', 'Newsletter')}</h3>
-          <p>{tf('subscribeNewsletter', 'Subscribe me to the newsletter')}</p>
+          <p>{t('subscribeNewsletter')}</p>
           <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
             <input
               type="email"
-              placeholder={tf('enterEmail', 'Introduceți adresa dvs. de email')}
+              placeholder={tf('footer.enterEmail', 'Introduceți adresa dvs. de email')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
             />
             <button type="submit" disabled={loading}>
-              {loading ? '...' : tf('send', 'Trimite')}
+              {loading ? '...' : tf('footer.send', 'Trimite')}
             </button>
           </form>
           {message && <div className="newsletter-message">{message}</div>}
@@ -212,7 +142,7 @@ const Footer = () => {
       </div>
       
       <div className="footer-bottom">
-        <p>{tf('footer.copyright', '© 2025 Spectra AutoArt. All rights reserved.')}</p>
+        <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
       </div>
     </footer>
   )
