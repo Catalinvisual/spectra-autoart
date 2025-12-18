@@ -1358,8 +1358,18 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
           is_active: p.is_active !== undefined ? p.is_active : true
         }))
 
+      // Curăță formData de câmpurile goale pentru a evita erorile
+      const cleanFormData = Object.keys(formData).reduce((acc, key) => {
+        const value = formData[key as keyof typeof formData]
+        // Elimină câmpurile goale sau undefined
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key as keyof typeof formData] = value
+        }
+        return acc
+      }, {} as Partial<typeof formData>)
+
       const serviceData = {
-        ...formData,
+        ...cleanFormData,
         prices: normalizedPrices
       }
       

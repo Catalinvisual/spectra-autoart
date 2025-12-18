@@ -2224,7 +2224,7 @@ router.delete('/vehicle-services/:id', requireAuth, async (req, res) => {
     
     // Delete the vehicle service from Google Sheets
     // serviceIndex is the correct row index, Google Sheets deleteData expects 0-based index
-    await GoogleSheetsService.deleteData('Vehicle_Services', serviceIndex);
+    await GoogleSheetsService.deleteData('Vehicle_Services', serviceIndex - 1);
     
     console.log('✅ Vehicle service deleted successfully');
     res.json({ 
