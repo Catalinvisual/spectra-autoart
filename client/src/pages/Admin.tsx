@@ -1555,20 +1555,34 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
 
     try {
       if (deleteModalState.type === 'vehicleService') {
+        // Immediately remove from UI state for better UX
+        setVehicleServices(prev => prev.filter(service => service.id !== deleteModalState.itemId))
+        
         await adminAPI.deleteVehicleService(deleteModalState.itemId)
         toast.showSuccess(t('admin.vehicleServiceDeleted'))
+        
+        // Reload to ensure consistency with backend
         loadVehicleServices()
       } else if (deleteModalState.type === 'bodyType') {
+        // Immediately remove from UI state for better UX
+        setBodyTypes(prev => prev.filter(bodyType => bodyType.id !== deleteModalState.itemId))
+        
         await adminAPI.deleteBodyType(deleteModalState.itemId)
         toast.showSuccess(t('admin.bodyTypeDeleted'))
+        
+        // Reload to ensure consistency with backend
         loadBodyTypes()
       }
     } catch (error) {
       console.error(`Error deleting ${deleteModalState.type}:`, error)
+      
+      // On error, reload the data to restore the deleted item
       if (deleteModalState.type === 'vehicleService') {
         toast.showError(t('admin.errorDeletingVehicleService'))
+        loadVehicleServices()
       } else {
         toast.showError(t('admin.errorDeletingBodyType'))
+        loadBodyTypes()
       }
     } finally {
       setDeleteModalState({

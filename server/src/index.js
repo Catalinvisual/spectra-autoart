@@ -1,3 +1,4 @@
+import './deployment-trigger.js';
 import dotenv from 'dotenv'
 import express from 'express'
 import cors from 'cors'
@@ -244,6 +245,11 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 app.use('/api/public', publicRouter)
+
+// Deployment debugging log
+console.log('🔍 SERVER DEBUG - Route debugging enabled');
+console.log('🔍 Available admin routes will be logged on startup');
+
 app.use('/api/admin', adminRouter)
 app.use('/api/admin/services', adminServicesRouter)
 app.use('/api/services/cached', cachedServicesRouter)

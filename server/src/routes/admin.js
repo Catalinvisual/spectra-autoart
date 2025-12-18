@@ -1970,6 +1970,7 @@ router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
     
     console.log('✏️ Attempting to update vehicle service with ID:', id);
     console.log('📋 Update data received:', { name, description, duration, category, is_active, isActive, prices });
+    console.log('🔍 ID format check - original:', id, 'trimmed:', String(id).trim());
 
     // Get all vehicle services to find the one to update
     const data = await GoogleSheetsService.getData('Vehicle_Services');
@@ -1985,10 +1986,13 @@ router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
     let serviceIndex = -1;
     const targetId = String(id).trim();
     
+    console.log('🔍 Searching for service ID:', targetId, 'in', data.length - 1, 'services');
     for (let i = 1; i < data.length; i++) {
       const serviceId = String(data[i][0] || '').trim();
+      console.log(`🔍 Checking row ${i}: serviceId = "${serviceId}"`);
       if (serviceId === targetId) {
         serviceIndex = i;
+        console.log('✅ Found service at index:', serviceIndex);
         break;
       }
     }
@@ -2029,8 +2033,8 @@ router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
       data[serviceIndex][21] || new Date().toISOString()                     // Created_At (keep existing or set new)
     ];
 
-    // Update in Google Sheets (rowIndex is 1-based for Google Sheets)
-    await GoogleSheetsService.updateData('Vehicle_Services', serviceIndex + 1, updatedData);
+    // Update in Google Sheets (serviceIndex is the array index, but Google Sheets uses 0-based indexing)
+    await GoogleSheetsService.updateData('Vehicle_Services', serviceIndex - 1, updatedData);
     
     // Handle prices if provided
     if (prices && Array.isArray(prices)) {
@@ -2088,7 +2092,7 @@ router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
               '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' // Coloane goale suplimentare pentru a completa structura de 25 coloane
             ];
             
-            await GoogleSheetsService.updateData('Vehicle_Service_Prices', existingPrice.rowIndex + 1, updatedPriceData);
+            await GoogleSheetsService.updateData('Vehicle_Service_Prices', existingPrice.rowIndex, updatedPriceData);
             console.log('✅ Price updated for body type:', bodyTypeKey, 'with value:', priceValue);
             
             // Remove from map to track processed items
@@ -2170,10 +2174,13 @@ router.delete('/vehicle-services/:id', requireAuth, async (req, res) => {
     let serviceIndex = -1;
     const targetId = String(id).trim();
     
+    console.log('🔍 Delete - Searching for service ID:', targetId, 'in', data.length - 1, 'services');
     for (let i = 1; i < data.length; i++) {
       const serviceId = String(data[i][0] || '').trim();
+      console.log(`🔍 Delete - Checking row ${i}: serviceId = "${serviceId}"`);
       if (serviceId === targetId) {
         serviceIndex = i;
+        console.log('✅ Delete - Found service at index:', serviceIndex);
         break;
       }
     }
@@ -2187,6 +2194,33 @@ router.delete('/vehicle-services/:id', requireAuth, async (req, res) => {
 
     console.log(`🔍 Found service at array index: ${serviceIndex}, Google Sheets row index: ${serviceIndex - 1}`);
     console.log(`🔍 Service data before deletion:`, data[serviceIndex]);
+    
+    // Also delete all associated service prices
+    console.log('🔍 Checking for associated service prices to delete...');
+    try {
+      const pricesData = await GoogleSheetsService.getData('Vehicle_Service_Prices');
+      const pricesToDelete = [];
+      
+      if (pricesData.length > 1) {
+        for (let i = 1; i < pricesData.length; i++) {
+          const priceServiceId = String(pricesData[i][1] || '').trim(); // Column 1 should be service_id
+          if (priceServiceId === targetId) {
+            pricesToDelete.push(i - 1); // Convert to 0-based index for Google Sheets
+            console.log(`🔍 Found price to delete at row ${i - 1} for service ${targetId}`);
+          }
+        }
+      }
+      
+      // Delete prices in reverse order to avoid index shifting issues
+      for (let i = pricesToDelete.length - 1; i >= 0; i--) {
+        await GoogleSheetsService.deleteData('Vehicle_Service_Prices', pricesToDelete[i]);
+        console.log(`✅ Deleted price at row ${pricesToDelete[i]}`);
+      }
+      
+      console.log(`✅ Deleted ${pricesToDelete.length} associated prices`);
+    } catch (priceError) {
+      console.log('⚠️ Warning: Could not delete associated prices:', priceError.message);
+    }
     
     // Delete the vehicle service from Google Sheets
     // serviceIndex is the array index (1-based, skipping header), but Google Sheets deleteData expects 0-based index
