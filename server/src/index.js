@@ -92,13 +92,11 @@ if (!process.env.PORT) {
   console.log('⚠️  PORT nu este setat, se folosește valoarea implicită: 8080')
 }
 if (!process.env.JWT_SECRET) {
-  if (process.env.RAILWAY_PROJECT_ID || process.env.NODE_ENV === 'production') {
-    // Pentru producție, generăm un secret sigur bazat pe timestamp și alte valori
-    const crypto = await import('crypto');
-    const productionSecret = crypto.randomBytes(64).toString('hex');
-    process.env.JWT_SECRET = productionSecret;
-    console.log('🔐 JWT_SECRET generat automat pentru producție (64 bytes random)');
-    console.log('🔐 SECRET LENGTH:', process.env.JWT_SECRET.length);
+  if (process.env.NODE_ENV === 'production') {
+    // În producție, JWT_SECRET TREBUIE să fie setat în environment variables
+    console.error('❌ CRITICAL: JWT_SECRET lipsește în producție! Setează-l în Railway Dashboard.');
+    console.error('❌ Serverul nu poate porni fără JWT_SECRET setat.');
+    process.exit(1); // Oprește serverul
   } else {
     // Pentru development, folosim un fallback simplu
     process.env.JWT_SECRET = 'fallback-jwt-secret-key-for-development'
