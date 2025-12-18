@@ -92,8 +92,18 @@ if (!process.env.PORT) {
   console.log('⚠️  PORT nu este setat, se folosește valoarea implicită: 8080')
 }
 if (!process.env.JWT_SECRET) {
-  process.env.JWT_SECRET = 'fallback-jwt-secret-key-for-development'
-  console.log('⚠️  JWT_SECRET nu este setat, se folosește valoarea implicită (NU folosi în producție!)')
+  if (process.env.RAILWAY_PROJECT_ID || process.env.NODE_ENV === 'production') {
+    // Pentru producție, generăm un secret sigur bazat pe timestamp și alte valori
+    const crypto = await import('crypto');
+    const productionSecret = crypto.randomBytes(64).toString('hex');
+    process.env.JWT_SECRET = productionSecret;
+    console.log('🔐 JWT_SECRET generat automat pentru producție (64 bytes random)');
+    console.log('🔐 SECRET LENGTH:', process.env.JWT_SECRET.length);
+  } else {
+    // Pentru development, folosim un fallback simplu
+    process.env.JWT_SECRET = 'fallback-jwt-secret-key-for-development'
+    console.log('⚠️  JWT_SECRET nu este setat, se folosește valoarea implicită (NU folosi în producție!)')
+  }
 }
 if (!process.env.CLIENT_ORIGIN) {
   process.env.CLIENT_ORIGIN = 'https://spectra-autoart-production.up.railway.app'
@@ -231,24 +241,39 @@ app.use(express.json({ limit: '1mb' }))
 app.use(express.urlencoded({ extended: true }))
 
 // Debug middleware to log all requests - MUST be before API routes
-if (process.env.NODE_ENV !== 'production') {
-  app.use((req, res, next) => {
-    console.log('🌐 Server received request:', {
-      method: req.method,
-      url: req.url,
-      path: req.path,
-      query: req.query,
-      headers: req.headers
-    })
-    next()
+// ACTIVAT pentru debugging în producție
+app.use((req, res, next) => {
+  console.log('🌐 Server received request:', {
+    method: req.method,
+    url: req.url,
+    path: req.path,
+    query: req.query,
+    headers: {
+      authorization: req.headers.authorization || 'MISSING',
+      'content-type': req.headers['content-type'],
+      'user-agent': req.headers['user-agent']
+    }
   })
-}
+  next()
+})
 
 app.use('/api/public', publicRouter)
 
 // Deployment debugging log
 console.log('🔍 SERVER DEBUG - Route debugging enabled');
 console.log('🔍 Available admin routes will be logged on startup');
+
+// Middleware special pentru debugging Authorization header
+app.use('/api/admin', (req, res, next) => {
+  console.log('🔍 ADMIN ROUTE DEBUG:', {
+    method: req.method,
+    url: req.url,
+    path: req.path,
+    authorizationHeader: req.headers.authorization || 'MISSING_AUTH_HEADER',
+    allHeaders: Object.keys(req.headers)
+  });
+  next();
+});
 
 app.use('/api/admin', adminRouter)
 app.use('/api/admin/services', adminServicesRouter)
@@ -267,27 +292,22 @@ try {
   console.log('⚠️  Test Google Sheets routes not available:', error.message)
 }
 
+// Router de debugging pentru autentificare
+try {
+  const { default: debugAuthRouter } = await import('./routes/debug-auth.js')
+  app.use('/api/debug', debugAuthRouter)
+  console.log('✅ Debug auth routes mounted')
+} catch (error) {
+  console.log('⚠️  Debug auth routes not available:', error.message)
+}
+
 app.use('/api/gallery', galleryRouter)
 app.use('/api/testimonials', testimonialsRouter)
 app.use('/api/translate', translateRouter)
 // Removed debug routes
 console.log('✅ API routes mounted')
 
-// Catch-all route for React frontend - serve index.html for any non-API route
-app.get('*', (req, res) => {
-  const clientBuildPath = path.join(__dirname, '../../client/dist')
-  const indexPath = path.join(clientBuildPath, 'index.html')
-  
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath)
-  } else {
-    res.status(404).json({ 
-      error: 'Frontend not found', 
-      message: 'React build not found. Please ensure the client has been built.',
-      path: indexPath
-    })
-  }
-})
+// NOTĂ: Ruta catch-all va fi mutată la FINAL după toate rutele API
 
 // Healthcheck endpoints are defined EARLIER in the file (right after app creation)
 // This ensures they respond even during startup issues
@@ -489,6 +509,31 @@ async function initializeAndStartServer() {
     process.exit(1)
   }
 }
+
+// RUTA CATCH-ALL FINALĂ - servește React pentru orice altă rută
+// ACEASTĂ RUTĂ TREBUIE SĂ FIE ULTIMA RUTĂ DEFINITĂ!
+app.get('*', (req, res) => {
+  const clientBuildPath = path.join(__dirname, '../../client/dist')
+  const indexPath = path.join(clientBuildPath, 'index.html')
+  
+  console.log('🎯 Catch-all route hit:', req.url)
+  console.log('📁 Looking for index.html at:', indexPath)
+  
+  if (fs.existsSync(indexPath)) {
+    console.log('✅ Serving React index.html')
+    res.sendFile(indexPath)
+  } else {
+    console.log('❌ React build not found at:', indexPath)
+    res.status(404).json({ 
+      error: 'Frontend not found', 
+      message: 'React build not found. Please ensure the client has been built.',
+      path: indexPath,
+      url: req.url
+    })
+  }
+})
+
+console.log('✅ FINAL catch-all route mounted - React frontend will be served for non-API routes')
 
 // Start the server immediately
 console.log('🚀 STARTING SERVER - Production mode')

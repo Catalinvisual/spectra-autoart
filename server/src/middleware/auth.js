@@ -3,12 +3,16 @@ import jwt from 'jsonwebtoken'
 export default function requireAuth(req, res, next) {
   console.log('🔐 Auth middleware - checking token...');
   console.log('📋 Authorization header:', req.headers.authorization);
+  console.log('📋 All headers:', Object.keys(req.headers));
+  console.log('📋 Request method:', req.method);
+  console.log('📋 Request URL:', req.url);
   
   const authHeader = req.headers.authorization || ''
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
   
   if (!token) {
-    console.log('❌ No token found');
+    console.log('❌ No token found. Auth header:', authHeader);
+    console.log('❌ Full auth header value:', req.headers.authorization);
     return res.status(401).json({ error: 'Token lipsă' })
   }
   
