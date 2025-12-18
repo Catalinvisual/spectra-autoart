@@ -105,11 +105,15 @@ const Footer = () => {
         
         <div className="footer-section">
           <h3>{tf('footer.services', 'Servicii')}</h3>
-          <a href="#">{tf('footer.autoDetailing', 'Detailing Auto')}</a>
+          <a href="#">{tf('footer.interiorDetailing', 'Interior Detailing')}</a>
+          <a href="#">{tf('footer.exteriorDetailing', 'Exterior Detailing')}</a>
+          <a href="#">{tf('footer.ambientLighting', 'Ambient Lighting')}</a>
+          <a href="#">{tf('footer.starlightCeiling', 'Starlight Ceiling')}</a>
+          <a href="#">{tf('footer.ceilingRestoration', 'Ceiling Restoration')}</a>
+          <a href="#">{tf('footer.interiorTrimWrapping', 'Interior Trim Wrapping')}</a>
+          <a href="#">{tf('footer.autoPolish', 'Auto Polish')}</a>
+          <a href="#">{tf('footer.ceramicCoating', 'Ceramic Coating')}</a>
           <a href="#">{tf('footer.chromeDelete', 'Chrome Delete')}</a>
-          <a href="#">{tf('footer.ceramicCoating', 'Protecție Ceramică')}</a>
-          <a href="#">{tf('footer.paintProtection', 'Protecție Vopsea')}</a>
-          <a href="#">{tf('footer.interiorCleaning', 'Curățare Interior')}</a>
         </div>
         
         <div className="footer-section">

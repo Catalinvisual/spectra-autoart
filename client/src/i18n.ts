@@ -475,6 +475,13 @@ const resources = {
         ceramicCoating: 'Keramische Bescherming',
         paintProtection: 'Lakbescherming',
         interiorCleaning: 'Interieur Reiniging',
+        interiorDetailing: 'Interieur Detailing',
+        exteriorDetailing: 'Exterieur Detailing',
+        ambientLighting: 'Ambient Verlichting',
+        starlightCeiling: 'Sterrenhemel Plafond',
+        ceilingRestoration: 'Plafond Retapitatie',
+        interiorTrimWrapping: 'Interieur Trim Wrapping',
+        autoPolish: 'Auto Polijsten',
         newsletter: 'Nieuwsbrief',
         enterEmail: 'Voer uw e-mailadres in',
         send: 'Verzenden',
@@ -1043,6 +1050,13 @@ const resources = {
           ceramicProtection: 'Keramische Bescherming',
           starlightCeiling: 'Sterrenhemel Plafond',
           chromeDelete: 'Chrome Delete',
+          interiorDetailing: 'Interieur Detailing',
+          exteriorDetailing: 'Exterieur Detailing',
+          ambientLighting: 'Ambient Verlichting',
+          ceilingRestoration: 'Plafond Retapitatie',
+          interiorTrimWrapping: 'Interieur Trim Wrapping',
+          autoPolish: 'Auto Polijsten',
+          ceramicCoating: 'Keramische Bescherming',
           quickLinks: 'Snelle Links',
           gallery: 'Galerij',
           about: 'Over Ons',
@@ -2055,6 +2069,13 @@ const resources = {
       ceramicProtection: 'Ceramic Protection',
       starlightCeiling: 'Starlight Ceiling',
       chromeDelete: 'Chrome Delete',
+      interiorDetailing: 'Interior Detailing',
+      exteriorDetailing: 'Exterior Detailing',
+      ambientLighting: 'Ambient Lighting',
+      ceilingRestoration: 'Ceiling Restoration',
+      interiorTrimWrapping: 'Interior Trim Wrapping',
+      autoPolish: 'Auto Polish',
+      ceramicCoating: 'Ceramic Coating',
       quickLinks: 'Quick Links',
       gallery: 'Gallery',
       about: 'About',
@@ -2360,6 +2381,13 @@ const resources = {
         ceramicCoating: 'Revestimiento Cerámico',
         paintProtection: 'Protección de Pintura',
         interiorCleaning: 'Limpieza Interior',
+        interiorDetailing: 'Detailing de Interior',
+        exteriorDetailing: 'Detailing de Exterior',
+        ambientLighting: 'Iluminación Ambiental',
+        starlightCeiling: 'Techo de Estrellas',
+        ceilingRestoration: 'Restauración de Techo',
+        interiorTrimWrapping: 'Wrapping de Molduras Interiores',
+        autoPolish: 'Pulido de Auto',
         newsletter: 'Boletín',
         enterEmail: 'Ingrese su correo electrónico',
         send: 'Enviar',
@@ -2911,7 +2939,17 @@ const resources = {
           cookiePolicy: 'Política de Cookies',
           social: 'Social',
           followUs: 'Síguenos en las redes sociales',
-          copyright: '© 2025 Spectra AutoArt. Todos los derechos reservados.'
+          copyright: '© 2025 Spectra AutoArt. Todos los derechos reservados.',
+          services: 'Servicios',
+          interiorDetailing: 'Detailing de Interior',
+          exteriorDetailing: 'Detailing de Exterior',
+          ambientLighting: 'Iluminación Ambiental',
+          starlightCeiling: 'Techo de Estrellas',
+          ceilingRestoration: 'Restauración de Techo',
+          interiorTrimWrapping: 'Wrapping de Molduras Interiores',
+          autoPolish: 'Pulido de Auto',
+          ceramicCoating: 'Revestimiento Cerámico',
+          chromeDelete: 'Chrome Delete'
         },
         
         cookieConsent: {
@@ -3225,6 +3263,13 @@ const resources = {
         ceramicCoating: 'Powłoka ceramiczna',
         paintProtection: 'Ochrona lakieru',
         interiorCleaning: 'Czyszczenie wnętrza',
+        interiorDetailing: 'Detailing Wnętrza',
+        exteriorDetailing: 'Detailing Zewnętrzny',
+        ambientLighting: 'Oświetlenie Ambient',
+        starlightCeiling: 'Sufit Gwiezdny',
+        ceilingRestoration: 'Restauracja Sufitu',
+        interiorTrimWrapping: 'Oklejanie Elementów Wnętrza',
+        autoPolish: 'Polerowanie Auta',
         newsletter: 'Newsletter',
         enterEmail: 'Wprowadź swój adres e-mail',
         send: 'Wyślij',
@@ -3753,8 +3798,6 @@ const resources = {
         
         
         footer: {
-        
-        footer: {
           description: 'Premium usługi detailingu i stylizacji samochodów. Przekształć swój pojazd dzięki naszej eksperckiej opiece i dbałości o szczegóły.',
           contact: 'Kontakt',
           phone: 'Telefon',
@@ -3773,7 +3816,17 @@ const resources = {
           cookiePolicy: 'Polityka Cookies',
           social: 'Społeczności',
           followUs: 'Obserwuj nas w mediach społecznościowych',
-          copyright: '© 2025 Spectra AutoArt. Wszelkie prawa zastrzeżone.'
+          copyright: '© 2025 Spectra AutoArt. Wszelkie prawa zastrzeżone.',
+          services: 'Usługi',
+          interiorDetailing: 'Detailing Wnętrza',
+          exteriorDetailing: 'Detailing Zewnętrzny',
+          ambientLighting: 'Oświetlenie Ambient',
+          starlightCeiling: 'Sufit Gwiezdny',
+          ceilingRestoration: 'Restauracja Sufitu',
+          interiorTrimWrapping: 'Oklejanie Elementów Wnętrza',
+          autoPolish: 'Polerowanie Auta',
+          ceramicCoating: 'Powłoka Ceramiczna',
+          chromeDelete: 'Chrome Delete'
         },
         
         cookieConsent: {
@@ -4633,8 +4686,8 @@ const resources = {
           interiorDetailing: 'Detailing Interior',
           exteriorDetailing: 'Detailing Exterior',
           ambientLighting: 'Iluminat Ambient',
-          starlightCeiling: 'Tavan cu Stele',
-          ceilingRestoration: 'Restaurare Tavan',
+          starlightCeiling: 'Plafon Iluminat',
+          ceilingRestoration: 'Restaurare Plafon',
           chromeDelete: 'Chrome Delete',
           trimWrapping: 'Înfășurare Trims',
           autoPolish: 'Polish Auto',
@@ -4725,8 +4778,14 @@ const resources = {
         ceramicCoating: 'Protecție Ceramică',
         paintProtection: 'Protecție Vopsea',
         interiorCleaning: 'Curățare Interior',
-        starlightCeiling: 'Tavan Starlight',
+        starlightCeiling: 'Plafon Iluminat',
         chromeDelete: 'Chrome Delete',
+        interiorDetailing: 'Detailing Interior',
+        exteriorDetailing: 'Detailing Exterior',
+        ambientLighting: 'Iluminat Ambient',
+        ceilingRestoration: 'Restaurare Plafon',
+        interiorTrimWrapping: 'Înfoliere Elemente Interior',
+        autoPolish: 'Polish Auto',
         quickLinks: 'Link-uri Rapide',
         gallery: 'Galerie',
         about: 'Despre Noi',
@@ -4892,7 +4951,6 @@ const resources = {
     }
   }
 }
-};
 
 // Get language from localStorage or default to Dutch
 const getInitialLanguage = () => {
