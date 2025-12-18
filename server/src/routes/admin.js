@@ -2033,8 +2033,8 @@ router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
       data[serviceIndex][21] || new Date().toISOString()                     // Created_At (keep existing or set new)
     ];
 
-    // Update in Google Sheets (serviceIndex is the array index, but Google Sheets uses 0-based indexing)
-    await GoogleSheetsService.updateData('Vehicle_Services', serviceIndex - 1, updatedData);
+    // Update in Google Sheets (serviceIndex is the correct row index, Google Sheets uses 0-based indexing)
+    await GoogleSheetsService.updateData('Vehicle_Services', serviceIndex, updatedData);
     
     // Handle prices if provided
     if (prices && Array.isArray(prices)) {
@@ -2223,8 +2223,8 @@ router.delete('/vehicle-services/:id', requireAuth, async (req, res) => {
     }
     
     // Delete the vehicle service from Google Sheets
-    // serviceIndex is the array index (1-based, skipping header), but Google Sheets deleteData expects 0-based index
-    await GoogleSheetsService.deleteData('Vehicle_Services', serviceIndex - 1);
+    // serviceIndex is the correct row index, Google Sheets deleteData expects 0-based index
+    await GoogleSheetsService.deleteData('Vehicle_Services', serviceIndex);
     
     console.log('✅ Vehicle service deleted successfully');
     res.json({ 
