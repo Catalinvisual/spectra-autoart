@@ -22,6 +22,36 @@ export const useScrollAnimation = (): [RefCallback<HTMLElement>] => {
   return [setElement]
 }
 
+export const useScrollReveal = (): [RefCallback<HTMLElement>] => {
+  const [element, setElement] = useState<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (!element) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible')
+          }
+        })
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      }
+    )
+
+    observer.observe(element)
+
+    return () => {
+      observer.unobserve(element)
+    }
+  }, [element])
+
+  return [setElement]
+}
+
 export const useParallax = (speed = 0.5): [RefCallback<HTMLElement>] => {
   const [element, setElement] = useState<HTMLElement | null>(null)
 

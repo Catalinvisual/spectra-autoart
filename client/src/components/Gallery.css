@@ -185,6 +185,78 @@
   color: #ffffff;
 }
 
+/* Flip Card Styles */
+.flip-card {
+  background-color: transparent;
+  width: 300px;
+  height: 200px;
+  perspective: 1000px;
+  cursor: pointer;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front, .flip-card-back {
+  box-shadow: 0 8px 14px 0 rgba(0,0,0,0.2);
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.flip-card-front {
+  background: linear-gradient(135deg, #0b0f14 0%, #12161d 100%);
+  color: #ffffff;
+}
+
+.flip-card-back {
+  background: linear-gradient(135deg, #00e5ff 0%, #0099cc 100%);
+  color: #0b0f14;
+  transform: rotateY(180deg);
+  padding: 20px;
+}
+
+.flip-card-back .overlay-content {
+  transform: none;
+  transition: none;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.flip-card-back .image-title {
+  color: #0b0f14;
+  text-shadow: none;
+  margin-bottom: 10px;
+}
+
+.flip-card-back .image-description {
+  color: #12161d;
+  text-shadow: none;
+}
+
 /* Gallery Grid */
 .gallery-grid {
   display: flex;
@@ -249,6 +321,17 @@
   width: 300px;
   height: 200px;
   flex-shrink: 0;
+}
+
+/* Override pentru flip-card */
+.gallery-item.flip-card {
+  box-shadow: none;
+  overflow: visible;
+}
+
+.gallery-item.flip-card:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .gallery-item:hover {
@@ -456,8 +539,13 @@
     gap: 20px;
   }
   
+  .flip-card {
+    width: 280px;
+    height: 190px;
+  }
+  
   .image-wrapper {
-    height: 250px;
+    height: 100%;
   }
   
   .overlay-content {
@@ -486,8 +574,14 @@
     grid-template-columns: 1fr;
   }
   
+  .flip-card {
+    width: 100%;
+    max-width: 280px;
+    height: 190px;
+  }
+  
   .image-wrapper {
-    height: 200px;
+    height: 100%;
   }
 }
 

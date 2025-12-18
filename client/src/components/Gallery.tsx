@@ -22,15 +22,17 @@ const Gallery: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [setAnimationElement] = useScrollAnimation()
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [showDropdown, setShowDropdown] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isSmallMobile, setIsSmallMobile] = useState(false)
 
   const categories = ['all', 'detailing-interior', 'detailing-exterior', 'ambient-lights', 'starlight-ceiling', 'chrome-delete', 'trim-wrapping', 'polish-auto', 'ceramic-protection', 'before-after']
 
-  const handleImageClick = (imageId: string) => {
-    setSelectedImage(selectedImage === imageId ? null : imageId)
+  const handleCardFlip = (imageId: string) => {
+    const card = document.querySelector(`[data-image-id="${imageId}"]`)
+    if (card) {
+      card.classList.toggle('flipped')
+    }
   }
 
   const handleViewAllClick = () => {
@@ -211,18 +213,26 @@ const Gallery: React.FC = () => {
           {Array.isArray(displayImages) && displayImages.map((image, index) => (
             <div 
               key={image.id} 
-              className={`gallery-item ${selectedImage === image.id ? 'active' : ''}`}
+              className="gallery-item flip-card"
+              data-image-id={image.id}
               style={{ animationDelay: `${index * 0.1}s` }}
-              onClick={() => handleImageClick(image.id)}
+              onClick={() => handleCardFlip(image.id)}
             >
-              <div className="image-wrapper">
-                <img 
-                  src={image.url} 
-                  alt={image.title}
-                  className="gallery-image"
-                  loading="lazy"
-                />
-                <div className="image-overlay">
+              <div className="flip-card-inner">
+                {/* Front side - Image */}
+                <div className="flip-card-front">
+                  <div className="image-wrapper">
+                    <img 
+                      src={image.url} 
+                      alt={image.title}
+                      className="gallery-image"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+                
+                {/* Back side - Description */}
+                <div className="flip-card-back">
                   <div className="overlay-content">
                     <h3 className="image-title">{image.title}</h3>
                     <p className="image-description">{image.description}</p>
