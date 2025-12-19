@@ -29,27 +29,51 @@
 
 .service-card {
   background: var(--card-bg);
-  border: 1px solid rgba(0, 229, 255, 0.3);
-  border-radius: 16px;
+  position: relative;
+  display: flex;
+  place-content: center;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 20px;
   padding: 1.5rem;
   text-align: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
   opacity: 0;
   transform: translateY(30px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
+.service-card:hover {
+  transform: translateY(0);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+
+
 .service-card.visible {
   animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.service-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 40px rgba(0, 229, 255, 0.15);
-  border-color: rgba(0, 229, 255, 0.6);
+/* Service card styling cu border simplu blue-cyan */
+.service-card {
+  position: relative;
+  background: var(--card-bg);
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  transform: translateY(30px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 2px solid #00b7ff;
 }
+
+
 
 @keyframes slideInUp {
   from {
@@ -62,6 +86,8 @@
   }
 }
 
+
+
 @keyframes slideInDown {
   from {
     opacity: 0;
@@ -73,37 +99,18 @@
   }
 }
 
-.service-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-  transition: left 0.6s ease;
-}
 
-.service-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  border: 1px solid transparent;
-  background: linear-gradient(45deg, var(--cyan), transparent) border-box;
-  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  opacity: 0.2;
-  transition: opacity 0.3s ease;
-}
 
-.service-card:hover::after {
-  opacity: 0.4;
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 229, 255, 0.15);
 }
 
 .service-card:hover::before {
-  left: 100%;
+  animation-duration: 1s;
 }
+
+
 
 .service-icon {
   width: 60px;
@@ -118,6 +125,7 @@
   color: white;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  z-index: 1;
 }
 
 .service-icon::after {
@@ -144,6 +152,8 @@
   margin-bottom: 0.8rem;
   font-weight: 600;
   transition: color 0.3s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .service-card:hover h3 {
@@ -156,6 +166,8 @@
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
   transition: color 0.3s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .service-card:hover p {
@@ -172,6 +184,8 @@
   align-items: center;
   gap: 0.5rem;
   transition: transform 0.3s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .service-card:hover .service-price {
@@ -202,6 +216,7 @@
   margin-top: 0.8rem;
   position: relative;
   overflow: hidden;
+  z-index: 1;
 }
 
 .service-book-btn::before {
