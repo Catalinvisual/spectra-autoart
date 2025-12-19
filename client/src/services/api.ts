@@ -177,6 +177,7 @@ api.interceptors.response.use(
 export const adminAPI = {
   login: (credentials: { email: string; password: string }) => api.post('/admin/auth/login', credentials),
   checkSession: () => api.get('/admin/auth/check-session'),
+  verifyToken: (token: string) => api.post('/admin/auth/verify-token', { token }),
   forgotPassword: () => api.post('/admin/auth/forgot-password'),
   resetPassword: (data: { token: string; newPassword: string }) => api.post('/admin/auth/reset-password', data),
   getBookings: () => api.get('/admin/bookings'),
