@@ -327,7 +327,6 @@ const resources = {
         title: 'Titel',
         description: 'Beschrijving',
         enterImageTitle: 'Voer afbeeldingstitel in',
-        enterImageDescription: 'Voer afbeeldingbeschrijving in',
         noTitle: 'Geen titel',
         noDescription: 'Geen beschrijving',
         imageUrl: 'Afbeelding URL',
@@ -1403,7 +1402,6 @@ const resources = {
         title: 'Title',
         description: 'Description',
         enterImageTitle: 'Enter image title',
-        enterImageDescription: 'Enter image description',
         noTitle: 'No title',
         noDescription: 'No description',
         imageUrl: 'Image URL',
@@ -3002,7 +3000,6 @@ const resources = {
           title: 'Título',
           description: 'Descripción',
           enterImageTitle: 'Ingresar título de imagen',
-          enterImageDescription: 'Ingresar descripción de imagen',
           noTitle: 'Sin título',
           noDescription: 'Sin descripción'
         }
@@ -3886,7 +3883,6 @@ const resources = {
           title: 'Tytuł',
           description: 'Opis',
           enterImageTitle: 'Wprowadź tytuł obrazu',
-          enterImageDescription: 'Wprowadź opis obrazu',
           noTitle: 'Brak tytułu',
           noDescription: 'Brak opisu'
         }
@@ -4876,7 +4872,6 @@ const resources = {
         title: 'Titlu',
         description: 'Descriere',
         enterImageTitle: 'Introdu titlul imaginii',
-        enterImageDescription: 'Introdu descrierea imaginii',
         noTitle: 'Fără titlu',
         noDescription: 'Fără descriere',
         imageUrl: 'URL imagine',

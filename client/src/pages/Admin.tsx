@@ -2041,7 +2041,6 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
 interface GalleryImage {
   id: string
   title: string
-  description: string
   url: string
   alt_text: string
   category: string
@@ -2059,7 +2058,6 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
   const [loading, setLoading] = useState(false)
   const [newImage, setNewImage] = useState<Omit<GalleryImage, 'id'>>({
     title: '',
-    description: '',
     url: '',
     alt_text: '',
     category: 'general',
@@ -2097,9 +2095,8 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
           return {
             ...image,
             url: finalUrl,
-            // Mapăm datele corect pentru titlu și descriere
-            title: image.title || image.alt_text || '', // Folosește alt_text dacă title lipsește
-            description: image.description || '' // Asigură că description există
+            // Mapăm datele corect pentru titlu
+            title: image.title || image.alt_text || '' // Folosește alt_text dacă title lipsește
           }
         })
         .filter((image: any) => image.url && image.id) // Filtrează imagini fără URL sau ID
@@ -2151,7 +2148,6 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
         const formData = new FormData()
         formData.append('image', selectedFile)
         formData.append('title', newImage.title)
-        formData.append('description', newImage.description)
         formData.append('alt_text', newImage.alt_text)
         formData.append('category', newImage.category)
         formData.append('active', newImage.active.toString())
@@ -2169,7 +2165,6 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
         const imageData = {
           url: newImage.url,
           title: newImage.title,
-          description: newImage.description,
           alt_text: newImage.alt_text,
           category: newImage.category,
           active: newImage.active
@@ -2178,7 +2173,7 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
         await adminAPI.uploadImage(imageData)
       }
       
-      setNewImage({ title: '', description: '', url: '', alt_text: '', category: 'general', active: true })
+      setNewImage({ title: '', url: '', alt_text: '', category: 'general', active: true })
       setSelectedFile(null)
       setPreviewUrl('')
       // Actualizează local lista fără reîncărcare completă
@@ -2186,7 +2181,6 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
       const uploadedImageData = {
         id: Date.now().toString(), // ID temporar pentru local
         title: newImage.title,
-        description: newImage.description,
         url: newImage.url || (selectedFile ? URL.createObjectURL(selectedFile) : ''),
         alt_text: newImage.alt_text,
         category: newImage.category,
@@ -2324,16 +2318,6 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
           </div>
           
           <div className="form-group">
-            <label>{t('admin.description')}</label>
-            <textarea
-              value={newImage.description}
-              onChange={(e) => setNewImage({ ...newImage, description: e.target.value })}
-              placeholder={t('admin.enterImageDescription')}
-              rows={3}
-            />
-          </div>
-          
-          <div className="form-group">
             <label>{t('admin.altText')}</label>
             <input
               type="text"
@@ -2399,7 +2383,6 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
                 />
                 <div className="image-info">
                   <div className="image-title">{image.title || t('admin.noTitle')}</div>
-                  <div className="image-description">{image.description || t('admin.noDescription')}</div>
                   <div className="image-category">{t(`galleryPage.categories.${image.category}`)}</div>
                 </div>
                 <div className="image-actions">
