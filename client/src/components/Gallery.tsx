@@ -59,6 +59,7 @@ const Gallery: React.FC = () => {
   const loadGalleryImages = async () => {
     try {
       const response = await publicAPI.getGallery(currentLanguage)
+      console.log('🔍 Gallery public API response:', response.data)
       // Construiește URL-uri complete pentru imagini
       const processedImages = response.data.map((image: GalleryImage) => {
         const apiBase = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' ? `${window.location.origin}/api` : '')

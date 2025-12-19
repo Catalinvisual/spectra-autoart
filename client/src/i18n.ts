@@ -178,7 +178,6 @@ const resources = {
       sendToSubscribers: 'Verstuur naar abonnees',
       subscribers: 'Abonnees',
       forgotPassword: 'Wachtwoord vergeten?',
-      backToHome: 'Terug naar Home',
       loggingIn: 'Inloggen...',
       home: 'Home',
       goHome: 'Ga naar Home',
@@ -343,8 +342,8 @@ const resources = {
         descriptionOfImage: 'Beschrijving van afbeelding',
         category: 'Categorie',
         general: 'Algemeen',
-        detailingInterior: 'Detailing Interior',
-        detailingExterior: 'Detailing Exterior',
+        detailingInterior: 'Interieur Detailing',
+        detailingExterior: 'Exterieur Detailing',
         ambientLights: 'Ambient Verlichting',
         starlightCeiling: 'Sterrenhemel Plafond',
         trimWrapping: 'Trim Wrapping',
@@ -434,6 +433,7 @@ const resources = {
         editCalendar: 'Calendar bewerken',
         activate: 'Activeren',
         unknownService: 'Onbekende Service',
+        chromeDelete: 'Chrome Delete',
         passwordResetInstructions: 'Als je je wachtwoord bent vergeten, neem dan contact op met de systeembeheerder.',
         passwordResetFailed: 'Wachtwoord reset mislukt.',
         pleaseSelectImageOrEnterUrl: 'Selecteer een afbeelding of voer een URL in',
@@ -465,23 +465,7 @@ const resources = {
         email: 'Email',
         phone: 'Telefoon',
         bookingDeleted: 'Afspraak verwijderd!',
-        errorDeletingBooking: 'Fout bij het verwijderen van afspraak',
-        // Additional admin translations
-        refresh: 'Verversen',
-        errorLoadingImages: 'Fout bij het laden van afbeeldingen',
-        pleaseFillAllFields: 'Vul alle verplichte velden in',
-        errorAddingImage: 'Fout bij het toevoegen van afbeelding',
-        errorUpdatingImage: 'Fout bij het bijwerken van afbeelding',
-        confirmDeleteImage: 'Weet je zeker dat je deze afbeelding wilt verwijderen?',
-        panel: 'Admin Paneel',
-        bookings: 'Afspraken',
-        pricesManagement: 'Prijzen Beheer',
-        bodyTypesManagement: 'Carrosserie Types Beheer',
-        enterTitle: 'Voer titel in',
-        enterAltText: 'Voer alt tekst in',
-        enterCategory: 'Voer categorie in',
-        enterOrder: 'Voer volgorde in',
-        vehicle: 'Voertuig'
+        errorDeletingBooking: 'Fout bij het verwijderen van afspraak'
       },
       
       
@@ -1118,15 +1102,15 @@ const resources = {
         categories: {
           all: 'All',
           general: 'General',
-          'detailing-interior': 'Interieur Detailing',
-          'detailing-exterior': 'Exterieur Detailing',
-          'ambient-lights': 'Ambient Verlichting',
-          'starlight-ceiling': 'Sterrenhemel Plafond',
+          'detailing-interior': 'Interior Detailing',
+          'detailing-exterior': 'Exterior Detailing',
+          'ambient-lights': 'Ambient Lights',
+          'starlight-ceiling': 'Starlight Ceiling',
           'chrome-delete': 'Chrome Delete',
           'trim-wrapping': 'Trim Wrapping',
-          'polish-auto': 'Auto Polijsten',
-          'ceramic-protection': 'Keramische Bescherming',
-          'before-after': 'Voor & Na'
+          'polish-auto': 'Auto Polish',
+          'ceramic-protection': 'Ceramic Protection',
+          'before-after': 'Before & After'
         },
         fallback: {
           premiumDetailing: 'Premium Detailing',
@@ -1258,7 +1242,6 @@ const resources = {
       sendToSubscribers: 'Send to subscribers',
       subscribers: 'Subscribers',
       forgotPassword: 'Forgot password?',
-      backToHome: 'Back to Home',
       loggingIn: 'Logging in...',
       home: 'Home',
       goHome: 'Go to Home',
@@ -1517,8 +1500,10 @@ const resources = {
         deactivate: 'Deactivate',
         activate: 'Activate',
         unknownService: 'Unknown Service',
+        chromeDelete: 'Chrome Delete',
         passwordResetInstructions: 'If you forgot your password, please contact the system administrator.',
         passwordResetFailed: 'Password reset failed.',
+        sessionExpired: 'Session expired. Please log in again.',
         pleaseSelectImageOrEnterUrl: 'Please select an image or enter a URL',
         // Booking management translations
       noDate: 'No date specified',
@@ -2154,15 +2139,16 @@ const resources = {
         noImages: 'No se encontraron imágenes para esta categoría.',
         categories: {
           all: 'Todo',
-          'detailing-interior': 'Interieur Detailing',
-          'detailing-exterior': 'Exterieur Detailing',
-          'ambient-lights': 'Ambient Verlichting',
-          'starlight-ceiling': 'Sterrenhemel Plafond',
+          general: 'General',
+          'detailing-interior': 'Detailing de Interior',
+          'detailing-exterior': 'Detailing de Exterior',
+          'ambient-lights': 'Iluminación Ambiental',
+          'starlight-ceiling': 'Techo de Estrellas',
           'chrome-delete': 'Chrome Delete',
-          'trim-wrapping': 'Trim Wrapping',
-          'polish-auto': 'Auto Polijsten',
-          'ceramic-protection': 'Keramische Bescherming',
-          'before-after': 'Voor & Na'
+          'trim-wrapping': 'Envoltura de Molduras',
+          'polish-auto': 'Pulido de Auto',
+          'ceramic-protection': 'Protección Cerámica',
+          'before-after': 'Antes y Después'
         },
         fallback: {
           premiumDetailing: 'Detailing Premium',
@@ -3014,6 +3000,8 @@ const resources = {
           errorDeletingBooking: 'Error al eliminar reserva',
           passwordResetInstructions: 'Si olvidaste tu contraseña, por favor contacta al administrador del sistema.',
           passwordResetFailed: 'Error al restablecer contraseña.',
+          sessionExpired: 'Sesión expirada. Por favor inicie sesión de nuevo.',
+          chromeDelete: 'Chrome Delete',
           // Gallery management
           title: 'Título',
           description: 'Descripción',
@@ -3042,15 +3030,16 @@ const resources = {
         noImages: 'Nie znaleziono obrazów dla tej kategorii.',
         categories: {
           all: 'Wszystko',
-          'detailing-interior': 'Interieur Detailing',
-          'detailing-exterior': 'Exterieur Detailing',
-          'ambient-lights': 'Ambient Verlichting',
-          'starlight-ceiling': 'Sterrenhemel Plafond',
+          general: 'Ogólne',
+          'detailing-interior': 'Detailing Wnętrza',
+          'detailing-exterior': 'Detailing Zewnętrzny',
+          'ambient-lights': 'Oświetlenie Ambientowe',
+          'starlight-ceiling': 'Sufit Gwiezdnego Nieba',
           'chrome-delete': 'Chrome Delete',
-          'trim-wrapping': 'Trim Wrapping',
-          'polish-auto': 'Auto Polijsten',
-          'ceramic-protection': 'Keramische Bescherming',
-          'before-after': 'Voor & Na'
+          'trim-wrapping': 'Oklejanie Elementów',
+          'polish-auto': 'Polerowanie Auta',
+          'ceramic-protection': 'Powłoka Ceramiczna',
+          'before-after': 'Przed i Po'
         },
         fallback: {
           premiumDetailing: 'Premium Detailing',
@@ -3897,6 +3886,8 @@ const resources = {
           errorDeletingBooking: 'Błąd podczas usuwania rezerwacji',
           passwordResetInstructions: 'Jeśli zapomniałeś hasła, skontaktuj się z administratorem systemu.',
           passwordResetFailed: 'Resetowanie hasła nie powiodło się.',
+          sessionExpired: 'Sesja wygasła. Proszę zalogować się ponownie.',
+          chromeDelete: 'Chrome Delete',
           // Gallery management
           title: 'Tytuł',
           description: 'Opis',
@@ -4913,6 +4904,7 @@ const resources = {
         ceramicProtection: 'Protecție ceramică',
         beforeAfter: 'Înainte și După',
         active: 'Activ',
+        chromeDelete: 'Chrome Delete',
         addImage: 'Adaugă imagine',
         existingImages: 'Imagini existente',
         loadingImages: 'Se încarcă imaginile...',
@@ -4993,7 +4985,8 @@ const resources = {
         imageStatusUpdated: 'Statusul imaginii actualizat',
         failedToUpdateImageStatus: 'Actualizarea statusului imaginii a eșuat',
         passwordResetInstructions: 'Dacă ai uitat parola, te rugăm să contactezi administratorul sistemului.',
-        passwordResetFailed: 'Resetarea parolei a eșuat.'
+        passwordResetFailed: 'Resetarea parolei a eșuat.',
+        sessionExpired: 'Sesiunea a expirat. Vă rugăm să vă autentificați din nou.'
       }
     }
   }
