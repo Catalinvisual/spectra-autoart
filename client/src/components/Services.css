@@ -26,89 +26,206 @@
   gap: 1.5rem;
   margin-top: 2rem;
 }
-
 .service-card {
   background: var(--card-bg);
   position: relative;
-  display: flex;
-  place-content: center;
-  place-items: center;
-  overflow: hidden;
-  border-radius: 20px;
-  padding: 1.5rem;
-  text-align: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0;
-  transform: translateY(30px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.service-card:hover {
-  transform: translateY(0);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-
-
-.service-card.visible {
-  animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-/* Service card styling cu border simplu blue-cyan */
-.service-card {
-  position: relative;
-  background: var(--card-bg);
-  border-radius: 20px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
+  overflow: hidden;
+  border-radius: 20px;
   padding: 1.5rem;
+  text-align: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
   transform: translateY(30px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  border: 2px solid #00b7ff;
+  border: 2px solid rgba(0, 183, 255, 0.2);
 }
 
+/* DOUĂ LINII MOBILE SEPARATE: Design complet nou */
 
+/* Container pentru liniile mobile */
+.service-card .border-runner {
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* PRIMA LINIE - BLUE FOARTE DESCHIS */
+.service-card .border-line:nth-child(1) {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Linia BLUE mobilă - partea de sus (grosime 4px) */
+.service-card .border-line:nth-child(1)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    #99e6ff 20%, 
+    #ccf2ff 50%, 
+    #99e6ff 80%, 
+    transparent 100%);
+  border-radius: 4px;
+  filter: drop-shadow(0 0 8px #99e6ff) drop-shadow(0 0 12px #ccf2ff);
+  animation: lineTopBlue 6s linear infinite;
+}
+
+/* Linia BLUE mobilă - partea dreapta (grosime 4px) */
+.service-card .border-line:nth-child(1)::after {
+  content: '';
+  position: absolute;
+  top: -100%;
+  right: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    #99e6ff 20%, 
+    #ccf2ff 50%, 
+    #99e6ff 80%, 
+    transparent 100%);
+  border-radius: 4px;
+  filter: drop-shadow(0 0 8px #99e6ff) drop-shadow(0 0 12px #ccf2ff);
+  animation: lineRightBlue 6s linear infinite;
+  animation-delay: 1.5s;
+}
+
+/* A DOUA LINIE - CYAN FOARTE DESCHIS */
+.service-card .border-line:nth-child(2) {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Linia CYAN mobilă - partea de jos (grosime 4px) */
+.service-card .border-line:nth-child(2)::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: -100%;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    #b3f0ff 20%, 
+    #e6faff 50%, 
+    #b3f0ff 80%, 
+    transparent 100%);
+  border-radius: 4px;
+  filter: drop-shadow(0 0 8px #b3f0ff) drop-shadow(0 0 12px #e6faff);
+  animation: lineBottomCyan 6s linear infinite;
+  animation-delay: 3s;
+}
+
+/* Linia CYAN mobilă - partea stanga (grosime 4px) */
+.service-card .border-line:nth-child(2)::after {
+  content: '';
+  position: absolute;
+  bottom: -100%;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    #b3f0ff 20%, 
+    #e6faff 50%, 
+    #b3f0ff 80%, 
+    transparent 100%);
+  border-radius: 4px;
+  filter: drop-shadow(0 0 8px #b3f0ff) drop-shadow(0 0 12px #e6faff);
+  animation: lineLeftCyan 6s linear infinite;
+  animation-delay: 4.5s;
+}
+
+/* Animații pentru liniile mobile separate */
+@keyframes lineTopBlue {
+  0% {
+    left: -100%;
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 1;
+  }
+}
+
+@keyframes lineRightBlue {
+  0% {
+    top: -100%;
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 1;
+  }
+}
+
+@keyframes lineBottomCyan {
+  0% {
+    right: -100%;
+    opacity: 1;
+  }
+  100% {
+    right: 100%;
+    opacity: 1;
+  }
+}
+
+@keyframes lineLeftCyan {
+  0% {
+    bottom: -100%;
+    opacity: 1;
+  }
+  100% {
+    bottom: 100%;
+    opacity: 1;
+  }
+}
+
+/* animațiile tale existente */
+.service-card.visible {
+  animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
 
 @keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-
-
-@keyframes slideInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-
 
 .service-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 12px 40px rgba(0, 229, 255, 0.15);
 }
 
-.service-card:hover::before {
-  animation-duration: 1s;
+/* Efecte hover pentru liniile mobile */
+.service-card:hover .border-line:nth-child(1)::before,
+.service-card:hover .border-line:nth-child(1)::after {
+  animation-duration: 3s;
+  filter: drop-shadow(0 0 12px #99e6ff) drop-shadow(0 0 16px #ccf2ff);
 }
+
+.service-card:hover .border-line:nth-child(2)::before,
+.service-card:hover .border-line:nth-child(2)::after {
+  animation-duration: 3s;
+  filter: drop-shadow(0 0 12px #b3f0ff) drop-shadow(0 0 16px #e6faff);
+}
+
+
+
+
 
 
 
