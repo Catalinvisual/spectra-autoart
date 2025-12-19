@@ -1712,15 +1712,20 @@ router.get('/services', requireAuth, async (req, res) => {
 router.get('/vehicle-services', requireAuth, async (req, res) => {
   try {
     const start = Date.now()
+    
+    // Force reload fresh data from Google Sheets
+    console.log('🔄 Force reloading vehicle services data from Google Sheets...')
+    // Clear cache and force reload
+    GoogleSheetsService.clearCache('Vehicle_Services')
+    GoogleSheetsService.clearCache('Vehicle_Service_Prices')
+    await vehicleServicesService.loadFromGoogleSheets()
+    
     const services = Array.isArray(vehicleServicesService?.services) ? vehicleServicesService.services : []
     const prices = Array.isArray(vehicleServicesService?.servicePrices) ? vehicleServicesService.servicePrices : []
 
-    if ((!services || services.length === 0) && (!prices || prices.length === 0) && vehicleServicesService?.initializeDemoData) {
-      try {
-        await vehicleServicesService.initializeDemoData()
-      } catch (e) {
-        console.warn('⚠️ Failed to initialize demo data in admin route:', e?.message)
-      }
+    // Nu mai încărca date demo - folosește doar date reale din Google Sheets
+    if ((!services || services.length === 0) && (!prices || prices.length === 0)) {
+      console.log('ℹ️ No vehicle services found in Google Sheets - returning empty array')
     }
 
     const pricesByService = new Map()
@@ -1898,7 +1903,7 @@ router.post('/vehicle-services', requireAuth, async (req, res) => {
             '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' // Coloane goale suplimentare pentru a completa structura de 25 coloane
           ];
           
-          await GoogleSheetsService.appendData('Vehicle_Service_Prices', priceRowData);
+          await GoogleSheetsService.appendDataDirect('Vehicle_Service_Prices', priceRowData);
           console.log('✅ Price added for body type:', priceData.body_type_key, 'with value:', priceValue);
         }
       }
@@ -2033,8 +2038,12 @@ router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
       data[serviceIndex][21] || new Date().toISOString()                     // Created_At (keep existing or set new)
     ];
 
-    // Update in Google Sheets (serviceIndex is the correct row index, Google Sheets uses 0-based indexing)
-    await GoogleSheetsService.updateData('Vehicle_Services', serviceIndex, updatedData);
+    // Update in Google Sheets (Google Sheets uses 1-based indexing, header is row 1, first service is row 2)
+    console.log(`🔍 serviceIndex before calculation: ${serviceIndex}`);
+    const googleSheetsRowIndex = serviceIndex + 1; // serviceIndex 1 = rândul 2 din Google Sheets
+    console.log(`🔄 Updating Google Sheets row ${googleSheetsRowIndex} (serviceIndex: ${serviceIndex})`);
+    console.log(`📊 Data to update:`, updatedData);
+    await GoogleSheetsService.updateData('Vehicle_Services', googleSheetsRowIndex, updatedData);
     
     // Handle prices if provided
     if (prices && Array.isArray(prices)) {
@@ -2063,19 +2072,31 @@ router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
       console.log('📊 Found existing prices:', existingPriceRows.length);
       console.log('📋 New prices received:', prices.length);
       
-      // Process each new price - only if it has a valid value
-      for (const priceData of prices) {
-        if (priceData.body_type_key) {
+      // Validare suplimentară a datelor de intrare
+      const validPrices = prices.filter(priceData => {
+        if (!priceData || typeof priceData !== 'object') return false;
+        if (!priceData.body_type_key || typeof priceData.body_type_key !== 'string') return false;
+        
+        const priceValue = priceData.price_min;
+        if (priceValue === undefined || priceValue === null || priceValue === '') return false;
+        
+        const numericPrice = Number(priceValue);
+        if (isNaN(numericPrice) || numericPrice < 0) return false;
+        
+        return true;
+      });
+      
+      console.log('✅ Valid prices after filtering:', validPrices.length, 'out of', prices.length);
+      
+      if (validPrices.length === 0) {
+        console.log('⚠️ No valid prices to process, skipping price update');
+      } else {
+        // Process each valid price
+        for (const priceData of validPrices) {
           const bodyTypeKey = priceData.body_type_key;
+          const priceValue = Number(priceData.price_min); // Convertim la număr validat
           
-          // Determine the price value to use (only price_min, price_max eliminated)
-          const priceValue = priceData.price_min;
-          
-          // Only process if there's a valid price value (not undefined, null, empty, or 0 if you want to allow 0)
-          if (priceValue === undefined || priceValue === null || priceValue === '') {
-            console.log(`⚠️ Skipping price for body type ${bodyTypeKey} - no valid price value`);
-            continue;
-          }
+          console.log(`💰 Processing price for body type: ${bodyTypeKey}, value: ${priceValue}`);
           
           if (existingPriceMap[bodyTypeKey]) {
             // Update existing price
@@ -2112,7 +2133,7 @@ router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
             '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' // Coloane goale suplimentare pentru a completa structura de 25 coloane
           ];
             
-            await GoogleSheetsService.appendData('Vehicle_Service_Prices', priceRowData);
+            await GoogleSheetsService.appendDataDirect('Vehicle_Service_Prices', priceRowData);
             console.log('✅ New price added for body type:', bodyTypeKey, 'with value:', priceValue);
           }
         }
@@ -2126,24 +2147,54 @@ router.put('/vehicle-services/:id', requireAuth, async (req, res) => {
     }
     
     console.log('✅ Vehicle service updated successfully');
+    
+    // Recitim datele actualizate din Google Sheets pentru a construi răspunsul corect
+    console.log('🔄 Reloading updated data from Google Sheets for response...');
+    // Așteptăm mai mult pentru ca Google Sheets să proceseze update-ul
+    console.log('⏱️  Waiting 3 seconds for Google Sheets to process the update...');
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    const updatedServicesData = await GoogleSheetsService.getData('Vehicle_Services', true);
+    console.log(`📋 Reloaded data length:`, updatedServicesData.length);
+    if (updatedServicesData.length > 1) {
+      console.log(`📋 First data row:`, updatedServicesData[1]);
+      console.log(`📋 Service ID in first row: "${updatedServicesData[1][0]}"`);
+      console.log(`📋 Service name in first row: "${updatedServicesData[1][1]}"`);
+    }
+    let updatedService = null;
+    console.log(`🔍 Searching for targetId: "${targetId}" in reloaded data...`);
+    
+    for (let i = 1; i < updatedServicesData.length; i++) {
+      const serviceId = String(updatedServicesData[i][0] || '').trim();
+      console.log(`🔍 Checking row ${i}: serviceId = "${serviceId}"`);
+      if (serviceId === targetId) {
+        console.log(`✅ Found service at row ${i}: "${serviceId}"`);
+        updatedService = {
+          id: serviceId,
+          name: updatedServicesData[i][1] || '',
+          name_en: updatedServicesData[i][2] || '',
+          name_nl: updatedServicesData[i][3] || '',
+          description: updatedServicesData[i][7] || '',
+          description_en: updatedServicesData[i][8] || '',
+          description_nl: updatedServicesData[i][9] || '',
+          category: updatedServicesData[i][13] || '',
+          category_en: updatedServicesData[i][14] || '',
+          category_nl: updatedServicesData[i][15] || '',
+          duration: updatedServicesData[i][19] || '',
+          isActive: updatedServicesData[i][20] === 'true',
+          prices: prices || []
+        };
+        break;
+      }
+    }
+    
+    if (!updatedService) {
+      throw new Error('Could not find updated service in Google Sheets');
+    }
+    
     res.json({ 
       success: true, 
       message: 'Vehicle service updated successfully',
-      service: {
-        id: targetId,
-        name: updatedData[1],
-        name_en: updatedData[2],
-        name_nl: updatedData[3],
-        description: updatedData[4],
-        description_en: updatedData[5],
-        description_nl: updatedData[6],
-        category: updatedData[7],
-        category_en: updatedData[8],
-        category_nl: updatedData[9],
-        duration: updatedData[10],
-        isActive: updatedData[11] === 'true',
-        prices: prices || []
-      }
+      service: updatedService
     });
   } catch (error) {
     console.error('Update vehicle service error:', error);

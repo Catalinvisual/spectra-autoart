@@ -8,7 +8,6 @@ class GoogleSheetsService {
   constructor() {
     this.doc = null;
     this.isInitialized = false;
-    this.isDemoMode = false;
     this.cache = new Map();
     this.cacheTimeout = 30000; // 30 seconds cache timeout - echilibru între performanță și actualizări
     this.lastRequestTime = 0;
@@ -163,14 +162,11 @@ class GoogleSheetsService {
                            !process.env.CLIENT_ORIGIN?.includes('localhost');
         
         if (isProduction) {
-          console.log('🚀 PRODUCTION ENVIRONMENT: Google Sheets credentials missing - enabling demo mode');
-          this.isDemoMode = true; // Enable demo mode in production to allow server to start
-          this.isInitialized = true; // Consider initialized in demo mode
-          console.log('✅ DEMO MODE ACTIVATED: isInitialized =', this.isInitialized, 'isDemoMode =', this.isDemoMode);
-          return true; // Return success so server can start
+          console.log('🚀 PRODUCTION ENVIRONMENT: Google Sheets credentials missing - service will not initialize');
+          this.isInitialized = false; // Do not initialize in production without credentials
+          return false; // Return failure
         } else {
           console.log('⚠️  Development environment: Service will not initialize');
-          this.isDemoMode = false;
           this.isInitialized = false;
           return false;
         }
@@ -208,13 +204,11 @@ class GoogleSheetsService {
                                !process.env.CLIENT_ORIGIN?.includes('localhost');
             
             if (isProduction) {
-              console.log('🚀 Production environment detected - enabling demo mode');
-              this.isDemoMode = true;
-              this.isInitialized = true;
-              return true;
+              console.log('🚀 Production environment detected - service will not initialize without credentials');
+              this.isInitialized = false;
+              return false;
             } else {
               console.log('⚠️  Development environment: Service will not initialize');
-              this.isDemoMode = false;
               this.isInitialized = false;
               return false;
             }
@@ -270,91 +264,21 @@ class GoogleSheetsService {
         console.error('❌ Google Sheets authentication failed:', authError.message);
         console.error('❌ Full auth error:', authError);
         
-        // Enable demo mode in both production and development when authentication fails
-        console.log('⚠️  Authentication failed - enabling demo mode');
-        this.isDemoMode = true;
-        this.isInitialized = true; // Consider it initialized in demo mode
-        console.log('✅ DEMO MODE ACTIVATED (auth failure): isInitialized =', this.isInitialized, 'isDemoMode =', this.isDemoMode);
-        return true; // Return success for demo mode
+        // Authentication failed - do not enable demo mode
+        console.log('❌ Authentication failed - service will not initialize');
+        this.isInitialized = false;
+        return false; // Return failure
       }
     } catch (error) {
       console.error('❌ Failed to initialize Google Sheets service:', error);
-      // Enable demo mode when initialization fails
-      console.log('⚠️  Enabling demo mode due to initialization failure');
-      this.isDemoMode = true;
-      this.isInitialized = true;
-      console.log('✅ DEMO MODE ACTIVATED (init failure): isInitialized =', this.isInitialized, 'isDemoMode =', this.isDemoMode);
-      return true; // Return success for demo mode
+      // Do not enable demo mode when initialization fails
+      console.log('❌ Initialization failed - service will not initialize');
+      this.isInitialized = false;
+      return false; // Return failure
     }
   }
 
-  // Demo data generators
-  getDemoData(sheetName) {
-    console.log(`📊 Returning demo data for ${sheetName}`);
-    
-    switch (sheetName) {
-      case 'Services':
-        return [
-          ['ID', 'Name_NL', 'Name_EN', 'Name_ES', 'Name_PL', 'Name_RO', 'Description_NL', 'Description_EN', 'Description_ES', 'Description_PL', 'Description_RO', 'Price', 'Active', 'Created_Date', 'Updated_Date'],
-          ['1', 'Auto Detailing', 'Auto Detailing', 'Detallado de Auto', 'Detailing Samochodu', 'Detailing Auto', 'Complete auto detailing service', 'Complete auto detailing service', 'Servicio completo de detallado de auto', 'Kompletna usługa detailingu samochodu', 'Serviciu complet de detailing auto', '150.00', 'true', '2024-01-01T00:00:00.000Z', '2024-01-01T00:00:00.000Z'],
-          ['2', 'Polijsten', 'Polishing', 'Pulido', 'Polerowanie', 'Polish', 'Professional car polishing', 'Professional car polishing', 'Pulido profesional de coche', 'Profesjonalne polerowanie samochodu', 'Polish profesional auto', '200.00', 'true', '2024-01-01T00:00:00.000Z', '2024-01-01T00:00:00.000Z'],
-          ['3', 'Keramische Coating', 'Ceramic Coating', 'Revestimiento Cerámico', 'Powłoka Ceramiczna', 'Coating Ceramic', 'Premium ceramic coating protection', 'Premium ceramic coating protection', 'Protección de revestimiento cerámico premium', 'Premierowa ochrona powłoką ceramiczną', 'Protecție premium cu coating ceramic', '500.00', 'true', '2024-01-01T00:00:00.000Z', '2024-01-01T00:00:00.000Z']
-        ];
-      case 'Bookings':
-        return [
-          ['ID', 'Name', 'Email', 'Phone', 'Date', 'Services', 'Total', 'Status', 'Created At', 'Make', 'Model', 'Type', 'Body'],
-          ['1', 'John Doe', 'john@example.com', '+1234567890', '2024-01-15T09:00:00.000Z', '[{"name":"Premium Detailing","price":150}]', '150.00', 'confirmed', '2024-01-01T00:00:00.000Z', 'BMW', 'X5', 'SUV', 'SUV'],
-          ['2', 'Jane Smith', 'jane@example.com', '+0987654321', '2024-01-16T14:00:00.000Z', 'Interior Cleaning, Exterior Wash', '80.00', 'pending', '2024-01-02T10:30:00.000Z', 'Audi', 'A4', 'Sedan', 'Sedan'],
-          ['3', 'Mike Johnson', 'mike@example.com', '+1122334455', '2024-01-17T11:00:00.000Z', '[{"name":"Ceramic Coating","price":500}]', '500.00', 'confirmed', '2024-01-03T09:15:00.000Z', 'Mercedes', 'C-Class', 'Sedan', 'Sedan']
-        ];
-      case 'Newsletter_subscribers':
-        return [
-          ['Email', 'Name', 'Locale', 'IP_Address', 'Subscribed_Date'],
-          ['demo@example.com', 'Demo User', 'en', '127.0.0.1', '2024-01-01T00:00:00.000Z']
-        ];
-      case 'Testimonials':
-          return [
-            ['ID', 'Name', 'Rating', 'Comment_NL', 'Comment_EN', 'Comment_ES', 'Comment_PL', 'Comment_RO', 'Active', 'Created_Date'],
-            ['test-001', 'Test Client', '5', 'Excelent serviciu! Mașina mea arată ca nouă după detalierea premium.', 'Excellent service! My car looks brand new after premium detailing.', '¡Excelente servicio! Mi auto se ve como nuevo después del detallado premium.', 'Doskonała obsługa! Moje auto wygląda jak nowe po premium detailingu.', 'Serviciu excelent! Mașina mea arată ca nouă după detailing premium.', 'true', '2025-11-20'],
-            ['testimonial-1', 'Alex Johnson', '5', 'Excellent service! My car looks brand new.', 'Excellent service! My car looks brand new after premium detailing.', '¡Excelente servicio! Mi auto se ve como nuevo después del detallado premium.', 'Doskonała obsługa! Moje auto wygląda jak nowe po premium detailingu.', 'Serviciu excelent! Mașina mea arată ca nouă după detailing premium.', 'true', '2024-01-05']
-          ];
-      case 'Vehicles':
-        return [
-          ['ID', 'Make_NL', 'Make_EN', 'Model_NL', 'Model_EN', 'Type_NL', 'Type_EN', 'Body_NL', 'Body_EN'],
-          ['1', 'BMW', 'BMW', 'Seria 3', 'Series 3', 'Sedan', 'Sedan', 'Sedan', 'Sedan'],
-          ['2', 'BMW', 'BMW', 'Seria 5', 'Series 5', 'Sedan', 'Sedan', 'Sedan', 'Sedan'],
-          ['3', 'Audi', 'Audi', 'A4', 'A4', 'Sedan', 'Sedan', 'Sedan', 'Sedan'],
-          ['4', 'Audi', 'Audi', 'Q5', 'Q5', 'SUV', 'SUV', 'SUV', 'SUV'],
-          ['5', 'Mercedes', 'Mercedes', 'C-Klasse', 'C-Class', 'Sedan', 'Sedan', 'Sedan', 'Sedan'],
-          ['6', 'Mercedes', 'Mercedes', 'GLE', 'GLE', 'SUV', 'SUV', 'SUV', 'SUV']
-        ];
-      case 'Vehicle_Services':
-        return [
-          ['ID', 'Name', 'Name_EN', 'Name_NL', 'Description', 'Description_EN', 'Description_NL', 'Category', 'Category_EN', 'Category_NL', 'Duration_Minutes', 'Is_Active'],
-          ['1', 'Premium Wash', 'Premium Wash', 'Premium Was', 'Complete exterior cleaning with premium products', 'Complete exterior cleaning with premium products', 'Complete exterieur reiniging met premium producten', 'exterior', 'exterior', 'exterieur', '45', 'true'],
-          ['2', 'Interior Detail', 'Interior Detail', 'Interieur Detail', 'Deep interior cleaning with extraction and deodorizing', 'Deep interior cleaning with extraction and deodorizing', 'Diep interieur reiniging met extractie en deodoriseren', 'interior', 'interior', 'interieur', '120', 'true']
-        ];
-      case 'Vehicle_Service_Prices':
-        return [
-          ['ID', 'Service_ID', 'Body_Type_ID', 'Price_Min', 'Price_Max', 'Currency', 'Duration_Minutes', 'Is_Active'],
-          ['1', '1', 'sedan', '25', '35', 'EUR', '45', 'true'],
-          ['2', '1', 'suv', '35', '45', 'EUR', '45', 'true'],
-          ['3', '2', 'sedan', '100', '130', 'EUR', '120', 'true'],
-          ['4', '2', 'suv', '120', '150', 'EUR', '120', 'true']
-        ];
-      case 'Gallery':
-        return [
-          ['ID', 'Image_URL', 'Description', 'Category', 'Active', 'Upload_Date'],
-          ['img1', 'https://example.com/image1.jpg', 'Mașină premium detailing', 'exterior', 'true', '2024-01-01'],
-          ['img2', 'https://example.com/image2.jpg', 'Interior curățat profesional', 'interior', 'true', '2024-01-02'],
-          ['img3', 'https://example.com/image3.jpg', 'Ceramic coating aplicație', 'protection', 'true', '2024-01-03']
-        ];
-      default:
-        return [['Demo header'], ['Demo data']];
-    }
-  }
-
-  async initializeSpreadsheetStructure() {
+async initializeSpreadsheetStructure() {
     try {
       // Ensure document info is loaded before accessing sheets
       if (!this.doc.sheetsByTitle) {
@@ -467,10 +391,6 @@ class GoogleSheetsService {
 
   async getData(sheetName, forceReload = false) {
     try {
-      if (this.isDemoMode) {
-        return this.getDemoData(sheetName);
-      }
-      
       // Check cache first (skip if forceReload)
       if (!forceReload) {
         const cachedData = this.getCachedData(sheetName);
@@ -1404,12 +1324,6 @@ class GoogleSheetsService {
 
   async updateServices(services) {
     try {
-      // Dacă suntem în mod demo, nu facem nimic
-      if (this.isDemoMode) {
-        console.log('📊 Demo mode: Skipping Google Sheets sync for services');
-        return true;
-      }
-      
       // Folosește metoda incrementală pentru actualizare
       return await this.updateServicesIncremental(services);
     } catch (error) {
@@ -1513,12 +1427,6 @@ class GoogleSheetsService {
 
   async updateServicePrices(prices) {
     try {
-      // Dacă suntem în mod demo, nu facem nimic
-      if (this.isDemoMode) {
-        console.log('📊 Demo mode: Skipping Google Sheets sync for service prices');
-        return true;
-      }
-      
       // Folosește metoda incrementală pentru actualizare
       return await this.updateServicePricesIncremental(prices);
     } catch (error) {

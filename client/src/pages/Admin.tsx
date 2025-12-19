@@ -152,12 +152,12 @@ const Admin: React.FC = () => {
         if (!response.data.valid) {
           // Session expired, logout
           handleLogout()
-          toast.showError('Sesiunea a expirat. Vă rugăm să vă autentificați din nou.')
+          toast.showError(t('admin.sessionExpired'))
         }
       } catch (error) {
         // Token invalid or expired
         handleLogout()
-        toast.showError('Sesiunea a expirat. Vă rugăm să vă autentificați din nou.')
+        toast.showError(t('admin.sessionExpired'))
       }
     }
 
@@ -273,19 +273,19 @@ const Admin: React.FC = () => {
     e.preventDefault()
     
     if (newPassword !== confirmPassword) {
-      toast.showError('Wachtwoorden komen niet overeen')
+      toast.showError(t('admin.passwordsDoNotMatch'))
       return
     }
     
     if (newPassword.length < 6) {
-      toast.showError('Wachtwoord moet minimaal 6 tekens bevatten')
+      toast.showError(t('admin.passwordTooShort'))
       return
     }
 
     setLoading(true)
     try {
       await adminAPI.resetPassword({ token: resetToken, newPassword })
-      toast.showSuccess('Wachtwoord succesvol gereset! U kunt nu inloggen.')
+      toast.showSuccess(t('admin.passwordResetSuccess'))
       setShowResetPasswordForm(false)
       setResetToken('')
       setNewPassword('')
@@ -293,7 +293,7 @@ const Admin: React.FC = () => {
       navigate('/admin')
     } catch (error) {
       console.error('Reset password error:', error)
-      toast.showError('Wachtwoord reset mislukt. Probeer het opnieuw.')
+      toast.showError(t('admin.passwordResetFailedGeneric'))
     } finally {
       setLoading(false)
     }
@@ -1345,32 +1345,34 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const normalizedPrices = (formData.prices || [])
+      // Validare și normalizare prețuri - DOAR prețuri valide
+      const validPrices = (formData.prices || [])
+        .filter(p => p && typeof p.body_type_key === 'string' && p.body_type_key.trim() !== '')
+        .filter(p => p.price_min !== undefined && p.price_min !== null && !isNaN(Number(p.price_min)))
         .map(p => ({
-          ...p,
-          body_type_key: mapFrontendBodyTypeKey((p.body_type_key || '').toString().toLowerCase())
-        }))
-        .filter(p => p && typeof p.body_type_key === 'string' && p.body_type_key && p.price_min !== undefined && p.price_min !== null)
-        .map(p => ({
-          body_type_key: String(p.body_type_key).toLowerCase(),
-          price_min: p.price_min,
-          duration_minutes: p.duration_minutes || 60,
-          is_active: p.is_active !== undefined ? p.is_active : true
+          body_type_key: String(p.body_type_key).toLowerCase().trim(),
+          price_min: Number(p.price_min),
+          duration_minutes: Number(p.duration_minutes) || 60,
+          is_active: p.is_active !== undefined ? Boolean(p.is_active) : true
         }))
 
       // Curăță formData de câmpurile goale pentru a evita erorile
       const cleanFormData = Object.keys(formData).reduce((acc: any, key) => {
         const value = formData[key as keyof typeof formData]
-        // Elimină câmpurile goale sau undefined
-        if (value !== undefined && value !== null && value !== '') {
-          acc[key] = value
+        // Elimină câmpurile goale sau undefined, dar păstrează array-uri goale valide
+        if (value !== undefined && value !== null) {
+          if (Array.isArray(value)) {
+            acc[key] = value
+          } else if (value !== '') {
+            acc[key] = value
+          }
         }
         return acc
       }, {} as any)
 
       const serviceData = {
         ...cleanFormData,
-        prices: normalizedPrices
+        prices: validPrices
       }
       
       if (editingService) {
@@ -1538,13 +1540,17 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
 
   const deleteVehicleService = async (id: string) => {
     const service = vehicleServices.find(s => s.id === id)
+    console.log('DEBUG: deleteVehicleService called with id:', id)
+    console.log('DEBUG: Found service:', service)
     if (service) {
-      setDeleteModalState({
+      const newState = {
         isOpen: true,
-        type: 'vehicleService',
+        type: 'vehicleService' as const,
         itemId: id,
         itemName: service.name
-      })
+      }
+      console.log('DEBUG: Setting deleteModalState to:', newState)
+      setDeleteModalState(newState)
     }
   }
 
@@ -2011,7 +2017,13 @@ const VehicleServicesManagement: React.FC<VehicleServicesManagementProps> = ({ i
         isOpen={deleteModalState.isOpen}
         onClose={closeDeleteModal}
         onConfirm={handleConfirmDelete}
-        title={deleteModalState.type === 'vehicleService' ? t('admin.deleteVehicleService') : t('admin.deleteBodyType')}
+        title={(() => {
+          const title = deleteModalState.type === 'vehicleService' ? t('admin.deleteVehicleService') : t('admin.deleteBodyType')
+          console.log('DEBUG: Modal title:', title)
+          console.log('DEBUG: Modal type:', deleteModalState.type)
+          console.log('DEBUG: Translation for deleteVehicleService:', t('admin.deleteVehicleService'))
+          return title
+        })()}
         message={deleteModalState.type === 'vehicleService' 
           ? t('admin.areYouSureDeleteVehicleService') 
           : t('admin.areYouSureDeleteBodyType')

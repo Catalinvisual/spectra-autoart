@@ -50,9 +50,9 @@ class VehicleServicesService {
     return bodyType;
   }
 
-  // Inițializează datele demo
+  // Inițializează datele din Google Sheets (fără date demo)
   async initializeDemoData() {
-    // First try to load from Google Sheets
+    // Încarcă doar din Google Sheets, fără date demo
     const loadedFromSheets = await this.loadFromGoogleSheets();
     if (loadedFromSheets) {
       console.log('✅ Using data from Google Sheets');
@@ -63,64 +63,9 @@ class VehicleServicesService {
       };
     }
     
-    // If Google Sheets failed, use demo data
-    console.log('⚠️  Using demo data');
-    
-    // Servicii demo
-    this.services = [
-      {
-        id: 1,
-        slug: 'premium-wash',
-        name: 'Premium Wash',
-        description: 'Spălare completă exterioară cu produse de calitate superioară',
-        category: 'exterior',
-        image_url: '/images/services/premium-wash.jpg',
-        duration_minutes: 45,
-        is_active: true
-      },
-      {
-        id: 2,
-        slug: 'interior-detail',
-        name: 'Interior Detail',
-        description: 'Curățare profundă interior cu extracție și deodorizare',
-        category: 'interior',
-        image_url: '/images/services/interior-detail.jpg',
-        duration_minutes: 120,
-        is_active: true
-      },
-      {
-        id: 3,
-        slug: 'engine-detailing',
-        name: 'Engine Detailing',
-        description: 'Curățare și protejare compartiment motor',
-        category: 'engine',
-        image_url: '/images/services/engine-detailing.jpg',
-        duration_minutes: 60,
-        is_active: true
-      },
-      {
-        id: 4,
-        slug: 'ceramic-coating',
-        name: 'Ceramic Coating',
-        description: 'Aplicare protecție ceramică pentru vopsea',
-        category: 'protection',
-        image_url: '/images/services/ceramic-coating.jpg',
-        duration_minutes: 240,
-        is_active: true
-      },
-      {
-        id: 5,
-        slug: 'headlight-restoration',
-        name: 'Headlight Restoration',
-        description: 'Restaurare faruri oxidate',
-        category: 'restoration',
-        image_url: '/images/services/headlight-restoration.jpg',
-        duration_minutes: 90,
-        is_active: true
-      }
-    ];
-
-    // Prețuri demo pentru fiecare serviciu și tip de caroserie
+    // Dacă Google Sheets este gol, nu folosi date demo
+    console.log('⚠️  No data found in Google Sheets, initializing empty arrays');
+    this.services = [];
     this.servicePrices = [];
     
     // Premium Wash - prețuri diferite în funcție de caroserie
@@ -592,8 +537,8 @@ class VehicleServicesService {
     try {
       console.log('📥 Loading vehicle services from Google Sheets...');
       
-      // Load services from Google Sheets
-      const sheetsServices = await GoogleSheetsService.getServicesWithPrices();
+      // Load services from Google Sheets with force reload
+      const sheetsServices = await GoogleSheetsService.getServicesWithPrices('nl', true);
       
       if (sheetsServices && sheetsServices.length > 0) {
         console.log(`✅ Loaded ${sheetsServices.length} services from Google Sheets`);
