@@ -464,7 +464,23 @@ const resources = {
         email: 'Email',
         phone: 'Telefoon',
         bookingDeleted: 'Afspraak verwijderd!',
-        errorDeletingBooking: 'Fout bij het verwijderen van afspraak'
+        errorDeletingBooking: 'Fout bij het verwijderen van afspraak',
+        // Additional admin translations
+        refresh: 'Verversen',
+        errorLoadingImages: 'Fout bij het laden van afbeeldingen',
+        pleaseFillAllFields: 'Vul alle verplichte velden in',
+        errorAddingImage: 'Fout bij het toevoegen van afbeelding',
+        errorUpdatingImage: 'Fout bij het bijwerken van afbeelding',
+        confirmDeleteImage: 'Weet je zeker dat je deze afbeelding wilt verwijderen?',
+        panel: 'Admin Paneel',
+        bookings: 'Afspraken',
+        pricesManagement: 'Prijzen Beheer',
+        bodyTypesManagement: 'Carrosserie Types Beheer',
+        enterTitle: 'Voer titel in',
+        enterAltText: 'Voer alt tekst in',
+        enterCategory: 'Voer categorie in',
+        enterOrder: 'Voer volgorde in',
+        vehicle: 'Voertuig'
       },
       
       
