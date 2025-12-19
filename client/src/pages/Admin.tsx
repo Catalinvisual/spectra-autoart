@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
 import { adminAPI } from '../services/api'
 import './Admin.css'
 
@@ -645,41 +644,58 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ t }) => {
 const Admin: React.FC = () => {
   const { t, i18n } = useTranslation()
   const [activeTab, setActiveTab] = useState<'bookings' | 'gallery' | 'services' | 'prices' | 'body-types'>('bookings')
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [showLogin, setShowLogin] = useState(false)
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' })
+  const [loginError, setLoginError] = useState('')
   const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const token = localStorage.getItem('adminToken')
         if (!token) {
-          navigate('/admin/login')
+          setShowLogin(true)
+          setLoading(false)
           return
         }
         
         const response = await adminAPI.verifyToken(token)
         if (response.data && response.data.valid) {
-          setIsAuthenticated(true)
+          setShowLogin(false)
         } else {
           localStorage.removeItem('adminToken')
-          navigate('/admin/login')
+          setShowLogin(true)
         }
       } catch (error) {
         console.error('Auth check error:', error)
         localStorage.removeItem('adminToken')
-        navigate('/admin/login')
+        setShowLogin(true)
       } finally {
         setLoading(false)
       }
     }
 
     checkAuth()
-  }, [navigate])
+  }, [])
 
   const handleLogout = () => {
     localStorage.removeItem('adminToken')
-    navigate('/admin/login')
+    setShowLogin(true)
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoginError('')
+    
+    try {
+      const response = await adminAPI.login(loginForm)
+      localStorage.setItem('adminToken', response.data.token)
+      setShowLogin(false)
+      setLoginForm({ email: '', password: '' })
+    } catch (error) {
+      console.error('Login error:', error)
+      setLoginError(t('admin.invalidCredentials') || 'Invalid credentials')
+    }
   }
 
   if (loading) {
@@ -691,8 +707,40 @@ const Admin: React.FC = () => {
     )
   }
 
-  if (!isAuthenticated) {
-    return null
+  if (showLogin) {
+    return (
+      <div className="admin-login-container">
+        <div className="admin-login-form">
+          <h2>{t('admin.login') || 'Admin Login'}</h2>
+          <form onSubmit={handleLogin}>
+            <div className="form-group">
+              <label>{t('admin.email') || 'Email'}:</label>
+              <input
+                type="email"
+                value={loginForm.email}
+                onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))}
+                required
+                placeholder={t('admin.enterEmail') || 'Enter email'}
+              />
+            </div>
+            <div className="form-group">
+              <label>{t('admin.password') || 'Password'}:</label>
+              <input
+                type="password"
+                value={loginForm.password}
+                onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
+                required
+                placeholder={t('admin.enterPassword') || 'Enter password'}
+              />
+            </div>
+            {loginError && <div className="error-message">{loginError}</div>}
+            <button type="submit" className="login-btn">
+              {t('admin.login') || 'Login'}
+            </button>
+          </form>
+        </div>
+      </div>
+    )
   }
 
   return (
