@@ -737,6 +737,23 @@ const Admin: React.FC = () => {
             <button type="submit" className="login-btn">
               {t('login') || 'Login'}
             </button>
+            <div className="login-actions">
+              <button 
+                type="button" 
+                className="forgot-password-btn"
+                onClick={() => window.location.href = '/admin/reset-password'}
+              >
+                {t('forgotPassword') || 'Forgot Password?'}
+              </button>
+              <button 
+                type="button" 
+                className="home-btn"
+                onClick={() => window.location.href = '/'}
+                title={t('backToHome') || 'Back to Home'}
+              >
+                🏠
+              </button>
+            </div>
           </form>
         </div>
       </div>

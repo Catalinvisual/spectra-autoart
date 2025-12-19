@@ -3785,3 +3785,55 @@ h2:hover {
 .admin-login-form .login-btn:active {
   transform: translateY(0);
 }
+
+/* Login actions container */
+.login-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  gap: 15px;
+}
+
+/* Forgot password button */
+.forgot-password-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.forgot-password-btn:hover {
+  border-color: rgba(0, 229, 255, 0.5);
+  color: #00e5ff;
+  background: rgba(0, 229, 255, 0.1);
+}
+
+/* Home button */
+.home-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+}
+
+.home-btn:hover {
+  border-color: rgba(0, 229, 255, 0.5);
+  color: #00e5ff;
+  background: rgba(0, 229, 255, 0.1);
+  transform: translateY(-1px);
+}
