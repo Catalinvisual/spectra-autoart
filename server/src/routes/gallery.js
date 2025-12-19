@@ -211,20 +211,76 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
       })
     }
 
-    const { alt_text, category, active } = req.body
-    console.log(`📝 Form data: alt_text="${alt_text}", category="${category}", active="${active}"`)
+    const { alt_text, category, active, title } = req.body
+    console.log(`📝 Form data: title="${title}", alt_text="${alt_text}", category="${category}", active="${active}"`)
 
+    // Traducem automat titlul și descrierea în toate limbile folosind DeepL
+    const originalTitle = title || alt_text || 'Gallery Image'
+    const originalDescription = alt_text || ''
+    
+    console.log(`🔄 Starting DeepL translation for title: "${originalTitle}" and description: "${originalDescription}"`)
+    
+    let translations = {
+      Title_NL: originalTitle,
+      Title_EN: originalTitle,
+      Title_ES: originalTitle,
+      Title_PL: originalTitle,
+      Title_RO: originalTitle,
+      Description_NL: originalDescription,
+      Description_EN: originalDescription,
+      Description_ES: originalDescription,
+      Description_PL: originalDescription,
+      Description_RO: originalDescription
+    }
+    
+    try {
+      // Traducem titlul în toate limbile
+      if (originalTitle) {
+        const titleTranslations = await translateMultipleWithDeepL(originalTitle, ['EN', 'ES', 'PL', 'RO'], 'NL')
+        translations.Title_EN = titleTranslations.EN || originalTitle
+        translations.Title_ES = titleTranslations.ES || originalTitle
+        translations.Title_PL = titleTranslations.PL || originalTitle
+        translations.Title_RO = titleTranslations.RO || originalTitle
+        console.log(`✅ Title translations completed: NL="${originalTitle}", EN="${translations.Title_EN}", ES="${translations.Title_ES}", PL="${translations.Title_PL}", RO="${translations.Title_RO}"`)
+      }
+      
+      // Traducem descrierea în toate limbile
+      if (originalDescription) {
+        const descriptionTranslations = await translateMultipleWithDeepL(originalDescription, ['EN', 'ES', 'PL', 'RO'], 'NL')
+        translations.Description_EN = descriptionTranslations.EN || originalDescription
+        translations.Description_ES = descriptionTranslations.ES || originalDescription
+        translations.Description_PL = descriptionTranslations.PL || originalDescription
+        translations.Description_RO = descriptionTranslations.RO || originalDescription
+        console.log(`✅ Description translations completed: NL="${originalDescription}", EN="${translations.Description_EN}", ES="${translations.Description_ES}", PL="${translations.Description_PL}", RO="${translations.Description_RO}"`)
+      }
+      
+    } catch (translationError) {
+      console.error('❌ DeepL translation failed:', translationError)
+      // Folosim textul original ca fallback pentru toate traducerile
+    }
+
+    // Preparăm datele complete pentru Google Sheets cu toate traducerile
     const imageData = [
-      Date.now().toString(), // ID
-      '',                    // Title (empty for now - coloana 2)
-      alt_text || '',        // Description (coloana 3)
-      imageUrl,              // Image URL (coloana 4)
-      category || 'general', // Category (coloana 5)
-      active || 'true',      // Active (coloana 6)
-      new Date().toISOString() // Upload Date (coloana 7)
+      Date.now().toString(),    // ID
+      originalTitle,            // Title (coloana 2)
+      originalDescription,      // Description (coloana 3)
+      imageUrl,                 // Image URL (coloana 4)
+      category || 'general',    // Category (coloana 5)
+      active || 'true',         // Active (coloana 6)
+      new Date().toISOString(), // Upload Date (coloana 7)
+      translations.Title_NL,    // Title_NL (coloana 8)
+      translations.Title_EN,    // Title_EN (coloana 9)
+      translations.Title_ES,    // Title_ES (coloana 10)
+      translations.Title_PL,    // Title_PL (coloana 11)
+      translations.Title_RO,    // Title_RO (coloana 12)
+      translations.Description_NL, // Description_NL (coloana 13)
+      translations.Description_EN, // Description_EN (coloana 14)
+      translations.Description_ES, // Description_ES (coloana 15)
+      translations.Description_PL, // Description_PL (coloana 16)
+      translations.Description_RO  // Description_RO (coloana 17)
     ]
     
-    console.log('📊 Prepared image data for Google Sheets:', imageData)
+    console.log('📊 Prepared complete image data for Google Sheets with translations:', imageData)
 
     const success = await GoogleSheetsService.appendData('Gallery', imageData)
     console.log('✅ Google Sheets append result:', success)
@@ -273,7 +329,7 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
 router.put('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params
-    const { url, alt_text, category, active } = req.body
+    const { url, alt_text, category, active, title } = req.body
 
     const data = await GoogleSheetsService.getData('Gallery')
     
@@ -334,15 +390,78 @@ router.put('/:id', auth, async (req, res) => {
       }
     }
     
+    // Preluăm valorile actuale sau folosim cele noi
+    const currentTitle = currentRow[1] || ''
+    const currentDescription = currentRow[2] || ''
+    const newTitle = title !== undefined ? title : currentTitle
+    const newDescription = alt_text !== undefined ? alt_text : currentDescription
+    
+    // Dacă titlul sau descrierea s-au schimbat, regenerăm traducerile
+    let translations = {
+      Title_NL: currentRow[7] || newTitle,
+      Title_EN: currentRow[8] || newTitle,
+      Title_ES: currentRow[9] || newTitle,
+      Title_PL: currentRow[10] || newTitle,
+      Title_RO: currentRow[11] || newTitle,
+      Description_NL: currentRow[12] || newDescription,
+      Description_EN: currentRow[13] || newDescription,
+      Description_ES: currentRow[14] || newDescription,
+      Description_PL: currentRow[15] || newDescription,
+      Description_RO: currentRow[16] || newDescription
+    }
+    
+    // Dacă s-au făcut modificări la titlu sau descriere, regenerăm traducerile
+    if (title !== undefined || alt_text !== undefined) {
+      console.log(`🔄 Regenerating translations due to content changes...`)
+      
+      try {
+        // Traducem titlul în toate limbile
+        if (newTitle) {
+          const titleTranslations = await translateMultipleWithDeepL(newTitle, ['EN', 'ES', 'PL', 'RO'], 'NL')
+          translations.Title_EN = titleTranslations.EN || newTitle
+          translations.Title_ES = titleTranslations.ES || newTitle
+          translations.Title_PL = titleTranslations.PL || newTitle
+          translations.Title_RO = titleTranslations.RO || newTitle
+          translations.Title_NL = newTitle // NL rămâne originalul
+          console.log(`✅ Title translations updated: NL="${newTitle}", EN="${translations.Title_EN}", ES="${translations.Title_ES}", PL="${translations.Title_PL}", RO="${translations.Title_RO}"`)
+        }
+        
+        // Traducem descrierea în toate limbile
+        if (newDescription) {
+          const descriptionTranslations = await translateMultipleWithDeepL(newDescription, ['EN', 'ES', 'PL', 'RO'], 'NL')
+          translations.Description_EN = descriptionTranslations.EN || newDescription
+          translations.Description_ES = descriptionTranslations.ES || newDescription
+          translations.Description_PL = descriptionTranslations.PL || newDescription
+          translations.Description_RO = descriptionTranslations.RO || newDescription
+          translations.Description_NL = newDescription // NL rămâne originalul
+          console.log(`✅ Description translations updated: NL="${newDescription}", EN="${translations.Description_EN}", ES="${translations.Description_ES}", PL="${translations.Description_PL}", RO="${translations.Description_RO}"`)
+        }
+        
+      } catch (translationError) {
+        console.error('❌ DeepL translation failed during update:', translationError)
+        // Folosim textul original ca fallback pentru toate traducerile
+      }
+    }
+    
     const updatedData = [
       id,
-      url !== undefined ? url : currentRow[1],
-      alt_text !== undefined ? alt_text : currentRow[2],
+      newTitle,                    // Title (coloana 2)
+      newDescription,            // Description (coloana 3)
       url !== undefined ? url : currentImageUrl, // Use new URL or keep current
       category || currentRow[4],
       active !== undefined ? active.toString() : currentRow[5],
-      currentRow[6], // Created_Date (keep original)
-      new Date().toISOString() // Updated_Date
+      currentRow[6],             // Created_Date (keep original)
+      translations.Title_NL,     // Title_NL (coloana 8)
+      translations.Title_EN,     // Title_EN (coloana 9)
+      translations.Title_ES,     // Title_ES (coloana 10)
+      translations.Title_PL,     // Title_PL (coloana 11)
+      translations.Title_RO,     // Title_RO (coloana 12)
+      translations.Description_NL, // Description_NL (coloana 13)
+      translations.Description_EN, // Description_EN (coloana 14)
+      translations.Description_ES, // Description_ES (coloana 15)
+      translations.Description_PL, // Description_PL (coloana 16)
+      translations.Description_RO,  // Description_RO (coloana 17)
+      new Date().toISOString()   // Updated_Date (coloana 18)
     ]
 
     const success = await GoogleSheetsService.updateData('Gallery', rowIndex, updatedData)

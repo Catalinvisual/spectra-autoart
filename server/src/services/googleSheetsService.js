@@ -2073,7 +2073,18 @@ async initializeSpreadsheetStructure() {
             url: row[urlIndex] || '',
             category: row[categoryIndex] || 'general',
             active: activeIndex !== -1 ? isActiveValue(row[activeIndex]) : true,
-            upload_date: row[uploadDateIndex] || ''
+            upload_date: row[uploadDateIndex] || '',
+            // Include toate coloanele de traducere pentru referință
+            title_nl: row[headers.indexOf('Title_NL')] || translatedTitle,
+            title_en: row[headers.indexOf('Title_EN')] || translatedTitle,
+            title_es: row[headers.indexOf('Title_ES')] || translatedTitle,
+            title_pl: row[headers.indexOf('Title_PL')] || translatedTitle,
+            title_ro: row[headers.indexOf('Title_RO')] || translatedTitle,
+            description_nl: row[headers.indexOf('Description_NL')] || translatedDesc,
+            description_en: row[headers.indexOf('Description_EN')] || translatedDesc,
+            description_es: row[headers.indexOf('Description_ES')] || translatedDesc,
+            description_pl: row[headers.indexOf('Description_PL')] || translatedDesc,
+            description_ro: row[headers.indexOf('Description_RO')] || translatedDesc
           };
         })
       );
@@ -2097,7 +2108,18 @@ async initializeSpreadsheetStructure() {
         url: row[urlIndex] || '',
         category: row[categoryIndex] || 'general',
         active: activeIndex !== -1 ? isActiveValue(row[activeIndex]) : true,
-        upload_date: row[uploadDateIndex] || ''
+        upload_date: row[uploadDateIndex] || '',
+        // Include toate coloanele de traducere pentru referință
+        title_nl: row[headers.indexOf('Title_NL')] || row[titleIndex] || '',
+        title_en: row[headers.indexOf('Title_EN')] || row[titleIndex] || '',
+        title_es: row[headers.indexOf('Title_ES')] || row[titleIndex] || '',
+        title_pl: row[headers.indexOf('Title_PL')] || row[titleIndex] || '',
+        title_ro: row[headers.indexOf('Title_RO')] || row[titleIndex] || '',
+        description_nl: row[headers.indexOf('Description_NL')] || row[descIndex] || '',
+        description_en: row[headers.indexOf('Description_EN')] || row[descIndex] || '',
+        description_es: row[headers.indexOf('Description_ES')] || row[descIndex] || '',
+        description_pl: row[headers.indexOf('Description_PL')] || row[descIndex] || '',
+        description_ro: row[headers.indexOf('Description_RO')] || row[descIndex] || ''
       };
     });
   }
