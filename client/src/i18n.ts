@@ -38,6 +38,7 @@ const resources = {
         noImages: 'Geen afbeeldingen gevonden voor deze categorie.',
         categories: {
           all: 'Alles',
+          general: 'Algemeen',
           'detailing-interior': 'Interieur Detailing',
           'detailing-exterior': 'Exterieur Detailing',
           'ambient-lights': 'Ambient Verlichting',
@@ -323,6 +324,12 @@ const resources = {
         bodyTypes: 'Carrosserie Types',
         galleryManagement: 'Galerij Beheer',
         addNewImage: 'Nieuwe Afbeelding Toevoegen',
+        title: 'Titel',
+        description: 'Beschrijving',
+        enterImageTitle: 'Voer afbeeldingstitel in',
+        enterImageDescription: 'Voer afbeeldingbeschrijving in',
+        noTitle: 'Geen titel',
+        noDescription: 'Geen beschrijving',
         imageUrl: 'Afbeelding URL',
         imageUrlPlaceholder: 'https://voorbeeld.nl/afbeelding.jpg',
         selectImage: 'Selecteer Afbeelding',
@@ -371,7 +378,6 @@ const resources = {
         areYouSureDeleteService: 'Weet je zeker dat je deze service wilt verwijderen?',
         editService: 'Service Bewerken',
         name: 'Naam',
-        description: 'Beschrijving',
         price: 'Prijs',
         errorLoadingVehicleServices: 'Fout bij het laden van voertuig services',
         errorLoadingBodyTypes: 'Fout bij het laden van carrosserie types',
@@ -1095,6 +1101,7 @@ const resources = {
         noImages: 'No images found for this category.',
         categories: {
           all: 'All',
+          general: 'General',
           'detailing-interior': 'Interieur Detailing',
           'detailing-exterior': 'Exterieur Detailing',
           'ambient-lights': 'Ambient Verlichting',
@@ -1393,6 +1400,12 @@ const resources = {
         bodyTypes: 'Body Types',
         galleryManagement: 'Gallery Management',
         addNewImage: 'Add New Image',
+        title: 'Title',
+        description: 'Description',
+        enterImageTitle: 'Enter image title',
+        enterImageDescription: 'Enter image description',
+        noTitle: 'No title',
+        noDescription: 'No description',
         imageUrl: 'Image URL',
         imageUrlPlaceholder: 'https://example.com/image.jpg',
         selectImage: 'Select Image',
@@ -1405,7 +1418,6 @@ const resources = {
         altText: 'Alt Text',
         descriptionOfImage: 'Description of image',
         category: 'Category',
-        general: 'General',
         detailingInterior: 'Detailing Interior',
         detailingExterior: 'Detailing Exterior',
         ambientLights: 'Ambient Verlichting',
@@ -1441,7 +1453,6 @@ const resources = {
         areYouSureDeleteService: 'Are you sure you want to delete this service?',
         editService: 'Edit Service',
         name: 'Name',
-        description: 'Description',
         price: 'Price',
         errorLoadingVehicleServices: 'Error loading vehicle services',
         errorLoadingBodyTypes: 'Error loading body types',
@@ -2986,7 +2997,14 @@ const resources = {
           bookingDeleted: '¡Reserva Eliminada!',
           errorDeletingBooking: 'Error al eliminar reserva',
           passwordResetInstructions: 'Si olvidaste tu contraseña, por favor contacta al administrador del sistema.',
-          passwordResetFailed: 'Error al restablecer contraseña.'
+          passwordResetFailed: 'Error al restablecer contraseña.',
+          // Gallery management
+          title: 'Título',
+          description: 'Descripción',
+          enterImageTitle: 'Ingresar título de imagen',
+          enterImageDescription: 'Ingresar descripción de imagen',
+          noTitle: 'Sin título',
+          noDescription: 'Sin descripción'
         }
       }
     }
@@ -3863,7 +3881,14 @@ const resources = {
           bookingDeleted: 'Rezerwacja Usunięta!',
           errorDeletingBooking: 'Błąd podczas usuwania rezerwacji',
           passwordResetInstructions: 'Jeśli zapomniałeś hasła, skontaktuj się z administratorem systemu.',
-          passwordResetFailed: 'Resetowanie hasła nie powiodło się.'
+          passwordResetFailed: 'Resetowanie hasła nie powiodło się.',
+          // Gallery management
+          title: 'Tytuł',
+          description: 'Opis',
+          enterImageTitle: 'Wprowadź tytuł obrazu',
+          enterImageDescription: 'Wprowadź opis obrazu',
+          noTitle: 'Brak tytułu',
+          noDescription: 'Brak opisu'
         }
       }
     }
@@ -3886,6 +3911,7 @@ const resources = {
         noImages: 'Nu au fost găsite imagini pentru această categorie.',
         categories: {
           all: 'Tot',
+          general: 'General',
           'detailing-interior': 'Detailing Interior',
           'detailing-exterior': 'Detailing Exterior',
           'ambient-lights': 'Lumini Ambientale',
@@ -4847,6 +4873,12 @@ const resources = {
         bodyTypes: 'Tipuri caroserie',
         galleryManagement: 'Gestionare galerie',
         addNewImage: 'Adaugă imagine nouă',
+        title: 'Titlu',
+        description: 'Descriere',
+        enterImageTitle: 'Introdu titlul imaginii',
+        enterImageDescription: 'Introdu descrierea imaginii',
+        noTitle: 'Fără titlu',
+        noDescription: 'Fără descriere',
         imageUrl: 'URL imagine',
         imageUrlPlaceholder: 'https://exemplu.ro/imagine.jpg',
         selectImage: 'Selectează imagine',
@@ -4859,7 +4891,6 @@ const resources = {
         altText: 'Text alternativ',
         descriptionOfImage: 'Descrierea imaginii',
         category: 'Categorie',
-        general: 'General',
         detailingInterior: 'Detailing interior',
         detailingExterior: 'Detailing exterior',
         ambientLights: 'Lumini ambientale',
@@ -5118,8 +5149,7 @@ i18n
           'trim-wrapping': 'Colantare Trimuri',
           'polish-auto': 'Polish Auto',
           'ceramic-protection': 'Protecție Ceramică',
-          'before-after': 'Înainte și După',
-          general: 'General'
+          'before-after': 'Înainte și După'
         }
       },
       testimonialPage: {

@@ -624,6 +624,11 @@ async initializeSpreadsheetStructure() {
         throw new Error(`Sheet ${sheetName} not found`);
       }
 
+      // CRITICAL: Load headers to get column mapping
+      await sheet.loadHeaderRow();
+      const headers = sheet.headerValues || [];
+      console.log(`📊 Sheet ${sheetName} headers:`, headers);
+      
       const rows = await sheet.getRows();
       console.log(`📊 Found ${rows.length} rows in ${sheetName}`);
       
@@ -634,16 +639,31 @@ async initializeSpreadsheetStructure() {
         const row = rows[rowIndex];
         let hasChanges = false;
         
-        // CRITICAL: Afișăm structura actuală a rândului pentru debug
-        console.log(`📊 Current row structure:`, Object.keys(row));
-        console.log(`📊 Current row data:`, row);
-        
-        for (const [key, value] of Object.entries(data)) {
-          console.log(`🔍 Checking key: "${key}", current value: "${row[key]}", new value: "${value}"`);
-          if (row[key] !== value) {
-            console.log(`🔄 Updating ${key}: "${row[key]}" -> "${value}"`);
-            row[key] = value;
-            hasChanges = true;
+        // CRITICAL: Dacă primim un array, folosim index pentru a actualiza coloanele
+        if (Array.isArray(data)) {
+          console.log(`📊 Processing array data with ${data.length} elements`);
+          for (let i = 0; i < data.length && i < headers.length; i++) {
+            const header = headers[i];
+            const newValue = data[i];
+            const currentValue = row[header];
+            
+            console.log(`🔍 Column ${i} (${header}): current="${currentValue}", new="${newValue}"`);
+            if (currentValue !== newValue) {
+              console.log(`🔄 Updating ${header}: "${currentValue}" -> "${newValue}"`);
+              row[header] = newValue;
+              hasChanges = true;
+            }
+          }
+        } else {
+          // CRITICAL: Dacă primim un obiect, folosim chei pentru a actualiza
+          console.log(`📊 Processing object data`);
+          for (const [key, value] of Object.entries(data)) {
+            console.log(`🔍 Checking key: "${key}", current value: "${row[key]}", new value: "${value}"`);
+            if (row[key] !== value) {
+              console.log(`🔄 Updating ${key}: "${row[key]}" -> "${value}"`);
+              row[key] = value;
+              hasChanges = true;
+            }
           }
         }
         

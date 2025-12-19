@@ -234,24 +234,26 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
     }
     
     try {
-      // Traducem titlul în toate limbile
+      // Traducem titlul în toate limbile (inclusiv NL)
       if (originalTitle) {
-        const titleTranslations = await translateMultipleWithDeepL(originalTitle, ['EN', 'ES', 'PL', 'RO'], 'NL')
+        const titleTranslations = await translateMultipleWithDeepL(originalTitle, ['NL', 'EN', 'ES', 'PL', 'RO'], 'auto')
+        translations.Title_NL = titleTranslations.NL || originalTitle
         translations.Title_EN = titleTranslations.EN || originalTitle
         translations.Title_ES = titleTranslations.ES || originalTitle
         translations.Title_PL = titleTranslations.PL || originalTitle
         translations.Title_RO = titleTranslations.RO || originalTitle
-        console.log(`✅ Title translations completed: NL="${originalTitle}", EN="${translations.Title_EN}", ES="${translations.Title_ES}", PL="${translations.Title_PL}", RO="${translations.Title_RO}"`)
+        console.log(`✅ Title translations completed: NL="${translations.Title_NL}", EN="${translations.Title_EN}", ES="${translations.Title_ES}", PL="${translations.Title_PL}", RO="${translations.Title_RO}"`)
       }
       
-      // Traducem descrierea în toate limbile
+      // Traducem descrierea în toate limbile (inclusiv NL)
       if (originalDescription) {
-        const descriptionTranslations = await translateMultipleWithDeepL(originalDescription, ['EN', 'ES', 'PL', 'RO'], 'NL')
+        const descriptionTranslations = await translateMultipleWithDeepL(originalDescription, ['NL', 'EN', 'ES', 'PL', 'RO'], 'auto')
+        translations.Description_NL = descriptionTranslations.NL || originalDescription
         translations.Description_EN = descriptionTranslations.EN || originalDescription
         translations.Description_ES = descriptionTranslations.ES || originalDescription
         translations.Description_PL = descriptionTranslations.PL || originalDescription
         translations.Description_RO = descriptionTranslations.RO || originalDescription
-        console.log(`✅ Description translations completed: NL="${originalDescription}", EN="${translations.Description_EN}", ES="${translations.Description_ES}", PL="${translations.Description_PL}", RO="${translations.Description_RO}"`)
+        console.log(`✅ Description translations completed: NL="${translations.Description_NL}", EN="${translations.Description_EN}", ES="${translations.Description_ES}", PL="${translations.Description_PL}", RO="${translations.Description_RO}"`)
       }
       
     } catch (translationError) {
@@ -415,26 +417,26 @@ router.put('/:id', auth, async (req, res) => {
       console.log(`🔄 Regenerating translations due to content changes...`)
       
       try {
-        // Traducem titlul în toate limbile
+        // Traducem titlul în toate limbile (inclusiv NL)
         if (newTitle) {
-          const titleTranslations = await translateMultipleWithDeepL(newTitle, ['EN', 'ES', 'PL', 'RO'], 'NL')
+          const titleTranslations = await translateMultipleWithDeepL(newTitle, ['NL', 'EN', 'ES', 'PL', 'RO'], 'auto')
+          translations.Title_NL = titleTranslations.NL || newTitle
           translations.Title_EN = titleTranslations.EN || newTitle
           translations.Title_ES = titleTranslations.ES || newTitle
           translations.Title_PL = titleTranslations.PL || newTitle
           translations.Title_RO = titleTranslations.RO || newTitle
-          translations.Title_NL = newTitle // NL rămâne originalul
-          console.log(`✅ Title translations updated: NL="${newTitle}", EN="${translations.Title_EN}", ES="${translations.Title_ES}", PL="${translations.Title_PL}", RO="${translations.Title_RO}"`)
+          console.log(`✅ Title translations updated: NL="${translations.Title_NL}", EN="${translations.Title_EN}", ES="${translations.Title_ES}", PL="${translations.Title_PL}", RO="${translations.Title_RO}"`)
         }
         
-        // Traducem descrierea în toate limbile
+        // Traducem descrierea în toate limbile (inclusiv NL)
         if (newDescription) {
-          const descriptionTranslations = await translateMultipleWithDeepL(newDescription, ['EN', 'ES', 'PL', 'RO'], 'NL')
+          const descriptionTranslations = await translateMultipleWithDeepL(newDescription, ['NL', 'EN', 'ES', 'PL', 'RO'], 'auto')
+          translations.Description_NL = descriptionTranslations.NL || newDescription
           translations.Description_EN = descriptionTranslations.EN || newDescription
           translations.Description_ES = descriptionTranslations.ES || newDescription
           translations.Description_PL = descriptionTranslations.PL || newDescription
           translations.Description_RO = descriptionTranslations.RO || newDescription
-          translations.Description_NL = newDescription // NL rămâne originalul
-          console.log(`✅ Description translations updated: NL="${newDescription}", EN="${translations.Description_EN}", ES="${translations.Description_ES}", PL="${translations.Description_PL}", RO="${translations.Description_RO}"`)
+          console.log(`✅ Description translations updated: NL="${translations.Description_NL}", EN="${translations.Description_EN}", ES="${translations.Description_ES}", PL="${translations.Description_PL}", RO="${translations.Description_RO}"`)
         }
         
       } catch (translationError) {
