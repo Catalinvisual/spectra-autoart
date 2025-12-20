@@ -80,11 +80,31 @@ router.get('/', async (req, res) => {
       const titleKey = `title_${lang.toLowerCase()}`
       const descriptionKey = `description_${lang.toLowerCase()}`
       
-      const title = image[titleKey] || image.title || image.alt_text || ''
-      const description = image[descriptionKey] || image.description || image.alt_text || ''
+      // Debug log pentru a vedea ce coloane există
+      console.log('🔍 Available columns:', Object.keys(image))
+      console.log('🔍 Looking for title key:', titleKey)
+      console.log('🔍 Looking for description key:', descriptionKey)
+      console.log('🔍 Title found:', image[titleKey])
+      console.log('🔍 Description found:', image[descriptionKey])
+      
+      // Fallback mai robust pentru titlu și descriere
+      let title = image[titleKey] || image.title || image.alt_text || image.name || ''
+      let description = image[descriptionKey] || image.description || image.alt_text || image.details || ''
+      
+      // Dacă nu există deloc, folosește fallback-uri generice bazate pe categorie
+      if (!title) {
+        title = `Service ${image.category || 'Auto'}`
+      }
+      
+      if (!description) {
+        description = `Professional ${image.category || 'auto'} service by Spectra AutoArt`
+      }
+      
+      console.log('✅ Final title:', title)
+      console.log('✅ Final description:', description)
       
       return {
-        id: image.id || '',
+        id: image.id || `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         url: image.image_url || '',     // Image URL column
         title: title,
         description: description,

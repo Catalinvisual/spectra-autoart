@@ -236,8 +236,8 @@ const GalleryPage: React.FC = () => {
                   {/* Back side - Description */}
                   <div className="flip-card-back">
                     <div className="overlay-content">
-                      <h3 className="image-title">{image.title}</h3>
-                      <p className="image-description">{image.description}</p>
+                      <h3 className="image-title">{image.title || 'Service Auto'}</h3>
+                      <p className="image-description">{image.description || 'Servicii profesionale auto'}</p>
                     </div>
                   </div>
                 </div>
