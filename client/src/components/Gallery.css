@@ -192,6 +192,8 @@
   height: 200px;
   perspective: 1000px;
   cursor: pointer;
+  line-height: 0;
+  font-size: 0;
 }
 
 .flip-card-inner {
@@ -219,6 +221,8 @@
   backface-visibility: hidden;
   border-radius: 15px;
   overflow: hidden;
+  line-height: 0;
+  font-size: 0;
 }
 
 .flip-card-front {
@@ -269,11 +273,18 @@
   justify-content: center;
   width: 100%;
   max-width: 1200px;
+  line-height: 0;
 }
 
 /* Opțiune pentru gap mic între imagini */
 .gallery-grid.with-gap {
   gap: 5px;
+}
+
+/* Eliminare completă a spațiului pentru layout compact - dezactivat pentru a permite gap */
+.gallery-grid.no-gap {
+  line-height: 0;
+  font-size: 0;
 }
 
 /* Layout centrat cu 3 coloane pe desktop */
@@ -316,7 +327,7 @@
   animation: fadeInUp 0.6s ease forwards;
   opacity: 0;
   padding: 0!important;
-  margin: 10px!important;
+  margin: 0!important;
   cursor: pointer;
   width: 300px;
   height: 200px;
@@ -346,16 +357,21 @@
   overflow: hidden;
   padding: 0!important;
   margin: 0!important;
+  line-height: 0;
+  font-size: 0;
 }
 
 .gallery-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   transition: transform 0.3s ease;
   padding: 0!important;
   margin: 0!important;
   display: block;
+  border: none;
+  outline: none;
 }
 
 .gallery-item:hover .gallery-image {
@@ -427,12 +443,22 @@
   max-width: 90%;
 }
 
-/* Loading Spinner */
+/* Loading Spinner - Actualizat pentru centrat universal */
 .loading-spinner {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 400px;
+}
+
+/* Container loading centrat */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  width: 100%;
 }
 
 .spinner {
@@ -499,6 +525,218 @@
   .gallery-section .container {
     padding: 0 10px;
   }
+  
+  /* Eliminare padding pentru a maximiza spațiul imaginii */
+  .flip-card-back {
+    padding: 0;
+  }
+  
+  .flip-card-back .overlay-content {
+    padding: 8px;
+  }
+  
+  /* Asigură că imaginea ocupă tot spațiul disponibil */
+  .flip-card-front {
+    padding: 0;
+  }
+  
+  /* Optimizare text pentru spatele cardului */
+  .flip-card-back .image-title {
+    font-size: 1rem;
+    margin-bottom: 4px;
+  }
+  
+  .flip-card-back .image-description {
+    font-size: 0.8rem;
+    line-height: 1.2;
+  }
+  
+  /* Eliminare orice spațiu suplimentar */
+  .gallery-image {
+    object-fit: cover;
+    object-position: center;
+    width: 100%;
+    height: 100%;
+    display: block;
+    min-height: 100%; /* forțare înălțime completă */
+    max-height: 100%; /* limitare la înălțimea container */
+  }
+  
+  /* Stiluri specifice pentru imaginea lazy */
+  .image-wrapper img {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    display: block !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+  }
+  
+  /* Container relativ pentru poziționare absolută */
+  .image-wrapper {
+    position: relative !important;
+    flex: 1 !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+  }
+  
+  /* Eliminare completă a oricărui spațiu în structură */
+  .flip-card-front,
+  .flip-card-back {
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 0 !important;
+    font-size: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+  }
+  
+  .image-wrapper {
+    flex: 1 !important; /* ocupă tot spațiul disponibil */
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+  }
+  
+  /* Forțare eliminare completă a spațiului */
+  .gallery-item * {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 0 !important;
+    font-size: 0 !important;
+  }
+  
+  /* Culori normale - fără debugging */
+  .flip-card-front {
+    background: linear-gradient(135deg, #0b0f14 0%, #12161d 100%) !important;
+  }
+  
+  .image-wrapper {
+    background: transparent !important;
+  }
+  
+  .gallery-image {
+    background: transparent !important;
+    opacity: 1 !important;
+  }
+  
+  /* Exceptie pentru text - doar pentru elementele de text */
+  .image-title,
+  .image-description {
+    font-size: inherit !important;
+    line-height: inherit !important;
+    margin: inherit !important;
+    padding: inherit !important;
+  }
+}
+
+/* Pentru ecrane foarte mici - carduri mai înalte */
+@media (max-width: 360px) {
+  .flip-card {
+    height: 250px; /* și mai înalt pentru ecrane foarte mici */
+    max-width: 100%; /* folosește toată lățimea disponibilă */
+  }
+  
+  .gallery-item {
+    max-width: 100%;
+  }
+  
+  /* Eliminare padding container pentru maximizare spațiu */
+  .gallery-section .container {
+    padding: 0 5px;
+  }
+  
+  .gallery-section .container.with-padding {
+    padding: 0 5px;
+  }
+  
+  /* Eliminare completă a gap-urilor în grid */
+  .gallery-grid {
+    gap: 0 !important;
+    row-gap: 0 !important;
+    column-gap: 0 !important;
+    grid-gap: 0 !important;
+  }
+  
+  /* Eliminare orice spațiu creat de browser */
+  .gallery-item {
+    line-height: 0;
+    font-size: 0;
+    display: block;
+  }
+
+  /* Gap între cardurile flip - suprascrie clasa no-gap cu specificitate maximă */
+  .gallery .gallery-grid.no-gap {
+    gap: 20px !important;
+    row-gap: 20px !important;
+  }
+
+  /* Gap pentru ecrane mai mici */
+  @media (max-width: 768px) {
+    .gallery .gallery-grid.no-gap {
+      gap: 15px !important;
+      row-gap: 15px !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .gallery .gallery-grid.no-gap {
+      gap: 10px !important;
+      row-gap: 10px !important;
+    }
+  }
+  
+  /* Eliminare pseudo-elemente care ar putea crea spațiu */
+  .gallery-item::before,
+  .gallery-item::after,
+  .flip-card::before,
+  .flip-card::after,
+  .flip-card-inner::before,
+  .flip-card-inner::after,
+  .flip-card-front::before,
+  .flip-card-front::after,
+  .image-wrapper::before,
+  .image-wrapper::after {
+    content: none !important;
+    display: none !important;
+  }
+  
+  /* Forțare dimensiuni exacte - fără niciun spațiu */
+  .flip-card {
+    box-sizing: border-box !important;
+    min-height: 220px !important;
+    max-height: 220px !important;
+    overflow: hidden !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  .flip-card-inner {
+    box-sizing: border-box !important;
+    min-height: 220px !important;
+    max-height: 220px !important;
+    overflow: hidden !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  .flip-card-front {
+    box-sizing: border-box !important;
+    min-height: 220px !important;
+    max-height: 220px !important;
+    overflow: hidden !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
 }
 
 /* Responsive Design */
@@ -536,7 +774,7 @@
   
   .gallery-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 0;
   }
   
   .flip-card {
@@ -572,12 +810,13 @@
   
   .gallery-grid {
     grid-template-columns: 1fr;
+    gap: 0;
   }
   
   .flip-card {
     width: 100%;
     max-width: 280px;
-    height: 190px;
+    height: 220px; /* Mărit de la 190px pentru mai mult spațiu */
   }
   
   .image-wrapper {

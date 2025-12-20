@@ -346,13 +346,25 @@ router.put('/:id/status', auth, async (req, res) => {
 
       // Send client cancellation email
       try {
-        const clientHtml = emailService.emailTemplates.clientCancellation(bookingData, servicesList)
-        await emailService.sendEmail(
-          bookingData.user.email,
-          `Programare Anulată - Spectra AutoArt`,
-          clientHtml
-        )
-        console.log('✅ Client cancellation email sent successfully')
+        // Validate email before sending to prevent bounce emails
+        if (!bookingData.user?.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.user.email)) {
+          console.log(`❌ Invalid email format for cancellation: ${bookingData.user?.email}`);
+        } else {
+          // Block test/example domains to prevent bounce emails
+          const blockedDomains = ['example.com', 'test.com', 'localhost', 'invalid', 'fake.com', 'test.nl', 'example.nl'];
+          const emailDomain = bookingData.user.email.split('@')[1]?.toLowerCase();
+          if (blockedDomains.includes(emailDomain) || bookingData.user.email.includes('test') || bookingData.user.email.includes('example')) {
+            console.log(`❌ Blocked test email domain for cancellation: ${bookingData.user.email}`);
+          } else {
+            const clientHtml = emailService.emailTemplates.clientCancellation(bookingData, servicesList)
+            await emailService.sendEmail(
+              bookingData.user.email,
+              `Programare Anulată - Spectra AutoArt`,
+              clientHtml
+            )
+            console.log('✅ Client cancellation email sent successfully')
+          }
+        }
       } catch (emailError) {
         console.error('❌ Failed to send client cancellation email:', emailError)
       }

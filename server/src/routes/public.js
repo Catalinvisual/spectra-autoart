@@ -712,6 +712,28 @@ router.post('/bookings', async (req, res) => {
       })
    }
     
+    // Validate email format to prevent sending to invalid addresses
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
+      clearTimeout(requestTimeout);
+      console.log(`❌ Invalid email format in booking request: ${user.email}`);
+      return res.status(400).json({ 
+        success: false,
+        error: 'Adresă email invalidă' 
+      })
+   }
+    
+    // Block test/example domains to prevent bounce emails
+    const blockedDomains = ['example.com', 'test.com', 'localhost', 'invalid', 'fake.com', 'test.nl', 'example.nl'];
+    const emailDomain = user.email.split('@')[1]?.toLowerCase();
+    if (blockedDomains.includes(emailDomain) || user.email.includes('test') || user.email.includes('example')) {
+      clearTimeout(requestTimeout);
+      console.log(`❌ Blocked test email domain in booking request: ${user.email}`);
+      return res.status(400).json({ 
+        success: false,
+        error: 'Domeniu email de test blocat' 
+      })
+   }
+    
     const bookingId = Date.now().toString()
     
     let servicesList = ''
@@ -980,6 +1002,17 @@ router.post('/newsletter/subscribe', async (req, res) => {
       return res.status(400).json({ 
         success: false,
         error: 'Email invalid' 
+      })
+    }
+    
+    // Block test/example domains to prevent bounce emails
+    const blockedDomains = ['example.com', 'test.com', 'localhost', 'invalid', 'fake.com', 'test.nl', 'example.nl'];
+    const emailDomain = email.split('@')[1]?.toLowerCase();
+    if (blockedDomains.includes(emailDomain) || email.includes('test') || email.includes('example')) {
+      console.log(`❌ Blocked test email domain in newsletter subscription: ${email}`);
+      return res.status(400).json({ 
+        success: false,
+        error: 'Domeniu email de test blocat' 
       })
     }
     

@@ -136,8 +136,9 @@ const Testimonials: React.FC = () => {
     return (
       <section className="testimonials-section">
         <div className="container">
-          <div className="loading-spinner">
+          <div className="loading-container">
             <div className="spinner"></div>
+            <div className="loading-text">{t('testimonialPage.loading')}</div>
           </div>
         </div>
       </section>

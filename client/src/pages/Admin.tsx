@@ -469,9 +469,9 @@ const Admin: React.FC = () => {
         </main>
       </div>
 
-      {/* Delete Confirmation Modal - Moved to admin-panel level for proper positioning */}
+      {/* Delete Confirmation Modal - Uniformizat cu gallery modal */}
       {showDeleteModal && (
-        <div className="modal-overlay" onClick={cancelDeleteBooking}>
+        <div className="modal-overlay delete-modal-overlay" onClick={cancelDeleteBooking}>
           <div className="modal-content delete-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>🗑️ {t('admin.confirmDelete')}</h2>
@@ -999,7 +999,12 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     }
   }
 
-  if (loading) return <div className="loading">{t('admin.loadingBookings')}</div>
+  if (loading) return (
+    <div className="loading-container">
+      <div className="spinner"></div>
+      <div className="loading-text">{t('admin.loadingBookings')}</div>
+    </div>
+  )
 
   return (
     <div className="bookings-management">
@@ -2454,7 +2459,10 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ isAuthenticated }
         </h3>
         
         {loading ? (
-          <div className="loading">{t('admin.loadingImages')}</div>
+          <div className="loading-container">
+            <div className="spinner"></div>
+            <div className="loading-text">{t('admin.loadingImages')}</div>
+          </div>
         ) : images.length === 0 ? (
           <div className="no-images">{t('admin.noImages')}</div>
         ) : (

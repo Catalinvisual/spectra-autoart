@@ -155,8 +155,9 @@ const Gallery: React.FC = () => {
     return (
       <section className="gallery-section">
         <div className="container">
-          <div className="loading-spinner">
+          <div className="loading-container">
             <div className="spinner"></div>
+            <div className="loading-text">{t('galleryPage.loading')}</div>
           </div>
         </div>
       </section>
@@ -210,7 +211,7 @@ const Gallery: React.FC = () => {
           </div>
         </div>
 
-        <div className="gallery-grid">
+        <div className="gallery-grid no-gap">
           {Array.isArray(displayImages) && displayImages.map((image, index) => (
             <div 
               key={image.id} 

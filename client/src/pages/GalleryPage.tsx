@@ -151,8 +151,9 @@ const GalleryPage: React.FC = () => {
         <Header />
         <main className="gallery-main">
           <div className="container">
-            <div className="loading-spinner">
+            <div className="loading-container">
               <div className="spinner"></div>
+              <div className="loading-text">{t('galleryPage.loading')}</div>
             </div>
           </div>
         </main>

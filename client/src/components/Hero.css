@@ -69,6 +69,12 @@
   position: relative;
 }
 
+.title-highlight {
+  color: #00e5ff;
+  text-shadow: 0 0 30px rgba(0, 229, 255, 0.8);
+  font-weight: 800;
+}
+
 .title-accent::after {
   content: '';
   position: absolute;
@@ -272,6 +278,79 @@
   .gradient-orb {
     display: none;
   }
+}
+
+/* Animații secvențiale pentru hero */
+.hero-title {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s ease-out;
+}
+
+.hero-title.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-subtitle {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease-out;
+}
+
+.hero-subtitle.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-description {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease-out 0.3s;
+}
+
+.hero-description.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cta-button {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease-out 0.5s;
+}
+
+.cta-button.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Animație puls pentru buton */
+.cta-button.visible {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 5px 20px rgba(0, 229, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 5px 30px rgba(0, 229, 255, 0.6), 0 0 0 10px rgba(0, 229, 255, 0.1);
+  }
+  100% {
+    box-shadow: 0 5px 20px rgba(0, 229, 255, 0.4);
+  }
+}
+
+/* Cursor pentru efect typing */
+.hero-subtitle .cursor {
+  animation: blink 1s infinite;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }
 
 @media (max-width: 480px) {

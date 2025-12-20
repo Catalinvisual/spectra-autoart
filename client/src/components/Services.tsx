@@ -127,7 +127,10 @@ const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
       <section id="services" className="services-section">
         <div className="container">
           <h2 className="section-title">{t('ourServices')}</h2>
-          <div className="loading">Loading services...</div>
+          <div className="loading-container">
+            <div className="spinner"></div>
+            <div className="loading-text">{t('servicesPage.loading')}</div>
+          </div>
         </div>
       </section>
     )

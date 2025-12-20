@@ -5,8 +5,9 @@ const resources = {
   nl: {
     translation: {
       title: 'Spectra AutoArt',
-      subtitle: 'Premium Auto Detailing\n& Styling',
+      subtitle: 'We transformeren auto\'s in kunstwerken',
       heroSecondaryText: 'Wij transformeren auto\'s tot kunstwerken met premium detailing en styling diensten!',
+      heroDescription: 'We herdefiniëren auto-esthetiek met details die inspireren en transformeren. Resultaten die hoofden doen draaien.',
       bookNow: 'Maak een afspraak',
       ourServices: 'Onze Diensten',
       aboutUs: 'Over Ons',
@@ -18,6 +19,7 @@ const resources = {
         title: 'Wat klanten zeggen',
         subtitle: 'De ervaringen van onze tevreden klanten',
         noTestimonials: 'Er zijn nog geen testimonials beschikbaar.',
+        loading: 'Testimonials laden...',
         writeReview: 'Schrijf een recensie',
         yourName: 'Uw naam',
         yourRating: 'Uw beoordeling',
@@ -36,6 +38,7 @@ const resources = {
         subtitle: 'Bekijk ons premium auto detailing werk',
         viewAll: 'Bekijk Alles',
         noImages: 'Geen afbeeldingen gevonden voor deze categorie.',
+        loading: 'Galerij laden...',
         categories: {
           all: 'Alles',
           general: 'Algemeen',
@@ -67,7 +70,8 @@ const resources = {
       },
       servicesPage: {
         fromPrice: 'Vanaf',
-        minimumPrice: 'Minimale prijs'
+        minimumPrice: 'Minimale prijs',
+        loading: 'Services laden...'
       },
       from: 'Vanaf',
       contact: 'Contact',
@@ -1086,7 +1090,8 @@ const resources = {
   en: {
     translation: {
       title: 'Spectra AutoArt',
-      subtitle: 'Premium Auto Detailing\n& Styling',
+      subtitle: 'We transform cars into works of art',
+      heroDescription: 'We redefine automotive aesthetics with details that inspire and transform. Results that turn heads.',
       bookNow: 'Book Now',
       ourServices: 'Our Services',
       aboutUs: 'About Us',
@@ -1099,6 +1104,7 @@ const resources = {
         subtitle: 'View our premium auto detailing work',
         viewAll: 'View All',
         noImages: 'No images found for this category.',
+        loading: 'Loading gallery...',
         categories: {
           all: 'All',
           general: 'General',
@@ -1128,6 +1134,7 @@ const resources = {
         title: 'What customers say',
         subtitle: 'The experiences of our satisfied customers',
         noTestimonials: 'No testimonials available yet.',
+        loading: 'Loading testimonials...',
         writeReview: 'Write a review',
         yourName: 'Your name',
         yourRating: 'Your rating',
@@ -1147,7 +1154,8 @@ const resources = {
       },
       servicesPage: {
         fromPrice: 'From',
-        minimumPrice: 'Minimum price'
+        minimumPrice: 'Minimum price',
+        loading: 'Loading services...'
       },
       from: 'From',
       contact: 'Contact',
@@ -2124,7 +2132,8 @@ const resources = {
   es: {
     translation: {
       title: 'Spectra AutoArt',
-      subtitle: 'Premium Auto Detailing\n& Styling',
+      subtitle: 'Transformamos coches en obras de arte',
+      heroDescription: 'Re-definimos la estética automotriz con detalles que inspiran y transforman. Resultados que hacen que las cabezas se giren.',
       bookNow: 'Reservar Ahora',
       ourServices: 'Nuestros Servicios',
       aboutUs: 'Sobre Nosotros',
@@ -2134,9 +2143,10 @@ const resources = {
       // Gallery translations
       galleryPage: {
         title: 'Galería',
-        subtitle: 'Vea nuestro trabajo premium de detailing de autos',
+        subtitle: 'Vea nuestro trabajo de detailing de autos premium',
         viewAll: 'Ver Todo',
         noImages: 'No se encontraron imágenes para esta categoría.',
+        loading: 'Cargando galería...',
         categories: {
           all: 'Todo',
           general: 'General',
@@ -2164,13 +2174,15 @@ const resources = {
       testimonials: 'Testimonios',
       servicesPage: {
         fromPrice: 'Desde',
-        minimumPrice: 'Precio mínimo'
+        minimumPrice: 'Precio mínimo',
+        loading: 'Cargando servicios...'
       },
       from: 'Desde',
       testimonialPage: {
         title: 'Lo que dicen los clientes',
         subtitle: 'Las experiencias de nuestros clientes satisfechos',
         noTestimonials: 'Aún no hay testimonios disponibles.',
+        loading: 'Cargando testimonios...',
         writeReview: 'Escribir una reseña',
         yourName: 'Su nombre',
         yourRating: 'Su calificación',
@@ -3015,7 +3027,8 @@ const resources = {
   pl: {
     translation: {
       title: 'Spectra AutoArt',
-      subtitle: 'Premium Auto Detailing\n& Styling',
+      subtitle: 'Przekształcamy samochody w dzieła sztuki',
+      heroDescription: 'Redefiniujemy estetykę samochodów przez detale, które inspirują i przekształcają. Wyniki, które przyciągają spojrzenia.',
       bookNow: 'Umów wizytę',
       ourServices: 'Nasze Usługi',
       aboutUs: 'O Nas',
@@ -3028,6 +3041,7 @@ const resources = {
         subtitle: 'Zobacz naszą premium pracę detailingu samochodów',
         viewAll: 'Zobacz Wszystkie',
         noImages: 'Nie znaleziono obrazów dla tej kategorii.',
+        loading: 'Ładowanie galerii...',
         categories: {
           all: 'Wszystko',
           general: 'Ogólne',
@@ -3055,13 +3069,15 @@ const resources = {
       testimonials: 'Opinie',
       servicesPage: {
         fromPrice: 'Od',
-        minimumPrice: 'Cena minimalna'
+        minimumPrice: 'Cena minimalna',
+        loading: 'Ładowanie usług...'
       },
       from: 'Od',
       testimonialPage: {
         title: 'Co mówią klienci',
         subtitle: 'Doświadczenia naszych zadowolonych klientów',
         noTestimonials: 'Brak dostępnych opinii.',
+        loading: 'Ładowanie opinii...',
         writeReview: 'Napisz recenzję',
         yourName: 'Twoje imię',
         yourRating: 'Twoja ocena',
@@ -3901,7 +3917,8 @@ const resources = {
   ro: {
     translation: {
       title: 'Spectra AutoArt',
-      subtitle: 'Premium Auto Detailing\n& Styling',
+      subtitle: 'Transformăm mașinile în opere de artă',
+      heroDescription: 'Redefinim estetica auto prin detalii care inspiră și transformă. Rezultate care întorc priviri.',
       bookNow: 'Programează Acum',
       ourServices: 'Serviciile Noastre',
       aboutUs: 'Despre Noi',
@@ -3914,6 +3931,7 @@ const resources = {
         subtitle: 'Vezi lucrările noastre premium de detailing auto',
         viewAll: 'Vezi Toate',
         noImages: 'Nu au fost găsite imagini pentru această categorie.',
+        loading: 'Se încarcă galeria...',
         categories: {
           all: 'Tot',
           general: 'General',
@@ -3941,13 +3959,15 @@ const resources = {
       testimonials: 'Testimoniale',
       servicesPage: {
         fromPrice: 'De la',
-        minimumPrice: 'Preț minim'
+        minimumPrice: 'Preț minim',
+        loading: 'Se încarcă serviciile...'
       },
       from: 'De la',
       testimonialPage: {
         title: 'Ce spun clienții',
         subtitle: 'Experiențele clienților noștri mulțumiți',
         noTestimonials: 'Nu există testimoniale disponibile încă.',
+        loading: 'Se încarcă testimonialele...',
         writeReview: 'Scrieți o recenzie',
         yourName: 'Numele dumneavoastră',
         yourRating: 'Evaluarea dumneavoastră',
@@ -5028,7 +5048,8 @@ i18n
     const store = i18n.services.resourceStore.data;
     const roBundle = (resources as any)?.ro?.translation || {
       title: 'Spectra AutoArt',
-      subtitle: 'Premium Auto Detailing\n& Styling',
+      subtitle: 'Transformăm mașinile în opere de artă',
+      heroDescription: 'Redefinim estetica auto prin detalii care inspiră și transformă. Rezultate care întorc priviri.',
       aboutUs: 'Despre Noi',
       bookNow: 'Programează Acum',
       ourServices: 'Serviciile Noastre',
@@ -5145,6 +5166,7 @@ i18n
       galleryPage: {
         title: 'Galerie',
         subtitle: 'Vezi lucrările noastre premium de detailing auto',
+        loading: 'Se încarcă galeria...',
         categories: {
           all: 'Tot',
           'detailing-interior': 'Detailing Interior',

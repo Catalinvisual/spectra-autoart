@@ -1087,9 +1087,21 @@ router.patch('/bookings/:id', async (req, res, next) => {
       if (isStatusCanceled) {
         console.log('📧 Status changed to canceled - sending cancellation emails...')
         
-        // Send client cancellation email
-        console.log('📧 Sending client cancellation email...')
-        try {
+        // Validate email before sending to prevent bounce emails
+        if (!bookingData.user?.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.user.email)) {
+          console.log(`❌ Invalid email format for cancellation: ${bookingData.user?.email}`);
+          bookingEmailResult = { success: false, error: 'Invalid email format' }
+        } else {
+          // Block test/example domains to prevent bounce emails
+          const blockedDomains = ['example.com', 'test.com', 'localhost', 'invalid', 'fake.com', 'test.nl', 'example.nl'];
+          const emailDomain = bookingData.user.email.split('@')[1]?.toLowerCase();
+          if (blockedDomains.includes(emailDomain) || bookingData.user.email.includes('test') || bookingData.user.email.includes('example')) {
+            console.log(`❌ Blocked test email domain for cancellation: ${bookingData.user.email}`);
+            bookingEmailResult = { success: false, error: 'Test email domain blocked' }
+          } else {
+            // Send client cancellation email
+            console.log('📧 Sending client cancellation email...')
+            try {
           console.log('🎯 DEBUG: About to call emailService.emailTemplates.clientCancellation')
         console.log('🎯 DEBUG: emailService.emailTemplates exists:', !!emailService.emailTemplates)
         console.log('🎯 DEBUG: emailService.emailTemplates.clientCancellation exists:', !!emailService.emailTemplates?.clientCancellation)
@@ -1116,6 +1128,8 @@ router.patch('/bookings/:id', async (req, res, next) => {
           console.error('❌ Error sending client cancellation email:', error)
           bookingEmailResult = { success: false, error: error.message }
         }
+            }
+          }
         
         // Send admin cancellation email
         if (process.env.NODE_ENV === 'development') {
