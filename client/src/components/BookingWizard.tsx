@@ -839,8 +839,9 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                     </div>
                   </div>
                 )
-              })}
-            </div>
+              })
+            }
+          </div>
             
             {/* Newsletter Card */}
             <div className="newsletter-card">
@@ -866,6 +867,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               </div>
             </div>
           </div>
+        </div>
         )
       
       case 5:
@@ -946,9 +948,8 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                           </div>
                         ))}
                       </div>
-              )}
-              </div>
-            </div>
+                    )}
+                  </div>
                   <div className="phone-number-wrapper">
                     <input
                       type="tel"
@@ -973,6 +974,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                   <span className="error-message">{validationErrors.phone}</span>
                 )}
               </div>
+              
               <div className="form-group">
                 <label className="form-label">{translate('selectDate', 'Selectează Data')}</label>
                 <div className={`calendar-wrapper ${validationErrors.date ? 'error' : ''}`}>
