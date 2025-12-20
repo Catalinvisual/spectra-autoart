@@ -76,10 +76,19 @@ router.get('/', async (req, res) => {
       
       console.log('🖼️ Processing public gallery item:', JSON.stringify(image, null, 2))
       
+      // Get the appropriate title and description based on language
+      const titleKey = `title_${lang.toLowerCase()}`
+      const descriptionKey = `description_${lang.toLowerCase()}`
+      
+      const title = image[titleKey] || image.title || image.alt_text || ''
+      const description = image[descriptionKey] || image.description || image.alt_text || ''
+      
       return {
         id: image.id || '',
         url: image.image_url || '',     // Image URL column
-        alt_text: image.description || '', // Description column used as alt_text
+        title: title,
+        description: description,
+        alt_text: description, // Use description for alt_text
         category: image.category || 'general',
         active: image.Active ? (image.Active.toLowerCase() === 'true') : true, // Default to true if Active column doesn't exist
         created_date: image.upload_date || '', // Upload Date column
@@ -95,28 +104,9 @@ router.get('/', async (req, res) => {
     })
     console.log('🔍 Filtered images (removed empty url/id):', filteredImages.length, 'from', images.length)
     
-    // Translate gallery images if language is not Dutch
-    let translatedImages = filteredImages
-    if (lang !== 'nl') {
-      try {
-        // Extract alt_texts that need translation
-        const altTextsToTranslate = filteredImages.map(img => img.alt_text)
-
-        // Translate all alt_texts
-        const translatedAltTextsResult = await translateMultipleWithDeepL(altTextsToTranslate.join('|'), [lang.toUpperCase()], 'nl');
-        const translatedAltTexts = translatedAltTextsResult[lang.toUpperCase()]?.split('|') || altTextsToTranslate;
-
-        // Create translated images
-        translatedImages = filteredImages.map((image, index) => ({
-          ...image,
-          alt_text: translatedAltTexts[index] || image.alt_text
-        }))
-      } catch (translationError) {
-        console.error('Translation error:', translationError)
-        // Fallback to original images
-        translatedImages = filteredImages
-      }
-    }
+    // Use pre-translated values from Google Sheets - no need for automatic translation
+    // The Google Sheets already contains Title_NL, Title_EN, etc. and Description_NL, Description_EN, etc.
+    const translatedImages = filteredImages
     
     console.log('✅ Final public gallery response:', JSON.stringify(translatedImages, null, 2))
     res.json({
