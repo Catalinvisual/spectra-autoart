@@ -240,34 +240,28 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-.hero-content {
-  position: relative;
-  z-index: 2;
-  max-width: 800px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4rem;
-  padding: 2rem 0;
-}
-
   .hero {
     padding: 2rem 1rem 2rem;
   }
   
+  .hero-content {
+    gap: 2rem;
+    padding: 1.5rem 0;
+  }
+  
   .hero-title {
-    font-size: clamp(5rem, 10vw, 6rem)!important;
+    font-size: clamp(3.5rem, 8vw, 5rem)!important;
     flex-direction: column;
     gap: 0.4rem;
   }
   
   .hero-subtitle {
-    font-size: clamp(3.5rem, 5vw, 3.5rem);
-    min-height: 4rem;
+    font-size: clamp(2.2rem, 4vw, 2.8rem);
+    min-height: 3rem;
   }
   
   .hero-description {
-    font-size: clamp(1.2rem, 2vw, 1.2rem);
+    font-size: clamp(1.1rem, 2vw, 1.1rem);
   }
   
   .cta-button {
@@ -354,41 +348,78 @@
 }
 
 @media (max-width: 480px) {
-.hero-content {
-  position: relative;
-  z-index: 2;
-  max-width: 800px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3rem;
-  padding: 2rem 0;
-}
-
   .hero {
-    padding: 2rem 1rem 2rem;
+    padding: 1rem 1rem 1rem;
+    min-height: 100vh;
+    height: auto;
   }
   
-  /* .hero-content { margin-top eliminat pentru consistență } */
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 0;
+  }
   
   .hero-title {
-    font-size: clamp(4rem, 10vw, 6rem)!important;
-    margin-bottom: 2rem;
+    font-size: clamp(2.5rem, 8vw, 4rem)!important;
+    margin-bottom: 0;
+    line-height: 1.2;
   }
   
   .hero-subtitle {
-    font-size: clamp(3rem, 6vw, 3.5rem);
-    min-height: 4rem;
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    min-height: 2.5rem;
     margin-bottom: 0;
+    line-height: 1.3;
   }
 
   .hero-description {
-    font-size: clamp(1.3rem, 3vw, 1.3rem);
+    font-size: clamp(1rem, 3vw, 1.1rem);
     margin-bottom: 0;
+    line-height: 1.4;
+    max-width: 90%;
   }
   
   .cta-button {
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+  }
+}
+
+/* Ecrane foarte mici */
+@media (max-width: 360px) {
+  .hero {
+    padding: 0.5rem 1rem 0.5rem;
+  }
+  
+  .hero-content {
+    gap: 1rem;
+    padding: 0.5rem 0;
+  }
+  
+  .hero-title {
+    font-size: clamp(2rem, 7vw, 3rem)!important;
+  }
+  
+  .hero-subtitle {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    min-height: 2rem;
+  }
+  
+  .hero-description {
+    font-size: clamp(0.9rem, 3vw, 1rem);
+    max-width: 95%;
+  }
+  
+  .cta-button {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+    margin-top: 0.3rem;
   }
 }
