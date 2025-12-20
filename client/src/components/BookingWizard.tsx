@@ -98,56 +98,13 @@ interface BookingWizardProps {
 }
 
 const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
-  const { i18n } = useTranslation()
+  const { i18n, t } = useTranslation()
   const { showSuccess, showError } = useToast()
 
-  // Funcție directă de traducere în română - returnează întotdeauna textul românesc
-  const getRoTranslation = (key: string, fallback: string): string => {
-    // Dicționar direct de traduceri românești
-    const romanianTranslations: { [key: string]: string } = {
-      'selectService': 'Selectează Serviciul',
-      'newsletterSubscription': 'Abonare Newsletter',
-      'next': 'Următorul',
-      'confirm': 'Confirmă',
-      'personalDetails': 'Detalii Personale',
-      'name': 'Nume',
-      'email': 'Email',
-      'phone': 'Telefon',
-      'selectDate': 'Selectează Data',
-      'selectTime': 'Selectează Ora',
-      'summary': 'Rezumat',
-      'brand': 'Marcă',
-      'model': 'Model',
-      'body': 'Caroserie',
-      'vehicleBody': 'Caroserie',
-      'service': 'Serviciu',
-      'from': 'De la',
-      'newsletterDescription': 'Rămâi la curent cu cele mai recente servicii și oferte!',
-      'noServiceSelected': 'Niciun serviciu selectat',
-      'submit': 'Trimite',
-      'january': 'Ianuarie',
-      'february': 'Februarie',
-      'march': 'Martie',
-      'april': 'Aprilie',
-      'may': 'Mai',
-      'june': 'Iunie',
-      'july': 'Iulie',
-      'august': 'August',
-      'september': 'Septembrie',
-      'october': 'Octombrie',
-      'november': 'Noiembrie',
-      'december': 'Decembrie',
-      'monday': 'Luni',
-      'tuesday': 'Marți',
-      'wednesday': 'Miercuri',
-      'thursday': 'Joi',
-      'friday': 'Vineri',
-      'saturday': 'Sâmbătă',
-      'sunday': 'Duminică'
-    }
-    
-    // Returnează întotdeauna traducerea românească dacă există, altfel fallback
-    return romanianTranslations[key] || fallback
+  // Funcție de traducere folosind react-i18next - respectă limba selectată
+  const translate = (key: string, fallback: string): string => {
+    const translation = t(key, fallback)
+    return translation || fallback
   }
 
 
@@ -671,25 +628,25 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
     } = {}
 
     if (!bookingData.user.name.trim()) {
-      errors.name = getRoTranslation('nameRequired', 'Numele este obligatoriu')
+      errors.name = translate('nameRequired', 'Numele este obligatoriu')
     }
 
     if (!bookingData.user.email.trim()) {
-      errors.email = getRoTranslation('emailRequired', 'Emailul este obligatoriu')
+      errors.email = translate('emailRequired', 'Emailul este obligatoriu')
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.user.email)) {
-      errors.email = getRoTranslation('invalidEmail', 'Vă rugăm să introduceți o adresă de email validă')
+      errors.email = translate('invalidEmail', 'Vă rugăm să introduceți o adresă de email validă')
     }
 
     if (!bookingData.user.phone.trim()) {
-      errors.phone = getRoTranslation('phoneRequired', 'Telefonul este obligatoriu')
+      errors.phone = translate('phoneRequired', 'Telefonul este obligatoriu')
     }
 
     if (!bookingData.date) {
-      errors.date = getRoTranslation('dateRequired', 'Data este obligatorie')
+      errors.date = translate('dateRequired', 'Data este obligatorie')
     }
 
     if (!bookingData.time) {
-      errors.time = getRoTranslation('timeRequired', 'Ora este obligatorie')
+      errors.time = translate('timeRequired', 'Ora este obligatorie')
     }
 
     setValidationErrors(errors)
@@ -716,8 +673,8 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
         calendarSyncManager.notifyRefresh()
         
         // Show success notification immediately
-        console.log('Calling showSuccess with message:', getRoTranslation('bookingConfirmed', 'Programarea a fost confirmată!'))
-        showSuccess(getRoTranslation('bookingConfirmed', 'Programare Confirmată!'))
+        console.log('Calling showSuccess with message:', translate('bookingConfirmed', 'Programarea a fost confirmată!'))
+        showSuccess(translate('bookingConfirmed', 'Programare Confirmată!'))
         // Close modal immediately after notification
         if (onCancel) {
           onCancel()
@@ -754,7 +711,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 1:
         return (
           <div className="wizard-step">
-            <h3>{getRoTranslation('vehicleBrand', 'Marcă')}</h3>
+            <h3>{translate('vehicleBrand', 'Marcă')}</h3>
             <div className="form-group">
               <select
                 className="form-select"
@@ -772,7 +729,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                   }
                 }}
               >
-                <option value="">{getRoTranslation('vehicleBrand', 'Marcă')}</option>
+                <option value="">{translate('vehicleBrand', 'Marcă')}</option>
                 {getUniqueMakes().map(make => (
                   <option key={make} value={make}>{make}</option>
                 ))}
@@ -785,7 +742,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 2:
         return (
           <div className="wizard-step">
-            <h3>{getRoTranslation('vehicleModel', 'Model')}</h3>
+            <h3>{translate('vehicleModel', 'Model')}</h3>
             <div className="form-group">
               <select
                 className="form-select"
@@ -803,7 +760,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 }}
                 disabled={!bookingData.make}
               >
-                <option value="">{getRoTranslation('vehicleModel', 'Model')}</option>
+                <option value="">{translate('vehicleModel', 'Model')}</option>
                 {getModelsForMake().map(model => (
                   <option key={model} value={model}>{model}</option>
                 ))}
@@ -815,7 +772,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 3:
         return (
           <div className="wizard-step">
-            <h3>{getRoTranslation('vehicleBody', 'Caroserie')}</h3>
+            <h3>{translate('vehicleBody', 'Caroserie')}</h3>
             <div className="form-group">
               <select
                 className="form-select"
@@ -830,7 +787,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 }}
                 disabled={!bookingData.model}
               >
-                <option value="">{getRoTranslation('vehicleBody', 'Caroserie')}</option>
+                <option value="">{translate('vehicleBody', 'Caroserie')}</option>
                 {getBodiesForType().map(body => (
                   <option key={body.key} value={body.key}>{body.name}</option>
                 ))}
@@ -842,14 +799,15 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 4:
         return (
           <div className="wizard-step">
-            <h3>{getRoTranslation('selectService', 'Selectează Serviciul')}</h3>
+            <h3>{translate('selectService', 'Selectează Serviciul')}</h3>
             {!bookingData.body && (
               <div className="info-message">
-                <p>{getRoTranslation('selectBodyTypeFirst', 'Selectează mai întâi tipul de caroserie')}</p>
+                <p>{translate('selectBodyTypeFirst', 'Selectează mai întâi tipul de caroserie')}</p>
               </div>
             )}
-            <div className="service-grid">
-              {getFilteredServices().map(service => {
+            <div className="services-container">
+              <div className="service-grid">
+                {getFilteredServices().map(service => {
                 if (!service || !service.id) {
                   console.log('⚠️ Invalid service in map:', service)
                   return null
@@ -870,13 +828,13 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                     <div className="service-price">
                       {servicePrice ? (
                         <>
-                          {getRoTranslation('from', 'De la')} €{servicePrice.price_min}
+                          {translate('from', 'De la')} €{servicePrice.price_min}
                           {servicePrice.price_max && servicePrice.price_max > servicePrice.price_min && (
                             <span> - €{servicePrice.price_max}</span>
                           )}
                         </>
                       ) : (
-                        <span className="unavailable">{getRoTranslation('unavailable', 'Indisponibil')}</span>
+                        <span className="unavailable">{translate('unavailable', 'Indisponibil')}</span>
                       )}
                     </div>
                   </div>
@@ -888,10 +846,10 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
             <div className="newsletter-card">
               <div className="newsletter-header">
                 <i className="newsletter-icon">📧</i>
-                <h4 className="newsletter-title">{getRoTranslation('newsletterSubscription', 'Abonament Newsletter')}</h4>
+                <h4 className="newsletter-title">{translate('newsletterSubscription', 'Abonament Newsletter')}</h4>
               </div>
               <p className="newsletter-description">
-                {getRoTranslation('newsletterDescription', 'Rămâi la curent cu cele mai recente servicii și oferte!')}
+                {translate('newsletterDescription', 'Rămâi la curent cu cele mai recente servicii și oferte!')}
               </p>
               <div className="newsletter-checkbox-wrapper">
                 <label className="newsletter-label">
@@ -902,7 +860,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                     onChange={(e) => handleInputChange('newsletter', e.target.checked)}
                   />
                   <span className="newsletter-text">
-                    {getRoTranslation('subscribeNewsletter', 'Abonează-mă la newsletter')}
+                    {translate('subscribeNewsletter', 'Abonează-mă la newsletter')}
                   </span>
                 </label>
               </div>
@@ -913,10 +871,10 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
       case 5:
         return (
           <div className="wizard-step step-5-container">
-            <h3>{getRoTranslation('personalDetails', 'Detalii Personale')}</h3>
+            <h3>{translate('personalDetails', 'Detalii Personale')}</h3>
             <div className="step-5-scroll-content">
               <div className="form-group">
-                <label className="form-label">{getRoTranslation('name', 'Nume')}</label>
+                <label className="form-label">{translate('name', 'Nume')}</label>
                 <input
                   type="text"
                   className={`form-input ${validationErrors.name ? 'error' : ''}`}
@@ -933,7 +891,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">{getRoTranslation('email', 'Email')}</label>
+                <label className="form-label">{translate('email', 'Email')}</label>
                 <input
                   type="email"
                   className={`form-input ${validationErrors.email ? 'error' : ''}`}
@@ -950,7 +908,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">{getRoTranslation('phone', 'Telefon')}</label>
+                <label className="form-label">{translate('phone', 'Telefon')}</label>
                 <div className={`phone-input-group ${validationErrors.phone ? 'error' : ''}`}>
                   <div className="phone-prefix-dropdown">
                     <button
@@ -988,8 +946,9 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                           </div>
                         ))}
                       </div>
-                    )}
-                  </div>
+              )}
+              </div>
+            </div>
                   <div className="phone-number-wrapper">
                     <input
                       type="tel"
@@ -1015,7 +974,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">{getRoTranslation('selectDate', 'Selectează Data')}</label>
+                <label className="form-label">{translate('selectDate', 'Selectează Data')}</label>
                 <div className={`calendar-wrapper ${validationErrors.date ? 'error' : ''}`}>
                   <CalendarComponent
                     selectedDate={bookingData.date}
@@ -1028,7 +987,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">{getRoTranslation('selectTime', 'Selectează Ora')}</label>
+                <label className="form-label">{translate('selectTime', 'Selectează Ora')}</label>
                 <input
                   type="time"
                   className={`form-input time-input-instant ${validationErrors.time ? 'error' : ''}`}
@@ -1049,23 +1008,23 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               
               {/* Booking Summary Card */}
               <SummaryCard
-                title={getRoTranslation('summary', 'Rezumat')}
+                title={translate('summary', 'Rezumat')}
                 items={[
-                  { label: `${getRoTranslation('vehicleBrand', 'Marcă')}:`, value: bookingData.make },
-                  { label: `${getRoTranslation('vehicleModel', 'Model')}:`, value: bookingData.model },
-                  { label: `${getRoTranslation('vehicleBody', 'Caroserie')}:`, value: bookingData.body },
+                  { label: `${translate('vehicleBrand', 'Marcă')}:`, value: bookingData.make },
+                  { label: `${translate('vehicleModel', 'Model')}:`, value: bookingData.model },
+                  { label: `${translate('vehicleBody', 'Caroserie')}:`, value: bookingData.body },
                   { 
-                    label: `${getRoTranslation('service', 'Serviciu')}:`, 
+                    label: `${translate('service', 'Serviciu')}:`, 
                     value: Array.isArray(bookingData.services) && bookingData.services.length > 0 
                       ? bookingData.services.map(serviceId => {
                           const service = services.find(s => s.id === serviceId)
                           const serviceName = service ? getServiceDisplayName(service) : ''
                           return serviceName
                         }).join(', ')
-                      : getRoTranslation('noServiceSelected', 'Niciun serviciu selectat')
+                      : translate('noServiceSelected', 'Niciun serviciu selectat')
                   }
                 ]}
-                totalLabel={`${getRoTranslation('total', 'Total')}:`}
+                totalLabel={`${translate('total', 'Total')}:`}
                 totalValue={`€${bookingData.services.reduce((total, serviceId) => {
                   const service = services.find(s => s.id === serviceId)
                   const servicePrice = service && bookingData.body ? getServicePriceForBodyType(service, bookingData.body) : null
@@ -1098,7 +1057,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
         <div className="wizard-actions">
           {currentStep > 1 && (
             <button className="btn wizard-back-btn" onClick={handleBack}>
-              {getRoTranslation('back', 'Înapoi')}
+              {translate('back', 'Înapoi')}
             </button>
           )}
           
@@ -1108,7 +1067,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               onClick={handleNext}
               disabled={!canProceedToNext()}
             >
-              {getRoTranslation('next', 'Următorul')}
+              {translate('next', 'Următorul')}
             </button>
           ) : (
             <button 
@@ -1116,7 +1075,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({ onCancel }) => {
               onClick={handleSubmit}
               disabled={!isFormValid()}
             >
-              {getRoTranslation('confirm', 'Confirmă')}
+              {translate('confirm', 'Confirmă')}
             </button>
           )}
         </div>
@@ -1136,60 +1095,38 @@ interface CalendarComponentProps {
 export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onDateSelect, bookedDates, loading }) => {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [availabilityMap, setAvailabilityMap] = useState<Record<string, boolean>>({})
+  const { t } = useTranslation()
 
-  // Define getRoTranslation function for CalendarComponent
-  const getRoTranslation = (key: string, fallback: string): string => {
-    // Dicționar direct de traduceri românești
-    const romanianTranslations: { [key: string]: string } = {
-      'january': 'Ianuarie',
-      'february': 'Februarie',
-      'march': 'Martie',
-      'april': 'Aprilie',
-      'may': 'Mai',
-      'june': 'Iunie',
-      'july': 'Iulie',
-      'august': 'August',
-      'september': 'Septembrie',
-      'october': 'Octombrie',
-      'november': 'Noiembrie',
-      'december': 'Decembrie',
-      'monday': 'Luni',
-      'tuesday': 'Marți',
-      'wednesday': 'Miercuri',
-      'thursday': 'Joi',
-      'friday': 'Vineri',
-      'saturday': 'Sâmbătă',
-      'sunday': 'Duminică'
-    }
-    
-    // Returnează întotdeauna traducerea românească dacă există, altfel fallback
-    return romanianTranslations[key] || fallback
+  // Define translate function for CalendarComponent
+  const translate = (key: string, fallback: string): string => {
+    const translation = t(key, fallback)
+    return translation || fallback
   }
 
   // Define month names and week days for CalendarComponent
   const monthNames = [
-    getRoTranslation('january', 'Ianuarie'),
-    getRoTranslation('february', 'Februarie'),
-    getRoTranslation('march', 'Martie'),
-    getRoTranslation('april', 'Aprilie'),
-    getRoTranslation('may', 'Mai'),
-    getRoTranslation('june', 'Iunie'),
-    getRoTranslation('july', 'Iulie'),
-    getRoTranslation('august', 'August'),
-    getRoTranslation('september', 'Septembrie'),
-    getRoTranslation('october', 'Octombrie'),
-    getRoTranslation('november', 'Noiembrie'),
-    getRoTranslation('december', 'Decembrie')
+    translate('january', 'Ianuarie'),
+    translate('february', 'Februarie'),
+    translate('march', 'Martie'),
+    translate('april', 'Aprilie'),
+    translate('may', 'Mai'),
+    translate('june', 'Iunie'),
+    translate('july', 'Iulie'),
+    translate('august', 'August'),
+    translate('september', 'Septembrie'),
+    translate('october', 'Octombrie'),
+    translate('november', 'Noiembrie'),
+    translate('december', 'Decembrie')
   ]
 
   const weekDays = [
-    getRoTranslation('sunday', 'Dum'),
-    getRoTranslation('monday', 'Lun'),
-    getRoTranslation('tuesday', 'Mar'),
-    getRoTranslation('wednesday', 'Mie'),
-    getRoTranslation('thursday', 'Joi'),
-    getRoTranslation('friday', 'Vin'),
-    getRoTranslation('saturday', 'Sâm')
+    translate('sunday', 'Dum'),
+    translate('monday', 'Lun'),
+    translate('tuesday', 'Mar'),
+    translate('wednesday', 'Mie'),
+    translate('thursday', 'Joi'),
+    translate('friday', 'Vin'),
+    translate('saturday', 'Sâm')
   ]
 
   const TIME_ZONE = 'Europe/Amsterdam'
@@ -1301,7 +1238,7 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
     }}>
       {loading && (
         <div className="calendar-loading">
-          {getRoTranslation('checkingAvailability', 'Se verifică disponibilitatea...')}
+          {translate('checkingAvailability', 'Se verifică disponibilitatea...')}
         </div>
       )}
       
@@ -1386,15 +1323,15 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDa
       <div className="calendar-legend">
         <div className="legend-item">
           <span className="legend-color available"></span>
-          <span>{getRoTranslation('available', 'Disponibil')}</span>
+          <span>{translate('available', 'Disponibil')}</span>
         </div>
         <div className="legend-item">
           <span className="legend-color unavailable"></span>
-          <span>{getRoTranslation('occupied', 'Ocupat')}</span>
+          <span>{translate('occupied', 'Ocupat')}</span>
         </div>
         <div className="legend-item">
           <span className="legend-color sunday"></span>
-          <span>{getRoTranslation('closed', 'Închis')}</span>
+          <span>{translate('closed', 'Închis')}</span>
         </div>
       </div>
     </div>
