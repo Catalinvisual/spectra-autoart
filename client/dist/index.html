@@ -2,16 +2,38 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="manifest" href="/site.webmanifest">
-
+    
+    <!-- Favicon SVG principal -->
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon-CGHtQNLz.svg">
+    
+    <!-- Fallback pentru browsere care nu suportă SVG -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-CGHtQNLz.svg">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-CGHtQNLz.svg">
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="/assets/favicon-CGHtQNLz.svg">
+    
+    <!-- Manifest pentru PWA - Dezactivat momentan pentru a preveni instalarea paginii -->
+    <!-- <link rel="manifest" href="/site.webmanifest"> -->
+    
+    <!-- Meta tags pentru Google și SEO -->
+    <meta name="description" content="Spectra Auto Art - Servicii profesionale de detailing auto și protecție ceramică">
+    <meta name="keywords" content="detailing auto, protecție ceramică, detailing, auto, Spectra Auto Art">
+    <meta name="author" content="Spectra Auto Art">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph meta tags pentru social media -->
+    <meta property="og:title" content="Spectra Auto Art">
+    <meta property="og:description" content="Servicii profesionale de detailing auto și protecție ceramică">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="data:image/svg+xml,%3csvg%20width='169'%20height='169'%20viewBox='0%200%20169%20169'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cg%20clip-path='url(%23clip0_1_2)'%3e%3ccircle%20cx='84.5'%20cy='84.5'%20r='84.5'%20fill='black'/%3e%3cpath%20d='M68.7244%2053.8182C68.1918%2049.3201%2066.0315%2045.8281%2062.2436%2043.3423C58.4557%2040.8565%2053.8097%2039.6136%2048.3054%2039.6136C44.2808%2039.6136%2040.7592%2040.2647%2037.7408%2041.5668C34.7519%2042.8688%2032.4141%2044.6592%2030.7273%2046.9379C29.0701%2049.2165%2028.2415%2051.8059%2028.2415%2054.706C28.2415%2057.1326%2028.8185%2059.2189%2029.9727%2060.9648C31.1564%2062.6812%2032.6656%2064.1165%2034.5004%2065.2706C36.3351%2066.3951%2038.2586%2067.3273%2040.271%2068.0671C42.2833%2068.7773%2044.1328%2069.3544%2045.8196%2069.7983L55.0526%2072.2841C57.42%2072.9055%2060.0537%2073.7637%2062.9538%2074.8587C65.8835%2075.9536%2068.68%2077.448%2071.3434%2079.342C74.0363%2081.2063%2076.2558%2083.6033%2078.0018%2086.533C79.7478%2089.4627%2080.6207%2093.0582%2080.6207%2097.3196C80.6207%20102.232%2079.3335%20106.671%2076.7589%20110.636C74.2139%20114.602%2070.4852%20117.753%2065.5728%20120.091C60.69%20122.429%2054.7566%20123.598%2047.7727%20123.598C41.2623%20123.598%2035.6249%20122.547%2030.8604%20120.446C26.1256%20118.345%2022.3969%20115.416%2019.6744%20111.657C16.9814%20107.899%2015.4574%20103.534%2015.1023%2098.5625H26.4659C26.7618%20101.995%2027.916%20104.836%2029.9283%20107.085C31.9702%20109.305%2034.5447%20110.962%2037.652%20112.057C40.7888%20113.122%2044.1624%20113.655%2047.7727%20113.655C51.9749%20113.655%2055.748%20112.974%2059.092%20111.613C62.436%20110.222%2065.0845%20108.299%2067.0376%20105.842C68.9908%20103.357%2069.9673%20100.456%2069.9673%2097.142C69.9673%2094.1236%2069.1239%2091.6674%2067.4371%2089.7734C65.7504%2087.8795%2063.5309%2086.3407%2060.7788%2085.157C58.0266%2083.9732%2055.0526%2082.9375%2051.8565%2082.0497L40.6705%2078.8537C33.5682%2076.8118%2027.9456%2073.8969%2023.8026%2070.109C19.6596%2066.3211%2017.5881%2061.3643%2017.5881%2055.2386C17.5881%2050.1487%2018.9641%2045.7098%2021.7163%2041.9219C24.498%2038.1044%2028.2267%2035.1451%2032.9023%2033.044C37.6076%2030.9133%2042.8603%2029.848%2048.6605%2029.848C54.5199%2029.848%2059.7282%2030.8986%2064.2855%2032.9996C68.8428%2035.0711%2072.4531%2037.912%2075.1165%2041.5224C77.8094%2045.1327%2079.2299%2049.2313%2079.3778%2053.8182H68.7244Z'%20fill='white'/%3e%3cpath%20d='M89.7372%20122H78.196L111.577%2031.0909H122.94L156.321%20122H144.78L117.614%2045.473H116.903L89.7372%20122ZM93.9986%2086.4886H140.518V96.2543H93.9986V86.4886Z'%20fill='%2300E5FF'/%3e%3c/g%3e%3cdefs%3e%3cclipPath%20id='clip0_1_2'%3e%3crect%20width='169'%20height='169'%20fill='white'/%3e%3c/clipPath%3e%3c/defs%3e%3c/svg%3e">
+    
+    <!-- Viewport pentru responsive design -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>client</title>
-    <script type="module" crossorigin src="/assets/index-D9Qu2-Az.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-tOg6emdY.css">
+    
+    <title>Spectra Auto Art - Detailing Auto Profesional</title>
+    <script type="module" crossorigin src="/assets/index-D8tIKiIt.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DCw261vU.css">
   </head>
   <body>
     <div id="root"></div>

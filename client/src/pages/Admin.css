@@ -1,5 +1,14 @@
 /* Admin Panel Styles - Enhanced Cyan Blue Theme */
 
+/* Performanță optimizată - animații rapide și eficiente */
+* {
+  will-change: auto;
+}
+
+.admin-panel * {
+  will-change: transform, opacity;
+}
+
 /* Optimized styling for h2 titles - reduced complexity for better performance */
 h2 {
   background: rgba(0, 229, 255, 0.1);
@@ -868,10 +877,15 @@ h2:hover {
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
   min-width: 100px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  will-change: transform, opacity;
+}
+
+.modal-btn:active {
+  transform: scale(0.95);
 }
 
 .modal-btn:disabled {
@@ -1227,13 +1241,68 @@ h2:hover {
 
 .bookings-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 20px;
   margin-bottom: 30px;
   padding: 20px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 15px;
   border: 1px solid rgba(0, 229, 255, 0.3);
+}
+
+.bookings-filters {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-filter {
+  flex: 1;
+  min-width: 250px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.status-filter {
+  min-width: 200px;
+}
+
+.status-select {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
 }
 
 .bookings-header h2 {

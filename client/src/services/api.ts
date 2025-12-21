@@ -17,9 +17,6 @@ const resolveBaseURL = () => {
 
   const API_BASE_URL = resolveBaseURL()
 
-console.log('🔍 API Base URL:', API_BASE_URL)
-console.log('🔍 VITE_API_URL env:', import.meta.env.VITE_API_URL)
-
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000, // Reduced timeout to 10 seconds for better responsiveness
@@ -39,18 +36,6 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`
     }
     
-    // Debug logging for testimonial requests
-    if (config.url?.includes('/public/testimonials')) {
-      console.log('🎯 Testimonials Request:', {
-        url: config.url,
-        baseURL: config.baseURL,
-        fullURL: `${config.baseURL}${config.url}`,
-        method: config.method,
-        headers: config.headers,
-        timeout: config.timeout
-      })
-    }
-    
     return config
   },
   (error) => {
@@ -61,27 +46,6 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
-    // Debug logging for testimonial responses
-    if (response.config.url?.includes('/public/testimonials')) {
-      console.log('✅ Testimonials Response:', {
-        url: response.config.url,
-        status: response.status,
-        statusText: response.statusText,
-        data: response.data
-      })
-    }
-    
-    // Debug logging for admin services
-    if (response.config.url?.includes('/admin/services')) {
-      console.log('🌐 API Response before processing:', response)
-      console.log('📦 Response data before unwrap:', response.data)
-    }
-    
-    // Debug logging for admin bookings
-    if (response.config.url?.includes('/admin/bookings')) {
-      console.log('🌐 Bookings API Response before processing:', response)
-      console.log('📦 Bookings data before unwrap:', response.data)
-    }
     
     // Unwrap the response data if it has the standard API format
     if (response.data && response.data.success === true && response.data.data !== undefined) {
@@ -91,43 +55,12 @@ api.interceptors.response.use(
       console.error('API Error Response:', response.data)
     }
     
-    // Debug logging for admin services after processing
-    if (response.config.url?.includes('/admin/services')) {
-      console.log('✅ API Response after processing:', response)
-      console.log('📋 Response data after unwrap:', response.data)
-    }
     
-    // Debug logging for admin bookings after processing
-    if (response.config.url?.includes('/admin/bookings')) {
-      console.log('✅ Bookings API Response after processing:', response)
-      console.log('📋 Bookings data after unwrap:', response.data)
-    }
-    
-    // Debug logging for ALL admin responses to identify HTML returns
-    if (response.config.url?.includes('/admin/') && typeof response.data === 'string' && response.data.includes('<!doctype html>')) {
-      console.log('❌ ADMIN HTML RESPONSE DETECTED:', {
-        url: response.config.url,
-        method: response.config.method,
-        status: response.status,
-        dataType: typeof response.data,
-        dataPreview: response.data.substring(0, 200)
-      })
-    }
     
     return response
   },
   (error) => {
-    // Debug logging for testimonial errors
-    if (error.config?.url?.includes('/public/testimonials')) {
-      console.log('❌ Testimonials Error:', {
-        url: error.config.url,
-        method: error.config.method,
-        message: error.message,
-        code: error.code,
-        response: error.response?.data,
-        status: error.response?.status
-      })
-    }
+    // Error handling for API requests
     
     if (error.response?.status === 401) {
       localStorage.removeItem('adminToken')

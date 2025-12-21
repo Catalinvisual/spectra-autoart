@@ -254,7 +254,7 @@ const resources = {
       
       // Admin dashboard and statistics
       totalBookings: 'Totaal Afspraken',
-      pendingBookings: 'In Afwachting Afspraken',
+      pendingBookings: 'Actieve Afspraken',
       totalServices: 'Totaal Diensten',
       unknownService: 'Onbekende Service',
       
@@ -318,7 +318,7 @@ const resources = {
       admin: {
         dashboard: 'Dashboard',
         totalBookings: 'Totaal Afspraken',
-        pendingBookings: 'In Afwachting Afspraken',
+        pendingBookings: 'Actieve Afspraken',
         totalServices: 'Totaal Diensten',
         newsletterSubscribers: 'Nieuwsbrief Abonnees',
         servicesManagement: 'Diensten Beheer',
@@ -445,6 +445,11 @@ const resources = {
         passwordResetFailed: 'Wachtwoord reset mislukt.',
         pleaseSelectImageOrEnterUrl: 'Selecteer een afbeelding of voer een URL in',
         // Booking management translations
+        searchPlaceholder: 'Zoeken op naam, email, telefoon, auto...',
+        allStatuses: 'Alle statussen',
+        filteredBookings: 'Gefilterde afspraken',
+        clearBlockedOperations: 'Blokkeerde operaties wissen',
+        clear: 'Wissen',
         noDate: 'Geen datum opgegeven',
         invalidDate: 'Ongeldige datum',
         noName: 'Geen naam opgegeven',
@@ -1403,7 +1408,7 @@ const resources = {
       admin: {
         dashboard: 'Dashboard',
         totalBookings: 'Total Bookings',
-        pendingBookings: 'Pending Bookings',
+        pendingBookings: 'Active Bookings',
         totalServices: 'Total Services',
         newsletterSubscribers: 'Newsletter Subscribers',
         servicesManagement: 'Services Management',
@@ -1551,7 +1556,12 @@ const resources = {
       email: 'Email',
       phone: 'Phone',
       bookingDeleted: 'Booking Deleted!',
-      errorDeletingBooking: 'Error deleting booking'
+      errorDeletingBooking: 'Error deleting booking',
+      searchPlaceholder: 'Search by name, email, phone, car...',
+      allStatuses: 'All Statuses',
+      filteredBookings: 'Filtered Bookings',
+      clearBlockedOperations: 'Clear blocked operations',
+      clear: 'Clear'
       },
       
       // Terms and Conditions page translations
@@ -3009,6 +3019,14 @@ const resources = {
         
         // Admin translations
         admin: {
+          // Admin dashboard and statistics
+          dashboard: 'Panel de Control',
+          totalBookings: 'Total de Reservas',
+          pendingBookings: 'Reservas Activas',
+          totalServices: 'Total de Servicios',
+          newsletterSubscribers: 'Suscriptores al Boletín',
+          bookingsManagement: 'Gestión de Reservas',
+          
           notSpecified: 'No Especificado',
           bookingDetails: 'Detalles de Reserva',
           time: 'Hora',
@@ -3031,7 +3049,13 @@ const resources = {
           description: 'Descripción',
           enterImageTitle: 'Ingresar título de imagen',
           noTitle: 'Sin título',
-          noDescription: 'Sin descripción'
+          noDescription: 'Sin descripción',
+          // Booking management translations
+          searchPlaceholder: 'Buscar por nombre, email, teléfono, coche...',
+          allStatuses: 'Todos los estados',
+          filteredBookings: 'Reservas filtradas',
+          clearBlockedOperations: 'Limpiar operaciones bloqueadas',
+          clear: 'Limpiar'
         }
       }
     }
@@ -3903,6 +3927,14 @@ const resources = {
         
         // Admin translations
         admin: {
+          // Admin dashboard and statistics
+          dashboard: 'Panel Sterowania',
+          totalBookings: 'Całkowita Liczba Rezerwacji',
+          pendingBookings: 'Aktywne Rezerwacje',
+          totalServices: 'Całkowita Liczba Usług',
+          newsletterSubscribers: 'Subskrybenci Newslettera',
+          bookingsManagement: 'Zarządzanie Rezerwacjami',
+          
           notSpecified: 'Nie Określono',
           bookingDetails: 'Szczegóły Rezerwacji',
           time: 'Godzina',
@@ -3925,7 +3957,13 @@ const resources = {
           description: 'Opis',
           enterImageTitle: 'Wprowadź tytuł obrazu',
           noTitle: 'Brak tytułu',
-          noDescription: 'Brak opisu'
+          noDescription: 'Brak opisu',
+          // Booking management translations
+          searchPlaceholder: 'Szukaj po nazwie, emailu, telefonie, samochodzie...',
+          allStatuses: 'Wszystkie statusy',
+          filteredBookings: 'Filtrowane rezerwacje',
+          clearBlockedOperations: 'Wyczyść zablokowane operacje',
+          clear: 'Wyczyść'
         }
       }
     }
@@ -4161,7 +4199,7 @@ const resources = {
       
       // Additional admin translations
       totalBookings: 'Total Programări',
-      pendingBookings: 'Programări în Așteptare',
+      pendingBookings: 'Programări Active',
       totalServices: 'Total Servicii',
       bookingsManagement: 'Gestionare Programări',
       loadingBookings: 'Se încarcă programările...',
@@ -4901,7 +4939,7 @@ const resources = {
       admin: {
         dashboard: 'Panou de control',
         totalBookings: 'Total programări',
-        pendingBookings: 'Programări în așteptare',
+        pendingBookings: 'Programări active',
         totalServices: 'Total servicii',
         newsletterSubscribers: 'Abonați Newsletter',
         servicesManagement: 'Gestionare servicii',
@@ -5026,7 +5064,12 @@ const resources = {
         failedToUpdateImageStatus: 'Actualizarea statusului imaginii a eșuat',
         passwordResetInstructions: 'Dacă ai uitat parola, te rugăm să contactezi administratorul sistemului.',
         passwordResetFailed: 'Resetarea parolei a eșuat.',
-        sessionExpired: 'Sesiunea a expirat. Vă rugăm să vă autentificați din nou.'
+        sessionExpired: 'Sesiunea a expirat. Vă rugăm să vă autentificați din nou.',
+        searchPlaceholder: 'Caută după nume, email, telefon, mașină...',
+        allStatuses: 'Toate statusurile',
+        filteredBookings: 'Programări filtrate',
+        clearBlockedOperations: 'Curăță operațiunile blocate',
+        clear: 'Curăță'
       }
     }
   }
@@ -5041,9 +5084,7 @@ const getInitialLanguage = () => {
 // Export resources for external use
 export { resources };
 
-// Debug: Log available resources before initialization
-console.log('i18n.ts - Available resources before init:', Object.keys(resources));
-console.log('i18n.ts - Initial language:', getInitialLanguage());
+// Initialize i18n
 
 i18n
   .use(initReactI18next)
@@ -5062,8 +5103,6 @@ i18n
     debug: true
   })
   .then(() => {
-    console.log('i18n initialized successfully with language:', i18n.language);
-    console.log('i18n initialized successfully with available languages:', Object.keys(resources));
 
     const store = i18n.services.resourceStore.data;
     const roBundle = (resources as any)?.ro?.translation || {
@@ -5112,7 +5151,7 @@ i18n
       admin: {
         dashboard: 'Panou de control',
         totalBookings: 'Total programări',
-        pendingBookings: 'Programări în așteptare',
+        pendingBookings: 'Programări active',
         newsletterSubscribers: 'Abonați Newsletter',
         bookingsManagement: 'Gestionare programări',
         vehicleServicesManagement: 'Gestionare servicii vehicul',
@@ -5245,7 +5284,6 @@ i18n
     };
     if (!store.ro || !store.ro.translation) {
       i18n.addResourceBundle('ro', 'translation', roBundle, true, true);
-      console.log('i18n: injected Romanian bundle');
     }
   })
   .catch((error) => {
@@ -5259,13 +5297,13 @@ declare global {
   }
 }
 
-// Debug function to test translations
-window.debugI18n = () => {
-  console.log('=== i18n Debug Info ===');
-  console.log('Current language:', i18n.language);
-  console.log('Available languages:', Object.keys(resources));
-  console.log('Fallback language:', i18n.options.fallbackLng);
-  console.log('Supported languages:', i18n.options.supportedLngs);
-};
+// Debug function to test translations - Uncomment when needed for debugging
+// window.debugI18n = () => {
+//   console.log('=== i18n Debug Info ===');
+//   console.log('Current language:', i18n.language);
+//   console.log('Available languages:', Object.keys(resources));
+//   console.log('Fallback language:', i18n.options.fallbackLng);
+//   console.log('Supported languages:', i18n.options.supportedLngs);
+// };
 
 export default i18n;

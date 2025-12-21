@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import ReactDOM from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -12,6 +12,64 @@ import '../components/BookingWizard.css'
 import './Admin.css'
 import i18n from '../i18n'
 import { useLanguage } from '../contexts/LanguageContext'
+
+// Funcție pentru normalizarea statusurilor
+const normalizeStatus = (status: string): 'pending' | 'confirmed' | 'cancelled' | 'completed' => {
+  switch (status.toLowerCase()) {
+    case 'pending':
+    case 'in așteptare':
+    case 'în așteptare':
+    case 'in afwachting':
+    case 'en espera':
+    case 'oczekujące':
+      return 'pending'
+    case 'confirmed':
+    case 'confirmat':
+    case 'bevestigd':
+    case 'confirmado':
+    case 'potwierdzone':
+      return 'confirmed'
+    case 'cancelled':
+    case 'anulat':
+    case 'geannuleerd':
+    case 'cancelado':
+    case 'anulowane':
+      return 'cancelled'
+    case 'completed':
+    case 'finalizat':
+    case 'afgerond':
+    case 'completado':
+    case 'zakończone':
+      return 'completed'
+    default:
+      return 'pending'
+  }
+}
+
+// Custom hook pentru debouncing
+const useDebounce = (callback: Function, delay: number) => {
+  const [timeoutId, setTimeoutId] = useState<number | null>(null)
+  
+  const debouncedCallback = useCallback((...args: any[]) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
+    const id = window.setTimeout(() => {
+      callback(...args)
+    }, delay)
+    setTimeoutId(id)
+  }, [callback, delay, timeoutId])
+  
+  useEffect(() => {
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
+    }
+  }, [timeoutId])
+  
+  return debouncedCallback
+}
 
 interface Booking {
   id: string
@@ -512,28 +570,36 @@ const Dashboard: React.FC<DashboardProps> = ({ isAuthenticated }) => {
     totalSubscribers: 0
   })
 
-  useEffect(() => {
-    // Load dashboard stats
-    const loadStats = async () => {
-      try {
-        const bookingsResponse = await adminAPI.getBookings()
-        const subscribersResponse = await adminAPI.getNewsletterSubscribers()
+  // Funcție optimizată pentru încărcarea statisticilor
+  const loadStats = useCallback(async () => {
+    try {
+      const [bookingsResponse, subscribersResponse] = await Promise.all([
+        adminAPI.getBookings(),
+        adminAPI.getNewsletterSubscribers()
+      ])
 
-        const bookings = bookingsResponse.data
-        setStats({
-          totalBookings: bookings.length,
-          pendingBookings: bookings.filter((b: any) => b.status === 'pending').length,
-          totalSubscribers: subscribersResponse.data.length
-        })
-      } catch (error) {
-        console.error('Error loading dashboard stats:', error)
-      }
+      const bookings = bookingsResponse.data
+      // Normalizăm statusurile la fel ca în loadBookings pentru consistență
+      const normalizedBookings = bookings.map((booking: any) => ({
+        ...booking,
+        status: normalizeStatus(booking.status)
+      }))
+      
+      setStats({
+        totalBookings: normalizedBookings.length,
+        pendingBookings: normalizedBookings.filter((b: any) => b.status === 'pending' || b.status === 'confirmed').length,
+        totalSubscribers: subscribersResponse.data.length
+      })
+    } catch (error) {
+      console.error('Error loading dashboard stats:', error)
     }
+  }, [normalizeStatus])
 
+  useEffect(() => {
     if (isAuthenticated) {
       loadStats()
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, loadStats])
 
   return (
     <div className="dashboard">
@@ -688,41 +754,42 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     }
   }, [refreshKey])
 
-  const loadBookings = async () => {
+  // Memoizare funcție normalizeStatus
+  const normalizeStatus = useCallback((value: string) => {
+    const v = String(value || '').toLowerCase().trim()
+    if (!v) return 'pending'
+    if (['pending', 'în așteptare', 'in asteptare', 'in așteptare'].includes(v)) return 'pending'
+    if (['confirmed', 'confirmat', 'bevestigd'].includes(v)) return 'confirmed'
+    if (['cancelled', 'anulat', 'geannuleerd'].includes(v)) return 'cancelled'
+    if (['completed', 'finalizat', 'afgerond'].includes(v)) return 'completed'
+    return 'pending'
+  }, [])
+
+  // Funcție optimizată loadBookings cu memoizare
+  const loadBookings = useCallback(async () => {
     try {
       const response = await adminAPI.getBookings()
       
       // Transform server data to match frontend structure
-      const normalizeStatus = (value: string) => {
-        const v = String(value || '').toLowerCase().trim()
-        if (!v) return 'pending'
-        if (['pending', 'în așteptare', 'in asteptare', 'in așteptare'].includes(v)) return 'pending'
-        if (['confirmed', 'confirmat', 'bevestigd'].includes(v)) return 'confirmed'
-        if (['cancelled', 'anulat', 'geannuleerd'].includes(v)) return 'cancelled'
-        if (['completed', 'finalizat', 'afgerond'].includes(v)) return 'completed'
-        return 'pending'
-      }
-      const transformedBookings = response.data.map((booking: any) => {
-        return {
-          id: booking.id,
-          user: {
-            name: booking.customer_name || booking.user?.name || '',
-            email: booking.customer_email || booking.user?.email || '',
-            phone: booking.customer_phone || booking.user?.phone || ''
-          },
-          date: booking.date || '',
-          time: booking.time || '',
-          services: Array.isArray(booking.services) ? booking.services.map((service: any) => ({
-            id: service.id || service.name || '',
-            name: service.name || ''
-          })) : (typeof booking.services === 'string' ? [{ id: booking.services, name: booking.services }] : []),
-          total: typeof booking.total === 'string' ? parseFloat(booking.total) : booking.total || 0,
-          status: normalizeStatus(booking.status),
-          make: booking.make || booking.vehicle_make || '',
-          model: booking.model || booking.vehicle_model || '',
-          body: booking.body || booking.vehicle_body || ''
-        }
-      })
+      const transformedBookings = response.data.map((booking: any) => ({
+        id: booking.id,
+        user: {
+          name: booking.customer_name || booking.user?.name || '',
+          email: booking.customer_email || booking.user?.email || '',
+          phone: booking.customer_phone || booking.user?.phone || ''
+        },
+        date: booking.date || '',
+        time: booking.time || '',
+        services: Array.isArray(booking.services) ? booking.services.map((service: any) => ({
+          id: service.id || service.name || '',
+          name: service.name || ''
+        })) : (typeof booking.services === 'string' ? [{ id: booking.services, name: booking.services }] : []),
+        total: typeof booking.total === 'string' ? parseFloat(booking.total) : booking.total || 0,
+        status: normalizeStatus(booking.status),
+        make: booking.make || booking.vehicle_make || '',
+        model: booking.model || booking.vehicle_model || '',
+        body: booking.body || booking.vehicle_body || ''
+      }))
       
       setBookings(transformedBookings)
       
@@ -731,7 +798,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     } finally {
       setLoading(false)
     }
-  }
+  }, [normalizeStatus])
 
   const formatDate = useCallback((dateString: string, time?: string) => {
     if (!dateString || dateString === 'Invalid Date') {
@@ -808,15 +875,15 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     }
   }, [])
 
-  const openDetailsModal = (booking: Booking) => {
+  const openDetailsModal = useCallback((booking: Booking) => {
     setSelectedBooking(booking)
     setShowDetailsModal(true)
-  }
+  }, [])
 
-  const closeDetailsModal = () => {
+  const closeDetailsModal = useCallback(() => {
     setSelectedBooking(null)
     setShowDetailsModal(false)
-  }
+  }, [])
 
   const handleDeleteBookingLocal = (bookingId: string) => {
     // Marchează operațiunea de ștergere ca în desfășurare
@@ -829,30 +896,18 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     }
   }
 
-  const openEditModal = (booking: Booking) => {
-    console.log('📝 DEBUG openEditModal called with booking:', booking)
+  const openEditModal = useCallback((booking: Booking) => {
     // Stocăm o copie deep a datelor originale pentru comparație
     const originalCopy = JSON.parse(JSON.stringify(booking))
     setOriginalBooking(originalCopy)
     setEditingBooking(booking)
     setShowEditModal(true)
-  }
+  }, [])
 
-  const hasUnsavedChanges = () => {
+  const hasUnsavedChanges = useCallback(() => {
     if (!editingBooking || !originalBooking) return false
     
-    console.log('🔍 DEBUG hasUnsavedChanges:')
-    console.log('📋 Original:', originalBooking)
-    console.log('✏️ Current:', editingBooking)
-    console.log('📅 Original date:', JSON.stringify(originalBooking.date))
-    console.log('📅 Current date:', JSON.stringify(editingBooking.date))
-    console.log('📅 Date comparison:', originalBooking.date !== editingBooking.date)
-    console.log('⏰ Original time:', JSON.stringify(originalBooking.time))
-    console.log('⏰ Current time:', JSON.stringify(editingBooking.time))
-    console.log('⏰ Time changed:', originalBooking.time !== editingBooking.time)
-    console.log('📊 Status changed:', originalBooking.status !== editingBooking.status)
-    
-    const hasChanges = (
+    return (
       originalBooking.status !== editingBooking.status ||
       originalBooking.date !== editingBooking.date ||
       originalBooking.time !== editingBooking.time ||
@@ -860,29 +915,21 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
       originalBooking.user.email !== editingBooking.user.email ||
       originalBooking.user.phone !== editingBooking.user.phone
     )
-    
-    console.log('🔄 Has unsaved changes:', hasChanges)
-    return hasChanges
-  }
+  }, [editingBooking, originalBooking])
 
-  const closeEditModal = () => {
-    console.log('🚪 closeEditModal called')
+  const closeEditModal = useCallback(() => {
     // Verificăm dacă există modificări nesalvate
     if (hasUnsavedChanges()) {
-      console.log('⚠️ Unsaved changes detected, showing confirmation dialog')
       const confirmClose = window.confirm('Aveți modificări nesalvate. Sigur doriți să închideți?')
       if (!confirmClose) {
-        console.log('❌ User cancelled modal close')
         return
       }
-      console.log('✅ User confirmed modal close despite unsaved changes')
     }
     
-    console.log('🔄 Closing edit modal and resetting state')
     setEditingBooking(null)
     setOriginalBooking(null)
     setShowEditModal(false)
-  }
+  }, [hasUnsavedChanges])
 
   // Funcție pentru curățarea operațiunilor blocate din BookingsManagement
   const clearLocalBlockedOperations = () => {
@@ -911,17 +958,10 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
   // Calendar sync is now handled by useCalendarSync hook
 
 
-  const saveBookingEdit = async () => {
+  const saveBookingEdit = useCallback(async () => {
     if (!editingBooking || !originalBooking) return
     
     try {
-      console.log('🔍 DEBUG saveBookingEdit:')
-      console.log('📋 Original booking:', originalBooking)
-      console.log('✏️ Editing booking:', editingBooking)
-      console.log('📅 Date comparison:', originalBooking.date, '!==', editingBooking.date, '=', originalBooking.date !== editingBooking.date)
-      console.log('⏰ Time comparison:', originalBooking.time, '!==', editingBooking.time, '=', originalBooking.time !== editingBooking.time)
-      console.log('📊 Status comparison:', originalBooking.status, '!==', editingBooking.status, '=', originalBooking.status !== editingBooking.status)
-      
       // Verifică dacă există modificări
       const hasChanges = 
         originalBooking.status !== editingBooking.status ||
@@ -997,7 +1037,44 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
       console.error('Error updating booking:', error)
       toast.showError(t('admin.status') + ' ' + t('admin.updateFailed'))
     }
-  }
+  }, [editingBooking, originalBooking, t, toast, loadBookings])
+
+  // Funcții de filtrare și căutare optimizate cu memoizare
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  
+  // Debounced search
+  const debouncedSetSearchTerm = useDebounce(setSearchTerm, 300)
+  
+  // Filtrare și sortare memoizată
+  const filteredAndSortedBookings = useMemo(() => {
+    let filtered = bookings
+    
+    // Filtrare după status
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(booking => booking.status === statusFilter)
+    }
+    
+    // Căutare după termen
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase().trim()
+      filtered = filtered.filter(booking => 
+        booking.user.name.toLowerCase().includes(term) ||
+        booking.user.email.toLowerCase().includes(term) ||
+        booking.user.phone.toLowerCase().includes(term) ||
+        (booking.make && booking.make.toLowerCase().includes(term)) ||
+        (booking.model && booking.model.toLowerCase().includes(term)) ||
+        booking.id.toLowerCase().includes(term)
+      )
+    }
+    
+    // Sortare după dată (cele mai recente primele)
+    return filtered.sort((a, b) => {
+      const dateA = new Date(a.date).getTime()
+      const dateB = new Date(b.date).getTime()
+      return dateB - dateA
+    })
+  }, [bookings, searchTerm, statusFilter])
 
   if (loading) return (
     <div className="loading-container">
@@ -1010,9 +1087,32 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
     <div className="bookings-management">
       <div className="bookings-header">
         <h2>{t('admin.bookingsManagement')}</h2>
+        <div className="bookings-filters">
+          <div className="search-filter">
+            <input
+              type="text"
+              placeholder={t('admin.searchPlaceholder') || 'Caută după nume, email, telefon, mașină...'}
+              onChange={(e) => debouncedSetSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
+          <div className="status-filter">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="status-select"
+            >
+              <option value="all">{t('admin.allStatuses') || 'Toate statusurile'}</option>
+              <option value="pending">{t('admin.pending') || 'În așteptare'}</option>
+              <option value="confirmed">{t('admin.confirmed') || 'Confirmat'}</option>
+              <option value="cancelled">{t('admin.cancelled') || 'Anulat'}</option>
+              <option value="completed">{t('admin.completed') || 'Finalizat'}</option>
+            </select>
+          </div>
+        </div>
         <div className="bookings-stats">
           <span className="stat-item">
-            <strong>{bookings.length}</strong> {t('admin.totalBookings')}
+            <strong>{filteredAndSortedBookings.length}</strong> {t('admin.filteredBookings') || 'Rezervări filtrate'}
           </span>
           <span className="stat-item">
             <strong>{bookings.filter(b => b.status === 'pending').length}</strong> {t('admin.pending')}
@@ -1033,7 +1133,7 @@ const BookingsManagement: React.FC<BookingsManagementProps> = ({ onDeleteBooking
       </div>
       
       <div className="bookings-grid">
-        {Array.isArray(bookings) && bookings.map((booking: any) => (
+        {Array.isArray(filteredAndSortedBookings) && filteredAndSortedBookings.map((booking: any) => (
           <BookingCard
             key={booking.id}
             booking={booking}
@@ -2662,29 +2762,33 @@ const NewsletterManagement: React.FC<NewsletterManagementProps> = ({ isAuthentic
 }
 
 export default Admin
-  const PortalModal: React.FC<{ isOpen: boolean; onClose: () => void; overlayClass?: string; contentClass?: string; children: React.ReactNode; preventOverlayClose?: boolean }> = ({ isOpen, onClose, overlayClass, contentClass, children, preventOverlayClose = false }) => {
+  const PortalModal = React.memo(({ isOpen, onClose, overlayClass, contentClass, children, preventOverlayClose = false }: {
+    isOpen: boolean
+    onClose: () => void
+    overlayClass?: string
+    contentClass?: string
+    children: React.ReactNode
+    preventOverlayClose?: boolean
+  }) => {
     if (!isOpen) return null
     
-    const handleOverlayClick = () => {
-      console.log('🎯 Overlay clicked, preventOverlayClose:', preventOverlayClose)
-      // Prevenim închiderea dacă preventOverlayClose este true
-      if (preventOverlayClose) {
-        console.log('🚫 Modal close prevented by preventOverlayClose')
-        return
-      }
-      console.log('🔄 Calling onClose from overlay click')
+    const handleOverlayClick = useCallback(() => {
+      if (preventOverlayClose) return
       onClose()
-    }
+    }, [onClose, preventOverlayClose])
+    
+    const handleContentClick = useCallback((e: React.MouseEvent) => {
+      e.stopPropagation()
+    }, [])
     
     return ReactDOM.createPortal(
       <div className={['portal-modal-overlay', overlayClass].filter(Boolean).join(' ')} onClick={handleOverlayClick}>
-        <div className={['portal-modal-content', contentClass].filter(Boolean).join(' ')} onClick={(e) => {
-          console.log('📦 Modal content clicked, stopping propagation')
-          e.stopPropagation()
-        }}>
+        <div className={['portal-modal-content', contentClass].filter(Boolean).join(' ')} onClick={handleContentClick}>
           {children}
         </div>
       </div>,
       document.body
     )
-  }
+  })
+  
+  PortalModal.displayName = 'PortalModal'

@@ -1,21 +1,29 @@
 {
-  "name": "Spectra AutoArt",
-  "short_name": "Spectra AutoArt",
+  "name": "Spectra Auto Art - Detailing Auto Profesional",
+  "short_name": "Spectra Auto Art",
+  "description": "Servicii profesionale de detailing auto și protecție ceramică",
   "icons": [
     {
-      "src": "/favicon-32x32.png",
-      "sizes": "32x32",
-      "type": "image/png"
+      "src": "/src/assets/favicon.svg",
+      "sizes": "169x169",
+      "type": "image/svg+xml"
     },
     {
-      "src": "/apple-touch-icon.png",
+      "src": "/src/assets/favicon.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/src/assets/favicon.svg",
       "sizes": "180x180",
-      "type": "image/png"
+      "type": "image/svg+xml"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "background_color": "#000000",
   "display": "standalone",
   "start_url": "/",
-  "scope": "/"
+  "scope": "/",
+  "lang": "ro",
+  "orientation": "portrait"
 }

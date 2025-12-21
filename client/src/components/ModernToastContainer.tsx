@@ -6,7 +6,6 @@ import './ModernToastNotification.css';
 const ModernToastContainer: React.FC = () => {
   const { toasts, removeToast } = useToast();
   
-  console.log('ToastContainer - toasts:', toasts); // Debug log
   if (toasts.length === 0) return null;
 
   return (
