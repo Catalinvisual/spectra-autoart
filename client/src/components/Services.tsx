@@ -3,6 +3,7 @@ import { useScrollAnimation, useScrollReveal } from '../hooks/useAnimations'
 import { publicAPI } from '../services/api'
 import { useState, useEffect } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
+import { useNavigate } from 'react-router-dom'
 import type { ServiceWithPrices } from './BookingWizard'
 import './Services.css'
 
@@ -15,13 +16,31 @@ interface ServicesProps {
 const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
   const { t } = useTranslation()
   const { currentLanguage } = useLanguage()
+  const navigate = useNavigate()
   const [setServicesElement] = useScrollAnimation()
   const [services, setServices] = useState<ServiceWithPrices[]>([])
+  const [displayedServices, setDisplayedServices] = useState<ServiceWithPrices[]>([])
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     loadServices()
   }, [currentLanguage])
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  useEffect(() => {
+    // Limitează serviciile afișate în funcție de tipul dispozitivului
+    const maxServices = isMobile ? 5 : 10
+    setDisplayedServices(services.slice(0, maxServices))
+  }, [services, isMobile])
 
   const loadServices = async () => {
     try {
@@ -30,6 +49,7 @@ const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
       // Load services with cached translations - this avoids repeated DeepL calls
       // Include inactive services to show all services with prices
       const servicesResponse = await publicAPI.getServicesWithCachedTranslations(currentLanguage, false)
+      console.log('Services loaded:', servicesResponse.data.length, 'services')
       setServices(servicesResponse.data)
       
     } catch (error) {
@@ -89,6 +109,22 @@ const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
             { id: '8', service_id: '3', body_type_key: 'berlina', price_min: 400, price_max: 500, duration_minutes: 240, is_active: true },
             { id: '9', service_id: '3', body_type_key: 'hatchback', price_min: 350, price_max: 450, duration_minutes: 210, is_active: true }
           ]
+        },
+        {
+          id: '4',
+          name: 'Engine Cleaning',
+          name_en: 'Engine Cleaning',
+          description: 'Curățare motor și compartiment motor',
+          description_en: 'Engine and engine compartment cleaning',
+          category: 'maintenance',
+          category_en: 'maintenance',
+          duration_minutes: 60,
+          is_active: true,
+          prices: [
+            { id: '10', service_id: '4', body_type_key: 'suv', price_min: 80, price_max: 100, duration_minutes: 70, is_active: true },
+            { id: '11', service_id: '4', body_type_key: 'berlina', price_min: 60, price_max: 80, duration_minutes: 60, is_active: true },
+            { id: '12', service_id: '4', body_type_key: 'hatchback', price_min: 50, price_max: 70, duration_minutes: 50, is_active: true }
+          ]
         }
       ])
       }
@@ -112,6 +148,10 @@ const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
     const activePrices = service.prices.filter(price => price.is_active)
     if (activePrices.length === 0) return null
     return Math.min(...activePrices.map(price => price.price_min))
+  }
+
+  const handleViewAllServices = () => {
+    navigate('/services')
   }
 
   // Temporarily commented out to avoid warnings
@@ -142,7 +182,7 @@ const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
         <h2 className="section-title">{t('ourServices')}</h2>
         
         <div className="services-grid">
-          {Array.isArray(services) && services.map((service, index) => {
+          {Array.isArray(displayedServices) && displayedServices.map((service, index) => {
             const minPrice = getMinPriceForService(service)
             
             return (
@@ -158,6 +198,14 @@ const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
             )
           })}
         </div>
+        
+        {services.length > displayedServices.length && (
+          <div className="view-all-container">
+            <button className="view-all-btn" onClick={handleViewAllServices}>
+              {t('viewAll')}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   )

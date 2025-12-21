@@ -6,6 +6,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import CookiePolicy from './pages/CookiePolicy'
 import ContactLegal from './pages/ContactLegal'
 import GalleryPage from './pages/GalleryPage'
+import ServicesPage from './pages/ServicesPage'
 import ModernToastContainer from './components/ModernToastContainer'
 import TermsPopup from './components/TermsPopup'
 
@@ -20,6 +21,7 @@ function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/reset-password" element={<Admin />} />
           <Route path="/gallery" element={<GalleryPage />} />
+          <Route path="/services" element={<ServicesPage />} />
           <Route path="/terms" element={<TermsConditions />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/cookies" element={<CookiePolicy />} />

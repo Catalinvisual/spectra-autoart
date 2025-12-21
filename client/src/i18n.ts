@@ -9,6 +9,7 @@ const resources = {
       heroSecondaryText: 'Wij transformeren auto\'s tot kunstwerken met premium detailing en styling diensten!',
       heroDescription: 'We herdefiniëren auto-esthetiek met details die inspireren en transformeren. Resultaten die hoofden doen draaien.',
       bookNow: 'Maak een afspraak',
+      viewAll: 'Bekijk Alles',
       ourServices: 'Onze Diensten',
       aboutUs: 'Over Ons',
       aboutUsTitle: 'Over Ons',
@@ -71,7 +72,9 @@ const resources = {
       servicesPage: {
         fromPrice: 'Vanaf',
         minimumPrice: 'Minimale prijs',
-        loading: 'Services laden...'
+        loading: 'Services laden...',
+        allServicesDescription: 'Ontdek ons complete aanbod van premium auto detailing en styling diensten',
+        noServices: 'Momenteel geen services beschikbaar.'
       },
       from: 'Vanaf',
       contact: 'Contact',
@@ -1093,6 +1096,7 @@ const resources = {
       subtitle: 'We transform cars into works of art',
       heroDescription: 'We redefine automotive aesthetics with details that inspire and transform. Results that turn heads.',
       bookNow: 'Book Now',
+      viewAll: 'View All',
       ourServices: 'Our Services',
       aboutUs: 'About Us',
       aboutUsTitle: 'About Us',
@@ -1155,7 +1159,9 @@ const resources = {
       servicesPage: {
         fromPrice: 'From',
         minimumPrice: 'Minimum price',
-        loading: 'Loading services...'
+        loading: 'Loading services...',
+        allServicesDescription: 'Discover our complete range of premium auto detailing and styling services',
+        noServices: 'No services available at the moment.'
       },
       from: 'From',
       contact: 'Contact',
@@ -2135,6 +2141,7 @@ const resources = {
       subtitle: 'Transformamos coches en obras de arte',
       heroDescription: 'Re-definimos la estética automotriz con detalles que inspiran y transforman. Resultados que hacen que las cabezas se giren.',
       bookNow: 'Reservar Ahora',
+      viewAll: 'Ver Todo',
       ourServices: 'Nuestros Servicios',
       aboutUs: 'Sobre Nosotros',
       aboutUsTitle: 'Sobre Nosotros',
@@ -2175,7 +2182,9 @@ const resources = {
       servicesPage: {
         fromPrice: 'Desde',
         minimumPrice: 'Precio mínimo',
-        loading: 'Cargando servicios...'
+        loading: 'Cargando servicios...',
+        allServicesDescription: 'Descubre nuestra gama completa de servicios premium de detailing y estilismo de autos',
+        noServices: 'No hay servicios disponibles en este momento.'
       },
       from: 'Desde',
       testimonialPage: {
@@ -3030,6 +3039,7 @@ const resources = {
       subtitle: 'Przekształcamy samochody w dzieła sztuki',
       heroDescription: 'Redefiniujemy estetykę samochodów przez detale, które inspirują i przekształcają. Wyniki, które przyciągają spojrzenia.',
       bookNow: 'Umów wizytę',
+      viewAll: 'Zobacz Wszystkie',
       ourServices: 'Nasze Usługi',
       aboutUs: 'O Nas',
       aboutUsTitle: 'O Nas',
@@ -3070,7 +3080,9 @@ const resources = {
       servicesPage: {
         fromPrice: 'Od',
         minimumPrice: 'Cena minimalna',
-        loading: 'Ładowanie usług...'
+        loading: 'Ładowanie usług...',
+        allServicesDescription: 'Odkryj naszą kompletną gamę premium usług detailingu i stylizacji samochodów',
+        noServices: 'Obecnie brak dostępnych usług.'
       },
       from: 'Od',
       testimonialPage: {
@@ -3920,6 +3932,7 @@ const resources = {
       subtitle: 'Transformăm mașinile în opere de artă',
       heroDescription: 'Redefinim estetica auto prin detalii care inspiră și transformă. Rezultate care întorc priviri.',
       bookNow: 'Programează Acum',
+      viewAll: 'Vezi Toate',
       ourServices: 'Serviciile Noastre',
       aboutUs: 'Despre Noi',
       aboutUsTitle: 'Despre Noi',
@@ -3960,7 +3973,9 @@ const resources = {
       servicesPage: {
         fromPrice: 'De la',
         minimumPrice: 'Preț minim',
-        loading: 'Se încarcă serviciile...'
+        loading: 'Se încarcă serviciile...',
+        allServicesDescription: 'Descoperă gama noastră completă de servicii premium de detailing și styling auto',
+        noServices: 'Momentan nu sunt servicii disponibile.'
       },
       from: 'De la',
       testimonialPage: {
