@@ -138,6 +138,14 @@
   font-size: 0.9rem;
 }
 
+.footer-created-by {
+  margin-bottom: 0.5rem;
+}
+
+.footer-copyright {
+  font-size: 0.85rem;
+}
+
 /* Legal links styling */
 .footer-legal {
   margin-top: 2rem;
@@ -203,4 +211,17 @@
   .legal-links a:not(:last-child)::after {
     right: -0.6rem;
   }
+}
+
+/* HapLogic link styling */
+.haplogic-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.haplogic-link:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
 }

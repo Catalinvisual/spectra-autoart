@@ -501,7 +501,8 @@ const resources = {
         newsletter: 'Nieuwsbrief',
         enterEmail: 'Voer uw e-mailadres in',
         send: 'Verzenden',
-        copyright: '© {{year}} Spectra AutoArt. Alle rechten voorbehouden.'
+        copyright: '© {{year}} Spectra AutoArt. Alle rechten voorbehouden.',
+        createdBy: 'Gemaakt door'
       },
       
       // Terms popup translations
@@ -1386,7 +1387,8 @@ const resources = {
         newsletter: 'Newsletter',
         enterEmail: 'Enter your email',
         send: 'Send',
-        copyright: '© {{year}} Spectra AutoArt. All rights reserved.'
+        copyright: '© {{year}} Spectra AutoArt. All rights reserved.',
+        createdBy: 'Created by'
       },
       
       // Terms popup translations
@@ -2428,7 +2430,8 @@ const resources = {
         newsletter: 'Boletín',
         enterEmail: 'Ingrese su correo electrónico',
         send: 'Enviar',
-        copyright: '© {{year}} Spectra AutoArt. Todos los derechos reservados.'
+        copyright: '© {{year}} Spectra AutoArt. Todos los derechos reservados.',
+        createdBy: 'Creado por'
       },
       
       // Terms and Conditions page translations
@@ -3326,7 +3329,8 @@ const resources = {
         newsletter: 'Newsletter',
         enterEmail: 'Wprowadź swój adres e-mail',
         send: 'Wyślij',
-        copyright: '© {{year}} Spectra AutoArt. Wszystkie prawa zastrzeżone.'
+        copyright: '© {{year}} Spectra AutoArt. Wszystkie prawa zastrzeżone.',
+        createdBy: 'Stworzone przez'
       },
       
       // Terms and Conditions page translations
@@ -4870,7 +4874,8 @@ const resources = {
         newsletter: 'Newsletter',
         enterEmail: 'Introduceți adresa dvs. de email',
         send: 'Trimite',
-        copyright: '© {{year}} Spectra AutoArt. Toate drepturile rezervate.'
+        copyright: '© {{year}} Spectra AutoArt. Toate drepturile rezervate.',
+        createdBy: 'Creat de'
       },
       
 

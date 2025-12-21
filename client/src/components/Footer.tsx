@@ -146,7 +146,12 @@ const Footer = () => {
       </div>
       
       <div className="footer-bottom">
-        <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
+        <div className="footer-created-by">
+          {t('footer.createdBy')} <a href="https://www.haplogic.com" target="_blank" rel="noopener noreferrer" className="haplogic-link">HapLogic</a>
+        </div>
+        <div className="footer-copyright">
+          {t('footer.copyright', { year: new Date().getFullYear() })}
+        </div>
       </div>
     </footer>
   )
