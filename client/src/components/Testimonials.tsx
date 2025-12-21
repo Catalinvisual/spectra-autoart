@@ -26,6 +26,7 @@ const Testimonials: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [lastUpdate, setLastUpdate] = useState(0)
   const [setAnimationElement] = useScrollAnimation()
 
   useEffect(() => {
@@ -74,6 +75,11 @@ const Testimonials: React.FC = () => {
   }, [translatedTestimonials.length])
 
   const loadTestimonials = async () => {
+    // Prevent rapid successive calls
+    const now = Date.now()
+    if (now - lastUpdate < 1000) return
+    setLastUpdate(now)
+    
     try {
       const response = await publicAPI.getTestimonials(currentLanguage)
       setTestimonials(response.data)
@@ -128,7 +134,7 @@ const Testimonials: React.FC = () => {
   }
 
   const handleTestimonialSuccess = () => {
-    // Reload testimonials after successful submission
+    // Reload testimonials instantly for immediate feedback
     loadTestimonials()
   }
 

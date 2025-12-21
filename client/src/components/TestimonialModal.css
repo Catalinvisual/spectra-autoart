@@ -57,12 +57,7 @@ body.modal-open {
 
 .translation-indicator-modal {
   font-size: 1rem;
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  opacity: 1; /* Eliminat animatia pulse pentru a face textul complet opac */
 }
 
 .close-btn {
@@ -207,6 +202,7 @@ body.modal-open {
   border: 1px solid #f5c6cb;
   font-size: 0.9rem;
 }
+
 
 /* Animations */
 @keyframes fadeIn {

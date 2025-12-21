@@ -22,7 +22,7 @@ console.log('🔍 VITE_API_URL env:', import.meta.env.VITE_API_URL)
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 60000, // Increased timeout to 60 seconds for service creation
+  timeout: 10000, // Reduced timeout to 10 seconds for better responsiveness
   headers: {
     'Content-Type': 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
@@ -163,7 +163,8 @@ api.interceptors.response.use(
   getBodyTypes: (lang?: string) => api.get<BodyType[]>(`/public/body-types${lang ? `?lang=${lang}` : ''}`),
   getGallery: (lang?: string) => api.get('/public/gallery' + (lang ? `?lang=${lang}` : '')),
   getTestimonials: (lang?: string) => api.get('/public/testimonials' + (lang ? `?lang=${lang}` : '')),
-  submitTestimonial: (data: { name: string; rating: number; comment: string }) => api.post('/public/testimonials', data),
+  submitTestimonial: (data: { name: string; rating: number; comment: string }) => 
+    api.post('/public/testimonials', data, { timeout: 5000 }), // Reduced timeout for testimonials
   createBooking: (data: BookingData) => api.post('/public/bookings', data),
   submitContact: (data: { name: string; email: string; phone?: string; subject: string; message: string }) => api.post('/public/contact', data),
   subscribeNewsletter: (data: { email: string; locale?: string }) => api.post('/public/newsletter/subscribe', data),

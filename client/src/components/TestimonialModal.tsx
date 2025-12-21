@@ -13,13 +13,12 @@ interface TestimonialModalProps {
 
 const TestimonialModal: React.FC<TestimonialModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const { t } = useTranslation()
-  const { showSuccess, showError } = useToast()
+  const { showSuccess } = useToast()
   const [formData, setFormData] = useState({
     name: '',
     rating: 5,
     comment: ''
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
   // Manage body scroll when modal is open
@@ -47,33 +46,25 @@ const TestimonialModal: React.FC<TestimonialModalProps> = ({ isOpen, onClose, on
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    setIsSubmitting(true)
-
-    try {
-      await publicAPI.submitTestimonial(formData)
-      
-      // Show success notification
-      showSuccess(t('testimonialPage.reviewSubmittedSuccessfully'))
-      
-      // Call the success callback to reload testimonials
-      onSuccess()
-      
-      // Reset form
-      setFormData({ name: '', rating: 5, comment: '' })
-      
-      // Close modal after a short delay to let user see the success message
-      setTimeout(() => {
-        onClose()
-      }, 2000)
-      
-    } catch (err) {
-      const errorMessage = t('testimonialPage.errorSubmit')
-      setError(errorMessage)
-      showError(errorMessage)
-      console.error('Error submitting testimonial:', err)
-    } finally {
-      setIsSubmitting(false)
-    }
+    
+    // Close modal and show success immediately (optimistic update)
+    onClose()
+    showSuccess(t('testimonialPage.reviewSubmittedSuccessfully'))
+    
+    // Reset form
+    setFormData({ name: '', rating: 5, comment: '' })
+    
+    // Process in background without blocking user
+    setTimeout(async () => {
+      try {
+        await publicAPI.submitTestimonial(formData)
+        // Reload testimonials after successful submission
+        onSuccess()
+      } catch (err) {
+        console.error('Error submitting testimonial in background:', err)
+        // If error occurs, user already sees success message but we'll log it
+      }
+    }, 100)
   }
 
   const renderStars = () => {
@@ -145,16 +136,14 @@ const TestimonialModal: React.FC<TestimonialModalProps> = ({ isOpen, onClose, on
               type="button"
               onClick={onClose}
               className="btn btn-secondary"
-              disabled={isSubmitting}
             >
               {t('testimonialPage.cancel')}
             </button>
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={isSubmitting}
             >
-              {isSubmitting ? t('testimonialPage.submitting') : t('testimonialPage.submitReview')}
+              {t('testimonialPage.submitReview')}
             </button>
           </div>
         </form>
