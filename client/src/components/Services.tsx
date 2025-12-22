@@ -21,6 +21,7 @@ const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
   const [services, setServices] = useState<ServiceWithPrices[]>([])
   const [displayedServices, setDisplayedServices] = useState<ServiceWithPrices[]>([])
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+  const [isSmallMobile, setIsSmallMobile] = useState(window.innerWidth < 480)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -30,6 +31,7 @@ const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768)
+      setIsSmallMobile(window.innerWidth < 480)
     }
     
     window.addEventListener('resize', handleResize)
@@ -38,9 +40,9 @@ const Services: React.FC<ServicesProps> = ({ openBookingModal }) => {
 
   useEffect(() => {
     // Limitează serviciile afișate în funcție de tipul dispozitivului
-    const maxServices = isMobile ? 5 : 10
+    const maxServices = isSmallMobile ? 3 : (isMobile ? 5 : 10)
     setDisplayedServices(services.slice(0, maxServices))
-  }, [services, isMobile])
+  }, [services, isMobile, isSmallMobile])
 
   const loadServices = async () => {
     try {
